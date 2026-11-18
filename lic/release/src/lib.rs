@@ -1,0 +1,149 @@
+// Copyright (C), 2026 Quartz Systems. Some rights reserved. This work is
+// licensed under the terms of the MIT license which can be found in the
+// root directory of this project.
+
+//! QS/MC's identity over QS/400's `vrm` crate: the release, the build
+//! ID, the product text, the banner, the prefixes everything named
+//! after the product starts with, and the [`Appliance`] description the
+//! product-neutral base crates of QS/VS take.
+
+#![forbid(unsafe_code)]
+
+pub mod names;
+
+pub use appliance::{Appliance, Event, LoadSourceNames};
+pub use names::LOAD_SOURCE;
+pub use vrm::Release;
+
+/// The release `build.rs` captured: `VERSION` (`1.0.0` is `V1R0M0`), or
+/// `QSMC_RELEASE`.
+pub const RELEASE: Release = vrm::release_from_env!("QSMC_");
+
+/// The build ID: `git describe`, or `QSMC_BUILD_ID`.
+pub const BUILD_ID: &str = env!("QSMC_BUILD_ID");
+
+/// The product's short name.
+pub const NAME: &str = "QS/MC";
+
+/// The product text.
+pub const PRODUCT: &str = "Quartz Systems/Management Console";
+
+/// The lower-case identifier: PID 1 is `qsmcinit`.
+pub const ID: &str = "qsmc";
+
+/// Prefix of a fix identifier, `QMnnnnn`.
+pub const FIX_PREFIX: &str = "QM";
+
+/// Prefix of a message identifier.
+pub const MSG_PREFIX: &str = "QMC";
+
+/// Prefix of every environment variable QS/MC reads.
+pub const ENV_PREFIX: &str = "QSMC_";
+
+/// Prefix of QS/MC's kernel command-line keys.
+pub const KEY_PREFIX: &str = "qsmc.";
+
+/// Where `QSMCDATA` is mounted.
+pub const DATA_DIR: &str = "/data";
+
+/// The run directory.
+pub const RUN_DIR: &str = "/run";
+
+/// What a default host name starts with; six hexadecimal digits follow.
+pub const HOST_PREFIX: &str = "QSMC";
+
+/// The FAT volume label of a seed volume.
+pub const SEED_LABEL: &str = "QSMCSEED";
+
+/// The port QSI's managed systems listen on; QS/MC connects to it.
+pub const QSI_PORT: u16 = 2300;
+
+/// The web UI's port.
+pub const HTTPS_PORT: u16 = 443;
+
+/// The port that redirects to [`HTTPS_PORT`].
+pub const HTTP_PORT: u16 = 80;
+
+/// QS/MC as the base crates see it. The caller says how an event is
+/// posted and a fact noted.
+pub const fn appliance(post: fn(&Event<'_>), note: fn(&str, &str)) -> Appliance {
+    Appliance {
+        id: ID,
+        name: NAME,
+        banner,
+        data_dir: DATA_DIR,
+        run_dir: RUN_DIR,
+        host_prefix: HOST_PREFIX,
+        seed_label: SEED_LABEL,
+        load_source: &LOAD_SOURCE,
+        post,
+        note,
+    }
+}
+
+/// The banner for a release and a build ID: `QS/MC V1R0M0 a1b2c3d`.
+pub fn banner_of(release: Release, build_id: &str) -> String {
+    format!("{NAME} {release} {build_id}")
+}
+
+/// This build's banner.
+pub fn banner() -> String {
+    banner_of(RELEASE, BUILD_ID)
+}
+
+/// A fix identifier, `QM00001`.
+pub fn fix_id(number: u32) -> String {
+    format!("{FIX_PREFIX}{number:05}")
+}
+
+/// A default host name: the prefix and six hexadecimal digits.
+pub fn default_host_name(digits: u32) -> String {
+    format!("{HOST_PREFIX}{:06X}", digits & 0x00FF_FFFF)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_banner_names_the_release_and_the_build() {
+        let r = Release { v: 1, r: 0, m: 0 };
+        assert_eq!(banner_of(r, "abc1234"), "QS/MC V1R0M0 abc1234");
+        assert!(banner().starts_with("QS/MC V"));
+        assert!(banner().ends_with(BUILD_ID));
+    }
+
+    #[test]
+    fn the_release_is_version_s() {
+        let version = include_str!("../../../VERSION").trim();
+        if option_env!("QSMC_RELEASE").is_none() {
+            assert_eq!(version, "1.0.0");
+            assert_eq!(RELEASE.to_string(), "V1R0M0");
+        }
+    }
+
+    #[test]
+    fn the_prefixes_are_qs_mc_s() {
+        assert_eq!((ID, ENV_PREFIX, KEY_PREFIX), ("qsmc", "QSMC_", "qsmc."));
+        assert_eq!((FIX_PREFIX, MSG_PREFIX), ("QM", "QMC"));
+        assert_eq!(fix_id(1), "QM00001");
+        assert_eq!(fix_id(12345), "QM12345");
+        assert_eq!(default_host_name(0x00ab_12cd), "QSMCAB12CD");
+        assert_eq!(default_host_name(0xffab_12cd), "QSMCAB12CD");
+        assert_eq!(PRODUCT, "Quartz Systems/Management Console");
+    }
+
+    #[test]
+    fn the_appliance_description_is_qs_mc() {
+        let a = appliance(|_| {}, |_, _| {});
+        assert_eq!((a.id, a.name), ("qsmc", "QS/MC"));
+        assert_eq!(a.control_socket().to_str(), Some("/run/qsmcinit.sock"));
+        assert_eq!(a.state_dir().to_str(), Some("/data/state"));
+        assert_eq!(a.log_dir().to_str(), Some("/data/log"));
+        assert_eq!((a.banner)(), banner());
+        assert_eq!(a.host_prefix, "QSMC");
+        // A FAT label is eleven characters at most.
+        assert!(a.seed_label.len() <= 11);
+        assert_eq!(a.load_source, &LOAD_SOURCE);
+    }
+}

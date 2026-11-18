@@ -1,0 +1,74 @@
+// Copyright (C), 2026 Quartz Systems. Some rights reserved. This work is
+// licensed under the terms of the MIT license which can be found in the
+// root directory of this project.
+
+//! What can go wrong in a run, with the serial log where there is one.
+
+use std::path::PathBuf;
+use std::time::Duration;
+
+/// A failed run.
+#[derive(Debug, thiserror::Error)]
+pub enum HarnessError {
+    /// OVMF is not where it was looked for.
+    #[error("OVMF {what} not found (set {env}); tried {tried:?}; {hint}")]
+    FirmwareNotFound {
+        /// Which file.
+        what: &'static str,
+        /// The variable that names it.
+        env: &'static str,
+        /// The paths tried.
+        tried: Vec<PathBuf>,
+        /// How to get it.
+        hint: &'static str,
+    },
+    /// An image the step needs is not built.
+    #[error("{what} is not built; run `cargo run -p build -- all` first")]
+    NotBuilt {
+        /// Which image.
+        what: &'static str,
+    },
+    /// A step could not be set up.
+    #[error("{step}: {reason}")]
+    Setup {
+        /// The step.
+        step: &'static str,
+        /// Why.
+        reason: String,
+    },
+    /// QEMU did not start.
+    #[error("cannot start {qemu}: {reason}")]
+    Spawn {
+        /// The binary.
+        qemu: PathBuf,
+        /// Why.
+        reason: String,
+    },
+    /// What was expected was not seen in time.
+    #[error("{step}: `{missing}` not seen within {}s{}", .after.as_secs(), if *.exited { " (QEMU exited)" } else { "" })]
+    Timeout {
+        /// The step.
+        step: &'static str,
+        /// The first line not seen.
+        missing: String,
+        /// How long it waited.
+        after: Duration,
+        /// Whether QEMU ended first.
+        exited: bool,
+        /// The serial log.
+        log: String,
+    },
+    /// A file could not be read or written.
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+}
+
+impl HarnessError {
+    /// The serial log, when the failure has one.
+    pub fn log(&self) -> Option<&str> {
+        match self {
+            HarnessError::Timeout { log, .. } => Some(log),
+            _ => None,
+        }
+    }
+}
