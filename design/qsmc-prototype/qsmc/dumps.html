@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Manage dumps - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[+]</a> <b>Systems Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[-]</a> <b>Service Management</b></div>
+<div class="navitem"><a href="events.html">Serviceable events</a></div>
+<div class="navitem"><a href="refcode-history.html">Reference code history</a></div>
+<div class="navitem"><a href="dumps.html" class="navcur">Manage dumps</a></div>
+<div class="navitem"><a href="code-updates.html">Code updates</a></div>
+<div class="navitem"><a href="connectivity.html">Connectivity</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Service Management &gt; Manage dumps</div>
+<h1>Manage dumps</h1>
+
+
+<table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Select</th>
+<th><a href="?sort=n">Name</a></th>
+<th><a href="?sort=t">Type</a></th>
+<th><a href="?sort=s">Size (MB)</a></th>
+<th><a href="?sort=d">Date</a></th>
+<th><a href="?sort=src">Source</a></th>
+<th>Status</th>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="d0"></td>
+<td class="mono">SYSDUMP.QSTEST01.20261029.221405</td>
+<td>Partition main storage dump</td>
+<td class="num">8,210</td>
+<td class="mono">10/29/26 22:15</td>
+<td>QSTEST01 on QSHQVS1</td>
+<td>Ready - not copied</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="d1"></td>
+<td class="mono">SPDUMP.QSHQVS1.20261018.080450</td>
+<td>Service processor dump</td>
+<td class="num">42</td>
+<td class="mono">10/18/26 08:05</td>
+<td>QSHQVS1</td>
+<td>Ready - not copied</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="d2"></td>
+<td class="mono">SYSDUMP.QSDEV01.20261014.184012</td>
+<td>Partition main storage dump (function 22)</td>
+<td class="num">4,100</td>
+<td class="mono">10/14/26 18:41</td>
+<td>QSDEV01 on QSHQVS1</td>
+<td>Copied to remote host</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="d3"></td>
+<td class="mono">FWDUMP.QSHQ400.20260930.120000</td>
+<td>Firmware dump</td>
+<td class="num">120</td>
+<td class="mono">09/30/26 12:00</td>
+<td>QSHQ400</td>
+<td>Copied to remote host</td>
+</tr>
+</table><form method="post"><div class="buttons"><input type="submit" value="Download"><input type="submit" value="Copy to remote host..."><input type="submit" value="Delete"> &nbsp; <span class="small grey">Dump space: 12,472 MB of 40,000 MB used.</span></div></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

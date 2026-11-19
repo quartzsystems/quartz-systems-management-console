@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Confirm Power Off - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[-]</a> <b>Systems Management</b></div>
+<div class="navitem"><a href="servers.html" class="navcur">Servers</a></div>
+<div class="navitem"><a href="partitions.html">Partitions</a></div>
+<div class="navitem"><a href="groups.html">Custom groups</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Servers &gt; Confirm Power Off</div>
+<h1>Confirm Power Off</h1>
+
+
+<p>Powering off managed system QSHQVS1 ends every partition listed below. Press OK to continue.</p><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Partition</th>
+<th>ID</th>
+<th>Status</th>
+<th>Reference code</th>
+<th>Action</th>
+</tr>
+<tr>
+<td><span class="mono">QSPROD01</span></td>
+<td>3</td>
+<td><span class="ok">Running</span></td>
+<td><a class="mono" href="refcode.html">00000000</a></td>
+<td>Shut down (delayed, 300 s) then power off</td>
+</tr>
+<tr class="alt">
+<td><span class="mono">QSDEV01</span></td>
+<td>1</td>
+<td><span class="ok">Running</span></td>
+<td><a class="mono" href="refcode.html">00000000</a></td>
+<td>Shut down (delayed, 300 s) then power off</td>
+</tr>
+<tr>
+<td><span class="mono">QSTEST01</span></td>
+<td>2</td>
+<td><span class="err">Not activated</span></td>
+<td><a class="mono" href="refcode.html">00000000</a></td>
+<td>None</td>
+</tr>
+</table><p class="small grey">Power off: <input type="radio" name="how" value="delayed" checked> Shut down partitions first (PWRDWNSYS *CNTRLD through the service interface)<br><input type="radio" name="how" value="imm"> Immediate - partitions are ended without shutdown</p><form method="post"><div class="buttons"><input type="submit" name="ok" value="OK"><input type="submit" name="cancel" value="Cancel"></div></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Virtual resources: QSHQVS1 - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[-]</a> <b>Systems Management</b></div>
+<div class="navitem"><a href="servers.html" class="navcur">Servers</a></div>
+<div class="navitem"><a href="partitions.html">Partitions</a></div>
+<div class="navitem"><a href="groups.html">Custom groups</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Servers &gt; QSHQVS1 &gt; Virtual resources &gt; Virtual Optical</div>
+<h1>Virtual resources: QSHQVS1</h1>
+
+
+<div class="tabs"><a href="vr-ethernet.html">Virtual Ethernet</a> | <a href="vr-storage.html">Virtual Storage</a> | <b>Virtual Optical</b> | <a href="vr-tape.html">Virtual Tape</a> | <a href="vr-pools.html">Shared processor pools</a></div><h2>Media library</h2><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Actions</th>
+<th><a href="?sort=n">Image</a></th>
+<th><a href="?sort=s">Size (MB)</a></th>
+<th>Uploaded</th>
+<th>Mounted to</th>
+<th>Virtual drive</th>
+<th>Read-only</th>
+</tr>
+<tr>
+<td class="act"><a href="vr-optical.html">Load</a> | <a href="vr-optical.html">Unload</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">QS400_V1R0M0_INSTALL.iso</td>
+<td class="num">4,120</td>
+<td>10/02/26</td>
+<td><span class="mono">QSTEST01</span></td>
+<td class="mono">OPT01</td>
+<td>Yes</td>
+</tr>
+<tr class="alt">
+<td class="act"><a href="vr-optical.html">Load</a> | <a href="vr-optical.html">Unload</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">QS400_CUM_26290.iso</td>
+<td class="num">412</td>
+<td>10/20/26</td>
+<td></td>
+<td class="mono"></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td class="act"><a href="vr-optical.html">Load</a> | <a href="vr-optical.html">Unload</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">QS400_LICPGM_V1R0M0.iso</td>
+<td class="num">2,840</td>
+<td>10/02/26</td>
+<td></td>
+<td class="mono"></td>
+<td>Yes</td>
+</tr>
+<tr class="alt">
+<td class="act"><a href="vr-optical.html">Load</a> | <a href="vr-optical.html">Unload</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">HLINV_SAVF_20261028.iso</td>
+<td class="num">96</td>
+<td>10/28/26</td>
+<td><span class="mono">QSDEV01</span></td>
+<td class="mono">OPT01</td>
+<td>No</td>
+</tr>
+<tr>
+<td class="act"><a href="vr-optical.html">Load</a> | <a href="vr-optical.html">Unload</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">blank_4700MB.iso</td>
+<td class="num">0</td>
+<td>09/30/26</td>
+<td></td>
+<td class="mono"></td>
+<td>No</td>
+</tr>
+</table><h2>Virtual optical drives</h2><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Partition</th>
+<th>Drive</th>
+<th>Adapter ID</th>
+<th>Loaded image</th>
+</tr>
+<tr>
+<td class="mono">QSPROD01</td>
+<td class="mono">OPT01</td>
+<td class="num">5</td>
+<td class="mono"></td>
+</tr>
+<tr class="alt">
+<td class="mono">QSDEV01</td>
+<td class="mono">OPT01</td>
+<td class="num">5</td>
+<td class="mono">HLINV_SAVF_20261028.iso</td>
+</tr>
+<tr>
+<td class="mono">QSTEST01</td>
+<td class="mono">OPT01</td>
+<td class="num">5</td>
+<td class="mono">QS400_V1R0M0_INSTALL.iso</td>
+</tr>
+</table><form method="post" enctype="multipart/form-data"><h3>Upload image</h3><input type="file" name="iso" size="40"> <input type="checkbox" name="ro" checked> Read-only <input type="submit" value="Upload"> <span class="small grey">or from URL: </span><input type="text" name="url" value="https://update.quartz.systems/images/" size="40"> <input type="submit" value="Fetch"></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

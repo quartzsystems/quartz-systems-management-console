@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Partitions - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[-]</a> <b>Systems Management</b></div>
+<div class="navitem"><a href="servers.html">Servers</a></div>
+<div class="navitem"><a href="partitions.html" class="navcur">Partitions</a></div>
+<div class="navitem"><a href="groups.html">Custom groups</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Partitions</div>
+<h1>Partitions</h1>
+<div class="desc">All partitions across all managed systems. A standalone QS/400 appears as one row with no ID.</div>
+<table class="msg"><tr><td class="error"><a class="msgid" href="../shared/help.html" target="_blank">QMC3110</a> - Activate request for QSTEST01 failed: profile install requires virtual optical OPT01 with an image loaded. Load QS400_V1R0M0_INSTALL.iso and try again.</td></tr></table>
+<form method="post"><table class="filter" cellspacing="0"><tr><td>Managed system:</td><td><select name="ms"><option>All</option><option>QSHQVS1</option><option>QSHQ400</option></select></td><td>Status:</td><td><select name="s"><option>All</option><option>Running</option><option>Not activated</option><option>Shutting down</option><option>Error</option><option>Open firmware</option></select></td><td>Name:</td><td><input type="text" name="n" value="" size="10"></td><td><input type="submit" value="Go"> <input type="submit" name="refresh" value="Refresh"></td></tr></table><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Select</th>
+<th><a href="?sort=name">Name</a></th>
+<th><a href="?sort=id">ID</a></th>
+<th><a href="?sort=status">Status</a></th>
+<th><a href="?sort=ms">Managed system</a></th>
+<th>Environment</th>
+<th><a href="?sort=pu">Proc. units</a></th>
+<th><a href="?sort=mem">Memory (GB)</a></th>
+<th><a href="?sort=prof">Active profile</a></th>
+<th><a href="?sort=rc">Reference code</a></th>
+<th><a href="?sort=os">OS version</a></th>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p1"></td>
+<td class="mono"><a href="partition-general.html">QSDEV01</a></td>
+<td class="num">1</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSHQVS1</td>
+<td class="mono">QS/400</td>
+<td class="num">1.00</td>
+<td class="num">16.0</td>
+<td class="mono">default</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p2"></td>
+<td class="mono"><a href="partition-general.html">QSTEST01</a></td>
+<td class="num">2</td>
+<td><span class="err">Not activated</span></td>
+<td class="mono">QSHQVS1</td>
+<td class="mono">QS/400</td>
+<td class="num">0.00</td>
+<td class="num">0.0</td>
+<td class="mono">install</td>
+<td class="mono"><a class="mono" href="refcode.html">A6005008</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p3"></td>
+<td class="mono"><a href="partition-general.html">QSPROD01</a></td>
+<td class="num">3</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSHQVS1</td>
+<td class="mono">QS/400</td>
+<td class="num">2.00</td>
+<td class="num">64.0</td>
+<td class="mono">prod</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p4"></td>
+<td class="mono"><a href="partition-general.html">QSHQ400</a></td>
+<td class="num">-</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSHQ400</td>
+<td class="mono">QS/400</td>
+<td class="num">8.00</td>
+<td class="num">64.0</td>
+<td class="mono">(standalone)</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+</table><div class="toolbar">Selected: <select name="act"><option>--Select action--</option><option>Properties</option><optgroup label="Operations"><option>Activate</option><option>Shut down</option><option>Restart</option><option>Open terminal window</option><option>Schedule operations</option></optgroup><optgroup label="Configuration"><option>Manage profiles</option><option>Save current configuration</option><option>Delete partition</option></optgroup><optgroup label="Serviceability"><option>Reference code history</option><option>Manage dumps</option><option>Control panel functions</option></optgroup></select> <input type="submit" value="Go"> &nbsp; <input type="submit" value="Create partition..." formaction="create-1.html"></div></form><form method="get" class="paging">Page 1 of 1 &nbsp; <span class="grey">&lt; Previous</span> &nbsp; <span class="grey">Next &gt;</span> &nbsp;&nbsp; Rows per page: <select name="rows"><option>10</option><option selected>25</option><option>50</option><option>100</option></select> <input type="submit" value="Go"> &nbsp; 4 entries</form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

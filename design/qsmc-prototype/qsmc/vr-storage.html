@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Virtual resources: QSHQVS1 - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[-]</a> <b>Systems Management</b></div>
+<div class="navitem"><a href="servers.html" class="navcur">Servers</a></div>
+<div class="navitem"><a href="partitions.html">Partitions</a></div>
+<div class="navitem"><a href="groups.html">Custom groups</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Servers &gt; QSHQVS1 &gt; Virtual resources &gt; Virtual Storage</div>
+<h1>Virtual resources: QSHQVS1</h1>
+
+
+<div class="tabs"><a href="vr-ethernet.html">Virtual Ethernet</a> | <b>Virtual Storage</b> | <a href="vr-optical.html">Virtual Optical</a> | <a href="vr-tape.html">Virtual Tape</a> | <a href="vr-pools.html">Shared processor pools</a></div><h2>Storage pools</h2><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Actions</th>
+<th>Pool</th>
+<th>Backing devices</th>
+<th>Capacity (GB)</th>
+<th>Used (GB)</th>
+<th>% used</th>
+<th></th>
+<th>Type</th>
+</tr>
+<tr>
+<td class="act"><a href="vr-storage.html">Properties</a> | <a href="vr-storage.html">Extend</a></td>
+<td class="mono">POOL1</td>
+<td>C2 RAID-10 (6 x 1.9 TB SSD)</td>
+<td class="num">5,400</td>
+<td class="num">2,870</td>
+<td class="num">53.1</td>
+<td><table class="bar" cellspacing="0" cellpadding="0"><tr><td class="fill" width="53%"></td><td width="47%"></td></tr></table></td>
+<td>Thin provisioned</td>
+</tr>
+<tr class="alt">
+<td class="act"><a href="vr-storage.html">Properties</a> | <a href="vr-storage.html">Extend</a></td>
+<td class="mono">POOL2</td>
+<td>/dev/sdb (archive, 8 TB HDD)</td>
+<td class="num">7,450</td>
+<td class="num">1,200</td>
+<td class="num">16.1</td>
+<td><table class="bar" cellspacing="0" cellpadding="0"><tr><td class="fill" width="16%"></td><td width="84%"></td></tr></table></td>
+<td>Thick</td>
+</tr>
+</table><h2>Virtual disks</h2><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Actions</th>
+<th><a href="?sort=n">Name</a></th>
+<th><a href="?sort=s">Size (GB)</a></th>
+<th><a href="?sort=p">Pool</a></th>
+<th><a href="?sort=a">Assigned partition</a></th>
+<th>Client adapter</th>
+<th>Provisioning</th>
+<th>Status</th>
+</tr>
+<tr>
+<td class="act"><a href="create-vdisk.html">Properties</a> | <a href="create-vdisk.html">Resize</a> | <a href="../shared/confirm.html">Unassign</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">VD01</td>
+<td class="num">400</td>
+<td class="mono">POOL1</td>
+<td class="mono">QSPROD01</td>
+<td class="num">3</td>
+<td>Thick</td>
+<td><span class="ok">Operating</span></td>
+</tr>
+<tr class="alt">
+<td class="act"><a href="create-vdisk.html">Properties</a> | <a href="create-vdisk.html">Resize</a> | <a href="../shared/confirm.html">Unassign</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">VD02</td>
+<td class="num">400</td>
+<td class="mono">POOL1</td>
+<td class="mono">QSPROD01</td>
+<td class="num">3</td>
+<td>Thick</td>
+<td><span class="ok">Operating</span></td>
+</tr>
+<tr>
+<td class="act"><a href="create-vdisk.html">Properties</a> | <a href="create-vdisk.html">Resize</a> | <a href="../shared/confirm.html">Unassign</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">VD03</td>
+<td class="num">120</td>
+<td class="mono">POOL1</td>
+<td class="mono">QSDEV01</td>
+<td class="num">3</td>
+<td>Thin</td>
+<td><span class="ok">Operating</span></td>
+</tr>
+<tr class="alt">
+<td class="act"><a href="create-vdisk.html">Properties</a> | <a href="create-vdisk.html">Resize</a> | <a href="../shared/confirm.html">Unassign</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">VD04</td>
+<td class="num">120</td>
+<td class="mono">POOL1</td>
+<td class="mono">QSTEST01</td>
+<td class="num">3</td>
+<td>Thin</td>
+<td><span class="ok">Operating</span></td>
+</tr>
+<tr>
+<td class="act"><a href="create-vdisk.html">Properties</a> | <a href="create-vdisk.html">Resize</a> | <a href="../shared/confirm.html">Unassign</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">VD05</td>
+<td class="num">2,000</td>
+<td class="mono">POOL2</td>
+<td class="mono">QSPROD01</td>
+<td class="num">4</td>
+<td>Thick</td>
+<td><span class="ok">Operating</span></td>
+</tr>
+<tr class="alt">
+<td class="act"><a href="create-vdisk.html">Properties</a> | <a href="create-vdisk.html">Resize</a> | <a href="../shared/confirm.html">Unassign</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">VD06</td>
+<td class="num">80</td>
+<td class="mono">POOL1</td>
+<td class="mono">(unassigned)</td>
+<td class="num"></td>
+<td>Thin</td>
+<td></td>
+</tr>
+</table><form method="post" action="create-vdisk.html"><div class="buttons"><input type="submit" value="Create virtual disk..."><input type="submit" value="Create storage pool..."></div></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

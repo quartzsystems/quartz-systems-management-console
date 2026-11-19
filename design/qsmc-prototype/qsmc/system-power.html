@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Managed system: QSHQVS1 - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[-]</a> <b>Systems Management</b></div>
+<div class="navitem"><a href="servers.html" class="navcur">Servers</a></div>
+<div class="navitem"><a href="partitions.html">Partitions</a></div>
+<div class="navitem"><a href="groups.html">Custom groups</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Servers &gt; QSHQVS1 &gt; Power-on parameters</div>
+<h1>Managed system: QSHQVS1</h1>
+
+
+<div class="tabs"><a href="system-general.html">General</a> | <a href="system-processors.html">Processors</a> | <a href="system-memory.html">Memory</a> | <a href="system-io.html">I/O</a> | <b>Power-on parameters</b> | <a href="system-capabilities.html">Capabilities</a> | <a href="system-refcode.html">Reference code</a></div><form method="post"><table class="props" cellspacing="0">
+<tr class="subrow"><td colspan="2">Next power on</td></tr>
+<tr><th>IPL side</th><td><input type="radio" name="side" value="A" checked> A (permanent)<br><input type="radio" name="side" value="B"> B (temporary)</td></tr>
+<tr><th>Keylock position</th><td><select name="key"><option>Normal</option><option>Manual</option></select></td></tr>
+<tr><th>Boot mode</th><td><select name="boot"><option>Normal</option><option>Service - partition standby</option><option>Service - firmware only</option></select></td></tr>
+<tr><th>Power on partitions</th><td><input type="radio" name="auto" value="auto" checked> Auto-start partitions flagged for auto start<br><input type="radio" name="auto" value="none"> None - leave all partitions Not activated</td></tr>
+<tr class="subrow"><td colspan="2">Power off</td></tr>
+<tr><th>Default power off</th><td><select name="off"><option>Shut down partitions first (delayed, 300 s)</option><option>Immediate</option></select></td></tr>
+</table>
+<div class="buttons"><input type="submit" name="apply" value="Apply"><input type="submit" name="ok" value="OK"><input type="submit" name="cancel" value="Cancel"></div></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

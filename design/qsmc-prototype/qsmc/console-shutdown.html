@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Shut down or restart console - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[+]</a> <b>Systems Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[-]</a> <b>Console Management</b></div>
+<div class="navitem"><a href="console.html">Console settings</a></div>
+<div class="navitem"><a href="console-users.html">Users and roles</a></div>
+<div class="navitem"><a href="console-network.html">Network settings</a></div>
+<div class="navitem"><a href="console-datetime.html">Date and time</a></div>
+<div class="navitem"><a href="console-backup.html">Backup and restore</a></div>
+<div class="navitem"><a href="console-certs.html">Certificates</a></div>
+<div class="navitem"><a href="console-shutdown.html" class="navcur">Shut down or restart</a></div>
+<div class="navitem"><a href="console-version.html">Console version</a></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Console Management &gt; Shut down or restart console</div>
+<h1>Shut down or restart console</h1>
+
+
+<p>Shutting down the console does not affect managed systems or partitions; they keep running. Terminal windows and scheduled operations stop until the console is back.</p><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Console</th>
+<th>Uptime</th>
+<th>Connected systems</th>
+<th>Open terminal windows</th>
+<th>Scheduled operations in next hour</th>
+</tr>
+<tr>
+<td><span class="mono">QSHQMC1</span></td>
+<td>41 days 3:12</td>
+<td>2</td>
+<td>1 (qsadmin -> QSDEV01)</td>
+<td>0</td>
+</tr>
+</table><p class="small grey"><input type="radio" name="how" value="reboot" checked> Restart (reboot) &nbsp; <input type="radio" name="how" value="off"> Power off &nbsp; Message to signed-on users: <input type="text" name="m" value="Console restart for update 26300, back in 5 minutes" size="50"></p><form method="post"><div class="buttons"><input type="submit" name="ok" value="OK"><input type="submit" name="cancel" value="Cancel"></div></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

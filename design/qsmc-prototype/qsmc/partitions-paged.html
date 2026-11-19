@@ -1,0 +1,379 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Partitions - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[-]</a> <b>Systems Management</b></div>
+<div class="navitem"><a href="servers.html">Servers</a></div>
+<div class="navitem"><a href="partitions.html" class="navcur">Partitions</a></div>
+<div class="navitem"><a href="groups.html">Custom groups</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Partitions</div>
+<h1>Partitions</h1>
+<div class="desc">All partitions across all managed systems. A standalone QS/400 appears as one row with no ID.</div>
+
+<form method="post"><table class="filter" cellspacing="0"><tr><td>Managed system:</td><td><select name="ms"><option>All</option><option>QSHQVS1</option><option>QSHQ400</option></select></td><td>Status:</td><td><select name="s"><option>All</option><option>Running</option><option>Not activated</option><option>Shutting down</option><option>Error</option><option>Open firmware</option></select></td><td>Name:</td><td><input type="text" name="n" value="" size="10"></td><td><input type="submit" value="Go"> <input type="submit" name="refresh" value="Refresh"></td></tr></table><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Select</th>
+<th><a href="?sort=name">Name</a></th>
+<th><a href="?sort=id">ID</a></th>
+<th><a href="?sort=status">Status</a></th>
+<th><a href="?sort=ms">Managed system</a></th>
+<th>Environment</th>
+<th><a href="?sort=pu">Proc. units</a></th>
+<th><a href="?sort=mem">Memory (GB)</a></th>
+<th><a href="?sort=prof">Active profile</a></th>
+<th><a href="?sort=rc">Reference code</a></th>
+<th><a href="?sort=os">OS version</a></th>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p0"></td>
+<td class="mono"><a href="partition-general.html">QSBR01P01</a></td>
+<td class="num">1</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR01VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">2.00</td>
+<td class="num">32.0</td>
+<td class="mono">prod</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p1"></td>
+<td class="mono"><a href="partition-general.html">QSBR01D01</a></td>
+<td class="num">2</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR01VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">1.00</td>
+<td class="num">16.0</td>
+<td class="mono">default</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p2"></td>
+<td class="mono"><a href="partition-general.html">QSBR01T01</a></td>
+<td class="num">3</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR01VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">0.50</td>
+<td class="num">8.0</td>
+<td class="mono">test</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p3"></td>
+<td class="mono"><a href="partition-general.html">QSBR02P01</a></td>
+<td class="num">1</td>
+<td><span class="err">Not activated</span></td>
+<td class="mono">QSBR02VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">0.00</td>
+<td class="num">0.0</td>
+<td class="mono">prod</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p4"></td>
+<td class="mono"><a href="partition-general.html">QSBR02D01</a></td>
+<td class="num">2</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR02VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">1.00</td>
+<td class="num">16.0</td>
+<td class="mono">default</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p5"></td>
+<td class="mono"><a href="partition-general.html">QSBR02T01</a></td>
+<td class="num">3</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR02VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">0.50</td>
+<td class="num">8.0</td>
+<td class="mono">test</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p6"></td>
+<td class="mono"><a href="partition-general.html">QSBR03P01</a></td>
+<td class="num">1</td>
+<td>Shutting down</td>
+<td class="mono">QSBR03VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">2.00</td>
+<td class="num">32.0</td>
+<td class="mono">prod</td>
+<td class="mono"><a class="mono" href="refcode.html">D6000298</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p7"></td>
+<td class="mono"><a href="partition-general.html">QSBR03D01</a></td>
+<td class="num">2</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR03VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">1.00</td>
+<td class="num">16.0</td>
+<td class="mono">default</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p8"></td>
+<td class="mono"><a href="partition-general.html">QSBR03T01</a></td>
+<td class="num">3</td>
+<td><span class="err">Error</span></td>
+<td class="mono">QSBR03VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">0.50</td>
+<td class="num">8.0</td>
+<td class="mono">test</td>
+<td class="mono"><a class="mono" href="refcode.html">B6000100</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p9"></td>
+<td class="mono"><a href="partition-general.html">QSBR04P01</a></td>
+<td class="num">1</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR04VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">2.00</td>
+<td class="num">32.0</td>
+<td class="mono">prod</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p10"></td>
+<td class="mono"><a href="partition-general.html">QSBR04D01</a></td>
+<td class="num">2</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR04VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">1.00</td>
+<td class="num">16.0</td>
+<td class="mono">default</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p11"></td>
+<td class="mono"><a href="partition-general.html">QSBR04T01</a></td>
+<td class="num">3</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR04VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">0.50</td>
+<td class="num">8.0</td>
+<td class="mono">test</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p12"></td>
+<td class="mono"><a href="partition-general.html">QSBR05P01</a></td>
+<td class="num">1</td>
+<td><span class="err">Not activated</span></td>
+<td class="mono">QSBR05VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">0.00</td>
+<td class="num">0.0</td>
+<td class="mono">prod</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p13"></td>
+<td class="mono"><a href="partition-general.html">QSBR05D01</a></td>
+<td class="num">2</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR05VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">1.00</td>
+<td class="num">16.0</td>
+<td class="mono">default</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p14"></td>
+<td class="mono"><a href="partition-general.html">QSBR05T01</a></td>
+<td class="num">3</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR05VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">0.50</td>
+<td class="num">8.0</td>
+<td class="mono">test</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p15"></td>
+<td class="mono"><a href="partition-general.html">QSBR06P01</a></td>
+<td class="num">1</td>
+<td>Shutting down</td>
+<td class="mono">QSBR06VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">2.00</td>
+<td class="num">32.0</td>
+<td class="mono">prod</td>
+<td class="mono"><a class="mono" href="refcode.html">D6000298</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p16"></td>
+<td class="mono"><a href="partition-general.html">QSBR06D01</a></td>
+<td class="num">2</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR06VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">1.00</td>
+<td class="num">16.0</td>
+<td class="mono">default</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p17"></td>
+<td class="mono"><a href="partition-general.html">QSBR06T01</a></td>
+<td class="num">3</td>
+<td><span class="err">Error</span></td>
+<td class="mono">QSBR06VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">0.50</td>
+<td class="num">8.0</td>
+<td class="mono">test</td>
+<td class="mono"><a class="mono" href="refcode.html">B6000100</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p18"></td>
+<td class="mono"><a href="partition-general.html">QSBR07P01</a></td>
+<td class="num">1</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR07VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">2.00</td>
+<td class="num">32.0</td>
+<td class="mono">prod</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p19"></td>
+<td class="mono"><a href="partition-general.html">QSBR07D01</a></td>
+<td class="num">2</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR07VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">1.00</td>
+<td class="num">16.0</td>
+<td class="mono">default</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p20"></td>
+<td class="mono"><a href="partition-general.html">QSBR07T01</a></td>
+<td class="num">3</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR07VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">0.50</td>
+<td class="num">8.0</td>
+<td class="mono">test</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p21"></td>
+<td class="mono"><a href="partition-general.html">QSBR08P01</a></td>
+<td class="num">1</td>
+<td><span class="err">Not activated</span></td>
+<td class="mono">QSBR08VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">0.00</td>
+<td class="num">0.0</td>
+<td class="mono">prod</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p22"></td>
+<td class="mono"><a href="partition-general.html">QSBR08D01</a></td>
+<td class="num">2</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR08VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">1.00</td>
+<td class="num">16.0</td>
+<td class="mono">default</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="p23"></td>
+<td class="mono"><a href="partition-general.html">QSBR08T01</a></td>
+<td class="num">3</td>
+<td><span class="ok">Running</span></td>
+<td class="mono">QSBR08VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">0.50</td>
+<td class="num">8.0</td>
+<td class="mono">test</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="p24"></td>
+<td class="mono"><a href="partition-general.html">QSBR09P01</a></td>
+<td class="num">1</td>
+<td>Shutting down</td>
+<td class="mono">QSBR09VS1</td>
+<td class="mono">QS/400</td>
+<td class="num">2.00</td>
+<td class="num">32.0</td>
+<td class="mono">prod</td>
+<td class="mono"><a class="mono" href="refcode.html">D6000298</a></td>
+<td class="mono">V1R0M0</td>
+</tr>
+</table><div class="toolbar">Selected: <select name="act"><option>--Select action--</option><option>Properties</option><optgroup label="Operations"><option>Activate</option><option>Shut down</option><option>Restart</option><option>Open terminal window</option><option>Schedule operations</option></optgroup><optgroup label="Configuration"><option>Manage profiles</option><option>Save current configuration</option><option>Delete partition</option></optgroup><optgroup label="Serviceability"><option>Reference code history</option><option>Manage dumps</option><option>Control panel functions</option></optgroup></select> <input type="submit" value="Go"> &nbsp; <input type="submit" value="Create partition..." formaction="create-1.html"></div></form><form method="get" class="paging">Page 1 of 3 &nbsp; <span class="grey">&lt; Previous</span> &nbsp; <a href="?page=2">Next &gt;</a> &nbsp;&nbsp; Rows per page: <select name="rows"><option>10</option><option selected>25</option><option>50</option><option>100</option></select> <input type="submit" value="Go"> &nbsp; 61 entries</form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

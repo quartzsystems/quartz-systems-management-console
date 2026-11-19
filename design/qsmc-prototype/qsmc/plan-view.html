@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>System plan: qshqvs1-baseline - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[+]</a> <b>Systems Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; System Plans &gt; qshqvs1-baseline</div>
+<h1>System plan: qshqvs1-baseline</h1>
+
+
+<p class="small">Created 10/02/26 10:12 by qsadmin from QSHQVS1. <a href="plan-deploy-1.html">Deploy</a> &nbsp; <a href="#">Export</a> &nbsp; <a href="#">Print</a></p><h2>Managed system</h2><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Type-Model</th>
+<th>Processors</th>
+<th>Memory (MB)</th>
+<th>Storage pools</th>
+<th>Virtual switches</th>
+</tr>
+<tr>
+<td class="mono">QSHQVS1</td>
+<td>QS/VS host</td>
+<td class="mono">9Q10-V1</td>
+<td>8</td>
+<td>131,072</td>
+<td>POOL1 (5,400 GB), POOL2 (7,450 GB)</td>
+<td>ETHSW0 (VLAN 10,20,30), ETHSW1 (99)</td>
+</tr>
+</table><h2>Partition 1: QSDEV01, profile default</h2><table class="props" style="margin-left:12px"><tr><th>Processors</th><td class="mono">Shared, DefaultPool, 0.25 / 1.00 / 2.00 units, 1 / 2 / 4 virtual, uncapped 128</td></tr><tr><th>Memory (MB)</th><td class="mono">8,192 / 16,384 / 32,768</td></tr><tr><th>Virtual adapters</th><td class="mono">0 Serial; 2 Ethernet ETHSW0 VLAN 20; 3 SCSI VD03 120 GB; 4 Ethernet ETHSW1 VLAN 99; 5 SCSI OPT01; 6 SCSI VTAP01</td></tr><tr><th>Boot</th><td class="mono">A, Normal, auto start Yes</td></tr></table><h2>Partition 2: QSTEST01, profile install</h2><table class="props" style="margin-left:12px"><tr><th>Processors</th><td class="mono">Shared, DefaultPool, 0.25 / 1.50 / 2.00 units, capped</td></tr><tr><th>Memory (MB)</th><td class="mono">4,096 / 8,192 / 16,384</td></tr><tr><th>Virtual adapters</th><td class="mono">0 Serial; 2 Ethernet ETHSW0 VLAN 20; 3 SCSI VD04 120 GB; 5 SCSI OPT01; 6 SCSI VTAP02</td></tr><tr><th>Boot</th><td class="mono">D, Manual, auto start No</td></tr></table><h2>Partition 3: QSPROD01, profile prod</h2><table class="props" style="margin-left:12px"><tr><th>Processors</th><td class="mono">Dedicated, 2 / 2 / 4</td></tr><tr><th>Memory (MB)</th><td class="mono">32,768 / 65,536 / 98,304</td></tr><tr><th>Physical I/O</th><td class="mono">C3 Fibre Channel 8 Gb (QLE2562)</td></tr><tr><th>Virtual adapters</th><td class="mono">0 Serial; 2 Ethernet ETHSW0 VLAN 10; 3 SCSI VD01+VD02 400 GB; 4 SCSI VD05 2,000 GB; 5 SCSI OPT01; 6 TAP01 pass-through; 7 TAPMLB01</td></tr><tr><th>Boot</th><td class="mono">A, Normal, auto start Yes</td></tr></table>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

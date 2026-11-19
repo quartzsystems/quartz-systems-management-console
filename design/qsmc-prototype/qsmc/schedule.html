@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Scheduled operations - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[-]</a> <b>Systems Management</b></div>
+<div class="navitem"><a href="servers.html">Servers</a></div>
+<div class="navitem"><a href="partitions.html" class="navcur">Partitions</a></div>
+<div class="navitem"><a href="groups.html">Custom groups</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Scheduled operations</div>
+<h1>Scheduled operations</h1>
+
+
+<table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Actions</th>
+<th><a href="?sort=d">Date</a></th>
+<th><a href="?sort=t">Time</a></th>
+<th><a href="?sort=o">Operation</a></th>
+<th><a href="?sort=tg">Target</a></th>
+<th>Repeat</th>
+<th>Owner</th>
+<th><a href="?sort=s">Status</a></th>
+</tr>
+<tr>
+<td class="act"><a href="schedule-add.html">Change</a> | <a href="../shared/confirm.html">Remove</a> | <a href="schedule.html">Run now</a></td>
+<td class="mono">10/30/26</td>
+<td class="mono">23:00</td>
+<td>Shut down partition (delayed)</td>
+<td class="mono">QSTEST01 on QSHQVS1</td>
+<td>Daily</td>
+<td>qsadmin</td>
+<td>Scheduled</td>
+</tr>
+<tr class="alt">
+<td class="act"><a href="schedule-add.html">Change</a> | <a href="../shared/confirm.html">Remove</a> | <a href="schedule.html">Run now</a></td>
+<td class="mono">10/31/26</td>
+<td class="mono">06:00</td>
+<td>Activate partition (profile default)</td>
+<td class="mono">QSTEST01 on QSHQVS1</td>
+<td>Daily</td>
+<td>qsadmin</td>
+<td>Scheduled</td>
+</tr>
+<tr>
+<td class="act"><a href="schedule-add.html">Change</a> | <a href="../shared/confirm.html">Remove</a> | <a href="schedule.html">Run now</a></td>
+<td class="mono">11/01/26</td>
+<td class="mono">02:00</td>
+<td>Backup console data to remote host</td>
+<td class="mono">QSHQMC1 -> backup.quartz.example</td>
+<td>Weekly (Sun)</td>
+<td>qsadmin</td>
+<td>Scheduled</td>
+</tr>
+<tr class="alt">
+<td class="act"><a href="schedule-add.html">Change</a> | <a href="../shared/confirm.html">Remove</a> | <a href="schedule.html">Run now</a></td>
+<td class="mono">11/02/26</td>
+<td class="mono">04:00</td>
+<td>Install QS/VS update 26300</td>
+<td class="mono">QSHQVS1</td>
+<td>Once</td>
+<td>operator1</td>
+<td>Scheduled</td>
+</tr>
+<tr>
+<td class="act"><a href="schedule-add.html">Change</a> | <a href="../shared/confirm.html">Remove</a> | <a href="schedule.html">Run now</a></td>
+<td class="mono">10/29/26</td>
+<td class="mono">23:00</td>
+<td>Shut down partition (delayed)</td>
+<td class="mono">QSTEST01 on QSHQVS1</td>
+<td>Daily</td>
+<td>qsadmin</td>
+<td>Completed</td>
+</tr>
+<tr class="alt">
+<td class="act"><a href="schedule-add.html">Change</a> | <a href="../shared/confirm.html">Remove</a> | <a href="schedule.html">Run now</a></td>
+<td class="mono">10/26/26</td>
+<td class="mono">01:00</td>
+<td>Power off managed system</td>
+<td class="mono">QSHQ400</td>
+<td>Once</td>
+<td>operator1</td>
+<td><span class="err">Failed - QMC2210</span></td>
+</tr>
+</table><form method="post" action="schedule-add.html"><div class="buttons"><input type="submit" value="Add..."><input type="submit" value="Refresh"></div></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

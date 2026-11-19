@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Deploy system plan - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[+]</a> <b>Systems Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; System Plans &gt; qshqvs1-baseline &gt; Deploy</div>
+<h1>Deploy system plan</h1>
+<div class="desc">Step 2 of 4.</div>
+
+<form method="post"><table class="wizard" cellspacing="0"><tr><td class="wsteps"><div class="wstep done">1. Target managed system</div><div class="wstep cur">2. Validation</div><div class="wstep ">3. Partitions to create</div><div class="wstep ">4. Deploy</div></td><td class="wbody"><h2>Validation</h2><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Plan item</th>
+<th>Status</th>
+<th>Message</th>
+</tr>
+<tr>
+<td>Managed system QSHQVS2</td>
+<td><span class="ok">OK</span></td>
+<td>Type-Model 9Q10-V1 matches; 8 processors, 131,072 MB available</td>
+</tr>
+<tr class="alt">
+<td>Storage pool POOL1</td>
+<td><span class="ok">OK</span></td>
+<td>Pool exists, 5,400 GB</td>
+</tr>
+<tr>
+<td>Storage pool POOL2</td>
+<td><span class="err">Error</span></td>
+<td>No backing device /dev/sdb on target; VD05 (2,000 GB) cannot be created</td>
+</tr>
+<tr class="alt">
+<td>Virtual switch ETHSW0</td>
+<td><span class="ok">OK</span></td>
+<td>Will be created with VLANs 10, 20, 30 on C1 port 1</td>
+</tr>
+<tr>
+<td>Partition QSPROD01 physical I/O C3</td>
+<td>Warning</td>
+<td>Slot C3 on target is empty; adapter assignment will be skipped</td>
+</tr>
+<tr class="alt">
+<td>Partition QSDEV01</td>
+<td><span class="ok">OK</span></td>
+<td></td>
+</tr>
+<tr>
+<td>Partition QSTEST01</td>
+<td><span class="ok">OK</span></td>
+<td></td>
+</tr>
+<tr class="alt">
+<td>Partition QSPROD01</td>
+<td>Warning</td>
+<td>Depends on POOL2 and C3 (see above)</td>
+</tr>
+</table><p class="small grey">Items in Error are skipped at deployment unless corrected. Items with a Warning are deployed with the noted change.</p><div class="buttons"><input type="submit" name="back" value="&lt; Back"><input type="submit" name="next" value="Next &gt;"><input type="submit" name="cancel" value="Cancel"></div></td></tr></table></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

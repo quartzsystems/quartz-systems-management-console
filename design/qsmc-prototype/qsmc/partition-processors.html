@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Partition: QSDEV01 - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[-]</a> <b>Systems Management</b></div>
+<div class="navitem"><a href="servers.html">Servers</a></div>
+<div class="navitem"><a href="partitions.html" class="navcur">Partitions</a></div>
+<div class="navitem"><a href="groups.html">Custom groups</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Partitions &gt; QSDEV01 &gt; Processors</div>
+<h1>Partition: QSDEV01</h1>
+
+
+<div class="tabs"><a href="partition-general.html">General</a> | <b>Hardware: Processors</b> | <a href="partition-memory.html">Hardware: Memory</a> | <a href="partition-io.html">Hardware: I/O</a> | <a href="partition-vadapters.html">Virtual adapters</a> | <a href="partition-settings.html">Settings</a> | <a href="partition-general.html">Other</a></div><form method="post"><table class="props" cellspacing="0">
+<tr class="subrow"><td colspan="2">Processing mode</td></tr>
+<tr><th>Mode</th><td><input type="radio" name="m" value="shared" checked> Shared <input type="radio" name="m" value="ded"> Dedicated</td></tr>
+<tr><th>Shared processor pool</th><td><select name="pool"><option>DefaultPool (0)</option><option>TESTPOOL (1)</option></select></td></tr>
+<tr class="subrow"><td colspan="2">Processing units</td></tr>
+<tr><th>Minimum</th><td><input type="text" name="min" value="0.25" size="6"></td></tr>
+<tr><th>Desired</th><td><input type="text" name="des" value="1.00" size="6"></td></tr>
+<tr><th>Maximum</th><td><input type="text" name="max" value="2.00" size="6"></td></tr>
+<tr><th>Current</th><td>1.00</td></tr>
+<tr class="subrow"><td colspan="2">Virtual processors</td></tr>
+<tr><th>Minimum</th><td><input type="text" name="vmin" value="1" size="4"></td></tr>
+<tr><th>Desired</th><td><input type="text" name="vdes" value="2" size="4"></td></tr>
+<tr><th>Maximum</th><td><input type="text" name="vmax" value="4" size="4"></td></tr>
+<tr><th>Current</th><td>2</td></tr>
+<tr class="subrow"><td colspan="2">Sharing</td></tr>
+<tr><th>Sharing mode</th><td><select name="sm"><option>Uncapped</option><option>Capped</option></select></td></tr>
+<tr><th>Uncapped weight</th><td><input type="text" name="w" value="128" size="4"> (0-255)</td></tr>
+</table>
+<div class="buttons"><input type="submit" name="apply" value="Apply"><input type="submit" name="ok" value="OK"><input type="submit" name="cancel" value="Cancel"></div></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

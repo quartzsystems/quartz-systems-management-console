@@ -1,0 +1,350 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Servers - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[+]</a> <b>Systems Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Servers</div>
+<h1>Servers</h1>
+<div class="desc">Managed systems known to this console.</div>
+
+<form method="post"><table class="filter" cellspacing="0"><tr><td>Type:</td><td><select name="t"><option>All</option><option>Standalone QS/400</option><option>QS/VS host</option></select></td><td>Status:</td><td><select name="s"><option>All</option><option>Operating</option><option>Power off</option><option>Standby</option><option>Error</option><option>No connection</option></select></td><td><input type="submit" value="Go"> <input type="submit" name="refresh" value="Refresh"></td></tr></table><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Select</th>
+<th><a href="?sort=name">Name</a></th>
+<th><a href="?sort=type">Type</a></th>
+<th><a href="?sort=status">Status</a></th>
+<th><a href="?sort=cpu">Avail. processors</a></th>
+<th><a href="?sort=mem">Avail. memory (GB)</a></th>
+<th><a href="?sort=tm">Type-Model</a></th>
+<th><a href="?sort=sn">Serial</a></th>
+<th><a href="?sort=rc">Reference code</a></th>
+<th><a href="?sort=parts">Partitions</a></th>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s0"></td>
+<td class="mono"><a href="system-general.html">QSBR01VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">1.00</td>
+<td class="num">16.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0000</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">1</a></td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="s1"></td>
+<td class="mono"><a href="system-general.html">QSBR02VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">1.50</td>
+<td class="num">24.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0101</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">2</a></td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s2"></td>
+<td class="mono"><a href="system-general.html">QSBR03VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">2.00</td>
+<td class="num">32.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0202</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">3</a></td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="s3"></td>
+<td class="mono"><a href="system-general.html">QSBR04VS1</a></td>
+<td>QS/VS host</td>
+<td>Standby</td>
+<td class="num">2.50</td>
+<td class="num">16.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0303</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">4</a></td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s4"></td>
+<td class="mono"><a href="system-general.html">QSBR05VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">1.00</td>
+<td class="num">24.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0404</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">1</a></td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="s5"></td>
+<td class="mono"><a href="system-general.html">QSBR06VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="err">No connection</span></td>
+<td class="num">1.50</td>
+<td class="num">32.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0505</td>
+<td class="mono"><a class="mono" href="refcode.html">B6000100</a></td>
+<td class="num"><a href="partitions.html">2</a></td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s6"></td>
+<td class="mono"><a href="system-general.html">QSBR07VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">2.00</td>
+<td class="num">16.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0606</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">3</a></td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="s7"></td>
+<td class="mono"><a href="system-general.html">QSBR08VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">2.50</td>
+<td class="num">24.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0707</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">4</a></td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s8"></td>
+<td class="mono"><a href="system-general.html">QSBR09VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">1.00</td>
+<td class="num">32.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0808</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">1</a></td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="s9"></td>
+<td class="mono"><a href="system-general.html">QSBR10VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">1.50</td>
+<td class="num">16.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0909</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">2</a></td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s10"></td>
+<td class="mono"><a href="system-general.html">QSBR11VS1</a></td>
+<td>QS/VS host</td>
+<td>Standby</td>
+<td class="num">2.00</td>
+<td class="num">24.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0A0A</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">3</a></td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="s11"></td>
+<td class="mono"><a href="system-general.html">QSBR12VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">2.50</td>
+<td class="num">32.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0B0B</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">4</a></td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s12"></td>
+<td class="mono"><a href="system-general.html">QSBR13VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="err">No connection</span></td>
+<td class="num">1.00</td>
+<td class="num">16.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0C0C</td>
+<td class="mono"><a class="mono" href="refcode.html">B6000100</a></td>
+<td class="num"><a href="partitions.html">1</a></td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="s13"></td>
+<td class="mono"><a href="system-general.html">QSBR14VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">1.50</td>
+<td class="num">24.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0D0D</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">2</a></td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s14"></td>
+<td class="mono"><a href="system-general.html">QSBR15VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">2.00</td>
+<td class="num">32.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0E0E</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">3</a></td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="s15"></td>
+<td class="mono"><a href="system-general.html">QSBR16VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">2.50</td>
+<td class="num">16.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F0F0F</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">4</a></td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s16"></td>
+<td class="mono"><a href="system-general.html">QSBR17VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">1.00</td>
+<td class="num">24.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F1010</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">1</a></td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="s17"></td>
+<td class="mono"><a href="system-general.html">QSBR18VS1</a></td>
+<td>QS/VS host</td>
+<td>Standby</td>
+<td class="num">1.50</td>
+<td class="num">32.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F1111</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">2</a></td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s18"></td>
+<td class="mono"><a href="system-general.html">QSBR19VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">2.00</td>
+<td class="num">16.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F1212</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">3</a></td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="s19"></td>
+<td class="mono"><a href="system-general.html">QSBR20VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="err">No connection</span></td>
+<td class="num">2.50</td>
+<td class="num">24.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F1313</td>
+<td class="mono"><a class="mono" href="refcode.html">B6000100</a></td>
+<td class="num"><a href="partitions.html">4</a></td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s20"></td>
+<td class="mono"><a href="system-general.html">QSBR21VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">1.00</td>
+<td class="num">32.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F1414</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">1</a></td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="s21"></td>
+<td class="mono"><a href="system-general.html">QSBR22VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">1.50</td>
+<td class="num">16.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F1515</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">2</a></td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s22"></td>
+<td class="mono"><a href="system-general.html">QSBR23VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">2.00</td>
+<td class="num">24.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F1616</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">3</a></td>
+</tr>
+<tr class="alt">
+<td class="act"><input type="checkbox" name="s23"></td>
+<td class="mono"><a href="system-general.html">QSBR24VS1</a></td>
+<td>QS/VS host</td>
+<td><span class="ok">Operating</span></td>
+<td class="num">2.50</td>
+<td class="num">32.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F1717</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">4</a></td>
+</tr>
+<tr>
+<td class="act"><input type="checkbox" name="s24"></td>
+<td class="mono"><a href="system-general.html">QSBR25VS1</a></td>
+<td>QS/VS host</td>
+<td>Standby</td>
+<td class="num">1.00</td>
+<td class="num">16.0</td>
+<td class="mono">9Q10-V1</td>
+<td class="mono">10-9F1818</td>
+<td class="mono"><a class="mono" href="refcode.html">00000000</a></td>
+<td class="num"><a href="partitions.html">1</a></td>
+</tr>
+</table><div class="toolbar">Selected: <select name="act"><option>--Select action--</option><option>Properties</option><optgroup label="Operations"><option>Power on</option><option>Power off</option><option>Restart</option><option>Schedule operations</option></optgroup><optgroup label="Configuration"><option>Create partition</option><option>Manage partition profiles</option><option>Manage system profiles</option><option>Virtual resources</option></optgroup><optgroup label="Connections"><option>Reset or remove connection</option><option>Add managed system</option></optgroup><optgroup label="Serviceability"><option>Reference code history</option><option>Manage dumps</option></optgroup></select> <input type="submit" value="Go"> &nbsp; <input type="submit" value="Add managed system..." formaction="add-system.html"></div></form><form method="get" class="paging">Page 1 of 3 &nbsp; <span class="grey">&lt; Previous</span> &nbsp; <a href="?page=2">Next &gt;</a> &nbsp;&nbsp; Rows per page: <select name="rows"><option>10</option><option selected>25</option><option>50</option><option>100</option></select> <input type="submit" value="Go"> &nbsp; 27 entries</form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

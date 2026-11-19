@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>System plans - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[+]</a> <b>Systems Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html" class="navcur">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; System Plans</div>
+<h1>System plans</h1>
+<div class="desc">Saved configurations of managed systems and their partitions.</div>
+
+<table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Actions</th>
+<th><a href="?sort=n">Plan</a></th>
+<th>Description</th>
+<th><a href="?sort=c">Created</a></th>
+<th>Managed system</th>
+<th>Partitions</th>
+<th>Size</th>
+</tr>
+<tr>
+<td class="act"><a href="plan-view.html">View</a> | <a href="plan-deploy-1.html">Deploy</a> | <a href="plans.html">Export</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">qshqvs1-baseline</td>
+<td>QSHQVS1 as built, 3 partitions</td>
+<td class="mono">10/02/26 10:12</td>
+<td class="mono">QSHQVS1</td>
+<td class="num">3</td>
+<td>41 KB</td>
+</tr>
+<tr class="alt">
+<td class="act"><a href="plan-view.html">View</a> | <a href="plan-deploy-1.html">Deploy</a> | <a href="plans.html">Export</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">branch-standard</td>
+<td>Standard branch host: one prod, one test</td>
+<td class="mono">09/12/26 15:30</td>
+<td class="mono">(template)</td>
+<td class="num">2</td>
+<td>28 KB</td>
+</tr>
+<tr>
+<td class="act"><a href="plan-view.html">View</a> | <a href="plan-deploy-1.html">Deploy</a> | <a href="plans.html">Export</a> | <a href="../shared/confirm.html">Delete</a></td>
+<td class="mono">qshqvs1-20261030</td>
+<td>Before QS/VS update 26300</td>
+<td class="mono">10/30/26 07:00</td>
+<td class="mono">QSHQVS1</td>
+<td class="num">3</td>
+<td>41 KB</td>
+</tr>
+</table><form method="post" enctype="multipart/form-data"><div class="buttons">Create from: <select name="ms"><option>QSHQVS1</option><option>QSHQ400</option></select> <input type="submit" value="Create plan"> &nbsp; Import: <input type="file" name="f" size="25"> <input type="submit" value="Import"></div></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

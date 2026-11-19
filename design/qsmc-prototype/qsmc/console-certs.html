@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Certificates - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[+]</a> <b>Systems Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[-]</a> <b>Console Management</b></div>
+<div class="navitem"><a href="console.html">Console settings</a></div>
+<div class="navitem"><a href="console-users.html">Users and roles</a></div>
+<div class="navitem"><a href="console-network.html">Network settings</a></div>
+<div class="navitem"><a href="console-datetime.html">Date and time</a></div>
+<div class="navitem"><a href="console-backup.html">Backup and restore</a></div>
+<div class="navitem"><a href="console-certs.html" class="navcur">Certificates</a></div>
+<div class="navitem"><a href="console-shutdown.html">Shut down or restart</a></div>
+<div class="navitem"><a href="console-version.html">Console version</a></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Console Management &gt; Certificates</div>
+<h1>Certificates</h1>
+
+
+<form method="post"><table class="props" cellspacing="0">
+<tr class="subrow"><td colspan="2">Console TLS certificate</td></tr>
+<tr><th>Subject</th><td><span class="mono">CN=qshqmc1.quartz.example, O=Quartz Systems, C=US</span></td></tr>
+<tr><th>Issuer</th><td><span class="mono">Quartz Internal CA</span></td></tr>
+<tr><th>Valid</th><td>03/14/26 to 03/14/27</td></tr>
+<tr><th>Fingerprint (SHA-256)</th><td><span class="mono">7A:11:C0:3F:...:B2:90</span></td></tr>
+<tr><th>Key</th><td>RSA 2048</td></tr>
+<tr><th>Status</th><td><span class="ok">Active</span> (expires in 135 days)</td></tr>
+</table>
+<div class="buttons"><input type="submit" name="view" value="View"><input type="submit" name="generate_self-signed..." value="Generate self-signed..."><input type="submit" name="import..." value="Import..."><input type="submit" name="download_ca_certificate" value="Download CA certificate"></div></form><h2>Trusted certificate authorities (for managed systems and the update server)</h2><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Actions</th>
+<th>Label</th>
+<th>Subject</th>
+<th>Expires</th>
+</tr>
+<tr>
+<td class="act"><a href="console-certs.html">View</a> | <a href="../shared/confirm.html">Remove</a></td>
+<td>Quartz Internal CA</td>
+<td class="mono">CN=Quartz Internal Certificate Authority, O=Quartz Systems, C=US</td>
+<td>01/01/36</td>
+</tr>
+<tr class="alt">
+<td class="act"><a href="console-certs.html">View</a> | <a href="../shared/confirm.html">Remove</a></td>
+<td>Quartz Update Server CA</td>
+<td class="mono">CN=Quartz Update Services CA, O=Quartz Systems, C=US</td>
+<td>01/01/34</td>
+</tr>
+</table><form method="post" enctype="multipart/form-data"><h3>Import certificate</h3><input type="file" name="f" size="40"> PKCS#12 password: <input type="password" name="pw" size="16"> <input type="submit" value="Import"></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Add scheduled operation - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[-]</a> <b>Systems Management</b></div>
+<div class="navitem"><a href="servers.html">Servers</a></div>
+<div class="navitem"><a href="partitions.html" class="navcur">Partitions</a></div>
+<div class="navitem"><a href="groups.html">Custom groups</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Scheduled operations &gt; Add</div>
+<h1>Add scheduled operation</h1>
+
+
+<form method="post"><table class="props" cellspacing="0">
+<tr class="subrow"><td colspan="2">When</td></tr>
+<tr><th>Date</th><td><input type="text" name="d" value="10/31/26" size="8"></td></tr>
+<tr><th>Time</th><td><input type="text" name="t" value="06:00" size="5"> (console time zone, Eastern)</td></tr>
+<tr><th>Repeat</th><td><input type="radio" name="r" value="once"> Once<br><input type="radio" name="r" value="daily" checked> Daily<br><input type="radio" name="r" value="weekly"> Weekly on: <input type="checkbox" name="wSun"> Sun <input type="checkbox" name="wMon"> Mon <input type="checkbox" name="wTue"> Tue <input type="checkbox" name="wWed"> Wed <input type="checkbox" name="wThu"> Thu <input type="checkbox" name="wFri"> Fri <input type="checkbox" name="wSat"> Sat<br><input type="radio" name="r" value="monthly"> Monthly on day <input type="text" name="md" value="1" size="3"></td></tr>
+<tr><th>Until</th><td><input type="text" name="u" value="" size="8"> <span class="small grey">blank: no end</span></td></tr>
+<tr class="subrow"><td colspan="2">What</td></tr>
+<tr><th>Operation</th><td><select name="op"><option>Activate partition</option><option>Shut down partition (delayed)</option><option>Shut down partition (immediate)</option><option>Restart partition</option><option>Power on managed system</option><option>Power off managed system</option><option>Backup console data</option><option>Install code update</option></select></td></tr>
+<tr><th>Target</th><td><select name="tg"><option>QSTEST01 on QSHQVS1</option><option>QSDEV01 on QSHQVS1</option><option>QSPROD01 on QSHQVS1</option><option>QSHQVS1</option><option>QSHQ400</option></select></td></tr>
+<tr><th>Profile (activate)</th><td><select name="p"><option>default</option><option>install</option></select></td></tr>
+<tr><th>Delay (shut down)</th><td><input type="text" name="delay" value="300" size="5"> seconds</td></tr>
+</table>
+<div class="buttons"><input type="submit" name="ok" value="OK"><input type="submit" name="cancel" value="Cancel"></div></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

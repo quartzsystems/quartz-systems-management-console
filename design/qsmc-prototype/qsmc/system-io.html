@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Managed system: QSHQVS1 - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[-]</a> <b>Systems Management</b></div>
+<div class="navitem"><a href="servers.html" class="navcur">Servers</a></div>
+<div class="navitem"><a href="partitions.html">Partitions</a></div>
+<div class="navitem"><a href="groups.html">Custom groups</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Servers &gt; QSHQVS1 &gt; I/O</div>
+<h1>Managed system: QSHQVS1</h1>
+
+
+<div class="tabs"><a href="system-general.html">General</a> | <a href="system-processors.html">Processors</a> | <a href="system-memory.html">Memory</a> | <b>I/O</b> | <a href="system-power.html">Power-on parameters</a> | <a href="system-capabilities.html">Capabilities</a> | <a href="system-refcode.html">Reference code</a></div><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Location code</th>
+<th>Slot</th>
+<th>Description</th>
+<th>Owning partition</th>
+<th>Bus</th>
+</tr>
+<tr>
+<td class="mono">U9Q10.V1.9F11A2-P1-C1</td>
+<td class="mono">C1</td>
+<td>10 GbE SFP+ 2-port adapter</td>
+<td>QS/VS host (shared through virtual Ethernet)</td>
+<td>PCIe3 x8</td>
+</tr>
+<tr class="alt">
+<td class="mono">U9Q10.V1.9F11A2-P1-C2</td>
+<td class="mono">C2</td>
+<td>SAS RAID controller (6 x 1.9 TB SSD)</td>
+<td>QS/VS host (storage pool POOL1)</td>
+<td>PCIe3 x8</td>
+</tr>
+<tr>
+<td class="mono">U9Q10.V1.9F11A2-P1-C3</td>
+<td class="mono">C3</td>
+<td>Fibre Channel 8 Gb 2-port (QLE2562)</td>
+<td>QSPROD01 (physical assignment)</td>
+<td>PCIe2 x8</td>
+</tr>
+<tr class="alt">
+<td class="mono">U9Q10.V1.9F11A2-P1-C4</td>
+<td class="mono">C4</td>
+<td>1 GbE 4-port adapter</td>
+<td>QS/VS host (management)</td>
+<td>PCIe2 x4</td>
+</tr>
+<tr>
+<td class="mono">U9Q10.V1.9F11A2-P1-C5</td>
+<td class="mono">C5</td>
+<td>Empty</td>
+<td></td>
+<td>PCIe3 x16</td>
+</tr>
+<tr class="alt">
+<td class="mono">U9Q10.V1.9F11A2-P1-T1</td>
+<td class="mono">T1</td>
+<td>USB 3.0 controller</td>
+<td>QS/VS host</td>
+<td>Planar</td>
+</tr>
+</table><p class="small grey">Physical adapters are assigned to a partition from the partition's Hardware &gt; I/O page. The host keeps adapters that back virtual resources.</p>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

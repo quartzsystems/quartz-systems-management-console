@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Control panel functions: QSTEST01 - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[-]</a> <b>Systems Management</b></div>
+<div class="navitem"><a href="servers.html">Servers</a></div>
+<div class="navitem"><a href="partitions.html" class="navcur">Partitions</a></div>
+<div class="navitem"><a href="groups.html">Custom groups</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Partitions &gt; QSTEST01 &gt; Control panel functions</div>
+<h1>Control panel functions: QSTEST01</h1>
+
+
+<form method="post"><table class="list" style="width:auto; margin-bottom:4px"><tr><th>Reference code</th><th>Meaning</th><th>Control panel functions</th></tr><tr><td class="mono" style="font-size:12pt; width:110px"><a class="mono" href="refcode.html">A6005008</a></td><td>Waiting for console device; no console session is connected.</td><td class="act"><input type="submit" name="f" value="03 IPL"> <input type="submit" name="f" value="08 Power off"> <input type="submit" name="f" value="21 Force DST"> <input type="submit" name="f" value="22 Dump"> <input type="submit" name="f" value="34 Retry"> &nbsp; Function: <input type="text" name="fn" value="" size="3"> <input type="submit" value="Select"></td></tr></table><table class="msg"><tr><td class="done"><a class="msgid" href="../shared/help.html" target="_blank">QMC5003</a> - Function 21 selected for partition QSTEST01; the managed system accepted the request.</td></tr></table><table class="props"><tr><th>Partition</th><td><span class="mono">QSTEST01</span> (ID 2) on <span class="mono">QSHQVS1</span>, <span class="err">Not activated</span> &nbsp; Keylock: Manual</td></tr><tr><th>Function</th><td><select name="func" size="12"><option>01 - Display selected IPL type, side and keylock</option><option>02 - Select IPL type, side and keylock</option><option>03 - Start IPL (restart partition)</option><option>04 - Lamp test</option><option>05 - Display reference code (SRC) words 1-9</option><option>07 - Display SPCN status</option><option>08 - Fast power off</option><option>11 - Display SRC word 1</option><option>12 - Display SRC words 2-5</option><option>13 - Display SRC words 6-9</option><option>20 - Display system type, model, feature and serial</option><option selected>21 - Force dedicated service tools (DST) on the console</option><option>22 - Force main storage dump</option><option>25 - Service switch 1 (enable 50-70)</option><option>26 - Service switch 2</option><option>33 - Reorder SPCN addressing</option><option>34 - Retry main storage dump IPL</option><option>50 - Service processor stop</option><option>51 - Service processor status</option><option>52 - Service processor start</option><option>53 - Path switch</option><option>55 - Display service processor log</option><option>63 - Display system status SRC trace</option><option>64 - Display service processor diagnostic SRC trace</option><option>65 - Deactivate remote service</option><option>66 - Activate remote service</option><option>67 - Disk unit IOP reset</option><option>68 - Concurrent maintenance power domain power off</option><option>69 - Concurrent maintenance power domain power on</option><option>70 - Dump service processor control storage</option></select></td></tr><tr><th>Result</th><td><pre class="out">Function 21 - Force DST
+Reference code before: A6005008  Words 2-9: 00000002 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+Reference code after:  A6005008  (DST will be presented when a console connects)</pre></td></tr></table><div class="buttons"><input type="submit" name="select" value="Select"><input type="submit" name="refresh" value="Refresh"></div></form><p class="small grey">Functions 50-70 require service switch 25 then 26 first. Functions 08 and 22 go through the confirmation page.</p>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

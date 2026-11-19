@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Serviceable event 1042 - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[+]</a> <b>Systems Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[-]</a> <b>Service Management</b></div>
+<div class="navitem"><a href="events.html" class="navcur">Serviceable events</a></div>
+<div class="navitem"><a href="refcode-history.html">Reference code history</a></div>
+<div class="navitem"><a href="dumps.html">Manage dumps</a></div>
+<div class="navitem"><a href="code-updates.html">Code updates</a></div>
+<div class="navitem"><a href="connectivity.html">Connectivity</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Service Management &gt; Serviceable events &gt; 1042</div>
+<h1>Serviceable event 1042</h1>
+
+
+<table class="props" cellspacing="0">
+<tr class="subrow"><td colspan="2">Problem</td></tr>
+<tr><th>Problem number</th><td>1042</td></tr>
+<tr><th>Status</th><td><span class="err">Open</span></td></tr>
+<tr><th>Reported</th><td>10/29/26 22:14:05</td></tr>
+<tr><th>Managed system</th><td><a href="system-general.html">QSHQVS1</a></td></tr>
+<tr><th>Partition</th><td><a href="partition-general.html">QSTEST01</a> (ID 2)</td></tr>
+<tr><th>Reference code</th><td><a class="mono" href="refcode.html">B6000100</a> &nbsp; words 2-9: <span class="mono">00000002 4B4F4E53 00000000 00000000 00000000 00000000 00000000 00000000</span></td></tr>
+<tr><th>Severity</th><td>Error - partition cannot IPL</td></tr>
+</table><h2>Problem description</h2><p>The QS/VS host reported an unrecoverable read error on the file backing virtual disk VD04 while partition QSTEST01 was loading the operating system from it. The partition stopped with B6000100 and was placed in Not activated state.</p><h2>Reference code B6000100</h2><p>Load source disk unit read failure during IPL. <b>Cause:</b> the load source (first SCSI client disk) returned a media error. <b>Recovery:</b> correct the backing storage, then re-IPL from source A; if the error repeats, re-install from source D or restore from tape. <a href="refcode.html">Full explanation</a></p><h2>Field replaceable units</h2><table class="list" width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<th>Priority</th>
+<th>FRU</th>
+<th>Location</th>
+<th>Part / identifier</th>
+<th>Action</th>
+</tr>
+<tr>
+<td>High</td>
+<td>Virtual disk VD04 - storage pool POOL1</td>
+<td>QSHQVS1 POOL1 /pool1/VD04.img</td>
+<td>VD04 (120 GB thin)</td>
+<td>Check pool; run storage verification</td>
+</tr>
+<tr class="alt">
+<td>Medium</td>
+<td>SAS RAID controller (POOL1 backing)</td>
+<td>U9Q10.V1.9F11A2-P1-C2</td>
+<td>FC 57B8</td>
+<td>Check controller log; disk 4 reported 12 media errors</td>
+</tr>
+</table><h2>Analysis log</h2><pre class="out">10/29/26 22:14:05  B6000100  QSTEST01  IPL stopped at load source read, LBA 0x0001A3F0
+10/29/26 22:14:05  host      POOL1     read error /pool1/VD04.img offset 0x34FE0000: I/O error
+10/29/26 22:14:06  host      C2        sd 2:0:3:0 [sdd] Unrecovered read error, media error count 12
+10/29/26 22:14:07  analysis  -         FRU candidates: VD04 (virtual), C2 disk 4 (physical)
+10/29/26 22:14:07  action    -         Serviceable event 1042 opened; partition left Not activated</pre><form method="post"><div class="buttons"><input type="submit" name="repair" value="Repair..."><input type="submit" name="close_event" value="Close event"><input type="submit" name="add_note" value="Add note"><input type="submit" name="export" value="Export"></div></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>

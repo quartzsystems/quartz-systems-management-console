@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Open terminal window - QS/MC Management Console</title>
+<link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
+</head>
+<body>
+<table class="frame" cellspacing="0" cellpadding="0">
+<tr><td class="hdr" colspan="2">
+  <table width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td class="wordmark">QS/MC Management Console</td>
+    <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
+      <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
+  </tr></table>
+</td></tr>
+<tr>
+<td class="nav" valign="top">
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="welcome.html">Welcome</a></div>
+<div class="navgrp"><a class="glyph" href="servers.html">[-]</a> <b>Systems Management</b></div>
+<div class="navitem"><a href="servers.html">Servers</a></div>
+<div class="navitem"><a href="partitions.html" class="navcur">Partitions</a></div>
+<div class="navitem"><a href="groups.html">Custom groups</a></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="plans.html">System Plans</a></div>
+<div class="navgrp"><a class="glyph" href="console.html">[+]</a> <b>Console Management</b></div>
+<div class="navgrp"><a class="glyph" href="events.html">[+]</a> <b>Service Management</b></div>
+<div class="navgrp"><span class="glyph">&nbsp;&nbsp;&nbsp;</span> <a href="updates.html">Updates</a></div>
+</td>
+<td class="content" valign="top">
+<div class="crumb">QS/MC &gt; Systems Management &gt; Partitions &gt; Open terminal window</div>
+<h1>Open terminal window</h1>
+<div class="desc">The console of a partition, through the QS/VS host's virtual serial adapter. This is the same 5250 page as Access for Web with a control panel strip added.</div>
+
+<form method="post" action="terminal.html"><form method="post"><table class="props" cellspacing="0">
+<tr><th>Partition</th><td><select name="p"><option>QSTEST01 (ID 2) on QSHQVS1 - A6005008 waiting for console</option><option>QSDEV01 (ID 1) on QSHQVS1</option><option>QSPROD01 (ID 3) on QSHQVS1</option><option>QSHQ400 (standalone)</option></select></td></tr>
+<tr><th>Screen size</th><td><input type="radio" name="sz" value="24"> 24 x 80 &nbsp; <input type="radio" name="sz" value="27" checked> 27 x 132</td></tr>
+<tr><th>Code page</th><td><select name="cp"><option>37 - US English</option><option>285 - UK English</option><option>500 - International</option></select></td></tr>
+<tr><th>Colours</th><td><input type="radio" name="c" value="g" checked> Green on black &nbsp; <input type="radio" name="c" value="w"> Black on white</td></tr>
+<tr><th>Control panel strip</th><td><input type="checkbox" name="cp" checked> Show above the screen</td></tr>
+<tr><th>Take over</th><td><input type="checkbox" name="force"> Take the console from another QS/MC session if one is connected</td></tr>
+</table></form><div class="buttons"><input type="submit" value="Open"><input type="submit" value="Cancel"></div></form>
+</td>
+</tr>
+<tr><td class="footer" colspan="2">QS/MC V1R0M0 &middot; Quartz Systems</td></tr>
+</table>
+</body>
+</html>
