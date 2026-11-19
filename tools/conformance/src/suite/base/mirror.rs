@@ -134,8 +134,21 @@ pub fn mirror(run: &Run<'_>) -> Result<String, String> {
     let mut guest = run.boot(&machine(run, &pair)?)?;
     let deadline = run.deadline();
     base_ready(&mut guest, deadline)?;
-    guest.expect(&posted(&refcode::RESYNC_STARTED, "unit 2, "), deadline)?;
-    let detail = guest.rest_of_line(deadline)?;
+    // The storage service starts first: the resynchronization may be
+    // posted before "Base ready", so it is looked for in the whole log.
+    let started = posted(&refcode::RESYNC_STARTED, "unit 2, ");
+    guest.wait_for(&format!("`{started}`"), deadline, |log| {
+        log.split_inclusive('\n')
+            .any(|l| l.starts_with(started.as_str()) && l.ends_with('\n'))
+    })?;
+    let session: &crate::qemu::session::Session = &guest;
+    let detail = session
+        .log()
+        .lines()
+        .find_map(|l| l.strip_prefix(started.as_str()))
+        .unwrap_or_default()
+        .trim_end()
+        .to_string();
     let (done, all) = in_step(&format!("unit 2, {detail}"))
         .ok_or_else(|| format!("`{detail}` does not say how much is in step"))?;
     if done == 0 || done >= all {
