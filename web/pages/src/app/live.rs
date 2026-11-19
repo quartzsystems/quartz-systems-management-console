@@ -60,6 +60,16 @@ impl super::Console for Live {
             .map_err(|e| e.to_string())?
     }
 
+    fn apply_network_confirmed(&self, network: &str, seconds: u32) -> Result<(), String> {
+        net()
+            .apply_confirmed(network.to_string(), seconds)
+            .map_err(|e| e.to_string())?
+    }
+
+    fn confirm_network(&self) -> Result<(), String> {
+        net().confirm().map_err(|e| e.to_string())?
+    }
+
     fn set_host(&self, name: &str, zone: &str, ntp: &[String]) -> Result<(), String> {
         pid1()
             .set_host(name.into(), zone.into(), ntp.to_vec())

@@ -16,7 +16,7 @@ use webpages::App;
 use webpages::app::Console;
 use webusers::Role;
 
-struct Fixed(Arc<AtomicU64>);
+struct Fixed(Arc<AtomicU64>, Arc<AtomicU64>);
 
 impl Console for Fixed {
     fn name(&self) -> String {
@@ -28,6 +28,13 @@ impl Console for Fixed {
     fn now(&self) -> u64 {
         self.0.load(Ordering::Relaxed)
     }
+    fn apply_network_confirmed(&self, _n: &str, _s: u32) -> Result<(), String> {
+        Ok(())
+    }
+    fn confirm_network(&self) -> Result<(), String> {
+        self.1.fetch_add(1, Ordering::Relaxed);
+        Ok(())
+    }
     fn fact(&self, key: &str) -> String {
         match key {
             "management" => "192.0.2.10/24 on eth0, gateway 192.0.2.1".into(),
@@ -38,6 +45,11 @@ impl Console for Fixed {
 
 const PASSWORD: &str = "Install-pass-7";
 
+thread_local! {
+    /// The confirmations of this thread's test console.
+    static CONFIRMS: Arc<AtomicU64> = Arc::new(AtomicU64::new(0));
+}
+
 fn app(name: &str) -> (App, Arc<AtomicU64>, PathBuf) {
     let dir = std::env::temp_dir().join(format!("webpages-{name}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
@@ -46,7 +58,12 @@ fn app(name: &str) -> (App, Arc<AtomicU64>, PathBuf) {
     let hash = users::hash(PASSWORD).unwrap();
     std::fs::write(&db, users::first("QSADMIN", &hash, 1).unwrap()).unwrap();
     let clock = Arc::new(AtomicU64::new(1_790_000_000));
-    let app = App::open(&dir, &db, Box::new(Fixed(clock.clone()))).unwrap();
+    let app = App::open(
+        &dir,
+        &db,
+        Box::new(Fixed(clock.clone(), CONFIRMS.with(Clone::clone))),
+    )
+    .unwrap();
     (app, clock, dir)
 }
 
@@ -61,11 +78,15 @@ struct Browser<'a> {
     app: &'a App,
     cookie: Option<String>,
     ip: &'static str,
+    host: Option<&'static str>,
 }
 
 impl Browser<'_> {
     fn send(&mut self, method: &str, path: &str, form: &[(&str, &str)]) -> Response {
         let mut r = Request::new(method, path);
+        if let Some(h) = self.host {
+            r.headers.push(("host".into(), h.into()));
+        }
         if let Some(c) = &self.cookie {
             r.headers.push(("cookie".into(), format!("QSMCSID={c}")));
         }
@@ -133,6 +154,7 @@ fn the_first_administrator_signs_on_with_the_installation_s_password() {
         app: &app,
         cookie: None,
         ip: "192.0.2.10",
+        host: None,
     };
     assert_eq!(b.send("GET", "/qsmc/welcome", &[]).status, 303);
     let r = b.sign_on("qsadmin", PASSWORD);
@@ -173,6 +195,7 @@ fn a_form_without_its_token_is_refused() {
         app: &app,
         cookie: None,
         ip: "192.0.2.11",
+        host: None,
     };
     b.sign_on("qsadmin", PASSWORD);
     let r = b.send("POST", "/qsmc/welcome", &[("csrf", "forged")]);
@@ -192,6 +215,7 @@ fn a_role_without_the_task_is_not_authorized_and_a_disabled_user_s_session_ends(
         app: &app,
         cookie: None,
         ip: "192.0.2.12",
+        host: None,
     };
     assert_eq!(v.sign_on("viewer", "Look-only-42").status, 303);
     assert_eq!(v.send("GET", "/qsmc/welcome", &[]).status, 200);
@@ -218,6 +242,7 @@ fn five_wrong_passwords_lock_the_id_and_a_session_has_a_length() {
         app: &app,
         cookie: None,
         ip: "192.0.2.13",
+        host: None,
     };
     for _ in 0..4 {
         assert!(b.sign_on("qsadmin", "wrong").text().contains("QMC9001"));
@@ -249,6 +274,7 @@ fn console_settings_shows_the_console_s_own_values() {
         app: &app,
         cookie: None,
         ip: "192.0.2.14",
+        host: None,
     };
     b.sign_on("qsadmin", PASSWORD);
     let t = b.send("GET", "/qsmc/console", &[]).text();
@@ -270,6 +296,7 @@ fn users_are_made_changed_and_deleted_and_the_last_administrator_stays() {
         app: &app,
         cookie: None,
         ip: "192.0.2.15",
+        host: None,
     };
     b.sign_on("qsadmin", PASSWORD);
     let token = b.csrf("/qsmc/console/users?create");
@@ -320,6 +347,7 @@ fn users_are_made_changed_and_deleted_and_the_last_administrator_stays() {
         app: &app,
         cookie: None,
         ip: "192.0.2.16",
+        host: None,
     };
     assert_eq!(o.sign_on("operator1", "Desk-shift-42").status, 303);
     assert_eq!(o.send("GET", "/qsmc/console/users", &[]).status, 403);
@@ -372,6 +400,7 @@ fn network_settings_refuse_what_waits_and_keep_the_allow_list() {
         app: &app,
         cookie: None,
         ip: "192.0.2.17",
+        host: None,
     };
     b.sign_on("qsadmin", PASSWORD);
     let page = b.send("GET", "/qsmc/console/network", &[]);
@@ -398,12 +427,35 @@ fn network_settings_refuse_what_waits_and_keep_the_allow_list() {
         "{t}"
     );
     assert!(t.contains("A DHCP server on the private network is not in this release."));
+    // A change of the open address is said first, then put on trial.
+    let own = [("ip", "192.0.2.99"), ("mask", "255.255.255.0")];
+    let r = b.send("POST", "/qsmc/console/network", &with(&own));
+    assert!(r.text().contains("Confirm Network Change"), "{}", r.text());
     let r = b.send(
         "POST",
         "/qsmc/console/network",
-        &with(&[("ip", "192.0.2.99"), ("mask", "255.255.255.0")]),
+        &with(&[own[0], own[1], ("confirmed", "yes")]),
     );
-    assert!(r.text().contains("QMC8104"));
+    let t = r.text();
+    assert!(t.contains("QMC8100") && t.contains("120 seconds"), "{t}");
+    // Reached at another address nothing is kept; at the new one it is.
+    let mut there = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.18",
+        host: Some("192.0.2.98"),
+    };
+    there.sign_on("qsadmin", PASSWORD);
+    assert_eq!(CONFIRMS.with(|c| c.load(Ordering::Relaxed)), 0);
+    there.host = Some("192.0.2.99");
+    there.sign_on("qsadmin", PASSWORD);
+    assert_eq!(CONFIRMS.with(|c| c.load(Ordering::Relaxed)), 1);
+    assert!(
+        there
+            .send("GET", "/qsmc/welcome", &[])
+            .text()
+            .contains("QMC8101")
+    );
     let r = b.send(
         "POST",
         "/qsmc/console/network",

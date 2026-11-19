@@ -90,7 +90,7 @@ A sentence on each:
   `abrec`, `ipc`, `protect` and the rest to the same source as QS/MC's,
   and the graph holds one copy of every shared crate.
 - Both commits are recorded in the record of the phase that last moved
-  them (`docs/PHASE3.md`: QS/VS `2fe7583`, QS/400 `155aba2`; the first
+  them (`docs/PHASE3.md`: QS/VS `3de567e`, QS/400 `155aba2`; the first
   were `docs/PHASE0.md`'s). Moving either is its own commit, and they
   move together: a new QS/VS commit brings the QS/400 commit it pins,
   and QS/400 is never moved alone.

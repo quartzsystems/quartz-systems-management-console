@@ -26,6 +26,7 @@ product outside QS/400") requires; the prototype's own copy is older
 | Commit | What |
 | --- | --- |
 | `6498c90` Move the QS/VS pin to 2fe7583 and QS/400 to 155aba2 | QS/VS from `f0ef0f15c216c4ac6203f05e141c92926aee5705` to `2fe7583b8fc0eaeab92db7f31f34d152094f2727` ("Find the fixture's base crates by the repository's URL"); QS/400 from `423c65dea0b8c9fab3d2c3efaba6e9f27e679c99` to `155aba213638b178cb730cff4a4113ef1d8fb525` (its `main` with handoff 22), which that commit pins. `Cargo.lock` started again from QS/VS's at its pin |
+| `49b2fdf` Move the QS/VS pin to 3de567e | QS/VS to `3de567ea27d350ebe8897530cfd03da84c005440` ("Record the confirmed network change for QS/MC"), with `base/netd`'s `apply_confirmed` (`ff181be`, item 24); QS/400 stays at `155aba2`, which it pins |
 
 What the new pins changed, and what it means here:
 
@@ -83,9 +84,6 @@ windows open (`docs/OPEN_QUESTIONS.md`, item 19).
   the components page under `/dev/`.
 - Section 4: the local console's option 4.
 - Section 5: the suites that reach the web interface from outside.
-- `BLOCKED(phase3)`: a change to the `open` interface's address from
-  the web interface waits for `base/netd` to keep a change only when it
-  is confirmed (`docs/OPEN_QUESTIONS.md`, item 24).
 - The documents `docs/WEBUSERS.md`, `docs/BACKUP.md` and
   `docs/MESSAGES.md`; `docs/WEB.md` has the server, the listeners and
   the golden corrections.

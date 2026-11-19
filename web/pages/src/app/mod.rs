@@ -45,6 +45,17 @@ pub trait Console: Send + Sync {
         Err("There is no network service.".into())
     }
 
+    /// Put `network` on trial, kept only when [`Console::confirm_network`]
+    /// is called within `seconds`.
+    fn apply_network_confirmed(&self, _network: &str, _seconds: u32) -> Result<(), String> {
+        Err("There is no network service.".into())
+    }
+
+    /// Keep the change on trial.
+    fn confirm_network(&self) -> Result<(), String> {
+        Err("There is no network service.".into())
+    }
+
     /// Set the host name, display zone and time servers through PID 1.
     fn set_host(&self, _name: &str, _zone: &str, _ntp: &[String]) -> Result<(), String> {
         Err("PID 1 did not answer.".into())
@@ -71,6 +82,9 @@ pub struct App {
     settings: Mutex<WebSettings>,
     /// The console.
     pub console: Box<dyn Console>,
+    /// A change of the `open` address on trial: the address it is
+    /// kept at (empty: any, with DHCP) and until when.
+    pub pending: Mutex<Option<(String, u64)>>,
     /// The web certificate, once the server has started.
     pub certs: std::sync::OnceLock<std::sync::Arc<webd::tls::Certs>>,
 }
@@ -130,6 +144,7 @@ impl App {
             settings: Mutex::new(settings),
             console,
             certs: std::sync::OnceLock::new(),
+            pending: Mutex::new(None),
         })
     }
 

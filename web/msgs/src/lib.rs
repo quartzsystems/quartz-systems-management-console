@@ -100,9 +100,9 @@ catalogue! {
         "Correct the value and send the form again.";
 
     // Network settings.
-    NETWORK_TRYING = "QMC8100", 10, "Network change on trial: it is taken back in &1 seconds unless you reach the console again.",
+    NETWORK_TRYING = "QMC8100", 10, "Network change on trial: it is taken back in &1 seconds unless it is kept.",
         "The change was applied on trial.",
-        "Open the console at its new address within the time given to keep the change.";
+        "A change of the address the browser came in on is kept when you sign on at the new address within the time; any other change when its interfaces work.";
     NETWORK_KEPT = "QMC8101", 0, "Network change kept.",
         "The console was reached within the trial, and the change was written.", "None.";
     NETWORK_RESTORED = "QMC8102", 20, "Network change taken back: &1",
@@ -110,9 +110,6 @@ catalogue! {
         "Check the values and apply them again.";
     NETWORK_SAVED = "QMC8103", 0, "Network settings changed.",
         "The change does not touch the address the browser came in on, and was applied.", "None.";
-    NETWORK_OWN_ADDRESS = "QMC8104", 30, "The open interface's address, mask and gateway cannot be changed from the web interface in this release.",
-        "A change to the address the browser came in on is kept only if the console is reached again; the network service does not wait for that yet.",
-        "Change them at the local console (option 3), which is reached whatever the address.";
 
     // Date and time.
     TIME_SAVED = "QMC8200", 0, "Date and time settings changed.",

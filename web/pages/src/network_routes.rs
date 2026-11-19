@@ -3,13 +3,15 @@
 // root directory of this project.
 
 //! Serving Network settings. The `open` interface's address, mask and
-//! gateway are the ones the browser came in on: a change to them waits
-//! for the network service to keep a change only when the console is
-//! reached again (`docs/OPEN_QUESTIONS.md`, item 24). Its name
+//! gateway are the ones the browser came in on: a change to them is
+//! said first, then put on the network service's confirmed trial and
+//! kept only when someone signs on at the new address in time
+//! (`app::routes`). Its name
 //! servers, the host name, the `private` interface and the addresses
 //! the web interface answers are changed here; a network change goes
 //! to the network service on trial.
 
+use std::fmt::Write as _;
 use std::net::{IpAddr, Ipv4Addr};
 
 use qsweb::http::Response;
@@ -205,21 +207,18 @@ fn post(rq: &Rq<'_>) -> Response {
         .unwrap_or_default();
     let mut next = network.clone();
     let mut said = Vec::new();
-    // The open interface: its address waits; its name servers do not.
-    if field("ip") != before.ip || field("mask") != before.mask || field("gw") != before.gateway {
-        rq.audit(
-            "change the open interface's address",
-            "refused: waits for a confirmed trial",
-        );
-        // BLOCKED(phase3): a change to the open address needs netd's confirmed trial (OPEN_QUESTIONS item 24)
-        return show(
-            rq,
-            vec![qmcmsg::message(
-                Kind::Error,
-                &qmcmsg::NETWORK_OWN_ADDRESS,
-                &[],
-            )],
-        );
+    // The open interface's address is the one the browser came in on:
+    // the page says what happens first, then it goes on a confirmed
+    // trial.
+    let own =
+        field("ip") != before.ip || field("mask") != before.mask || field("gw") != before.gateway;
+    if own {
+        if let Err(e) = set_open(&mut next, &field("ip"), &field("mask"), &field("gw")) {
+            return show(rq, vec![not_valid(&e)]);
+        }
+        if f.get("confirmed").is_none() {
+            return confirm_own(rq, &f, &field("ip"));
+        }
     }
     let dns: Result<Vec<IpAddr>, String> = list(&field("dns"))
         .iter()
@@ -281,12 +280,37 @@ fn post(rq: &Rq<'_>) -> Response {
             Ok(t) => t,
             Err(e) => return show(rq, vec![not_valid(&e)]),
         };
-        let done = app.console.apply_network(&text);
+        let done = if own {
+            app.console.apply_network_confirmed(&text, WINDOW)
+        } else {
+            app.console.apply_network(&text)
+        };
         rq.audit(
-            "change the network (name servers, private interface)",
+            if own {
+                "change the open interface's address, kept only when reached again"
+            } else {
+                "change the network (name servers, private interface)"
+            },
             crate::user_routes::outcome(&done),
         );
         match done {
+            Ok(()) if own => {
+                let at = field("ip");
+                *app.pending
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner) =
+                    Some((at.clone(), app.console.now() + u64::from(WINDOW)));
+                // Nothing here is reached once the address moves: the
+                // page says where to go.
+                return show(
+                    rq,
+                    vec![qmcmsg::message(
+                        Kind::Info,
+                        &qmcmsg::NETWORK_TRYING,
+                        &[&WINDOW.to_string()],
+                    )],
+                );
+            }
             Ok(()) => messages.push(qmcmsg::message(
                 Kind::Info,
                 &qmcmsg::NETWORK_TRYING,
@@ -333,4 +357,81 @@ pub fn network(rq: &Rq<'_>) -> Response {
         return post(rq);
     }
     show(rq, Vec::new())
+}
+
+/// Seconds a change of the `open` address waits to be confirmed.
+pub const WINDOW: u32 = 120;
+
+/// Put the form's address, mask and gateway on the `open` interface:
+/// an empty address is DHCP.
+fn set_open(next: &mut Network, ip: &str, mask: &str, gw: &str) -> Result<(), String> {
+    let open = next
+        .interfaces
+        .first_mut()
+        .ok_or("There is no open interface.")?;
+    if ip.is_empty() {
+        open.mode = Mode::Dhcp;
+        open.address = None;
+        open.gateway = None;
+        return Ok(());
+    }
+    let addr: Ipv4Addr = ip
+        .parse()
+        .map_err(|_| format!("`{ip}` is not an IPv4 address."))?;
+    let prefix = prefix_of(mask).ok_or_else(|| format!("`{mask}` is not a subnet mask."))?;
+    open.mode = Mode::Static;
+    open.address = Some(Cidr { addr, prefix });
+    open.gateway = if gw.is_empty() {
+        None
+    } else {
+        Some(
+            gw.parse()
+                .map_err(|_| format!("`{gw}` is not an IPv4 address."))?,
+        )
+    };
+    Ok(())
+}
+
+/// What a change of the `open` address does, said before it is made:
+/// the form again, carried in hidden fields, with OK.
+fn confirm_own(rq: &Rq<'_>, f: &qsweb::http::Form, ip: &str) -> Response {
+    use qsweb::html::esc;
+    let fields = ["ip", "mask", "gw", "dns", "h", "d", "pip", "pmask", "allow"];
+    let mut hidden = String::new();
+    for k in fields {
+        let _ = write!(
+            hidden,
+            "<input type=\"hidden\" name=\"{k}\" value=\"{}\">",
+            esc(f.get(k).unwrap_or(""))
+        );
+    }
+    hidden.push_str("<input type=\"hidden\" name=\"confirmed\" value=\"yes\">");
+    let at = if ip.is_empty() {
+        "the address the DHCP server gives".to_string()
+    } else {
+        format!("https://{ip}{}", rq.ctx.url("/signon"))
+    };
+    let note = format!(
+        "<p class=\"small grey\">The change is made at once and this page stops answering. Sign on at {} within {WINDOW} seconds to keep it; otherwise it is taken back and the console answers at its old address again.</p>",
+        esc(&at)
+    );
+    let body = qsweb::pages::confirm_body(
+        &rq.ctx,
+        "You are changing the address of the interface your browser came in on. Press OK to make the change on trial, or Cancel to return without changing it.",
+        &note,
+        &hidden,
+    );
+    rq.page(qsweb::frame::Page {
+        title: "Confirm Network Change".into(),
+        crumb: vec![
+            "Console Management".into(),
+            "Network settings".into(),
+            "Confirm Network Change".into(),
+        ],
+        h1: "Confirm Network Change".into(),
+        body,
+        help: "network".into(),
+        nav: Some(("Console Management", Some("/console/network"))),
+        ..qsweb::frame::Page::default()
+    })
 }

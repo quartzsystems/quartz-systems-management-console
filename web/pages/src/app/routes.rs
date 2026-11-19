@@ -91,6 +91,40 @@ fn refused(r: Refused, id: &str) -> Message {
     }
 }
 
+/// A sign-on at the address of an `open` change on trial, within its
+/// window: the operator reached the console again, and it is kept.
+fn reached(app: &App, req: &Request, session: &str, user: &str, from: &str) {
+    let mut pending = app
+        .pending
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let Some((address, until)) = pending.clone() else {
+        return;
+    };
+    if app.console.now() > until {
+        *pending = None;
+        return;
+    }
+    let host = req.header("host").unwrap_or("");
+    let host = host.rsplit_once(':').map_or(host, |(h, _)| h);
+    if !address.is_empty() && host != address {
+        return;
+    }
+    *pending = None;
+    let done = app.console.confirm_network();
+    app.audit(
+        user,
+        from,
+        "keep the open interface's change",
+        &format!("{done:?}"),
+    );
+    let m = match done {
+        Ok(()) => qmcmsg::message(Kind::Done, &qmcmsg::NETWORK_KEPT, &[]),
+        Err(e) => qmcmsg::message(Kind::Error, &qmcmsg::NETWORK_RESTORED, &[&e]),
+    };
+    app.sessions.flash(session, m);
+}
+
 fn sign_on(app: &App, req: &Request, peer: &Peer) -> Response {
     if req.method != "POST" {
         return signon_page(app, "", Vec::new());
@@ -113,6 +147,7 @@ fn sign_on(app: &App, req: &Request, peer: &Peer) -> Response {
                 Ok(())
             });
             app.audit(&id, &from.to_string(), "sign on", "signed on");
+            reached(app, req, &s.id, &id, &from.to_string());
             Response::redirect(&PRODUCT.url("/welcome"))
                 .with("Set-Cookie", &PRODUCT.set_cookie(&s.id, peer.secure))
         }

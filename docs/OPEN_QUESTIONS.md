@@ -366,7 +366,7 @@ list as `qsweb`'s properties pattern (`?edit=`, `?password=`, after
 Create user...), with the password rules stated; the list is the
 golden. To decide: designed pages for the three.
 
-## 24. A network change kept only when confirmed (QS/VS)
+## 24. A network change kept only when confirmed (closed)
 
 Found in Phase 3. A change to the address a browser came in on must be
 kept only if the operator reaches the console again within the trial.
@@ -378,6 +378,12 @@ otherwise, whatever the interface says. Until it is there, the Network
 settings page refuses a change to the `open` interface's address, mask
 and gateway with `QMC8104` (`BLOCKED(phase3)`); the local console's
 option 3 changes them.
+
+**Closed in Phase 3:** QS/VS `ff181be` added `apply_confirmed`, kept
+only when `confirm` is called in its window; QS/MC moved its QS/VS pin
+to `3de567e`. A change of the `open` address is said on a confirmation
+page, put on a 120-second confirmed trial, and kept when someone signs
+on at the new address in time.
 
 ## 25. Fields the Network settings page does not have
 
