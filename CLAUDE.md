@@ -16,8 +16,10 @@ Two things already exist and are reused, never rewritten or copied:
   disk and media images (`diskimg`, `optical`), the A/B record
   (`abrec`), the xfs formatter, disk protection (`protect`, `ublk`), the
   console and screen kit (`console`, `scrkit`), `ipc`, `netlink`, Secure
-  Boot signing (`pesign`), and QSI itself (`qsi`, `qsisess`,
-  `qsitrust`, `qsipart`).
+  Boot signing (`pesign`), QSI itself (`qsi`, `qsisess`, `qsitrust`,
+  `qsipart`), and the web layer its web products share (`qsweb`: HTTP,
+  sessions and CSRF, the frame under a product's `Brand`, the partials,
+  golden comparison, WebSocket).
 - QS/VS (`https://github.com/quartzsystems/quartz-systems-virtual-server`),
   under `base/`: what every Quartz appliance needs, product-neutral:
   the appliance description, supervision for PID 1, state files,
@@ -31,8 +33,8 @@ Two things already exist and are reused, never rewritten or copied:
 | --- | --- | --- |
 | 0 | Toolchain and build | `docs/PHASE0.md` |
 | 1 | PID 1 and base system: services, state, logging, the management network, time | `docs/PHASE1.md` |
-| **2 (current)** | Installer, ISO and the local console | `docs/PHASE2.md` |
-| 3 | The web server and Console Management pages | |
+| 2 | Installer, ISO and the local console | `docs/PHASE2.md` |
+| **3 (current)** | The web server and Console Management pages | `docs/PHASE3.md` |
 | 4 | QSI and managed systems, proven on a QS/VS host; the browser terminal | |
 | 5 | Partitions, profiles and virtual resources | |
 | 6 | Service management and updates | |
@@ -40,9 +42,10 @@ Two things already exist and are reused, never rewritten or copied:
 | 8 | Release engineering and hardening | |
 
 Work that is not done is listed in the current phase's record,
-`docs/PHASE2.md`. Code and documents mark it `BLOCKED(phase2): reason`
+`docs/PHASE3.md`. Code and documents mark it `BLOCKED(phase3): reason`
 (one line) or `NEEDS-CODY` (Cody's hardware or sign-off); an earlier
-phase's `BLOCKED(phase0)` or `BLOCKED(phase1)` stays as it was written.
+phase's `BLOCKED(phase0)`, `BLOCKED(phase1)` or `BLOCKED(phase2)` stays
+as it was written.
 No other marker form.
 
 ## Ground rules
@@ -69,7 +72,7 @@ No other marker form.
 - **The two pins.** QS/VS's crates are git dependencies at one commit of
   its `main`. QS/400's crates are git dependencies at one commit:
   exactly the commit that QS/VS commit pins, so the tree holds one copy
-  of every shared crate. Both are recorded in `docs/PHASE2.md`, where
+  of every shared crate. Both are recorded in `docs/PHASE3.md`, where
   they last moved (`docs/PHASE0.md` has the first). Moving
   either is its own commit, and they move together. Never path
   dependencies, never copies. `build doctor` fails when they disagree
@@ -84,7 +87,7 @@ No other marker form.
   value.
 - No IBM text, product names or marks anywhere. The names in use are
   QS/MC, QS/VS and QS/400.
-- Anything not done is listed in the current phase's record (`docs/PHASE2.md`).
+- Anything not done is listed in the current phase's record (`docs/PHASE3.md`).
 
 ## Locked decisions
 
@@ -180,7 +183,8 @@ lic/            PID 1, release, the product's binaries
   refcode/        the console's reference codes (docs/REFCODES.md), each base event's, the poster
 svc/            the local console
   console/        qsmccons over base/panels: the sessions, the main menu, status, network, disk units, the one panel for the unit to keep
-docs/           ARCHITECTURE, PHASE0, PHASE1, PHASE2, INSTALL, LOCALCONSOLE, REFCODES, SEED, OPEN_QUESTIONS
+docs/           ARCHITECTURE, PHASE0, PHASE1, PHASE2, PHASE3, INSTALL, LOCALCONSOLE, REFCODES, SEED, OPEN_QUESTIONS
+design/         qsmc-prototype/: the web UI's approved design, every page a golden rendering (its README is the handoff)
 ```
 
 Category folders are made as phases need them. The full set: `tools/`
@@ -245,6 +249,12 @@ guest's second serial port.
   and what they changed, what was deleted in favour of `base/`, kernel
   additions, hashes, the acceptance table with evidence, what is not
   done.
+- `docs/PHASE3.md`: the web server and Console Management pages: the
+  new pins and what they changed, the acceptance table with evidence,
+  what is not done.
+- `design/qsmc-prototype/`: the web UI's design. `README.md` is the
+  handoff (build order, routes, fixture data), `STYLE.md` the style
+  rules; each page is the golden its served page must match.
 - `docs/INSTALL.md`: an operator's guide to installing, attended and
   unattended, and what a console needs of its machine.
 - `docs/LOCALCONSOLE.md`: every panel of the local console.

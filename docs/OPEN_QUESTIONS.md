@@ -15,11 +15,13 @@ out of both. The word is `REF`, as a host's is.
 posted as `REF`. Phase 1's codes are in those families, in blocks laid
 out as QS/VS lays out its own.
 
-## 2. The web UI prototype (NEEDS-CODY)
+## 2. The web UI prototype (closed)
 
 Phase 3 serves the prototype's pages as templates. It is not needed
 until then, but Phase 3 wants it committed under `design/` in this
 repository first.
+
+**Closed in Phase 3:** committed as `design/qsmc-prototype/` (`900107f`).
 
 ## 3. The processor check is not in QS/VS's `base/` (closed)
 
@@ -303,3 +305,28 @@ text, the smallest disk and the codes. The change, for QS/VS: a
 `base/install` helper that carries out those steps for a product's
 `LoadSourceNames` and codes, so a product's `Target` is its names and
 its words.
+
+## 19. What the prototype offers that V1 answers with a message
+
+Found opening Phase 3. Some choices on the prototype's Console
+Management pages go past the locked decisions or past Phase 3. Each
+page is drawn as the prototype has it, and the choice answers with a
+`QMC` message saying it is not in V1:
+
+- Backup and restore: "Remote host (SFTP)". Copying a backup off the
+  console is not in V1 (the Phase 3 handoff): a backup holds the
+  console's identity and users, it leaves only through the browser of
+  a signed-on Administrator, and SFTP is outbound traffic the outbound
+  rule (item 7) does not list.
+- Date and time: "Act as NTP server on the private management
+  network". The console is an NTP client only: a server would listen,
+  and only the web server listens.
+- Network settings: "DHCP for service interfaces" on the private
+  network, and "SSH to console". A DHCP server would listen; the locked
+  decisions have no SSH.
+- Language and locale: languages other than English (the Phase 3
+  handoff: English only), and "Keep terminal window sessions open",
+  which waits for Phase 4's terminal.
+
+To decide, for each: whether it joins the locked decisions in a later
+release, or the design drops it.
