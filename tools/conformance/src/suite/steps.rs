@@ -179,7 +179,7 @@ fn shown(log: &str, expect: &[String]) -> String {
     let mut lines: Vec<&str> = Vec::new();
     for line in log.lines().map(str::trim) {
         let wanted = expect.iter().any(|e| line.contains(e.as_str()));
-        if wanted && !lines.contains(&line) && line != refcode::HEARTBEAT.line() {
+        if wanted && !lines.contains(&line) && !line.starts_with(&refcode::HEARTBEAT.tag()) {
             lines.push(line);
         }
     }

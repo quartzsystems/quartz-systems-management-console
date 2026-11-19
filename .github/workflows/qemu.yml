@@ -1,0 +1,96 @@
+# Copyright (C), 2026 Quartz Systems. Some rights reserved. This work is
+# licensed under the terms of the MIT license which can be found in the
+# root directory of this project.
+#
+# The QEMU suite on a GitHub-hosted runner, as QS/VS has it: the images
+# built, then Phase 0's steps on the disk image (slot A, slot B, and a
+# processor that lacks what the cryptography needs) and on the ISO.
+#
+# NEEDS-CODY: nothing has been pushed, so this job has never run on
+# GitHub. A runner without KVM fails at its second step with a clear
+# message; such a repository needs a self-hosted runner with KVM
+# (docs/OPEN_QUESTIONS.md item 6).
+
+name: qemu
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qemu-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  images:
+    name: build the images and boot them
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: KVM for QEMU
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: KVM on this runner
+        run: |
+          if ! [ -r /dev/kvm ] || ! [ -w /dev/kvm ]; then
+            echo "::error::/dev/kvm is not usable here: this job needs a runner with KVM"
+            exit 1
+          fi
+          echo "$(nproc) processors, $(free -g | awk '/Mem:/ {print $2}') GB"
+
+      - name: Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            make flex bison bc perl xz-utils gpg gzip tar git libelf-dev libssl-dev \
+            qemu-system-x86 ovmf lsb-release wget software-properties-common gnupg
+          wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+          sudo bash /tmp/llvm.sh 21
+          sudo apt-get install -y --no-install-recommends lld-21 llvm-21
+          echo /usr/lib/llvm-21/bin >> "$GITHUB_PATH"
+
+      - name: Toolchain (rust-toolchain.toml)
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: cargo-deny (prebuilt)
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/src
+          key: qsmc-build-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml', 'kernel/VERSION') }}
+
+      - run: cargo run -q -p build -- doctor
+      - run: cargo run -q -p build -- all
+      - run: cargo run -q -p build -- test
+      - run: cargo run -q -p build -- test --media iso
+
+      - name: Serial logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: serial-logs
+          path: |
+            target/conformance/*.log
+            target/logs/
+          if-no-files-found: ignore

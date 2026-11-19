@@ -221,4 +221,14 @@ vrm = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "bbbb
             [qs400]
         );
     }
+
+    /// `build doctor`'s two rows over this repository: they run cargo,
+    /// which fetches, so CI's pin job runs them (`--include-ignored`).
+    #[test]
+    #[ignore = "runs cargo metadata and cargo tree"]
+    fn this_repository_s_pins_agree_and_nothing_is_twice() {
+        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        agree(&repo).unwrap();
+        assert_eq!(duplicates(&repo).unwrap(), Vec::<String>::new());
+    }
 }

@@ -266,6 +266,8 @@ pub const HARDENING_N: &[&str] = &[
     "EFI_CUSTOM_SSDT_OVERLAYS",
     "MAGIC_SYSRQ",
     "DEBUG_FS",
+    // It selects DEBUG_FS: QS/VS's kernel has debugfs through it.
+    "BLK_DEV_IO_TRACE",
     "USER_NS",
     "BPF_SYSCALL",
     "USERFAULTFD",
