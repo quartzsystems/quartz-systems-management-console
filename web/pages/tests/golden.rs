@@ -97,3 +97,208 @@ fn welcome() {
         &[],
     );
 }
+
+/// A shared page (`shared/<file>`) against the served one: URLs mapped
+/// relative to `shared/`, the golden text corrected by `fix` first.
+fn assert_shared(served: &str, file: &str, fix: &[(&str, &str)]) {
+    let p = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../design/qsmc-prototype/shared")
+        .join(file);
+    let mut g = std::fs::read_to_string(&p).unwrap();
+    for (from, to) in fix {
+        assert!(
+            g.contains(from),
+            "golden fix not applicable to {file}: {from}"
+        );
+        g = g.replace(from, to);
+    }
+    let map = |u: &str| {
+        proto(u).map(|t| match t.strip_prefix("../shared/") {
+            Some(s) => s.to_string(),
+            None => format!("../qsmc/{t}"),
+        })
+    };
+    if let Some(d) = diff(
+        served,
+        &g,
+        &Normalize {
+            url: &map,
+            script: None,
+        },
+    ) {
+        panic!("shared/{file} differs from the served page at {d}");
+    }
+}
+
+/// The corrections every shared page needs: the prototype's shared
+/// pages carry QS/400's frame (`docs/WEB.md`, golden corrections).
+const QS400_FRAME: [(&str, &str); 4] = [
+    (
+        "<td class=\"wordmark\">QS/400</td>",
+        "<td class=\"wordmark\">QS/MC</td>",
+    ),
+    (
+        "System: <b>QSHQ400</b> &nbsp;&nbsp; User: <b>QSECOFR</b>",
+        "Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b>",
+    ),
+    (
+        "QS/400 V1R0M0 &middot; Quartz Systems</td>",
+        "QS/MC V1R0M0 &middot; Quartz Systems</td>",
+    ),
+    (" - QS/400</title>", " - QS/MC</title>"),
+];
+
+fn shared_render(page: &mut qsweb::frame::Page) -> String {
+    page.generic = true;
+    render("/qsmc/error", page)
+}
+
+#[test]
+fn shared_error() {
+    let c = ctx("/qsmc/error");
+    let sl = qsweb::msg::SecondLevel {
+        id: "CPF2204".into(),
+        text: "User profile WEBUSER not found.".into(),
+        cause: "The user profile WEBUSER specified for the server user profile does not exist on system QSHQ400, or it was deleted after the instance configuration was saved.".into(),
+        recovery: "Create the user profile with the CRTUSRPRF command, or change the instance to use an existing user profile (for example QTMHHTTP) on the General page of the instance, then try the request again.".into(),
+        severity: 40,
+    };
+    let sent = qsweb::pages::Sent {
+        msg_type: "Escape".into(),
+        date: "10/29/26".into(),
+        time: "14:02:17".into(),
+        job: "123457/QTMHHTTP/ADMIN".into(),
+        program: "QSYCUSRP".into(),
+        technical: "Request:  POST /qs400/httpadmin/instance/WEBSTORE/general\nReturned: HTP8201 severity 30 from QHTTPADM\nJob log:  123457/QTMHHTTP/ADMIN".into(),
+    };
+    let mut page = qsweb::pages::second_level(&c, &sl, Some(&sent), "Error");
+    let mut fix = QS400_FRAME.to_vec();
+    fix.extend([
+        ("HTTP Server Administration &gt; Error", "QS/MC &gt; Error"),
+        // QS/MC has no job log.
+        ("<input type=\"submit\" value=\"Job log\">", ""),
+        (
+            "<h2>Technical description</h2>",
+            "<h2>Technical details</h2>",
+        ),
+    ]);
+    assert_shared(&shared_render(&mut page), "error.html", &fix);
+}
+
+#[test]
+fn shared_notauth() {
+    let c = ctx("/qsmc/notauth");
+    let r = qsweb::pages::Refusal {
+        message: qsweb::msg::Message::new(
+            qsweb::msg::Kind::Error,
+            "CPF2207",
+            "Not authorized to use object ADMIN in library QSYS type *JOB.",
+        ),
+        explain: "You are not authorized to use this function. Your user profile <span class=\"mono\">WEBUSER</span> has user class <span class=\"mono\">*USER</span> and does not have the <span class=\"mono\">*ALLOBJ</span> or <span class=\"mono\">*JOBCTL</span> special authority required to end jobs that belong to other users.".into(),
+        function: "End job".into(),
+        object: "123456/QTMHHTTP/ADMIN".into(),
+        required: "*JOBCTL".into(),
+        user: "WEBUSER".into(),
+        policy: Some("Access for Web policy \"Jobs - End server jobs\" is set to <b>Deny</b> for group <span class=\"mono\">WEBUSERS</span>.".into()),
+        crumb: vec!["Work Management".into(), "Active Jobs".into()],
+    };
+    let mut page = qsweb::pages::not_authorized(&c, &r);
+    let mut fix = QS400_FRAME.to_vec();
+    fix.extend([
+        ("Navigator &gt; Work Management", "QS/MC &gt; Work Management"),
+        (
+            "Contact the security officer (QSECOFR) if you need this authority. The attempt has been recorded in the audit journal (entry type AF).",
+            webd::product::BRAND.notauth_note,
+        ),
+    ]);
+    assert_shared(&shared_render(&mut page), "notauth.html", &fix);
+}
+
+#[test]
+fn shared_confirm() {
+    use qsweb::partials::{Cell, Col, List, list_table, mono, status};
+    let c = ctx("/qsmc/confirm");
+    let list = List {
+        cols: ["Instance name", "Status", "Server root", "Job", "Log files"]
+            .iter()
+            .map(|l| Col::plain(l))
+            .collect(),
+        rows: vec![vec![
+            Cell::text("WEBSTORE"),
+            Cell::html(status("Stopped", Some(false))),
+            Cell::html(mono("/www/webstore")),
+            Cell::html(mono("(not active)")),
+            Cell::text("14 files, 212 MB"),
+        ]],
+        empty: String::new(),
+        keep: Vec::new(),
+    };
+    let table = format!(
+        "{}<p class=\"small grey\">The instance must be stopped before it can be deleted. Running instances are skipped and message HTP8103 is issued.</p>",
+        list_table(&list)
+    );
+    let body = qsweb::pages::confirm_body(
+        &c,
+        "Deleting an instance removes its configuration directory and all log files. Press OK to delete the instances listed below, or Cancel to return without deleting.",
+        &table,
+        "",
+    );
+    let mut page = qsweb::frame::Page {
+        title: "Confirm Delete Instance".into(),
+        crumb: vec![
+            "Manage".into(),
+            "Server instances".into(),
+            "Confirm Delete Instance".into(),
+        ],
+        h1: "Confirm Delete Instance".into(),
+        body,
+        help: "confirm".into(),
+        ..Default::default()
+    };
+    let mut fix = QS400_FRAME.to_vec();
+    fix.push((
+        "HTTP Server Administration &gt; Manage",
+        "QS/MC &gt; Manage",
+    ));
+    assert_shared(&shared_render(&mut page), "confirm.html", &fix);
+}
+
+#[test]
+fn shared_help() {
+    let p = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../design/qsmc-prototype/shared/help.html");
+    let g = std::fs::read_to_string(p).unwrap();
+    // The window's body is the topic's own text; the window is QS/MC's.
+    let body = g
+        .split_once("<h1>Active jobs</h1>\n")
+        .and_then(|(_, rest)| rest.split_once("\n<hr>"))
+        .map(|(b, _)| b.to_string())
+        .unwrap();
+    let served = qsweb::frame::help(&webd::product::PRODUCT, "Active jobs", &body);
+    assert_shared(
+        &served,
+        "help.html",
+        &[
+            (
+                "<td class=\"wordmark\">QS/400 Help</td>",
+                "<td class=\"wordmark\">QS/MC Help</td>",
+            ),
+            (" - QS/400</title>", " - QS/MC</title>"),
+            (
+                "QS/400 V1R0M0 &middot; Quartz Systems &middot;",
+                "QS/MC V1R0M0 &middot; Quartz Systems &middot;",
+            ),
+            (
+                "<a href=\"#\" >Contents</a>",
+                "<a href=\"help.html\" >Contents</a>",
+            ),
+            ("<a href=\"#\">Index</a>", "<a href=\"help.html\">Index</a>"),
+            // qsweb's window closes by an inline handler, which QS/MC's
+            // content security policy blocks (`docs/OPEN_QUESTIONS.md`).
+            (
+                "<a href=\"#\">Close window</a>",
+                "<a href=\"#\" onclick=\"if (history.length > 1) { history.back(); } else { window.close(); } return false;\">Close window</a>",
+            ),
+        ],
+    );
+}

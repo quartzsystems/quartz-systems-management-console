@@ -330,3 +330,29 @@ page is drawn as the prototype has it, and the choice answers with a
 
 To decide, for each: whether it joins the locked decisions in a later
 release, or the design drops it.
+
+## 20. The prototype's shared pages are QS/400's
+
+Found in Phase 3. The handoff says `shared/confirm.html`, `error.html`,
+`help.html` and `notauth.html` are framed for QS/MC; they carry QS/MC's
+navigation tree but QS/400's wordmark, header (`System: QSHQ400`,
+`User: QSECOFR`), footer and content (an HTTP Server Administration
+error, a Navigator refusal, the help for Active jobs). QS/MC renders
+the same patterns through `qsweb`; its golden tests compare them with
+the frame corrected (`docs/WEB.md`). To decide: QS/MC versions of the
+four pages in the design.
+
+## 21. No page sets the sign-on notice
+
+Found in Phase 3. The sign-on page carries a configurable notice, but
+no page of the prototype has a field for it. It is `notice` in
+`web.toml`, empty unless written there. To decide: which page sets it
+(Language, locale and session would take one row).
+
+## 22. `qsweb`'s help window closes by script (QS/400)
+
+Found in Phase 3. The help window's Close window link carries an
+inline `onclick` handler. QS/MC serves no script, and its content
+security policy blocks inline handlers, so the link does nothing there
+but go to `#`. The change, for QS/400: a plain link when the product
+serves no script (`Product::nav_script` false).

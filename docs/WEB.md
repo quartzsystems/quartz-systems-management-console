@@ -90,3 +90,24 @@ The stylesheet is `qsweb::CSS`, served byte for byte at
 hex digits) and `max-age=3600`; a matching `If-None-Match` is answered
 `304`. No page carries a script in this phase, so the navigation
 script is not served.
+
+## Pages and their golden files
+
+Each page is a function of a view (`web/pages`): the console's state
+when served, the prototype's sample data in `web/pages/tests/golden.rs`,
+which compares the result with the prototype's file under `qsweb`'s
+golden comparison (whitespace, entity forms, attribute order and the
+CSRF field do not count; served URLs are mapped back to file names by
+`webpages::url::proto`). A page is added by writing its view and its
+rendering, a route with its task (`app/routes.rs`), and its golden
+test with the prototype's data.
+
+Golden corrections, each the only difference allowed:
+
+| File | Correction | Why |
+| --- | --- | --- |
+| `qsmc/signon.html` | the form's `action` is `signon.html`, not `welcome.html` | the form posts back to the sign-on route |
+| `shared/error.html`, `notauth.html`, `confirm.html` | the frame's wordmark, title suffix, header (`Console: QSHQMC1`, `User: qsadmin`) and footer are QS/MC's; the breadcrumb's root is `QS/MC` | the prototype's shared pages carry QS/400's frame (`docs/OPEN_QUESTIONS.md`, item 20) |
+| `shared/error.html` | no `Job log` button; `Technical details` for `Technical description` | QS/MC has no job log; `qsweb`'s heading |
+| `shared/notauth.html` | the closing paragraph is QS/MC's (`Brand::notauth_note`) | the prototype's names QS/400's security officer |
+| `shared/help.html` | the window's wordmark, title and footer are QS/MC's; Contents and Index lead to the help pages; Close window carries `qsweb`'s inline handler | as above; the handler is `qsweb`'s (item 22) |

@@ -210,7 +210,7 @@ fn refuse(rq: &Rq<'_>, task: Task) -> Response {
         required: task.label().into(),
         user,
         policy: None,
-        crumb: vec!["Not authorized".into()],
+        crumb: Vec::new(),
     };
     let mut page = not_authorized(&rq.ctx, &r);
     page.generic = false;
