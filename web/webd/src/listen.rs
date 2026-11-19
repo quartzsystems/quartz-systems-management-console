@@ -122,6 +122,8 @@ pub struct Serving {
     pub redirect: Arc<dyn Handler>,
     /// The limits.
     pub gate: Mutex<Gate>,
+    /// The pages, which say which addresses are answered.
+    pub pages: Arc<dyn crate::serve::Pages>,
 }
 
 fn one(serving: &Serving, stream: TcpStream, from: SocketAddr, port: u16) {
@@ -158,6 +160,9 @@ fn accept(serving: &Arc<Serving>, listener: &TcpListener, port: u16, stop: &Atom
         match listener.accept() {
             Ok((stream, from)) => {
                 let ip = from.ip();
+                if !serving.pages.admits(ip) {
+                    continue;
+                }
                 if !serving
                     .gate
                     .lock()

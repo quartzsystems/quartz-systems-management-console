@@ -2,22 +2,29 @@
 // licensed under the terms of the MIT license which can be found in the
 // root directory of this project.
 
-//! The running console as the pages see it: its name from PID 1, its
-//! uptime and the clock from the kernel.
+//! The running console as the pages see it: PID 1's facts and power,
+//! the network service's interfaces, trial and clock, the kernel's
+//! uptime and clock.
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use netd::control::{Calls as _, Client as NetClient, NetStatus};
 use supervise::control::{Calls, Client};
+
+fn pid1() -> Client {
+    Client::new(release::CONTROL_SOCKET)
+}
+
+fn net() -> NetClient {
+    NetClient::new(release::appliance(|_| {}, |_, _| {}).net_socket())
+}
 
 /// The console the web server runs on.
 pub struct Live;
 
 impl super::Console for Live {
     fn name(&self) -> String {
-        Client::new(release::CONTROL_SOCKET)
-            .status()
-            .ok()
-            .and_then(|s| s.fact(release::fact::HOST).map(str::to_string))
+        Some(self.fact(release::fact::HOST))
             .filter(|h| !h.is_empty())
             .unwrap_or_else(|| release::NAME.to_string())
     }
@@ -36,10 +43,36 @@ impl super::Console for Live {
     }
 
     fn fact(&self, key: &str) -> String {
-        Client::new(release::CONTROL_SOCKET)
+        pid1()
             .status()
             .ok()
             .and_then(|s| s.fact(key).map(str::to_string))
             .unwrap_or_default()
+    }
+
+    fn interfaces(&self) -> Vec<NetStatus> {
+        net().interfaces().unwrap_or_default()
+    }
+
+    fn apply_network(&self, network: &str) -> Result<(), String> {
+        net()
+            .apply(network.to_string())
+            .map_err(|e| e.to_string())?
+    }
+
+    fn set_host(&self, name: &str, zone: &str, ntp: &[String]) -> Result<(), String> {
+        pid1()
+            .set_host(name.into(), zone.into(), ntp.to_vec())
+            .map_err(|e| e.to_string())?
+    }
+
+    fn set_clock(&self, secs: i64) -> Result<(), String> {
+        net().set_clock(secs).map_err(|e| e.to_string())?
+    }
+
+    fn power_down(&self, restart: bool, by: &str) -> Result<(), String> {
+        pid1()
+            .power_down(restart, false, 0, by.into())
+            .map_err(|e| e.to_string())?
     }
 }

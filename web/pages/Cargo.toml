@@ -18,6 +18,7 @@ state.workspace = true
 serde.workspace = true
 appliance.workspace = true
 supervise.workspace = true
+netd.workspace = true
 
 [dev-dependencies]
 

@@ -400,3 +400,38 @@ fn console_roles() {
         &[],
     );
 }
+
+#[test]
+fn console_network() {
+    use webpages::network::{Link, Net, page};
+    let v = Net {
+        open: Link {
+            name: "eth0".into(),
+            state: "1 GbE, link up".into(),
+        },
+        ip: "10.0.10.40".into(),
+        mask: "255.255.255.0".into(),
+        gateway: "10.0.10.1".into(),
+        dns: "10.0.10.1, 10.0.10.2".into(),
+        host: "qshqmc1".into(),
+        domain: "quartz.example".into(),
+        private: Link {
+            name: "eth1".into(),
+            state: "1 GbE, link up".into(),
+        },
+        pip: "192.168.250.1".into(),
+        pmask: "255.255.255.0".into(),
+        range: "192.168.250.100-199".into(),
+        dhcp: true,
+        reached: "QSHQVS1 (192.168.250.101)".into(),
+        allow: "10.0.0.0/8, 172.16.0.0/12".into(),
+        ssh: false,
+        messages: Vec::new(),
+    };
+    let c = ctx("/qsmc/console/network");
+    assert_golden(
+        &render("/qsmc/console/network", &page(&c, &v)),
+        "console-network.html",
+        &[],
+    );
+}

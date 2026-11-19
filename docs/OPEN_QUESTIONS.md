@@ -365,3 +365,28 @@ the prototype has no form for any of them. QS/MC shows each under the
 list as `qsweb`'s properties pattern (`?edit=`, `?password=`, after
 Create user...), with the password rules stated; the list is the
 golden. To decide: designed pages for the three.
+
+## 24. A network change kept only when confirmed (QS/VS)
+
+Found in Phase 3. A change to the address a browser came in on must be
+kept only if the operator reaches the console again within the trial.
+`base/netd`'s trial keeps a change as soon as each interface it
+changes has carrier and an address (`trial.rs`), so a static address
+the operator cannot reach would be kept. The change, for QS/VS: an
+apply that is kept only by `confirm` within the trial and taken back
+otherwise, whatever the interface says. Until it is there, the Network
+settings page refuses a change to the `open` interface's address, mask
+and gateway with `QMC8104` (`BLOCKED(phase3)`); the local console's
+option 3 changes them.
+
+## 25. Fields the Network settings page does not have
+
+Found in Phase 3. The handoff asks for DHCP or static, a VLAN and
+whether the web interface also answers on `private`; the prototype's
+page has none of them. Cody's decision for this phase: an empty IP
+address is DHCP; the VLAN and listening on `private` stay as
+`network.toml` and `web.toml` have them, set from a seed or at the
+local console. The page also offers a domain, which `network.toml`
+does not keep, a DHCP server and SSH: each answers `QMC8700`. To
+decide: the fields in the design, and whether the domain joins
+`base/state`.

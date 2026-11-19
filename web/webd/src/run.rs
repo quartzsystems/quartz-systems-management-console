@@ -120,9 +120,12 @@ pub fn run(pages: Arc<dyn Pages>) -> Result<(), String> {
     pages.started(certs.clone());
     let serving = Arc::new(Serving {
         tls: tls::server_config(certs.clone())?,
-        site: Arc::new(Site { pages }),
+        site: Arc::new(Site {
+            pages: pages.clone(),
+        }),
         redirect: Arc::new(Redirect),
         gate: Mutex::new(Gate::default()),
+        pages,
     });
     let pid1 = connect()?;
     let mut running = Running::default();

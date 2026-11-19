@@ -51,6 +51,10 @@ pub struct WebSettings {
     /// Whether the web interface also answers on `private`.
     #[serde(default)]
     pub listen_private: bool,
+    /// The addresses and networks the web interface answers; all when
+    /// empty.
+    #[serde(default)]
+    pub allow: Vec<String>,
 }
 
 impl Default for WebSettings {
@@ -63,6 +67,7 @@ impl Default for WebSettings {
             time_format: time(),
             number_format: number(),
             listen_private: false,
+            allow: Vec::new(),
         }
     }
 }
@@ -92,11 +97,38 @@ impl state::Document for WebSettings {
         {
             return Err("A format is not one offered.".into());
         }
+        for a in &self.allow {
+            allowed(a)
+                .ok_or_else(|| format!("`{a}` is not an address or a network (10.0.0.0/8)."))?;
+        }
         if self.notice.len() > 500 || self.notice.contains(['\r', '\n']) {
             return Err("The notice is one line of 500 characters at most.".into());
         }
         Ok(())
     }
+}
+
+/// An address or network of `allow`: its address and prefix length.
+pub fn allowed(entry: &str) -> Option<(std::net::Ipv4Addr, u8)> {
+    let (a, p) = entry.trim().split_once('/').unwrap_or((entry.trim(), "32"));
+    let p: u8 = p.parse().ok().filter(|p| *p <= 32)?;
+    Some((a.parse().ok()?, p))
+}
+
+/// Whether `ip` is in `allow` (all are, when it is empty).
+pub fn admits(allow: &[String], ip: std::net::IpAddr) -> bool {
+    let std::net::IpAddr::V4(ip) = ip else {
+        return allow.is_empty();
+    };
+    allow.is_empty()
+        || allow.iter().filter_map(|a| allowed(a)).any(|(net, p)| {
+            let mask = if p == 0 {
+                0
+            } else {
+                u32::MAX << (32 - u32::from(p))
+            };
+            u32::from(ip) & mask == u32::from(net) & mask
+        })
 }
 
 #[cfg(test)]

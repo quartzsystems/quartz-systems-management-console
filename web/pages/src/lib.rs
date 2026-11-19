@@ -18,6 +18,8 @@ pub mod backup;
 pub mod console;
 pub mod fmt;
 pub mod help;
+pub mod network;
+pub mod network_routes;
 pub mod pages;
 pub mod signon;
 pub mod url;

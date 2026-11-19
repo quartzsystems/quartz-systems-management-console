@@ -363,3 +363,55 @@ fn users_are_made_changed_and_deleted_and_the_last_administrator_stays() {
     );
     let _ = std::fs::remove_dir_all(dir);
 }
+
+#[test]
+fn network_settings_refuse_what_waits_and_keep_the_allow_list() {
+    use webd::serve::Pages as _;
+    let (app, _, dir) = app("network");
+    let mut b = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.17",
+    };
+    b.sign_on("qsadmin", PASSWORD);
+    let page = b.send("GET", "/qsmc/console/network", &[]);
+    assert_eq!(page.status, 200);
+    let token = b.csrf("/qsmc/console/network");
+    let base = [
+        ("csrf", token.as_str()),
+        ("apply", "Apply"),
+        ("h", "QSHQMC1"),
+    ];
+    let with = |extra: &[(&'static str, &'static str)]| {
+        let mut f: Vec<(&str, &str)> = base.to_vec();
+        f.extend_from_slice(extra);
+        f
+    };
+    let r = b.send(
+        "POST",
+        "/qsmc/console/network",
+        &with(&[("ssh", "on"), ("dhcp", "on")]),
+    );
+    let t = r.text();
+    assert!(
+        t.contains("SSH to the console is not in this release."),
+        "{t}"
+    );
+    assert!(t.contains("A DHCP server on the private network is not in this release."));
+    let r = b.send(
+        "POST",
+        "/qsmc/console/network",
+        &with(&[("ip", "192.0.2.99"), ("mask", "255.255.255.0")]),
+    );
+    assert!(r.text().contains("QMC8104"));
+    let r = b.send(
+        "POST",
+        "/qsmc/console/network",
+        &with(&[("allow", "192.0.2.0/24, 10.0.0.0/8")]),
+    );
+    assert!(r.text().contains("QMC8103"), "{}", r.text());
+    assert_eq!(app.settings().allow, ["192.0.2.0/24", "10.0.0.0/8"]);
+    assert!(app.admits("192.0.2.200".parse().unwrap()));
+    assert!(!app.admits("198.51.100.1".parse().unwrap()));
+    let _ = std::fs::remove_dir_all(dir);
+}

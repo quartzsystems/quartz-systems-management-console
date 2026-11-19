@@ -67,6 +67,12 @@ pub trait Pages: Send + Sync {
     /// The server has started with `certs`, which the pages may show
     /// and replace.
     fn started(&self, _certs: Arc<crate::tls::Certs>) {}
+
+    /// Whether a connection from `ip` is answered at all (Allow web UI
+    /// from). One that is not is closed at once.
+    fn admits(&self, _ip: std::net::IpAddr) -> bool {
+        true
+    }
 }
 
 /// No pages: the stylesheet only, every other path not found.

@@ -110,6 +110,9 @@ catalogue! {
         "Check the values and apply them again.";
     NETWORK_SAVED = "QMC8103", 0, "Network settings changed.",
         "The change does not touch the address the browser came in on, and was applied.", "None.";
+    NETWORK_OWN_ADDRESS = "QMC8104", 30, "The open interface's address, mask and gateway cannot be changed from the web interface in this release.",
+        "A change to the address the browser came in on is kept only if the console is reached again; the network service does not wait for that yet.",
+        "Change them at the local console (option 3), which is reached whatever the address.";
 
     // Date and time.
     TIME_SAVED = "QMC8200", 0, "Date and time settings changed.",

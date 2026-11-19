@@ -33,6 +33,32 @@ pub trait Console: Send + Sync {
     fn now(&self) -> u64;
     /// A fact of PID 1's status (`release::fact`), empty when it has none.
     fn fact(&self, key: &str) -> String;
+
+    /// The network service's interfaces, in `network.toml`'s order.
+    fn interfaces(&self) -> Vec<netd::control::NetStatus> {
+        Vec::new()
+    }
+
+    /// Put `network` (a `network.toml`) on trial through the network
+    /// service.
+    fn apply_network(&self, _network: &str) -> Result<(), String> {
+        Err("There is no network service.".into())
+    }
+
+    /// Set the host name, display zone and time servers through PID 1.
+    fn set_host(&self, _name: &str, _zone: &str, _ntp: &[String]) -> Result<(), String> {
+        Err("PID 1 did not answer.".into())
+    }
+
+    /// Set the clock (and the RTC) through the network service.
+    fn set_clock(&self, _secs: i64) -> Result<(), String> {
+        Err("There is no network service.".into())
+    }
+
+    /// Power off or restart through PID 1, for `by`.
+    fn power_down(&self, _restart: bool, _by: &str) -> Result<(), String> {
+        Err("PID 1 did not answer.".into())
+    }
 }
 
 /// The web server's pages and what they keep.
@@ -187,5 +213,9 @@ impl webd::serve::Pages for App {
 
     fn started(&self, certs: std::sync::Arc<webd::tls::Certs>) {
         let _ = self.certs.set(certs);
+    }
+
+    fn admits(&self, ip: IpAddr) -> bool {
+        settings::admits(&lock(&self.settings).allow, ip)
     }
 }
