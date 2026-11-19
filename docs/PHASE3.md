@@ -42,6 +42,14 @@ the new pins. Built from empty targets (release and test images), every
 suite of Phases 0 to 2 passed, 32 steps on the disk and the ISO step,
 with `mirror` fixed (`474cc38`, below).
 
+## Evidence so far
+
+- Section 1 (`be7ab6f`), built from empty targets: every suite of
+  Phases 0 to 2 passed, 32 steps on the disk and the ISO step, with
+  `sockets` and `no-secrets` showing TCP listening only on 443 and 80
+  of the `open` address (`10.0.2.15:443`, `10.0.2.15:80`) and
+  `slot-confirm` confirming on the web server's first answer.
+
 ## Found while testing
 
 - Phase 1's `mirror` failed two runs in three on the new pins, as it
@@ -52,6 +60,13 @@ with `mirror` fixed (`474cc38`, below).
   ready"; the suite looked for it only after that line. It now looks
   for the whole line anywhere in the boot's log (`suite/base/mirror.rs`).
   Four runs in four passed after.
+- `webd`'s first answer to itself was first asked over TCP of its own
+  address; it timed out whenever DHCP was quick, as the console keeps
+  no loopback interface. It is asked over a socket pair. One `time`
+  failure in 45 runs after that was not seen again.
+- `webd` asked for HTTP headers by their capitalized names; `qsweb`
+  keeps them lower case, so the redirect's host and the stylesheet's
+  `304` would not have worked. Found by the pages' tests.
 
 ## Prototype choices answered with a message
 
