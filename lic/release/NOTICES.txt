@@ -11,7 +11,7 @@ It contains the work of others, listed here with their licenses:
 3. The Rust standard library (core, alloc, std and their dependencies),
    under MIT OR Apache-2.0, taken under MIT; LLVM's libunwind and
    compiler-rt builtins, under Apache-2.0 WITH LLVM-exception.
-4. The 211 Rust crates below, each under the license named. The
+4. The 228 Rust crates below, each under the license named. The
    crates of QS/VS and of QS/400 (Quartz Systems, MIT) are among them:
    QS/MC takes QS/VS's base crates and QS/400's build pipeline and
    disk formats as libraries.
@@ -68,40 +68,40 @@ blockdev 0.1.0
 buildkit 0.1.0
     MIT
     taken under: MIT
-bumpalo 3.20.4
+bumpalo 3.20.3
     MIT OR Apache-2.0
     taken under: MIT
 byteorder 1.5.0
     Unlicense OR MIT
     taken under: MIT
-bytes 1.12.2
+bytes 1.12.1
     MIT
     taken under: MIT
-cc 1.11.2
+cc 1.7.0
     MIT OR Apache-2.0
     taken under: MIT
 cfg-if 1.0.5
     MIT OR Apache-2.0
     taken under: MIT
-clap 4.6.8
+clap 4.6.7
     MIT OR Apache-2.0
     taken under: MIT
 clap_builder 4.6.7
     MIT OR Apache-2.0
     taken under: MIT
-clap_derive 4.6.8
+clap_derive 4.6.7
     MIT OR Apache-2.0
     taken under: MIT
-clap_lex 1.1.2
+clap_lex 1.1.1
     MIT OR Apache-2.0
     taken under: MIT
 colorchoice 1.0.5
     MIT OR Apache-2.0
     taken under: MIT
-combine 4.6.9
+combine 4.6.8
     MIT
     taken under: MIT
-const-oid 0.10.3
+const-oid 0.10.2
     Apache-2.0 OR MIT
     taken under: MIT
 core-foundation 0.10.1
@@ -128,6 +128,9 @@ curve25519-dalek 5.0.0
 curve25519-dalek-derive 0.1.1
     MIT/Apache-2.0
     taken under: MIT
+dhcp 0.1.0
+    MIT
+    taken under: MIT
 digest 0.11.3
     MIT OR Apache-2.0
     taken under: MIT
@@ -143,6 +146,9 @@ ed25519 3.0.0
 ed25519-dalek 3.0.0
     BSD-3-Clause
     taken under: BSD-3-Clause
+equivalent 1.0.3
+    Apache-2.0 OR MIT
+    taken under: MIT
 errno 0.3.14
     MIT OR Apache-2.0
     taken under: MIT
@@ -152,7 +158,7 @@ fatfs 0.3.6
 fiat-crypto 0.3.0
     MIT OR Apache-2.0 OR BSD-1-Clause
     taken under: MIT
-find-msvc-tools 0.1.15
+find-msvc-tools 0.1.14
     MIT OR Apache-2.0
     taken under: MIT
 form_urlencoded 1.2.2
@@ -179,15 +185,21 @@ futures-util 0.3.34
 getrandom 0.2.17
     MIT OR Apache-2.0
     taken under: MIT
+getrandom 0.3.4
+    MIT OR Apache-2.0
+    taken under: MIT
 getrandom 0.4.3
     MIT OR Apache-2.0
     taken under: MIT
 gpt 4.1.0
     MIT
     taken under: MIT
-graviola 0.4.5
+graviola 0.4.1
     Apache-2.0 OR ISC OR MIT-0
     taken under: Apache-2.0
+hashbrown 0.17.1
+    MIT OR Apache-2.0
+    taken under: MIT
 heck 0.5.0
     MIT OR Apache-2.0
     taken under: MIT
@@ -218,31 +230,37 @@ hyper-rustls 0.27.10
 hyper-util 0.1.21
     MIT
     taken under: MIT
-icu_collections 2.4.0
+icu_collections 2.3.0
     Unicode-3.0
     taken under: Unicode-3.0
-icu_locale_core 2.4.0
+icu_locale_core 2.3.0
     Unicode-3.0
     taken under: Unicode-3.0
-icu_normalizer 2.4.0
+icu_normalizer 2.3.0
     Unicode-3.0
     taken under: Unicode-3.0
-icu_normalizer_data 2.4.0
+icu_normalizer_data 2.3.0
     Unicode-3.0
     taken under: Unicode-3.0
-icu_properties 2.4.0
+icu_properties 2.3.0
     Unicode-3.0
     taken under: Unicode-3.0
-icu_properties_data 2.4.0
+icu_properties_data 2.3.0
     Unicode-3.0
     taken under: Unicode-3.0
-icu_provider 2.4.0
+icu_provider 2.3.1
     Unicode-3.0
     taken under: Unicode-3.0
+identity 0.1.0
+    MIT
+    taken under: MIT
 idna 1.1.0
     MIT OR Apache-2.0
     taken under: MIT
 idna_adapter 1.2.2
+    Apache-2.0 OR MIT
+    taken under: MIT
+indexmap 2.14.2
     Apache-2.0 OR MIT
     taken under: MIT
 ipc 0.1.0
@@ -254,7 +272,7 @@ ipnet 2.12.2
 is_terminal_polyfill 1.70.2
     MIT OR Apache-2.0
     taken under: MIT
-itoa 1.0.19
+itoa 1.0.18
     MIT OR Apache-2.0
     taken under: MIT
 jni 0.22.4
@@ -269,7 +287,7 @@ jni-sys 0.4.1
 jni-sys-macros 0.4.1
     MIT OR Apache-2.0
     taken under: MIT
-js-sys 0.3.107
+js-sys 0.3.106
     MIT OR Apache-2.0
     taken under: MIT
 lazy_static 1.5.1
@@ -287,8 +305,11 @@ litemap 0.8.3
 loadsource 0.1.0
     MIT
     taken under: MIT
-log 0.4.35
+log 0.4.34
     MIT OR Apache-2.0
+    taken under: MIT
+logd 0.1.0
+    MIT
     taken under: MIT
 matchers 0.2.0
     MIT
@@ -296,7 +317,16 @@ matchers 0.2.0
 memchr 2.8.3
     Unlicense OR MIT
     taken under: MIT
-mio 1.2.5
+mio 1.2.4
+    MIT
+    taken under: MIT
+netd 0.1.0
+    MIT
+    taken under: MIT
+netlink 0.1.0
+    MIT
+    taken under: MIT
+ntp 0.1.0
     MIT
     taken under: MIT
 nu-ansi-term 0.50.3
@@ -308,7 +338,7 @@ once_cell 1.21.4
 once_cell_polyfill 1.70.2
     MIT OR Apache-2.0
     taken under: MIT
-openssl-probe 0.2.2
+openssl-probe 0.2.1
     MIT OR Apache-2.0
     taken under: MIT
 optical 0.1.0
@@ -332,13 +362,16 @@ protect 0.1.0
 quote 1.0.47
     MIT OR Apache-2.0
     taken under: MIT
+r-efi 5.3.0
+    MIT OR Apache-2.0 OR LGPL-2.1-or-later
+    taken under: MIT
 r-efi 6.0.0
     MIT OR Apache-2.0 OR LGPL-2.1-or-later
     taken under: MIT
-regex-automata 0.4.19
+regex-automata 0.4.18
     MIT OR Apache-2.0
     taken under: MIT
-regex-syntax 0.8.12
+regex-syntax 0.8.11
     MIT OR Apache-2.0
     taken under: MIT
 reqwest 0.13.5
@@ -359,10 +392,10 @@ rustls 0.23.46
 rustls-graviola 0.4.0
     Apache-2.0 OR ISC OR MIT-0
     taken under: Apache-2.0
-rustls-native-certs 0.8.5
+rustls-native-certs 0.8.4
     Apache-2.0 OR ISC OR MIT
     taken under: MIT
-rustls-pki-types 1.16.0
+rustls-pki-types 1.15.1
     MIT OR Apache-2.0
     taken under: MIT
 rustls-platform-verifier 0.7.1
@@ -371,7 +404,7 @@ rustls-platform-verifier 0.7.1
 rustls-platform-verifier-android 0.2.0
     MIT OR Apache-2.0
     taken under: MIT
-rustls-webpki 0.103.17
+rustls-webpki 0.103.16
     ISC
     taken under: ISC
 rustversion 1.0.23
@@ -380,7 +413,7 @@ rustversion 1.0.23
 same-file 1.0.6
     Unlicense/MIT
     taken under: MIT
-schannel 0.1.30
+schannel 0.1.29
     MIT
     taken under: MIT
 security-framework 3.7.0
@@ -388,6 +421,9 @@ security-framework 3.7.0
     taken under: MIT
 security-framework-sys 2.17.0
     MIT OR Apache-2.0
+    taken under: MIT
+seed 0.1.0
+    MIT
     taken under: MIT
 semver 1.0.28
     MIT OR Apache-2.0
@@ -401,13 +437,13 @@ serde_core 1.0.229
 serde_derive 1.0.229
     MIT OR Apache-2.0
     taken under: MIT
-serde_json 1.0.154
+serde_json 1.0.151
     MIT OR Apache-2.0
     taken under: MIT
-serde_spanned 1.1.3
+serde_spanned 1.1.2
     MIT OR Apache-2.0
     taken under: MIT
-sha2 0.11.1
+sha2 0.11.0
     MIT OR Apache-2.0
     taken under: MIT
 sharded-slab 0.1.7
@@ -431,7 +467,7 @@ simple-bytes 0.2.14
 slab 0.4.12
     MIT
     taken under: MIT
-smallvec 1.16.6
+smallvec 1.16.3
     MIT OR Apache-2.0
     taken under: MIT
 socket2 0.6.5
@@ -439,6 +475,12 @@ socket2 0.6.5
     taken under: MIT
 stable_deref_trait 1.2.1
     MIT OR Apache-2.0
+    taken under: MIT
+state 0.1.0
+    MIT
+    taken under: MIT
+stgd 0.1.0
+    MIT
     taken under: MIT
 strsim 0.11.1
     MIT
@@ -452,7 +494,7 @@ supervise 0.1.0
 syn 2.0.119
     MIT OR Apache-2.0
     taken under: MIT
-syn 3.0.10
+syn 3.0.7
     MIT OR Apache-2.0
     taken under: MIT
 sync_wrapper 1.0.2
@@ -470,22 +512,25 @@ thiserror-impl 2.0.21
 thread_local 1.1.10
     MIT OR Apache-2.0
     taken under: MIT
-tinystr 0.8.5
+tinystr 0.8.4
     Unicode-3.0
     taken under: Unicode-3.0
-tokio 1.54.1
+tokio 1.53.3
     MIT
     taken under: MIT
 tokio-rustls 0.26.6
     MIT OR Apache-2.0
     taken under: MIT
-toml 1.2.1+spec-1.1.0
+toml 1.1.8+spec-1.1.0
     MIT OR Apache-2.0
     taken under: MIT
-toml_datetime 1.1.3+spec-1.1.0
+toml_datetime 1.1.2+spec-1.1.0
     MIT OR Apache-2.0
     taken under: MIT
 toml_parser 1.1.5+spec-1.1.0
+    MIT OR Apache-2.0
+    taken under: MIT
+toml_writer 1.2.0+spec-1.1.0
     MIT OR Apache-2.0
     taken under: MIT
 tower 0.5.3
@@ -521,6 +566,9 @@ try-lock 0.2.5
 typenum 1.20.1
     MIT OR Apache-2.0
     taken under: MIT
+ublk 0.1.0
+    MIT
+    taken under: MIT
 unicode-ident 1.0.26
     (MIT OR Apache-2.0) AND Unicode-3.0
     taken under: MIT AND Unicode-3.0
@@ -530,16 +578,13 @@ untrusted 0.9.0
 url 2.5.8
     MIT OR Apache-2.0
     taken under: MIT
-utf8_iter 1.1.0
+utf8_iter 1.0.4
     Apache-2.0 OR MIT
     taken under: MIT
 utf8parse 0.2.2
     Apache-2.0 OR MIT
     taken under: MIT
-utf_types 1.0.0
-    Apache-2.0 OR MIT
-    taken under: MIT
-uuid 1.29.3
+uuid 1.28.0
     Apache-2.0 OR MIT
     taken under: MIT
 valuable 0.1.1
@@ -557,25 +602,28 @@ want 0.3.2
 wasi 0.11.1+wasi-snapshot-preview1
     Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
     taken under: MIT
-wasm-bindgen 0.2.130
+wasip2 1.0.4+wasi-0.2.12
+    Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
+    taken under: MIT
+wasm-bindgen 0.2.129
     MIT OR Apache-2.0
     taken under: MIT
-wasm-bindgen-futures 0.4.80
+wasm-bindgen-futures 0.4.79
     MIT OR Apache-2.0
     taken under: MIT
-wasm-bindgen-macro 0.2.130
+wasm-bindgen-macro 0.2.129
     MIT OR Apache-2.0
     taken under: MIT
-wasm-bindgen-macro-support 0.2.130
+wasm-bindgen-macro-support 0.2.129
     MIT OR Apache-2.0
     taken under: MIT
-wasm-bindgen-shared 0.2.130
+wasm-bindgen-shared 0.2.129
     MIT OR Apache-2.0
     taken under: MIT
-web-sys 0.3.107
+web-sys 0.3.106
     MIT OR Apache-2.0
     taken under: MIT
-webpki-root-certs 1.0.12
+webpki-root-certs 1.0.9
     CDLA-Permissive-2.0
     taken under: CDLA-Permissive-2.0
 winapi-util 0.1.11
@@ -617,8 +665,11 @@ windows_x86_64_gnullvm 0.52.6
 windows_x86_64_msvc 0.52.6
     MIT OR Apache-2.0
     taken under: MIT
-winnow 1.0.5
+winnow 1.0.4
     MIT
+    taken under: MIT
+wit-bindgen 0.57.1
+    Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
     taken under: MIT
 writeable 0.6.4
     Unicode-3.0
@@ -626,7 +677,7 @@ writeable 0.6.4
 xfsfmt 0.1.0
     MIT
     taken under: MIT
-yoke 0.8.4
+yoke 0.8.3
     Unicode-3.0
     taken under: Unicode-3.0
 yoke-derive 0.8.4
@@ -638,16 +689,16 @@ zerofrom 0.1.8
 zerofrom-derive 0.1.8
     Unicode-3.0
     taken under: Unicode-3.0
-zeroize 1.9.2
+zeroize 1.9.1
     Apache-2.0 OR MIT
     taken under: MIT
 zerotrie 0.2.5
     Unicode-3.0
     taken under: Unicode-3.0
-zerovec 0.11.9
+zerovec 0.11.8
     Unicode-3.0
     taken under: Unicode-3.0
-zerovec-derive 0.11.7
+zerovec-derive 0.11.6
     Unicode-3.0
     taken under: Unicode-3.0
 zmij 1.0.23
@@ -1622,7 +1673,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 
----- anstream 1.0.0 (LICENSE-MIT), anstyle 1.0.14 (LICENSE-MIT), anstyle-parse 1.0.0 (LICENSE-MIT), anstyle-query 1.1.5 (LICENSE-MIT), anstyle-wincon 3.0.11 (LICENSE-MIT), clap 4.6.8 (LICENSE-MIT), clap_builder 4.6.7 (LICENSE-MIT), clap_derive 4.6.8 (LICENSE-MIT), clap_lex 1.1.2 (LICENSE-MIT), colorchoice 1.0.5 (LICENSE-MIT), is_terminal_polyfill 1.70.2 (LICENSE-MIT), once_cell_polyfill 1.70.2 (LICENSE-MIT), serde_spanned 1.1.3 (LICENSE-MIT), toml 1.2.1+spec-1.1.0 (LICENSE-MIT), toml_datetime 1.1.3+spec-1.1.0 (LICENSE-MIT), toml_parser 1.1.5+spec-1.1.0 (LICENSE-MIT) ----
+---- anstream 1.0.0 (LICENSE-MIT), anstyle 1.0.14 (LICENSE-MIT), anstyle-parse 1.0.0 (LICENSE-MIT), anstyle-query 1.1.5 (LICENSE-MIT), anstyle-wincon 3.0.11 (LICENSE-MIT), clap 4.6.7 (LICENSE-MIT), clap_builder 4.6.7 (LICENSE-MIT), clap_derive 4.6.7 (LICENSE-MIT), clap_lex 1.1.1 (LICENSE-MIT), colorchoice 1.0.5 (LICENSE-MIT), is_terminal_polyfill 1.70.2 (LICENSE-MIT), once_cell_polyfill 1.70.2 (LICENSE-MIT), serde_spanned 1.1.2 (LICENSE-MIT), toml 1.1.8+spec-1.1.0 (LICENSE-MIT), toml_datetime 1.1.2+spec-1.1.0 (LICENSE-MIT), toml_parser 1.1.5+spec-1.1.0 (LICENSE-MIT), toml_writer 1.2.0+spec-1.1.0 (LICENSE-MIT) ----
 
 Copyright (c) Individual contributors
 
@@ -1644,7 +1695,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
----- anyhow 1.0.104 (LICENSE-MIT), atomic-waker 1.1.2 (LICENSE-MIT), curve25519-dalek-derive 0.1.1 (LICENSE-MIT), displaydoc 0.2.7 (LICENSE-MIT), itoa 1.0.19 (LICENSE-MIT), lazy_static 1.5.1 (LICENSE-MIT), linux-raw-sys 0.12.1 (LICENSE-MIT), once_cell 1.21.4 (LICENSE-MIT), pin-project-lite 0.2.17 (LICENSE-MIT), proc-macro2 1.0.107 (LICENSE-MIT), quote 1.0.47 (LICENSE-MIT), rustix 1.1.6 (LICENSE-MIT), rustversion 1.0.23 (LICENSE-MIT), semver 1.0.28 (LICENSE-MIT), serde 1.0.229 (LICENSE-MIT), serde_core 1.0.229 (LICENSE-MIT), serde_derive 1.0.229 (LICENSE-MIT), serde_json 1.0.154 (LICENSE-MIT), simd_cesu8 1.2.0 (LICENSE-MIT), syn 2.0.119 (LICENSE-MIT), syn 3.0.10 (LICENSE-MIT), thiserror 2.0.21 (LICENSE-MIT), thiserror-impl 2.0.21 (LICENSE-MIT), unicode-ident 1.0.26 (LICENSE-MIT), wasi 0.11.1+wasi-snapshot-preview1 (LICENSE-MIT), zmij 1.0.23 (LICENSE-MIT) ----
+---- anyhow 1.0.104 (LICENSE-MIT), atomic-waker 1.1.2 (LICENSE-MIT), curve25519-dalek-derive 0.1.1 (LICENSE-MIT), displaydoc 0.2.7 (LICENSE-MIT), itoa 1.0.18 (LICENSE-MIT), lazy_static 1.5.1 (LICENSE-MIT), linux-raw-sys 0.12.1 (LICENSE-MIT), once_cell 1.21.4 (LICENSE-MIT), pin-project-lite 0.2.17 (LICENSE-MIT), proc-macro2 1.0.107 (LICENSE-MIT), quote 1.0.47 (LICENSE-MIT), rustix 1.1.6 (LICENSE-MIT), rustversion 1.0.23 (LICENSE-MIT), semver 1.0.28 (LICENSE-MIT), serde 1.0.229 (LICENSE-MIT), serde_core 1.0.229 (LICENSE-MIT), serde_derive 1.0.229 (LICENSE-MIT), serde_json 1.0.151 (LICENSE-MIT), simd_cesu8 1.2.0 (LICENSE-MIT), syn 2.0.119 (LICENSE-MIT), syn 3.0.7 (LICENSE-MIT), thiserror 2.0.21 (LICENSE-MIT), thiserror-impl 2.0.21 (LICENSE-MIT), unicode-ident 1.0.26 (LICENSE-MIT), wasi 0.11.1+wasi-snapshot-preview1 (LICENSE-MIT), wasip2 1.0.4+wasi-0.2.12 (LICENSE-MIT), wit-bindgen 0.57.1 (LICENSE-MIT), zmij 1.0.23 (LICENSE-MIT) ----
 
 Permission is hereby granted, free of charge, to any
 person obtaining a copy of this software and associated
@@ -1742,7 +1793,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
----- bitflags 1.3.2 (LICENSE-MIT), bitflags 2.13.2 (LICENSE-MIT), log 0.4.35 (LICENSE-MIT), regex-automata 0.4.19 (LICENSE-MIT), regex-syntax 0.8.12 (LICENSE-MIT) ----
+---- bitflags 1.3.2 (LICENSE-MIT), bitflags 2.13.2 (LICENSE-MIT), log 0.4.34 (LICENSE-MIT), regex-automata 0.4.18 (LICENSE-MIT), regex-syntax 0.8.11 (LICENSE-MIT) ----
 
 Copyright (c) 2014 The Rust Project Developers
 
@@ -1798,7 +1849,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
----- bumpalo 3.20.4 (LICENSE-MIT) ----
+---- bumpalo 3.20.3 (LICENSE-MIT) ----
 
 Copyright (c) 2019 Nick Fitzgerald
 
@@ -1826,7 +1877,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
----- bytes 1.12.2 (LICENSE) ----
+---- bytes 1.12.1 (LICENSE) ----
 
 Copyright (c) 2018 Carl Lerche
 
@@ -1854,7 +1905,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
----- cc 1.11.2 (LICENSE-MIT), cfg-if 1.0.5 (LICENSE-MIT), find-msvc-tools 0.1.15 (LICENSE-MIT), js-sys 0.3.107 (LICENSE-MIT), openssl-probe 0.2.2 (LICENSE-MIT), socket2 0.6.5 (LICENSE-MIT), wasm-bindgen 0.2.130 (LICENSE-MIT), wasm-bindgen-futures 0.4.80 (LICENSE-MIT), wasm-bindgen-macro 0.2.130 (LICENSE-MIT), wasm-bindgen-macro-support 0.2.130 (LICENSE-MIT), wasm-bindgen-shared 0.2.130 (LICENSE-MIT), web-sys 0.3.107 (LICENSE-MIT) ----
+---- cc 1.7.0 (LICENSE-MIT), cfg-if 1.0.5 (LICENSE-MIT), find-msvc-tools 0.1.14 (LICENSE-MIT), js-sys 0.3.106 (LICENSE-MIT), openssl-probe 0.2.1 (LICENSE-MIT), socket2 0.6.5 (LICENSE-MIT), wasm-bindgen 0.2.129 (LICENSE-MIT), wasm-bindgen-futures 0.4.79 (LICENSE-MIT), wasm-bindgen-macro 0.2.129 (LICENSE-MIT), wasm-bindgen-macro-support 0.2.129 (LICENSE-MIT), wasm-bindgen-shared 0.2.129 (LICENSE-MIT), web-sys 0.3.106 (LICENSE-MIT) ----
 
 Copyright (c) 2014 Alex Crichton
 
@@ -1882,7 +1933,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
----- combine 4.6.9 (LICENSE) ----
+---- combine 4.6.8 (LICENSE) ----
 
 The MIT License (MIT)
 
@@ -1906,7 +1957,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
----- const-oid 0.10.3 (LICENSE-MIT), cpufeatures 0.3.1 (LICENSE-MIT) ----
+---- const-oid 0.10.2 (LICENSE-MIT), cpufeatures 0.3.1 (LICENSE-MIT) ----
 
 Copyright (c) 2020-2026 The RustCrypto Project Developers
 
@@ -2134,6 +2185,34 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+---- equivalent 1.0.3 (LICENSE-MIT) ----
+
+Copyright (c) 2016--2023
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
 ---- errno 0.3.14 (LICENSE-MIT) ----
 
 Copyright (c) 2014 Chris Wong
@@ -2304,6 +2383,35 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
+---- getrandom 0.3.4 (LICENSE-MIT) ----
+
+Copyright (c) 2018-2025 The rust-random Project Developers
+Copyright (c) 2014 The Rust Project Developers
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
 ---- getrandom 0.4.3 (LICENSE-MIT) ----
 
 Copyright (c) 2018-2026 The rust-random Project Developers
@@ -2356,6 +2464,34 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---- hashbrown 0.17.1 (LICENSE-MIT) ----
+
+Copyright (c) 2016 Amanieu d'Antras
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
 
 ---- heck 0.5.0 (LICENSE-MIT) ----
 
@@ -2536,7 +2672,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
----- hyper-rustls 0.27.10 (LICENSE-MIT), rustls 0.23.46 (LICENSE-MIT), rustls-native-certs 0.8.5 (LICENSE-MIT) ----
+---- hyper-rustls 0.27.10 (LICENSE-MIT), rustls 0.23.46 (LICENSE-MIT), rustls-native-certs 0.8.4 (LICENSE-MIT) ----
 
 Copyright (c) 2016 Joseph Birr-Pixton <jpixton@gmail.com>
 
@@ -2586,7 +2722,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
----- icu_collections 2.4.0 (LICENSE), icu_locale_core 2.4.0 (LICENSE), icu_normalizer 2.4.0 (LICENSE), icu_normalizer_data 2.4.0 (LICENSE), icu_properties 2.4.0 (LICENSE), icu_properties_data 2.4.0 (LICENSE), icu_provider 2.4.0 (LICENSE), litemap 0.8.3 (LICENSE), potential_utf 0.1.6 (LICENSE), tinystr 0.8.5 (LICENSE), writeable 0.6.4 (LICENSE), yoke 0.8.4 (LICENSE), yoke-derive 0.8.4 (LICENSE), zerofrom 0.1.8 (LICENSE), zerofrom-derive 0.1.8 (LICENSE), zerotrie 0.2.5 (LICENSE), zerovec 0.11.9 (LICENSE), zerovec-derive 0.11.7 (LICENSE) ----
+---- icu_collections 2.3.0 (LICENSE), icu_locale_core 2.3.0 (LICENSE), icu_normalizer 2.3.0 (LICENSE), icu_normalizer_data 2.3.0 (LICENSE), icu_properties 2.3.0 (LICENSE), icu_properties_data 2.3.0 (LICENSE), icu_provider 2.3.1 (LICENSE), litemap 0.8.3 (LICENSE), potential_utf 0.1.6 (LICENSE), tinystr 0.8.4 (LICENSE), writeable 0.6.4 (LICENSE), yoke 0.8.3 (LICENSE), yoke-derive 0.8.4 (LICENSE), zerofrom 0.1.8 (LICENSE), zerofrom-derive 0.1.8 (LICENSE), zerotrie 0.2.5 (LICENSE), zerovec 0.11.8 (LICENSE), zerovec-derive 0.11.6 (LICENSE) ----
 
 UNICODE LICENSE V3
 
@@ -2666,6 +2802,34 @@ DEALINGS IN THE SOFTWARE.
 ---- idna_adapter 1.2.2 (LICENSE-MIT) ----
 
 Copyright (c) The rust-url developers
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+---- indexmap 2.14.2 (LICENSE-MIT) ----
+
+Copyright (c) 2016--2017
 
 Permission is hereby granted, free of charge, to any
 person obtaining a copy of this software and associated
@@ -2805,7 +2969,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
----- mio 1.2.5 (LICENSE) ----
+---- mio 1.2.4 (LICENSE) ----
 
 Copyright (c) 2014 Carl Lerche and other MIO contributors
 
@@ -3236,7 +3400,7 @@ is licensed under:
 
 at your option.
 
----- rustls-native-certs 0.8.5 (LICENSE) ----
+---- rustls-native-certs 0.8.4 (LICENSE) ----
 
 Rustls is distributed under the following three licenses:
 
@@ -3248,7 +3412,7 @@ These are included as LICENSE-APACHE, LICENSE-MIT and LICENSE-ISC
 respectively.  You may use this software under the terms of any
 of these licenses, at your option.
 
----- rustls-pki-types 1.16.0 (LICENSE-MIT) ----
+---- rustls-pki-types 1.15.1 (LICENSE-MIT) ----
 
 Copyright (c) 2023 Dirkjan Ochtman <dirkjan@ochtman.nl>
 
@@ -3300,7 +3464,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
----- rustls-webpki 0.103.17 (LICENSE) ----
+---- rustls-webpki 0.103.16 (LICENSE) ----
 
 Except as otherwise noted, this project is licensed under the following
 (ISC-style) terms:
@@ -3346,7 +3510,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
----- schannel 0.1.30 (LICENSE.md) ----
+---- schannel 0.1.29 (LICENSE.md) ----
 
 Copyright (c) 2015 steffengy
 
@@ -3379,7 +3543,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----- sha2 0.11.1 (LICENSE-MIT) ----
+---- sha2 0.11.0 (LICENSE-MIT) ----
 
 Copyright (c) 2016-2026 The RustCrypto Project Developers
 Copyright (c) 2016 Artyom Pavlov
@@ -3530,7 +3694,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
----- smallvec 1.16.6 (LICENSE-MIT) ----
+---- smallvec 1.16.3 (LICENSE-MIT) ----
 
 Copyright (c) 2018 The Servo Project Developers
 
@@ -3833,7 +3997,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----- tokio 1.54.1 (LICENSE) ----
+---- tokio 1.53.3 (LICENSE) ----
 
 MIT License
 
@@ -4078,7 +4242,7 @@ authorization of the copyright holder.
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
----- utf8_iter 1.1.0 (COPYRIGHT) ----
+---- utf8_iter 1.0.4 (COPYRIGHT) ----
 
 Copyright Mozilla Foundation
 
@@ -4123,7 +4287,7 @@ licensed under the Apache License, Version 2.0 <LICENSE-APACHE> or
 <http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
 <LICENSE-MIT> or <http://opensource.org/licenses/MIT>, at your option.
 
----- utf8_iter 1.1.0 (LICENSE-MIT), utf_types 1.0.0 (LICENSE-MIT) ----
+---- utf8_iter 1.0.4 (LICENSE-MIT) ----
 
 Copyright Mozilla Foundation
 
@@ -4179,30 +4343,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
----- utf_types 1.0.0 (COPYRIGHT) ----
-
-Copyright Mozilla Foundation
-
-Licensed under the Apache License (Version 2.0), or the MIT license,
-(the "Licenses") at your option. You may not use this file except in
-compliance with one of the Licenses. You may obtain copies of the
-Licenses at:
-
-   https://www.apache.org/licenses/LICENSE-2.0
-   https://opensource.org/licenses/MIT
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the Licenses is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the Licenses for the specific language governing permissions and
-limitations under the Licenses.
-
---
-
-Test code is dedicated to the Public Domain when so designated (see
-the individual files for PD/CC0-dedicated sections).
-
----- uuid 1.29.3 (LICENSE-MIT) ----
+---- uuid 1.28.0 (LICENSE-MIT) ----
 
 Copyright (c) 2014 The Rust Project Developers
 Copyright (c) 2018 Ashley Mannix, Christopher Armstrong, Dylan DPC, Hunar Roop Kahlon
@@ -4253,7 +4394,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
----- webpki-root-certs 1.0.12 (LICENSE) ----
+---- webpki-root-certs 1.0.9 (LICENSE) ----
 
 # Community Data License Agreement - Permissive - Version 2.0
 
@@ -4341,7 +4482,7 @@ insights.
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE
 
----- winnow 1.0.5 (LICENSE-MIT) ----
+---- winnow 1.0.4 (LICENSE-MIT) ----
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -4362,7 +4503,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----- zeroize 1.9.2 (LICENSE-MIT) ----
+---- zeroize 1.9.1 (LICENSE-MIT) ----
 
 Copyright (c) 2018-2026 The RustCrypto Project Developers
 
@@ -4392,5 +4533,5 @@ DEALINGS IN THE SOFTWARE.
 
 ---- No license file in the package (the license text above applies) ----
 
-abrec 0.1.0, appliance 0.1.0, blockdev 0.1.0, buildkit 0.1.0, crc-catalog 2.5.0, diskimg 0.1.0, graviola 0.4.5, ipc 0.1.0, jni 0.22.4, jni-macros 0.22.4, jni-sys-macros 0.4.1, loadsource 0.1.0, optical 0.1.0, protect 0.1.0, r-efi 6.0.0, rustls-graviola 0.4.0, rustls-platform-verifier-android 0.2.0, supervise 0.1.0, valuable 0.1.1, vrm 0.1.0, xfsfmt 0.1.0
+abrec 0.1.0, appliance 0.1.0, blockdev 0.1.0, buildkit 0.1.0, crc-catalog 2.5.0, dhcp 0.1.0, diskimg 0.1.0, graviola 0.4.1, identity 0.1.0, ipc 0.1.0, jni 0.22.4, jni-macros 0.22.4, jni-sys-macros 0.4.1, loadsource 0.1.0, logd 0.1.0, netd 0.1.0, netlink 0.1.0, ntp 0.1.0, optical 0.1.0, protect 0.1.0, r-efi 5.3.0, r-efi 6.0.0, rustls-graviola 0.4.0, rustls-platform-verifier-android 0.2.0, seed 0.1.0, state 0.1.0, stgd 0.1.0, supervise 0.1.0, ublk 0.1.0, valuable 0.1.1, vrm 0.1.0, xfsfmt 0.1.0
 
