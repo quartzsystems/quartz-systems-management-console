@@ -8,7 +8,7 @@
 
 use buildkit::Ctx;
 use buildkit::host::doctor::{Row, Status};
-use conformance::firmware;
+use conformance::qemu::{CODE_ENV, VARS_ENV};
 
 fn row(name: &str, ok: bool, detail: String) -> Row {
     Row {
@@ -20,10 +20,10 @@ fn row(name: &str, ok: bool, detail: String) -> Row {
 }
 
 fn ovmf() -> Row {
-    let name = format!("OVMF ({})", firmware::CODE_ENV);
-    let found = firmware::locate().and_then(|code| {
+    let name = format!("OVMF ({CODE_ENV})");
+    let found = driver::firmware::locate(CODE_ENV).and_then(|code| {
         // The slot B boot writes its boot entry into the variable store.
-        let vars = firmware::locate_vars(&code)?;
+        let vars = driver::firmware::locate_vars(&code, VARS_ENV)?;
         Ok(format!("{}, {}", code.display(), vars.display()))
     });
     match found {

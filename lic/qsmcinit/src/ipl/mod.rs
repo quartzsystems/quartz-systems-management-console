@@ -193,6 +193,7 @@ mod on_console {
         host.facts.host = loaded.host_name;
         host.facts.zone = loaded.zone;
         host.facts.serial = loaded.serial;
+        host.facts.machine = loaded.machine;
     }
 
     /// The console's identity: made at the first IPL that has a data
@@ -225,10 +226,9 @@ mod on_console {
 
     /// The processor's line, and its code when it lacks something.
     fn processor(host: &mut Host) {
-        let lacking = crate::cpu::lacking();
-        let line = crate::cpu::line(&lacking);
-        host.line(&line);
-        host.facts.processor = crate::cpu::fact(&lacking);
+        let lacking = processor::lacking();
+        host.line(&release::processor::line(&lacking));
+        host.facts.processor = release::processor::fact(&lacking);
         if !lacking.is_empty() {
             host.post(&refcode::PROCESSOR_LACKS, &lacking.join(", "));
         }

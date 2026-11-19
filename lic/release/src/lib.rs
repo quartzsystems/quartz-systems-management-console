@@ -9,6 +9,7 @@
 //!
 //! - [`names`]: what a QS/MC load source carries that is its own.
 //! - [`fact`]: the keys of the control socket's status.
+//! - [`processor`]: QS/MC's words for what the processor lacks.
 //! - [`screen`]: the status screen's text, which PID 1 draws and the
 //!   conformance harness reads.
 
@@ -16,6 +17,7 @@
 
 pub mod fact;
 pub mod names;
+pub mod processor;
 pub mod screen;
 
 pub use appliance::{Appliance, Event, LoadSourceNames};

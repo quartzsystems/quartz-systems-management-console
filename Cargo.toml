@@ -38,6 +38,10 @@ netd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server",
 seed = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
 identity = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
 stgd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
+processor = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
+inventory = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
+# base/qemu, the harness's QEMU driver, named as QS/VS's harness names it.
+driver = { package = "qemu", git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
 buildkit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
 vrm = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
 diskimg = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }

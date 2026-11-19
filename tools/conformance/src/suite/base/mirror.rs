@@ -126,7 +126,8 @@ pub fn mirror(run: &Run<'_>) -> Result<String, String> {
     let deadline = run.deadline();
     // The set notices at the first transfer to the unit gone.
     let written = write_for(channel(&mut guest)?, 5)?;
-    guest.seen(&posted(&refcode::UNIT_FAILED, "unit 2, serial "), deadline)?;
+    // The disk is there when it fails: the inventory names its place.
+    guest.seen(&posted(&refcode::UNIT_FAILED, "unit 2 at P"), deadline)?;
     power_off(&mut guest)?;
     drop(guest);
 
@@ -203,7 +204,7 @@ fn storage_killed(run: &Run<'_>) -> Result<String, String> {
     let prefix = posted(&refcode::RESYNC_STARTED, "units in step again, ");
     let session: &crate::qemu::session::Session = &guest;
     let copied: Vec<String> = session
-        .log
+        .log()
         .lines()
         .filter_map(|l| l.strip_prefix(prefix.as_str()))
         .map(|rest| rest.split(" MiB").next().unwrap_or(rest).to_string())

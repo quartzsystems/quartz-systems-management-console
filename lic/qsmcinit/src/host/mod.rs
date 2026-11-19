@@ -64,8 +64,12 @@ pub struct Facts {
     pub serial: String,
     /// The display zone.
     pub zone: Zone,
-    /// The management line, as the network service last noted it.
+    /// The `open` interface's line, as the network service last noted it.
     pub management: String,
+    /// The `private` interface's line; none until it is noted.
+    pub private: String,
+    /// The machine, from the inventory.
+    pub machine: String,
     /// What is mounted at `/data`: the device, or `memory`.
     pub data: String,
     /// What the processor has of what the cryptography needs.
@@ -133,6 +137,8 @@ impl Host {
                 serial: String::new(),
                 zone: Zone::UTC,
                 management: "none: the network service has not started".into(),
+                private: "none configured".into(),
+                machine: "not read yet".into(),
                 data: "memory".into(),
                 processor: String::new(),
             },
@@ -321,6 +327,7 @@ impl Host {
             (fact::RECORD, record),
             (fact::HOST, self.facts.host.clone()),
             (fact::MANAGEMENT, self.facts.management.clone()),
+            (fact::PRIVATE, self.facts.private.clone()),
             (fact::TIME, now.to_string()),
             (fact::DATE, self.facts.zone.display(now)),
             (fact::LOAD_SOURCE, load_source),
@@ -331,6 +338,7 @@ impl Host {
                 if self.ready { "yes" } else { "no" }.to_string(),
             ),
             (fact::PROCESSOR, self.facts.processor.clone()),
+            (fact::MACHINE, self.facts.machine.clone()),
         ];
         supervise::control::HostStatus {
             facts: facts.into_iter().map(|(k, v)| (k.to_string(), v)).collect(),

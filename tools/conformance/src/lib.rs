@@ -27,5 +27,4 @@ pub mod qemu;
 pub mod suite;
 
 pub use error::HarnessError;
-pub use qemu::firmware;
 pub use suite::{Images, Media, Report, Suite, TestImage};

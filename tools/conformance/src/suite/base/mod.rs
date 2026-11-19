@@ -106,7 +106,7 @@ impl Drop for Guest<'_> {
     fn drop(&mut self) {
         self.session.kill();
         let mut log = self.log.borrow_mut();
-        log.push_str(&self.session.log);
+        log.push_str(self.session.log());
         log.push_str("\n----- the guest ended -----\n");
     }
 }
@@ -190,7 +190,7 @@ impl<'a> Run<'a> {
 
     /// Start a guest.
     pub fn boot(&self, machine: &Machine) -> Result<Guest<'a>, String> {
-        let session = Session::spawn(self.launch, machine)?;
+        let session = Session::spawn(self.launch, machine, self.work)?;
         Ok(Guest {
             session,
             log: self.log,

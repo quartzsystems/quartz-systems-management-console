@@ -2,24 +2,19 @@
 // licensed under the terms of the MIT license which can be found in the
 // root directory of this project.
 
-//! The QEMU driver: q35, OVMF by pflash, the serial port captured from
-//! standard output, KVM with the host's processor when the build
-//! machine has it. A boot waits for lines in order and stops QEMU.
+//! `base/qemu` (`driver`) as QS/MC's harness uses it: QS/MC's variables,
+//! its machine's size, and the boots of Phase 0's steps. The session's
+//! cursor, the machine a suite describes and the test hooks' channel are
+//! the harness's own (`session`, `channel`).
 
 pub mod channel;
-pub mod firmware;
 pub mod session;
-pub mod vars;
 
 use std::env;
-use std::ffi::OsString;
-use std::fs::OpenOptions;
-use std::io::Read;
-use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
-use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
-use std::thread;
+use std::path::PathBuf;
 use std::time::{Duration, Instant};
+
+pub use driver::{term, vars};
 
 use crate::error::HarnessError;
 
@@ -29,19 +24,17 @@ pub const QEMU_ENV: &str = "QSMC_QEMU";
 pub const NO_KVM_ENV: &str = "QSMC_NO_KVM";
 /// Seconds a boot may take to show what it must (60).
 pub const TIMEOUT_ENV: &str = "QSMC_BOOT_TIMEOUT";
+/// The variable naming OVMF's code image.
+pub const CODE_ENV: &str = "QSMC_OVMF_CODE";
+/// The variable naming OVMF's variable store template.
+pub const VARS_ENV: &str = "QSMC_OVMF_VARS";
 
 /// The default of [`TIMEOUT_ENV`].
 const TIMEOUT: Duration = Duration::from_secs(60);
-
-/// Whether `/dev/kvm` opens read-write.
-pub fn kvm_usable() -> bool {
-    cfg!(target_arch = "x86_64")
-        && OpenOptions::new()
-            .read(true)
-            .write(true)
-            .open("/dev/kvm")
-            .is_ok()
-}
+/// A console's memory, MiB.
+pub const MEMORY_MB: u32 = 1024;
+/// A console's processors.
+pub const CPUS: u32 = 2;
 
 /// What every boot shares: the binary, the firmware, KVM or not.
 #[derive(Clone, Debug)]
@@ -61,32 +54,39 @@ pub struct Launch {
 impl Launch {
     /// From the host and the environment.
     pub fn detect() -> Result<Self, HarnessError> {
-        let firmware = firmware::locate()?;
-        let vars = firmware::locate_vars(&firmware)?;
+        let firmware = driver::firmware::locate(CODE_ENV)?;
+        let vars = driver::firmware::locate_vars(&firmware, VARS_ENV)?;
         let timeout = env::var(TIMEOUT_ENV)
             .ok()
             .and_then(|s| s.parse().ok())
             .map_or(TIMEOUT, Duration::from_secs);
         Ok(Self {
-            qemu: env::var_os(QEMU_ENV).map_or_else(|| "qemu-system-x86_64".into(), PathBuf::from),
+            qemu: driver::launch::locate(QEMU_ENV)?,
             firmware,
             vars,
-            kvm: env::var_os(NO_KVM_ENV).is_none() && kvm_usable(),
+            kvm: driver::launch::kvm_wanted(NO_KVM_ENV),
             timeout,
         })
     }
 
-    /// The processor model when none is asked for: the host's under
-    /// KVM, else the emulator's fullest.
-    pub fn default_cpu(&self) -> &'static str {
-        if self.kvm { "host" } else { "max" }
+    /// The base driver's launch of a console: its firmware, size and
+    /// KVM, and nothing attached yet.
+    pub fn base(&self) -> driver::Launch {
+        driver::Launch {
+            qemu: self.qemu.clone(),
+            firmware: self.firmware.clone(),
+            kvm: self.kvm,
+            memory_mb: MEMORY_MB,
+            cpus: CPUS,
+            ..driver::Launch::default()
+        }
     }
 }
 
 /// What a boot starts from.
 #[derive(Clone, Debug)]
 pub enum Drive {
-    /// A disk image, on virtio, as a snapshot: the image is left as built.
+    /// A disk image, as a snapshot: the image is left as built.
     Disk(PathBuf),
     /// An ISO, as a CD-ROM.
     Cdrom(PathBuf),
@@ -99,73 +99,26 @@ pub struct Boot {
     pub drive: Drive,
     /// This boot's own copy of the variable store.
     pub vars: PathBuf,
-    /// The processor model; the launch's default when `None`.
+    /// The processor model; the host's when `None`.
     pub cpu: Option<&'static str>,
     /// What the serial port must show, in this order.
     pub expect: Vec<String>,
 }
 
-fn join(head: &str, path: &Path) -> OsString {
-    let mut s = OsString::from(head);
-    s.push(path.as_os_str());
-    s
-}
-
-/// QEMU's arguments for `boot`.
-pub fn args(l: &Launch, boot: &Boot) -> Vec<OsString> {
-    let mut a: Vec<OsString> = Vec::new();
-    let mut push = |words: &[&str]| a.extend(words.iter().map(OsString::from));
-    push(&["-machine", "q35", "-m", "1024", "-smp", "2"]);
-    if l.kvm {
-        push(&["-enable-kvm"]);
-    }
-    push(&["-cpu", boot.cpu.unwrap_or_else(|| l.default_cpu())]);
-    push(&["-nodefaults", "-no-user-config", "-nographic", "-no-reboot"]);
-    push(&["-rtc", "base=utc", "-vga", "std", "-serial", "stdio"]);
-    push(&["-monitor", "none", "-nic", "none"]);
-    a.push("-drive".into());
-    a.push(join("if=pflash,format=raw,readonly=on,file=", &l.firmware));
-    a.push("-drive".into());
-    a.push(join("if=pflash,format=raw,file=", &boot.vars));
+/// The base driver's launch of `boot`.
+pub fn launch_of(l: &Launch, boot: &Boot) -> driver::Launch {
+    let mut out = driver::Launch {
+        vars: Some(boot.vars.clone()),
+        cpu: boot.cpu.map(str::to_string),
+        snapshot: true,
+        disk_serial: crate::image::disks::serial(0),
+        ..l.base()
+    };
     match &boot.drive {
-        Drive::Disk(path) => {
-            a.push("-drive".into());
-            a.push(join("if=virtio,format=raw,snapshot=on,file=", path));
-        }
-        Drive::Cdrom(path) => {
-            a.push("-drive".into());
-            a.push(join(
-                "if=none,id=cd,media=cdrom,format=raw,readonly=on,file=",
-                path,
-            ));
-            // On virtio-scsi: OVMF on q35's IDE CD-ROM hangs in the
-            // firmware on about one boot in three, QS/VS's ISO too
-            // (docs/OPEN_QUESTIONS.md item 10).
-            a.extend(["-device", "virtio-scsi-pci,id=scsi", "-device"].map(OsString::from));
-            a.push("scsi-cd,drive=cd,bus=scsi.0".into());
-        }
+        Drive::Disk(path) => out.disk = Some(path.clone()),
+        Drive::Cdrom(path) => out.cdrom = Some(path.clone()),
     }
-    a
-}
-
-/// Forward chunks of a pipe into a channel; it closes at the pipe's end.
-fn pump<R: Read + Send + 'static>(mut reader: R) -> Receiver<String> {
-    let (tx, rx) = mpsc::channel();
-    thread::spawn(move || {
-        let mut buf = [0u8; 4096];
-        loop {
-            match reader.read(&mut buf) {
-                Ok(0) | Err(_) => break,
-                Ok(n) => {
-                    let text = String::from_utf8_lossy(&buf[..n]).replace('\r', "");
-                    if tx.send(text).is_err() {
-                        break;
-                    }
-                }
-            }
-        }
-    });
-    rx
+    out
 }
 
 /// How many of `expect` `log` shows, each after the one before.
@@ -188,85 +141,47 @@ pub fn matched(log: &str, expect: &[String]) -> usize {
 /// in order. Returns the time it took and the log; QEMU is stopped
 /// either way.
 pub fn boot(l: &Launch, step: &'static str, b: &Boot) -> Result<(Duration, String), HarnessError> {
-    let mut child = Command::new(&l.qemu)
-        .args(args(l, b))
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|e| HarnessError::Spawn {
-            qemu: l.qemu.clone(),
-            reason: e.to_string(),
-        })?;
-    let out = child.stdout.take().map(pump);
-    let err = child.stderr.take().map(pump);
+    let launch = launch_of(l, b);
+    let mut session = driver::Session::spawn(&launch)?;
     let start = Instant::now();
-    let mut log = String::new();
-    let mut exited = false;
-    let result = loop {
-        if matched(&log, &b.expect) == b.expect.len() {
-            break Some(start.elapsed());
-        }
-        let left = l.timeout.saturating_sub(start.elapsed());
-        if left.is_zero() || exited {
-            break None;
-        }
-        let wait = left.min(Duration::from_millis(200));
-        match out.as_ref().map(|rx| rx.recv_timeout(wait)) {
-            Some(Ok(text)) => log.push_str(&text),
-            Some(Err(RecvTimeoutError::Timeout)) => {}
-            Some(Err(RecvTimeoutError::Disconnected)) | None => exited = true,
-        }
-        if let Some(rx) = &err {
-            while let Ok(text) = rx.try_recv() {
-                log.push_str(&text);
-            }
-        }
-        if !exited && matches!(child.try_wait(), Ok(Some(_))) {
-            // Take what is left in the pipe before saying it ended.
-            if let Some(rx) = &out {
-                while let Ok(text) = rx.recv_timeout(Duration::from_millis(100)) {
-                    log.push_str(&text);
-                }
-            }
-            exited = true;
-        }
-    };
-    let _ = child.kill();
-    let _ = child.wait();
-    if let Some(elapsed) = result {
-        return Ok((elapsed, log));
+    let deadline = start + l.timeout;
+    let seen = session.wait_for("what the step expects", deadline, |log| {
+        matched(log, &b.expect) == b.expect.len()
+    });
+    session.kill();
+    let log = std::mem::take(&mut session.log);
+    match seen {
+        Ok(()) => Ok((start.elapsed(), log)),
+        Err(e) => Err(HarnessError::Timeout {
+            step,
+            missing: b
+                .expect
+                .get(matched(&log, &b.expect))
+                .cloned()
+                .unwrap_or_default(),
+            after: start.elapsed(),
+            exited: e.contains("QEMU ended"),
+            log,
+        }),
     }
-    let missing = b
-        .expect
-        .get(matched(&log, &b.expect))
-        .cloned()
-        .unwrap_or_default();
-    Err(HarnessError::Timeout {
-        step,
-        missing,
-        after: start.elapsed(),
-        exited,
-        log,
-    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn launch(kvm: bool) -> Launch {
+    fn launch() -> Launch {
         Launch {
             qemu: "qemu".into(),
             firmware: "/f/CODE.fd".into(),
             vars: "/f/VARS.fd".into(),
-            kvm,
+            kvm: true,
             timeout: TIMEOUT,
         }
     }
 
-    fn words(l: &Launch, b: &Boot) -> Vec<String> {
-        args(l, b)
+    fn words(l: &driver::Launch) -> Vec<String> {
+        driver::args(l)
             .into_iter()
             .map(|w| w.to_string_lossy().into_owned())
             .collect()
@@ -277,29 +192,29 @@ mod tests {
     }
 
     #[test]
-    fn the_machine_is_q35_with_ovmf_and_the_drive() {
+    fn a_step_boots_q35_with_ovmf_and_its_drive() {
         let b = Boot {
             drive: Drive::Disk("/t/d.img".into()),
             vars: "/t/v.fd".into(),
             cpu: None,
             expect: Vec::new(),
         };
-        let w = words(&launch(true), &b);
+        let w = words(&launch_of(&launch(), &b));
         assert!(has(&w, &["-machine", "q35"]));
         assert!(has(&w, &["-enable-kvm", "-cpu", "host"]));
+        assert!(has(&w, &["-m", "1024"]));
         assert!(has(&w, &["-serial", "stdio"]));
-        assert!(w.contains(&"if=pflash,format=raw,readonly=on,file=/f/CODE.fd".into()));
         assert!(w.contains(&"if=pflash,format=raw,file=/t/v.fd".into()));
-        assert!(w.contains(&"if=virtio,format=raw,snapshot=on,file=/t/d.img".into()));
-        let tcg = words(
-            &launch(false),
-            &Boot {
-                cpu: Some("qemu64"),
-                ..b
-            },
-        );
-        assert!(!tcg.contains(&"-enable-kvm".into()));
-        assert!(has(&tcg, &["-cpu", "qemu64"]));
+        assert!(w.iter().any(|a| a.ends_with("file=/t/d.img")));
+        assert!(w.contains(&"-snapshot".into()));
+        let iso = Boot {
+            drive: Drive::Cdrom("/t/m.iso".into()),
+            cpu: Some("qemu64"),
+            ..b
+        };
+        let w = words(&launch_of(&launch(), &iso));
+        assert!(has(&w, &["-cpu", "qemu64"]));
+        assert!(w.contains(&"scsi-cd,drive=cd,bus=cdscsi.0".into()));
     }
 
     #[test]

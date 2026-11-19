@@ -4,24 +4,14 @@
 
 //! What can go wrong in a run, with the serial log where there is one.
 
-use std::path::PathBuf;
 use std::time::Duration;
 
 /// A failed run.
 #[derive(Debug, thiserror::Error)]
 pub enum HarnessError {
-    /// OVMF is not where it was looked for.
-    #[error("OVMF {what} not found (set {env}); tried {tried:?}; {hint}")]
-    FirmwareNotFound {
-        /// Which file.
-        what: &'static str,
-        /// The variable that names it.
-        env: &'static str,
-        /// The paths tried.
-        tried: Vec<PathBuf>,
-        /// How to get it.
-        hint: &'static str,
-    },
+    /// QEMU or OVMF could not be found, or QEMU did not start.
+    #[error(transparent)]
+    Driver(#[from] driver::Error),
     /// An image the step needs is not built.
     #[error("{what} is not built; run `cargo run -p build -- all` first")]
     NotBuilt {
@@ -33,14 +23,6 @@ pub enum HarnessError {
     Setup {
         /// The step.
         step: &'static str,
-        /// Why.
-        reason: String,
-    },
-    /// QEMU did not start.
-    #[error("cannot start {qemu}: {reason}")]
-    Spawn {
-        /// The binary.
-        qemu: PathBuf,
         /// Why.
         reason: String,
     },

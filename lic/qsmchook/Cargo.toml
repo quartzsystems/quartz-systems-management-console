@@ -12,6 +12,7 @@ state.workspace = true
 stgd.workspace = true
 supervise.workspace = true
 netd.workspace = true
+inventory.workspace = true
 hex.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]

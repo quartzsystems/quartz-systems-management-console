@@ -47,55 +47,9 @@ pub const FLAKY: Service = Service {
     caps: supervise::table::Caps::Only(&[]),
 };
 
-/// Whether the hook `name` is on for this IPL.
+/// Whether the hook `name` is on for this IPL: an SMBIOS OEM string,
+/// read by `base/inventory`, switches it on.
 pub fn has(name: &str) -> bool {
     let wanted = format!("{}{}={name}", release::KEY_PREFIX, release::HOOK_KEY);
-    std::fs::read("/sys/firmware/dmi/tables/DMI")
-        .is_ok_and(|table| oem_strings_of(&table).contains(&wanted))
-}
-
-/// The OEM strings (type 11) of an SMBIOS table: each structure is its
-/// formatted part (its second byte is that part's length), then its
-/// strings, each ending with a zero, and a zero more after the last.
-/// The test hooks' binary reads them the same way (`qsmchook`).
-fn oem_strings_of(table: &[u8]) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut at = 0;
-    while at + 4 <= table.len() {
-        let (kind, len) = (table[at], usize::from(table[at + 1]));
-        if len < 4 {
-            break;
-        }
-        let strings = at + len;
-        let mut end = strings;
-        while end + 1 < table.len() && (table[end], table[end + 1]) != (0, 0) {
-            end += 1;
-        }
-        if kind == 11 {
-            let area = table.get(strings..end).unwrap_or_default();
-            out.extend(
-                area.split(|b| *b == 0)
-                    .filter(|s| !s.is_empty())
-                    .map(|s| String::from_utf8_lossy(s).into_owned()),
-            );
-        }
-        if kind == 127 {
-            break;
-        }
-        at = end + 2;
-    }
-    out
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn the_oem_strings_are_read_from_the_table() {
-        let mut table = b"\x01\x04\x01\x00Vendor\x00\x00".to_vec();
-        table.extend_from_slice(b"\x0b\x05\x02\x00\x02qsmc.hook=churn\x00second\x00\x00");
-        table.extend_from_slice(b"\x7f\x04\x04\x00\x00\x00");
-        assert_eq!(oem_strings_of(&table), ["qsmc.hook=churn", "second"]);
-    }
+    inventory::oem_strings(&inventory::Roots::default()).contains(&wanted)
 }

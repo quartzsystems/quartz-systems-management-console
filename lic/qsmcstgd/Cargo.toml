@@ -10,6 +10,7 @@ publish.workspace = true
 release = { path = "../release", version = "0.1.0" }
 refcode = { path = "../refcode", version = "0.1.0" }
 stgd.workspace = true
+inventory.workspace = true
 
 [lints]
 workspace = true

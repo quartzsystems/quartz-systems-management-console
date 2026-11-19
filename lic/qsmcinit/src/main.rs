@@ -11,7 +11,6 @@
 #![cfg_attr(not(target_os = "linux"), allow(dead_code))]
 
 mod console;
-mod cpu;
 #[cfg(all(target_os = "linux", test_hooks))]
 mod hooks;
 #[cfg(target_os = "linux")]

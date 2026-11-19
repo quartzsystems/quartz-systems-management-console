@@ -2,21 +2,18 @@
 // licensed under the terms of the MIT license which can be found in the
 // root directory of this project.
 
-//! A running guest for the base system's suites: the machine as a
-//! [`Machine`] describes it, its serial port read as it comes, the test
-//! hooks' channel on its second serial port and QEMU's monitor on a
-//! Unix socket.
+//! A running guest for the suites: the machine a [`Machine`] describes,
+//! launched by the base driver, with QS/MC's cursor over its serial log
+//! ([`Session::expect`] looks after what it found last), the test hooks'
+//! channel on the second serial port, and the frames of the NIC captured
+//! when asked.
 
-use std::ffi::OsString;
-use std::io::{Read, Write};
-use std::os::unix::net::UnixStream;
-use std::path::PathBuf;
-use std::process::{Child, Command, Stdio};
-use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
+use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
 use super::Launch;
 use super::channel::Channel;
+use super::term::Grid;
 
 /// A disk of the machine.
 #[derive(Clone, Debug)]
@@ -25,9 +22,10 @@ pub struct Disk {
     pub path: PathBuf,
     /// Its serial number.
     pub serial: String,
-    /// Whether the guest's writes are thrown away. Disk `n`'s drive is
-    /// `hd<n>`: `drive_del hd<n>` at the monitor fails every transfer to
-    /// it from then on, as a disk that fails while the guest runs.
+    /// Whether the guest's writes are thrown away. The first disk's
+    /// drive is `hd`, disk `n`'s `hd<n>`: `drive_del hd<n>` at the
+    /// monitor fails every transfer to it from then on, as a disk that
+    /// fails while the guest runs.
     pub snapshot: bool,
 }
 
@@ -38,7 +36,7 @@ pub struct Machine {
     pub disks: Vec<Disk>,
     /// This boot's variable store.
     pub vars: PathBuf,
-    /// The processor model; the launch's default when `None`.
+    /// The processor model; the host's when `None`.
     pub cpu: Option<String>,
     /// The MAC of a virtio NIC on QEMU's user network; none when `None`.
     pub nic: Option<String>,
@@ -50,163 +48,113 @@ pub struct Machine {
     pub monitor: Option<PathBuf>,
     /// SMBIOS OEM strings: the test hooks' switches.
     pub oem: Vec<String>,
+    /// The installation ISO, as a CD-ROM started before the disks.
+    pub cdrom: Option<PathBuf>,
+    /// The installation ISO as a USB stick, started before the disks.
+    pub usb: Option<PathBuf>,
+    /// The harness types at the serial port.
+    pub keys: bool,
 }
 
-/// QEMU's arguments for `m`.
-pub fn args(l: &Launch, m: &Machine) -> Vec<OsString> {
-    let mut a: Vec<OsString> = Vec::new();
-    let mut push = |words: &[&str]| a.extend(words.iter().map(OsString::from));
-    push(&["-machine", "q35", "-m", "1024", "-smp", "2"]);
-    if l.kvm {
-        push(&["-enable-kvm"]);
-    }
-    let cpu = m.cpu.clone().unwrap_or_else(|| l.default_cpu().to_string());
-    a.extend(["-cpu".into(), cpu.into()]);
-    a.extend(
-        [
-            "-nodefaults",
-            "-no-user-config",
-            "-nographic",
-            "-no-reboot",
-            "-rtc",
-            "base=utc",
-            "-vga",
-            "std",
-            "-serial",
-            "stdio",
-        ]
-        .map(OsString::from),
-    );
-    let mut pflash = OsString::from("if=pflash,format=raw,readonly=on,file=");
-    pflash.push(&l.firmware);
-    a.extend(["-drive".into(), pflash]);
-    let mut vars = OsString::from("if=pflash,format=raw,file=");
-    vars.push(&m.vars);
-    a.extend(["-drive".into(), vars]);
+/// The base driver's launch of `m`. The driver makes either every disk
+/// a snapshot or none: when they differ, a disk that is to be one is
+/// copied to `scratch` first and the copy written to.
+pub fn launch_of(l: &Launch, m: &Machine, scratch: &Path) -> Result<driver::Launch, String> {
+    let all = !m.disks.is_empty() && m.disks.iter().all(|d| d.snapshot);
+    let mut disks = Vec::new();
     for (i, d) in m.disks.iter().enumerate() {
-        let mut drive = OsString::from(format!(
-            "if=none,id=hd{i},format=raw,discard=unmap,detect-zeroes=unmap,snapshot={},file=",
-            if d.snapshot { "on" } else { "off" }
-        ));
-        drive.push(&d.path);
-        a.extend(["-drive".into(), drive, "-device".into()]);
-        a.push(format!("virtio-blk-pci,drive=hd{i},serial={}", d.serial).into());
-    }
-    if let Some(hook) = &m.hook {
-        let mut chardev = OsString::from("socket,id=hook,path=");
-        chardev.push(hook);
-        chardev.push(",server=on,wait=off");
-        a.extend([
-            "-chardev".into(),
-            chardev,
-            "-serial".into(),
-            "chardev:hook".into(),
-        ]);
-    }
-    a.push("-monitor".into());
-    match &m.monitor {
-        Some(path) => {
-            let mut unix = OsString::from("unix:");
-            unix.push(path);
-            unix.push(",server=on,wait=off");
-            a.push(unix);
+        if d.snapshot && !all {
+            let copy = scratch.join(format!("snapshot-{i}.img"));
+            driver::disk::sparse_copy(&d.path, &copy)?;
+            disks.push((copy, d.serial.clone()));
+        } else {
+            disks.push((d.path.clone(), d.serial.clone()));
         }
-        None => a.push("none".into()),
     }
-    match &m.nic {
-        Some(mac) => {
-            a.extend(["-netdev".into(), "user,id=net0".into()]);
-            if let Some(dump) = &m.dump {
-                let mut filter = OsString::from("filter-dump,id=dump0,netdev=net0,file=");
-                filter.push(dump);
-                a.extend(["-object".into(), filter]);
-            }
-            a.push("-device".into());
-            a.push(format!("virtio-net-pci,netdev=net0,mac={mac}").into());
-        }
-        None => a.extend(["-nic", "none"].map(OsString::from)),
-    }
-    for oem in &m.oem {
-        a.extend(["-smbios".into(), format!("type=11,value={oem}").into()]);
-    }
-    a
+    let mut disks = disks.into_iter();
+    let first = disks.next();
+    // The monitor is there for the frames' capture when nothing else
+    // asked for it.
+    let monitor = m
+        .monitor
+        .clone()
+        .or_else(|| m.dump.as_ref().map(|d| d.with_extension("monitor.sock")));
+    Ok(driver::Launch {
+        vars: Some(m.vars.clone()),
+        cpu: m.cpu.clone(),
+        disk_serial: first.as_ref().map(|(_, s)| s.clone()).unwrap_or_default(),
+        disk: first.map(|(p, _)| p),
+        extra: disks
+            .map(|(path, serial)| driver::Drive {
+                path,
+                serial,
+                place: None,
+            })
+            .collect(),
+        snapshot: all,
+        nic: m.nic.clone(),
+        hook: m.hook.clone(),
+        monitor,
+        oem: m.oem.clone(),
+        cdrom: m.cdrom.clone(),
+        usb: m.usb.clone(),
+        media_first: m.cdrom.is_some() || m.usb.is_some(),
+        keys: m.keys,
+        ..l.base()
+    })
 }
 
 /// A running guest.
 pub struct Session {
-    child: Child,
-    rx: Receiver<String>,
-    /// What the serial port has shown, and QEMU's standard error.
-    pub log: String,
+    inner: driver::Session,
     /// Where [`Session::expect`] looks from.
     at: usize,
     exited: bool,
-    hook: Option<PathBuf>,
-    monitor: Option<PathBuf>,
     channel: Option<Channel>,
 }
 
-fn pump<R: Read + Send + 'static>(mut reader: R, tx: mpsc::Sender<String>) {
-    std::thread::spawn(move || {
-        let mut buf = [0u8; 4096];
-        loop {
-            match reader.read(&mut buf) {
-                Ok(0) | Err(_) => break,
-                Ok(n) => {
-                    let text = String::from_utf8_lossy(&buf[..n]).replace('\r', "");
-                    if tx.send(text).is_err() {
-                        break;
-                    }
-                }
-            }
-        }
-    });
-}
-
 impl Session {
-    /// Start QEMU for `m`.
-    pub fn spawn(l: &Launch, m: &Machine) -> Result<Self, String> {
-        for socket in [&m.hook, &m.monitor].into_iter().flatten() {
-            let _ = std::fs::remove_file(socket);
-        }
-        let mut child = Command::new(&l.qemu)
-            .args(args(l, m))
-            .stdin(Stdio::null())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .map_err(|e| format!("cannot start {}: {e}", l.qemu.display()))?;
-        let (tx, rx) = mpsc::channel();
-        if let Some(out) = child.stdout.take() {
-            pump(out, tx.clone());
-        }
-        if let Some(err) = child.stderr.take() {
-            pump(err, tx);
-        }
-        Ok(Self {
-            child,
-            rx,
-            log: String::new(),
+    /// Start QEMU for `m`, its scratch files under `scratch`.
+    pub fn spawn(l: &Launch, m: &Machine, scratch: &Path) -> Result<Self, String> {
+        let launch = launch_of(l, m, scratch)?;
+        let inner = driver::Session::spawn(&launch).map_err(|e| e.to_string())?;
+        let mut session = Self {
+            inner,
             at: 0,
             exited: false,
-            hook: m.hook.clone(),
-            monitor: m.monitor.clone(),
             channel: None,
-        })
+        };
+        if let Some(dump) = &m.dump {
+            // Added before the firmware has left the reset vector: the
+            // console's first frame is seconds away.
+            session.capture(dump)?;
+        }
+        Ok(session)
     }
 
-    /// Take what has come, waiting at most `wait`.
-    fn read(&mut self, wait: Duration) {
-        match self.rx.recv_timeout(wait) {
-            Ok(text) => {
-                self.log.push_str(&text);
-                while let Ok(more) = self.rx.try_recv() {
-                    self.log.push_str(&more);
+    /// Write every frame of the NIC to `dump` from now on: QEMU's
+    /// filter, added at the monitor.
+    fn capture(&mut self, dump: &Path) -> Result<(), String> {
+        let command = format!(
+            "object_add filter-dump,id=dump0,netdev=net0,file={}",
+            dump.display()
+        );
+        let give_up = Instant::now() + Duration::from_secs(5);
+        loop {
+            match self.inner.monitor(&command) {
+                Ok(()) => return Ok(()),
+                // QEMU makes the socket as it starts.
+                Err(_) if Instant::now() < give_up => {
+                    std::thread::sleep(Duration::from_millis(20));
                 }
+                Err(e) => return Err(e),
             }
-            Err(RecvTimeoutError::Timeout) => {}
-            Err(RecvTimeoutError::Disconnected) => self.exited = true,
         }
+    }
+
+    /// What the serial port has shown, and QEMU's standard error.
+    pub fn log(&self) -> &str {
+        &self.inner.log
     }
 
     /// Wait until `done` says so of the whole log, by `deadline`.
@@ -216,19 +164,16 @@ impl Session {
         deadline: Instant,
         done: impl Fn(&str) -> bool,
     ) -> Result<(), String> {
-        loop {
-            if done(&self.log) {
-                return Ok(());
-            }
-            if self.exited {
-                return Err(format!("{what}: QEMU ended first"));
-            }
-            let left = deadline.saturating_duration_since(Instant::now());
-            if left.is_zero() {
-                return Err(format!("{what}: not seen in time"));
-            }
-            self.read(left.min(Duration::from_millis(100)));
+        if self.exited && !done(&self.inner.log) {
+            return Err(format!("{what}: QEMU ended first"));
         }
+        let seen = self.inner.wait_for(what, deadline, done);
+        if let Err(e) = &seen
+            && e.contains("QEMU ended")
+        {
+            self.exited = true;
+        }
+        seen
     }
 
     /// Wait for `text` after what was expected before, by `deadline`.
@@ -237,7 +182,7 @@ impl Session {
         self.wait_for(&format!("`{text}`"), deadline, |log| {
             log[from..].contains(text)
         })?;
-        if let Some(i) = self.log[from..].find(text) {
+        if let Some(i) = self.inner.log[from..].find(text) {
             self.at = from + i + text.len();
         }
         Ok(())
@@ -250,8 +195,7 @@ impl Session {
 
     /// Whether the log has `text` so far.
     pub fn said(&mut self, text: &str) -> bool {
-        self.read(Duration::ZERO);
-        self.log.contains(text)
+        self.inner.said(text)
     }
 
     /// The rest of the line after what was expected last.
@@ -260,32 +204,56 @@ impl Session {
         self.wait_for("the end of the line", deadline, |log| {
             log[from..].contains('\n')
         })?;
-        let rest = &self.log[from..];
+        let rest = &self.inner.log[from..];
         Ok(rest[..rest.find('\n').unwrap_or(rest.len())].to_string())
     }
 
     /// Mark everything said so far as passed over by [`Session::expect`].
     pub fn skip(&mut self) {
-        self.read(Duration::ZERO);
-        self.at = self.log.len();
+        self.inner.drain();
+        self.at = self.inner.log.len();
     }
 
     /// A command to QEMU's monitor.
     pub fn monitor(&mut self, command: &str) -> Result<(), String> {
-        let path = self.monitor.clone().ok_or("this guest has no monitor")?;
-        let mut stream = UnixStream::connect(&path).map_err(|e| format!("the monitor: {e}"))?;
-        stream
-            .write_all(format!("{command}\n").as_bytes())
-            .map_err(|e| format!("the monitor: {e}"))?;
-        // Its banner and the command's echo: the command was taken.
-        std::thread::sleep(Duration::from_millis(300));
-        Ok(())
+        self.inner.monitor(command)
+    }
+
+    /// Type `keys` at the guest's keyboard through the monitor: each a
+    /// `sendkey` name.
+    pub fn send_keys(&mut self, keys: &[String]) -> Result<(), String> {
+        self.inner.send_keys(keys)
+    }
+
+    /// Type `text` at the guest's serial port.
+    pub fn type_keys(&mut self, text: &str) -> Result<(), String> {
+        self.inner.type_keys(text)
+    }
+
+    /// The serial port as a 24x80 terminal shows it now.
+    pub fn grid(&mut self) -> &Grid {
+        self.inner.grid()
+    }
+
+    /// Wait until the terminal's grid satisfies `found` and has stopped
+    /// changing, by `deadline`: its text then.
+    pub fn screen(
+        &mut self,
+        what: &str,
+        deadline: Instant,
+        found: impl Fn(&Grid) -> bool,
+    ) -> Result<String, String> {
+        self.inner.screen(what, deadline, found)
     }
 
     /// The test hooks' channel, connected and answering, by `deadline`.
     pub fn channel(&mut self, deadline: Instant) -> Result<&mut Channel, String> {
         if self.channel.is_none() {
-            let path = self.hook.clone().ok_or("this guest has no channel")?;
+            let path = self
+                .inner
+                .hook()
+                .map(Path::to_path_buf)
+                .ok_or("this guest has no channel")?;
             let mut channel = Channel::connect(&path, deadline)?;
             channel.wait_ready(deadline)?;
             self.channel = Some(channel);
@@ -295,38 +263,16 @@ impl Session {
 
     /// Wait for QEMU to end by itself, by `deadline`: how long it took.
     pub fn wait_exit(&mut self, deadline: Instant) -> Result<Duration, String> {
-        let start = Instant::now();
-        loop {
-            if matches!(self.child.try_wait(), Ok(Some(_))) {
-                // What is left in the pipes.
-                while !self.exited {
-                    self.read(Duration::from_millis(100));
-                    if start.elapsed() > Duration::from_secs(60) {
-                        break;
-                    }
-                }
-                return Ok(start.elapsed());
-            }
-            if Instant::now() >= deadline {
-                return Err("QEMU did not end in time".into());
-            }
-            self.read(Duration::from_millis(100));
-        }
+        let took = self.inner.wait_exit(deadline)?;
+        self.exited = true;
+        Ok(took)
     }
 
     /// Pull the power: QEMU is killed.
     pub fn kill(&mut self) {
-        let _ = self.child.kill();
-        let _ = self.child.wait();
-        self.read(Duration::from_millis(50));
+        self.inner.kill();
+        self.exited = true;
         self.channel = None;
-    }
-}
-
-impl Drop for Session {
-    fn drop(&mut self) {
-        let _ = self.child.kill();
-        let _ = self.child.wait();
     }
 }
 
@@ -334,15 +280,25 @@ impl Drop for Session {
 mod tests {
     use super::*;
 
-    #[test]
-    fn the_machine_s_switches_are_on_the_command_line() {
-        let l = Launch {
+    fn launch() -> Launch {
+        Launch {
             qemu: "qemu".into(),
             firmware: "/f/CODE.fd".into(),
             vars: "/f/VARS.fd".into(),
             kvm: true,
             timeout: Duration::from_secs(60),
-        };
+        }
+    }
+
+    fn words(l: &driver::Launch) -> Vec<String> {
+        driver::args(l)
+            .into_iter()
+            .map(|w| w.to_string_lossy().into_owned())
+            .collect()
+    }
+
+    #[test]
+    fn the_machine_s_switches_are_on_the_command_line() {
         let m = Machine {
             disks: vec![Disk {
                 path: "/t/a.img".into(),
@@ -356,21 +312,44 @@ mod tests {
             oem: vec!["qsmc.hook=churn".into()],
             ..Machine::default()
         };
-        let w: Vec<String> = args(&l, &m)
-            .into_iter()
-            .map(|w| w.to_string_lossy().into_owned())
-            .collect();
+        let w = words(&launch_of(&launch(), &m, Path::new("/t")).unwrap());
         let has = |x: &str| w.iter().any(|a| a == x);
-        assert!(has("virtio-blk-pci,drive=hd0,serial=QSMCHD0"));
-        assert!(
-            w.iter()
-                .any(|a| a.contains("snapshot=on") && a.ends_with("/t/a.img"))
-        );
+        assert!(has("virtio-blk-pci,drive=hd,serial=QSMCHD0"));
+        assert!(has("-snapshot"));
         assert!(has("socket,id=hook,path=/t/hook.sock,server=on,wait=off"));
         assert!(has("chardev:hook"));
         assert!(has("type=11,value=qsmc.hook=churn"));
-        assert!(has("filter-dump,id=dump0,netdev=net0,file=/t/net.pcap"));
         assert!(has("virtio-net-pci,netdev=net0,mac=52:54:00:12:34:56"));
-        assert!(has("none"));
+        // The capture's monitor.
+        assert!(has("unix:/t/net.monitor.sock,server=on,wait=off"));
+    }
+
+    #[test]
+    fn a_disk_that_is_kept_beside_one_that_is_not_is_copied() {
+        let dir = std::env::temp_dir().join(format!("qsmc-session-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("a.img"), b"image").unwrap();
+        let m = Machine {
+            disks: vec![
+                Disk {
+                    path: dir.join("a.img"),
+                    serial: "QSMCHD0".into(),
+                    snapshot: true,
+                },
+                Disk {
+                    path: dir.join("b.img"),
+                    serial: "QSMCHD1".into(),
+                    snapshot: false,
+                },
+            ],
+            ..Machine::default()
+        };
+        let l = launch_of(&launch(), &m, &dir).unwrap();
+        assert!(!l.snapshot);
+        assert_eq!(l.disk, Some(dir.join("snapshot-0.img")));
+        assert_eq!(std::fs::read(dir.join("snapshot-0.img")).unwrap(), b"image");
+        assert_eq!(l.extra[0].path, dir.join("b.img"));
+        std::fs::remove_dir_all(&dir).unwrap();
     }
 }

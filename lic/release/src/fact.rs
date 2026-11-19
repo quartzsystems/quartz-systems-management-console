@@ -19,8 +19,11 @@ pub const SLOT: &str = "slot";
 pub const RECORD: &str = "record";
 /// The host name.
 pub const HOST: &str = "host";
-/// The management address, or the reason there is none.
+/// The `open` interface's line: its address, or the reason there is
+/// none. The base crates' management line.
 pub const MANAGEMENT: &str = appliance::NOTE_MANAGEMENT;
+/// The `private` interface's line, as the network service notes it.
+pub const PRIVATE: &str = "private";
 /// Seconds since the epoch.
 pub const TIME: &str = "time";
 /// The date and time as displayed.
@@ -35,3 +38,5 @@ pub const DATA: &str = "data";
 pub const READY: &str = "ready";
 /// What the processor has of what the cryptography needs.
 pub const PROCESSOR: &str = "processor";
+/// The machine: its serial number and what the inventory counts.
+pub const MACHINE: &str = "machine";

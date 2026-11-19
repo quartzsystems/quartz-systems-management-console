@@ -136,6 +136,7 @@ dependencies = [
  "conformance",
  "diskimg",
  "loadsource",
+ "qemu",
  "release",
  "serde_json",
  "tracing",
@@ -264,6 +265,7 @@ dependencies = [
  "identity",
  "loadsource",
  "ntp",
+ "qemu",
  "qsmchook",
  "refcode",
  "release",
@@ -436,7 +438,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -824,6 +826,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "inventory"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=f0ef0f15c216c4ac6203f05e141c92926aee5705#f0ef0f15c216c4ac6203f05e141c92926aee5705"
+dependencies = [
+ "appliance",
+ "state",
+]
+
+[[package]]
 name = "ipc"
 version = "0.1.0"
 source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=423c65dea0b8c9fab3d2c3efaba6e9f27e679c99#423c65dea0b8c9fab3d2c3efaba6e9f27e679c99"
@@ -1092,6 +1103,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "processor"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=f0ef0f15c216c4ac6203f05e141c92926aee5705#f0ef0f15c216c4ac6203f05e141c92926aee5705"
+
+[[package]]
 name = "protect"
 version = "0.1.0"
 source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=423c65dea0b8c9fab3d2c3efaba6e9f27e679c99#423c65dea0b8c9fab3d2c3efaba6e9f27e679c99"
@@ -1103,10 +1119,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "qemu"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=f0ef0f15c216c4ac6203f05e141c92926aee5705#f0ef0f15c216c4ac6203f05e141c92926aee5705"
+dependencies = [
+ "diskimg",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
 name = "qsmchook"
 version = "0.1.0"
 dependencies = [
  "hex",
+ "inventory",
  "netd",
  "release",
  "rustix",
@@ -1123,8 +1150,10 @@ dependencies = [
  "appliance",
  "diskimg",
  "identity",
+ "inventory",
  "loadsource",
  "logd",
+ "processor",
  "refcode",
  "release",
  "rustix",
@@ -1156,6 +1185,7 @@ dependencies = [
 name = "qsmcstgd"
 version = "0.1.0"
 dependencies = [
+ "inventory",
  "refcode",
  "release",
  "stgd",
@@ -1214,6 +1244,7 @@ name = "release"
 version = "0.1.0"
 dependencies = [
  "appliance",
+ "processor",
  "supervise",
  "vrm",
 ]
@@ -1287,7 +1318,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1352,7 +1383,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2072,7 +2103,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
