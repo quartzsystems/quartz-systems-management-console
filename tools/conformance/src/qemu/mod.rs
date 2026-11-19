@@ -136,8 +136,11 @@ pub fn args(l: &Launch, boot: &Boot) -> Vec<OsString> {
                 "if=none,id=cd,media=cdrom,format=raw,readonly=on,file=",
                 path,
             ));
-            a.push("-device".into());
-            a.push("ide-cd,drive=cd,bus=ide.0".into());
+            // On virtio-scsi: OVMF on q35's IDE CD-ROM hangs in the
+            // firmware on about one boot in three, QS/VS's ISO too
+            // (docs/OPEN_QUESTIONS.md item 10).
+            a.extend(["-device", "virtio-scsi-pci,id=scsi", "-device"].map(OsString::from));
+            a.push("scsi-cd,drive=cd,bus=scsi.0".into());
         }
     }
     a

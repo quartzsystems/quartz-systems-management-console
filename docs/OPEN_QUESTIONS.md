@@ -92,3 +92,15 @@ The UKIs are not signed for Secure Boot in Phase 0: `buildkit`'s
 manifest records no db certificate (`Product::secure_boot_db` gives
 none). QS/400's `pesign` and QS/VS's `build release` show how; that is
 Phase 8's.
+
+## 10. The ISO hangs on an IDE CD-ROM under OVMF (QS/VS)
+
+Booted as an IDE CD-ROM of q35 (`-device ide-cd,bus=ide.0`, as QS/VS's
+harness boots its ISO), with Ubuntu's OVMF 4M images and QEMU 10.2.1
+under KVM, the ISO hangs before the kernel prints anything on a large
+share of boots: 6 of 12 for QS/MC's, 4 of 12 for QS/VS's Phase 11 ISO,
+each time with the processor running in the firmware's memory (RIP near
+`0x7d5xxxxx` or `0x7d8xxxxx`, OVMF's page tables in CR3) until the
+limit. The same ISO booted 20 of 20 times as a virtio-scsi CD-ROM, and
+as a virtio disk every time. QS/MC's harness uses virtio-scsi. Not
+seen on a real machine; QS/VS's `test --media iso` is exposed to it.
