@@ -42,12 +42,12 @@ pub fn host(before: &Host, n: u64) -> Host {
     }
 }
 
-/// `network.toml` of generation `n`, the rest as `before`.
+/// `network.toml` of generation `n`: its first interface's name
+/// servers, the rest as `before`.
 pub fn network(before: &Network, n: u64) -> Network {
-    Network {
-        dns: vec![resolver(n); resolvers(n)],
-        ..before.clone()
-    }
+    let mut network = before.clone();
+    network.interfaces[0].dns = vec![resolver(n); resolvers(n)];
+    network
 }
 
 /// Whether `host` is a whole generation: which one, or `None` when the
@@ -76,11 +76,12 @@ pub fn check_host(host: &Host) -> Result<Option<u64>, String> {
 /// Whether `network` is a whole generation; `false` when the churn
 /// never wrote it.
 pub fn check_network(network: &Network) -> Result<bool, String> {
-    let Some(first) = network.dns.first() else {
+    let dns = &network.primary().dns;
+    let Some(first) = dns.first() else {
         return Ok(false);
     };
-    let same = network.dns.iter().all(|d| d == first);
-    let count = network.dns.len();
+    let same = dns.iter().all(|d| d == first);
+    let count = dns.len();
     if same && (5..10).contains(&count) {
         Ok(true)
     } else {
@@ -139,7 +140,7 @@ mod tests {
         h.ntp_servers[3] = server(8);
         assert!(check_host(&h).is_err());
         let mut net = network(&Network::default(), 7);
-        net.dns[1] = resolver(8);
+        net.interfaces[0].dns[1] = resolver(8);
         assert!(check_network(&net).is_err());
     }
 }

@@ -81,7 +81,7 @@ checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 [[package]]
 name = "appliance"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=9f11fd5660556dabf789a062768418adf0548583#9f11fd5660556dabf789a062768418adf0548583"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=f0ef0f15c216c4ac6203f05e141c92926aee5705#f0ef0f15c216c4ac6203f05e141c92926aee5705"
 
 [[package]]
 name = "atomic-waker"
@@ -786,7 +786,7 @@ dependencies = [
 [[package]]
 name = "identity"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=9f11fd5660556dabf789a062768418adf0548583#9f11fd5660556dabf789a062768418adf0548583"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=f0ef0f15c216c4ac6203f05e141c92926aee5705#f0ef0f15c216c4ac6203f05e141c92926aee5705"
 dependencies = [
  "appliance",
  "ed25519-dalek",
@@ -936,7 +936,7 @@ checksum = "47d9d19d1d6efa0109d2f65ff4c85cddd50bd572e5a00127ab10987290bcefae"
 [[package]]
 name = "loadsource"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=9f11fd5660556dabf789a062768418adf0548583#9f11fd5660556dabf789a062768418adf0548583"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=f0ef0f15c216c4ac6203f05e141c92926aee5705#f0ef0f15c216c4ac6203f05e141c92926aee5705"
 dependencies = [
  "abrec",
  "appliance",
@@ -956,7 +956,7 @@ checksum = "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6"
 [[package]]
 name = "logd"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=9f11fd5660556dabf789a062768418adf0548583#9f11fd5660556dabf789a062768418adf0548583"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=f0ef0f15c216c4ac6203f05e141c92926aee5705#f0ef0f15c216c4ac6203f05e141c92926aee5705"
 dependencies = [
  "appliance",
  "ipc",
@@ -995,7 +995,7 @@ dependencies = [
 [[package]]
 name = "netd"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=9f11fd5660556dabf789a062768418adf0548583#9f11fd5660556dabf789a062768418adf0548583"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=f0ef0f15c216c4ac6203f05e141c92926aee5705#f0ef0f15c216c4ac6203f05e141c92926aee5705"
 dependencies = [
  "appliance",
  "dhcp",
@@ -1422,7 +1422,7 @@ dependencies = [
 [[package]]
 name = "seed"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=9f11fd5660556dabf789a062768418adf0548583#9f11fd5660556dabf789a062768418adf0548583"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=f0ef0f15c216c4ac6203f05e141c92926aee5705#f0ef0f15c216c4ac6203f05e141c92926aee5705"
 dependencies = [
  "appliance",
  "rustix",
@@ -1574,7 +1574,7 @@ checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 [[package]]
 name = "state"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=9f11fd5660556dabf789a062768418adf0548583#9f11fd5660556dabf789a062768418adf0548583"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=f0ef0f15c216c4ac6203f05e141c92926aee5705#f0ef0f15c216c4ac6203f05e141c92926aee5705"
 dependencies = [
  "appliance",
  "serde",
@@ -1585,7 +1585,7 @@ dependencies = [
 [[package]]
 name = "stgd"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=9f11fd5660556dabf789a062768418adf0548583#9f11fd5660556dabf789a062768418adf0548583"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=f0ef0f15c216c4ac6203f05e141c92926aee5705#f0ef0f15c216c4ac6203f05e141c92926aee5705"
 dependencies = [
  "abrec",
  "appliance",
@@ -1615,7 +1615,7 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 [[package]]
 name = "supervise"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=9f11fd5660556dabf789a062768418adf0548583#9f11fd5660556dabf789a062768418adf0548583"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=f0ef0f15c216c4ac6203f05e141c92926aee5705#f0ef0f15c216c4ac6203f05e141c92926aee5705"
 dependencies = [
  "ipc",
  "libc",

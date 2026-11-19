@@ -76,6 +76,13 @@ pub const HOST_PREFIX: &str = "QSMC";
 /// The FAT volume label of a seed volume.
 pub const SEED_LABEL: &str = "QSMCSEED";
 
+/// The roles of the console's network interfaces, as `network.toml`
+/// writes them. `open` is first: the network operators reach the
+/// console on, with the default route, the name servers and time.
+/// `private`, optional, faces the systems it manages and carries none
+/// of them. Written into state on an installed console: never changed.
+pub const INTERFACE_ROLES: &[&str] = &["open", "private"];
+
 /// The port QSI's managed systems listen on; QS/MC connects to it.
 pub const QSI_PORT: u16 = 2300;
 
@@ -96,6 +103,7 @@ pub const fn appliance(post: fn(&Event<'_>), note: fn(&str, &str)) -> Appliance 
         run_dir: RUN_DIR,
         host_prefix: HOST_PREFIX,
         seed_label: SEED_LABEL,
+        interface_roles: INTERFACE_ROLES,
         load_source: &LOAD_SOURCE,
         post,
         note,
@@ -168,5 +176,8 @@ mod tests {
         // A FAT label is eleven characters at most.
         assert!(a.seed_label.len() <= 11);
         assert_eq!(a.load_source, &LOAD_SOURCE);
+        assert_eq!(a.interface_roles, ["open", "private"]);
+        assert_eq!(a.interface_note(""), appliance::NOTE_MANAGEMENT);
+        assert_eq!(a.interface_note("private"), "private");
     }
 }
