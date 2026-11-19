@@ -63,8 +63,16 @@ windows open (`docs/OPEN_QUESTIONS.md`, item 19).
 
 ## Not done
 
-- Everything of the phase after Step 0: Sections 1 to 5 of the
-  handoff, and the documents `docs/WEB.md`, `docs/WEBUSERS.md`,
-  `docs/BACKUP.md` and `docs/MESSAGES.md`.
+- Section 3, pages 6 to 12: Date and time, Certificates, Backup and
+  restore, Shut down or restart, Language and locale, Console version,
+  the components page under `/dev/`.
+- Section 4: the local console's option 4.
+- Section 5: the suites that reach the web interface from outside.
+- `BLOCKED(phase3)`: a change to the `open` interface's address from
+  the web interface waits for `base/netd` to keep a change only when it
+  is confirmed (`docs/OPEN_QUESTIONS.md`, item 24).
+- The documents `docs/WEBUSERS.md`, `docs/BACKUP.md` and
+  `docs/MESSAGES.md`; `docs/WEB.md` has the server, the listeners and
+  the golden corrections.
 - `NEEDS-CODY`: every page looked at in a browser beside the
   prototype.
