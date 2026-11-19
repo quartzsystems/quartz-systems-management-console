@@ -95,7 +95,9 @@ fn confirms(run: &Run<'_>) -> Result<String, String> {
         &refcode::SLOT_CONFIRMED,
         "slot B is the default; BootOrder 0001,0000",
     );
-    guest.expect(&confirmed, deadline)?;
+    // Confirmed when the web server is ready (Phase 3): before or after
+    // "Base ready", by which service is ready last.
+    guest.seen(&confirmed, deadline)?;
     let status = guest.channel(deadline)?.status()?;
     if fact_of(&status, fact::RECORD)? != "default B, nothing pending" {
         return Err(format!(
@@ -134,7 +136,7 @@ fn falls_back(run: &Run<'_>) -> Result<String, String> {
     let deadline = run.deadline();
     guest.expect("IPL slot B (qsmc.slot=B)", deadline)?;
     base_ready(&mut guest, deadline)?;
-    guest.expect("TEST HOOK: the slot is not confirmed", deadline)?;
+    guest.seen("TEST HOOK: the slot is not confirmed", deadline)?;
     let status = guest.channel(deadline)?.status()?;
     if fact_of(&status, fact::RECORD)? != "default A, pending B (0 attempts left)" {
         return Err(format!(

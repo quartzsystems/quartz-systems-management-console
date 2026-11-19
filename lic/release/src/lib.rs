@@ -74,6 +74,18 @@ pub const INSTALLER: &str = "/qsmc/bin/qsmcinstall";
 /// The local console's binary, in a slot's initramfs.
 pub const CONSOLE: &str = "/qsmc/bin/qsmccons";
 
+/// The web server's binary, in a slot's initramfs.
+pub const WEBD: &str = "/qsmc/bin/qsmcwebd";
+
+/// PID 1's socket that hands the web server its listening sockets.
+pub const WEB_SOCKET: &str = "/run/qsmcweb.sock";
+
+/// The web server's own socket: the local console's requests.
+pub const WEBD_SOCKET: &str = "/run/qsmcwebd.sock";
+
+/// The web server's certificate and key, under `/data`.
+pub const WEB_DIR: &str = "/data/web";
+
 /// The local console's argument for its one panel: the unit to keep of
 /// a mirrored load source whose units ran apart.
 pub const KEEP_UNIT: &str = "keep-unit";

@@ -1,0 +1,24 @@
+[package]
+name = "webd"
+description = "QS/MC's web server over QS/400's qsweb"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+release = { path = "../../lic/release", version = "0.1.0" }
+qsweb.workspace = true
+x509kit.workspace = true
+rustls.workspace = true
+rustls-graviola.workspace = true
+supervise.workspace = true
+zeroize.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+fdpass.workspace = true
+processor.workspace = true
+
+[lints]
+workspace = true

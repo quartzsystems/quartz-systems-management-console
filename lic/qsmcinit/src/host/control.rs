@@ -52,6 +52,7 @@ impl Control for Host {
     fn note(&mut self, key: String, value: String) {
         if key == fact::MANAGEMENT {
             self.facts.management = value;
+            self.web_follow();
         } else if key == fact::PRIVATE {
             self.facts.private = value;
         } else if key == fact::SERIAL_CONSOLE {

@@ -194,8 +194,49 @@ fn bound(text: &str) -> Vec<(u16, u8)> {
 /// The TCP state `LISTEN`.
 const LISTEN: u8 = 0x0a;
 
-/// Suite 12: nothing listens on the network, and the only traffic the
-/// console starts is DHCP, DNS and NTP. A time server is configured
+/// The listening sockets of `/proc/net/tcp` (`v6` false) or `tcp6`:
+/// each local address, as text, and port.
+pub fn listening(text: &str, v6: bool) -> Vec<(String, u16)> {
+    text.lines()
+        .skip(1)
+        .filter_map(|line| {
+            let fields: Vec<&str> = line.split_whitespace().collect();
+            if fields.get(3).and_then(|s| u8::from_str_radix(s, 16).ok()) != Some(LISTEN) {
+                return None;
+            }
+            let (address, port) = fields.get(1)?.rsplit_once(':')?;
+            let port = u16::from_str_radix(port, 16).ok()?;
+            let address = if v6 {
+                address.to_string()
+            } else {
+                // Four bytes of the address in the host's order.
+                let n = u32::from_str_radix(address, 16).ok()?;
+                std::net::Ipv4Addr::from(n.to_le_bytes()).to_string()
+            };
+            Some((address, port))
+        })
+        .collect()
+}
+
+/// Phase 3's rule for what listens: TCP 443 and 80 on the `open`
+/// address `open` only, nothing on IPv6, nothing else.
+pub fn only_web(tcp: &str, tcp6: &str, open: &str) -> Result<Vec<(String, u16)>, String> {
+    if let Some((a, p)) = listening(tcp6, true).first() {
+        return Err(format!("a TCP socket listens on IPv6: [{a}]:{p}"));
+    }
+    let on = listening(tcp, false);
+    if let Some((a, p)) = on
+        .iter()
+        .find(|(a, p)| a != open || ![release::HTTPS_PORT, release::HTTP_PORT].contains(p))
+    {
+        return Err(format!("a TCP socket listens on {a}:{p}"));
+    }
+    Ok(on)
+}
+
+/// Suite 12: only the web server listens, on 443 and 80 of the `open`
+/// address (from Phase 3), and the only traffic the console starts is
+/// DHCP, DNS and NTP. A time server is configured
 /// by address and another by name, so both DNS and NTP are seen.
 pub fn sockets(run: &Run<'_>) -> Result<String, String> {
     let (server, responder) = super::time::responder(Arc::new(ntp::clock::ReadOnly))?;
@@ -219,18 +260,20 @@ pub fn sockets(run: &Run<'_>) -> Result<String, String> {
     // A little longer, for whatever else the console would send.
     std::thread::sleep(Duration::from_secs(5));
     let channel = channel(&mut guest)?;
-    let mut tcp = Vec::new();
+    let tcp = channel.text("/proc/net/tcp")?;
+    let tcp6 = channel.text("/proc/net/tcp6")?;
     let mut udp = Vec::new();
-    for kind in ["tcp", "tcp6"] {
-        tcp.extend(bound(&channel.text(&format!("/proc/net/{kind}"))?));
-    }
     for kind in ["udp", "udp6"] {
         udp.extend(bound(&channel.text(&format!("/proc/net/{kind}"))?));
     }
     drop(guest);
     responder.stop();
-    if let Some((port, _)) = tcp.iter().find(|(_, state)| *state == LISTEN) {
-        return Err(format!("a TCP socket listens on port {port}"));
+    let open = DHCP_ADDRESS.split('/').next().unwrap_or(DHCP_ADDRESS);
+    let web = only_web(&tcp, &tcp6, open)?;
+    if web.len() != 2 {
+        return Err(format!(
+            "the web server listens on {web:?}, not on 443 and 80"
+        ));
     }
     // The DHCP client's port, or a client's own port for one exchange
     // (the kernel's ephemeral range).
@@ -256,10 +299,13 @@ pub fn sockets(run: &Run<'_>) -> Result<String, String> {
         ));
     }
     Ok(format!(
-        "no TCP socket listens ({} TCP sockets), UDP bound only to {:?}; of {} frames sent: \
-         DHCP {dhcp}, DNS {dns}, NTP {ntp}, and only ARP and IPv6 neighbour discovery and \
-         listener reports besides",
-        tcp.len(),
+        "TCP listens only on {} (the web server, on the open address), UDP bound only to \
+         {:?}; of {} frames sent: DHCP {dhcp}, DNS {dns}, NTP {ntp}, and only ARP and IPv6 \
+         neighbour discovery and listener reports besides",
+        web.iter()
+            .map(|(a, p)| format!("{a}:{p}"))
+            .collect::<Vec<_>>()
+            .join(" and "),
         udp.iter().map(|(p, _)| *p).collect::<Vec<_>>(),
         sent.len()
     ))
@@ -276,6 +322,18 @@ mod tests {
         assert_eq!(bound(udp), [(68, 7)]);
         let tcp = "  sl  local_address rem_address   st\n 0: 0100007F:1F90 00000000:0000 0A 0\n";
         assert_eq!(bound(tcp), [(8080, LISTEN)]);
+        let web = "  sl  local_address rem_address   st\n\
+                   0: 0F02000A:01BB 00000000:0000 0A 0\n\
+                   1: 0F02000A:0050 00000000:0000 0A 0\n";
+        assert_eq!(
+            only_web(web, "", "10.0.2.15").unwrap(),
+            [
+                ("10.0.2.15".to_string(), 443),
+                ("10.0.2.15".to_string(), 80)
+            ]
+        );
+        assert!(only_web(tcp, "", "127.0.0.1").is_err());
+        assert!(only_web(web, "", "10.0.2.16").is_err());
     }
 
     #[test]

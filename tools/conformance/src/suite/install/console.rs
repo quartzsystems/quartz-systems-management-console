@@ -457,12 +457,12 @@ pub fn installed_base(run: &Run<'_>) -> Result<String, String> {
     Ok(format!(
         "on a console installed from the ISO: {} passed; time: {timed}; static-vlan and \
          sockets left out (each needs a console with no configuration; suite 16 shows \
-         nothing listens on an installed one)",
+         only the web server listens on an installed one)",
         passed.join(", ")
     ))
 }
 
-/// Suite 16: nothing listens on the network; no password is in any
+/// Suite 16: only the web server listens; no password is in any
 /// log, screen or state file in clear.
 pub fn no_secrets(run: &Run<'_>) -> Result<String, String> {
     // An attended installation types the password at the serial port.
@@ -471,17 +471,22 @@ pub fn no_secrets(run: &Run<'_>) -> Result<String, String> {
     let mut guest = boot_installed(run, &installed_machine(run, &disk), run.launch.timeout)?;
     is_installed(&mut guest, HOST)?;
     sign_on(&mut guest, USER, PASSWORD, run.deadline())?;
-    // Nothing listens: no TCP socket in LISTEN, UDP only DHCP's port.
-    for table in ["/proc/net/tcp", "/proc/net/tcp6"] {
-        let text = channel(&mut guest)?.text(table).unwrap_or_default();
-        if text
-            .lines()
-            .skip(1)
-            .any(|l| l.split_whitespace().nth(3) == Some("0A"))
-        {
-            return Err(format!("a TCP socket listens: {table}\n{text}"));
-        }
-    }
+    // Only the web server listens, on the open address; UDP only
+    // DHCP's port.
+    let open = channel(&mut guest)?
+        .status()?
+        .fact(release::fact::MANAGEMENT)
+        .and_then(|l| l.split_whitespace().next())
+        .and_then(|a| a.split('/').next())
+        .unwrap_or("")
+        .to_string();
+    let tcp = channel(&mut guest)?
+        .text("/proc/net/tcp")
+        .unwrap_or_default();
+    let tcp6 = channel(&mut guest)?
+        .text("/proc/net/tcp6")
+        .unwrap_or_default();
+    crate::suite::base::network::only_web(&tcp, &tcp6, &open)?;
     let mut ports = Vec::new();
     for table in ["/proc/net/udp", "/proc/net/udp6"] {
         let text = channel(&mut guest)?.text(table).unwrap_or_default();
@@ -531,7 +536,8 @@ pub fn no_secrets(run: &Run<'_>) -> Result<String, String> {
         }
     }
     Ok(format!(
-        "no TCP socket listens, UDP bound only to {ports:?}; the password typed at the \
+        "TCP listens only on 443 and 80 of the open address, UDP bound only to {ports:?}; \
+         the password typed at the \
          installer and at sign-on is in none of {looked} log and state files, the serial \
          logs of this suite's {} bytes, or {goldens} golden screens",
         serial.len()

@@ -8,7 +8,7 @@
 
 mod identity;
 mod mirror;
-mod network;
+pub mod network;
 mod power;
 mod slot;
 mod status;

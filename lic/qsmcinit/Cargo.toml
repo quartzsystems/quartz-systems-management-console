@@ -25,6 +25,7 @@ diskimg.workspace = true
 
 # PID 1 is a Linux program; other hosts build a stub so the workspace checks.
 [target.'cfg(target_os = "linux")'.dependencies]
+fdpass.workspace = true
 rustix.workspace = true
 
 [lints]

@@ -7,8 +7,9 @@
 //! is mounted from what it names, and it is stopped after `/data` is
 //! unmounted.
 //!
-//! The local console is at 25, after the network service it asks. The
-//! places later phases take: the web server at 30 (Phase 3), the
+//! The local console is at 25, after the network service it asks; the
+//! web server at 30, left out on a processor that lacks what its
+//! cryptography needs. The places later phases take: the
 //! managed-systems service at 40 (Phase 4), the scheduler at 50
 //! (Phase 7).
 
@@ -77,9 +78,22 @@ pub const CONSOLE: Service = Service {
     caps: Caps::Only(&[SYS_TTY_CONFIG]),
 };
 
-/// The base services and the local console.
+/// The web server: no capabilities, handed its listeners by PID 1
+/// (`host::web`). It is ready once it has answered a request over TLS,
+/// which may wait for the `open` address.
+pub const WEBD: Service = Service {
+    name: "webd",
+    binary: release::WEBD,
+    args: &[],
+    order: 30,
+    needs: &[],
+    ready_within: Duration::from_secs(120),
+    caps: Caps::Only(&[]),
+};
+
+/// The base services, the local console and the web server.
 #[cfg(not(test_hooks))]
-pub static TABLE: &[Service] = &[STGD, LOGD, NETD, CONSOLE];
+pub static TABLE: &[Service] = &[STGD, LOGD, NETD, CONSOLE, WEBD];
 
 /// The same and, in a test image, the test hooks' two.
 #[cfg(test_hooks)]
@@ -89,8 +103,34 @@ pub static TABLE: &[Service] = &[
     LOGD,
     NETD,
     CONSOLE,
+    WEBD,
     crate::hooks::FLAKY,
 ];
+
+/// The table of a processor without what the cryptography needs: no
+/// web server.
+#[cfg(not(test_hooks))]
+pub static WITHOUT_WEB: &[Service] = &[STGD, LOGD, NETD, CONSOLE];
+
+/// The same in a test image.
+#[cfg(test_hooks)]
+pub static WITHOUT_WEB: &[Service] = &[
+    crate::hooks::CHANNEL,
+    STGD,
+    LOGD,
+    NETD,
+    CONSOLE,
+    crate::hooks::FLAKY,
+];
+
+/// The table for this processor.
+pub fn chosen() -> &'static [Service] {
+    if processor::lacking().is_empty() {
+        TABLE
+    } else {
+        WITHOUT_WEB
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -108,7 +148,17 @@ mod tests {
         for service in TABLE {
             assert!(service.binary.starts_with(release::BIN_DIR));
         }
-        // The places later phases take are free.
-        assert!(TABLE.iter().all(|s| ![30, 40, 50].contains(&s.order)));
+        // The web server took its place; the later phases' are free.
+        assert!(TABLE.iter().any(|s| s.name == WEBD.name && s.order == 30));
+        assert!(TABLE.iter().all(|s| ![40, 50].contains(&s.order)));
+        // Without the web server the table is the same less it.
+        assert_eq!(supervise::table::check(WITHOUT_WEB), Ok(()));
+        let less: Vec<&str> = TABLE
+            .iter()
+            .map(|s| s.name)
+            .filter(|n| *n != WEBD.name)
+            .collect();
+        let without: Vec<&str> = WITHOUT_WEB.iter().map(|s| s.name).collect();
+        assert_eq!(less, without);
     }
 }

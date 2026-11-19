@@ -18,6 +18,9 @@ members = [
     "lic/qsmchook",
     # The local console on the display and the serial port.
     "svc/console",
+    # The web server and its binary.
+    "web/webd",
+    "lic/qsmcwebd",
 ]
 
 [workspace.package]
@@ -47,6 +50,7 @@ users = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server"
 panels = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "2fe7583b8fc0eaeab92db7f31f34d152094f2727" }
 install = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "2fe7583b8fc0eaeab92db7f31f34d152094f2727" }
 inventory = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "2fe7583b8fc0eaeab92db7f31f34d152094f2727" }
+fdpass = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "2fe7583b8fc0eaeab92db7f31f34d152094f2727" }
 # base/qemu, the harness's QEMU driver, named as QS/VS's harness names it.
 driver = { package = "qemu", git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "2fe7583b8fc0eaeab92db7f31f34d152094f2727" }
 buildkit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
@@ -59,6 +63,8 @@ netlink = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "
 console = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525", default-features = false }
 scrkit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
 svcusers = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
+qsweb = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
+x509kit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
 
 anyhow = "1.0.104"
 ed25519-dalek = "3.0.0"
@@ -72,6 +78,10 @@ thiserror = "2.0.21"
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 uuid = "1.28.0"
+# TLS for the web server, as QS/VS declares it, with TLS 1.2 besides.
+rustls = { version = "0.23.46", default-features = false, features = ["std", "tls12"] }
+rustls-graviola = "0.4.0"
+zeroize = "1.9.1"
 
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "deny"

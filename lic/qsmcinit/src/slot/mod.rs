@@ -6,7 +6,7 @@
 //! record (`loadsource::record`) holds the default, the slot on trial
 //! and what was last confirmed in each. A slot booted on trial becomes
 //! the default, in the record on every load-source disk and in
-//! `BootOrder`, when [`RULE`] says the console is up. One that never
+//! `BootOrder`, when [`rule`] says the console is up. One that never
 //! gets there was only `BootNext`: the next IPL is on the old default,
 //! clears the pending field and says so. Nothing here writes a UKI.
 
@@ -16,13 +16,20 @@ pub enum Rule {
     /// When every base service has said it is ready.
     BaseReady,
     /// When the service named has said it is ready.
-    #[allow(dead_code, reason = "Phase 3's rule: the web server")]
     ServiceReady(&'static str),
 }
 
-/// The rule. From Phase 3 it is the web server's first answer: this
-/// line becomes `Rule::ServiceReady(<the web server's name>)`.
-pub const RULE: Rule = Rule::BaseReady;
+/// The rule. From Phase 3 it is the web server's first answer over
+/// TLS, which is when it says it is ready. A processor that cannot run
+/// the web server has none: there it is the base's readiness, or no
+/// slot could ever confirm.
+pub fn rule(table: &[supervise::Service], web: &'static str) -> Rule {
+    if table.iter().any(|s| s.name == web) {
+        Rule::ServiceReady(web)
+    } else {
+        Rule::BaseReady
+    }
+}
 
 impl Rule {
     /// Whether the slot is confirmed now that `service` is ready, or,
@@ -227,11 +234,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn the_rule_is_base_ready_until_the_web_server() {
-        assert_eq!(RULE, Rule::BaseReady);
-        assert!(RULE.due(None));
-        assert!(!RULE.due(Some("netd")));
-        let later = Rule::ServiceReady("webd");
+    #[cfg(target_os = "linux")]
+    fn the_rule_is_the_web_server_s_answer_where_there_is_one() {
+        let with = crate::host::table::TABLE;
+        let without = crate::host::table::WITHOUT_WEB;
+        assert_eq!(rule(without, "webd"), Rule::BaseReady);
+        assert!(rule(without, "webd").due(None));
+        assert!(!rule(without, "webd").due(Some("netd")));
+        let later = rule(with, "webd");
+        assert_eq!(later, Rule::ServiceReady("webd"));
         assert!(later.due(Some("webd")));
         assert!(!later.due(Some("netd")));
         assert!(!later.due(None));

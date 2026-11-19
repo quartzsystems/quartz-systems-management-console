@@ -7,7 +7,7 @@
 //! A/B record, the storage service and `QSMCDATA` at `/data`, the clock
 //! from the RTC, the seed, the state, the identity, the services. "Base
 //! ready" is posted by the loop when every service has said so, and the
-//! slot confirmed by the rule (`crate::slot::RULE`). On installation
+//! slot confirmed by the rule (`crate::slot::rule`). On installation
 //! media the installer runs after the clock, in place of the rest.
 
 #[cfg(target_os = "linux")]
@@ -99,7 +99,7 @@ mod on_console {
             .map_err(|e| host.line(&format!("{}: {e}", control.display())))
             .ok();
         // A table that is not one is a failure of PID 1 itself.
-        let mut sup = Supervisor::new(table::TABLE, Instant::now())
+        let mut sup = Supervisor::new(table::chosen(), Instant::now())
             .unwrap_or_else(|e| panic!("the service table: {e}"));
         sup.hold_after(table::STGD.order);
         host.quiet = true;
@@ -228,7 +228,7 @@ mod on_console {
     fn services(host: &mut Host) {
         host.release_services();
         host.quiet = false;
-        let names: Vec<&str> = table::TABLE.iter().map(|s| s.name).collect();
+        let names: Vec<&str> = table::chosen().iter().map(|s| s.name).collect();
         host.post(&refcode::SERVICES_STARTED, &names.join(", "));
     }
 

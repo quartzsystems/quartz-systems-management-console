@@ -10,6 +10,7 @@ mod control;
 mod shutdown;
 pub mod storage;
 pub mod table;
+pub mod web;
 
 use std::fs::File;
 use std::os::fd::AsFd;
@@ -27,7 +28,7 @@ use supervise::run::{Occurrence, Supervisor, Token};
 use supervise::signal::{CHLD, INT, Signals, TERM};
 
 use crate::console::Console;
-use crate::slot::{RULE, Slots};
+use crate::slot::{Slots, rule};
 use crate::sys::{button, reap};
 pub use shutdown::Kind;
 
@@ -49,6 +50,7 @@ const TRIAL_WAIT: Duration = Duration::from_mins(15);
 enum Ready {
     Signal,
     Control,
+    Web,
     Button(usize),
     Service(Token),
 }
@@ -88,6 +90,8 @@ pub struct Host {
     /// Set once the IPL reaches the storage service.
     sup: Option<Supervisor>,
     listener: Option<UnixListener>,
+    /// The web server's listeners, handed over.
+    web: web::Web,
     buttons: Vec<File>,
     /// The load source as the storage service last said.
     load_source: Option<storage::Watched>,
@@ -131,6 +135,7 @@ impl Host {
             reference: String::new(),
             sup: None,
             listener: None,
+            web: web::Web::default(),
             buttons: Vec::new(),
             load_source: None,
             slots: None,
@@ -214,6 +219,13 @@ impl Host {
         let started = sup.advance(Instant::now());
         self.sup = Some(sup);
         self.listener = listener;
+        // Installation media has no web server.
+        if self.slots.is_some() {
+            match web::Web::open() {
+                Ok(w) => self.web = w,
+                Err(e) => self.line(&format!("the web server's socket: {e}")),
+            }
+        }
         self.buttons = button::open();
         self.load_source = Some(storage::watch(&crate::product::QSMC));
         if self
@@ -234,7 +246,7 @@ impl Host {
                 }
                 Occurrence::Ready { service } => {
                     self.say(Severity::Info, &format!("{service} is ready"));
-                    if RULE.due(Some(service)) {
+                    if Self::rule().due(Some(service)) {
                         self.confirm_slot();
                     }
                 }
@@ -290,6 +302,29 @@ impl Host {
         }
     }
 
+    /// When a slot on trial confirms, by this processor's table.
+    fn rule() -> crate::slot::Rule {
+        rule(table::chosen(), table::WEBD.name)
+    }
+
+    /// The addresses the web server listens on: the `open` interface's.
+    fn web_addresses(&self) -> Vec<std::net::Ipv4Addr> {
+        web::address(&self.facts.management).into_iter().collect()
+    }
+
+    /// The `open` address may have changed: the listeners follow it.
+    pub fn web_follow(&mut self) {
+        let addresses = self.web_addresses();
+        let done = self.web.follow(&addresses);
+        self.web_said(done);
+    }
+
+    fn web_said(&mut self, done: Result<(), String>) {
+        if let Err(e) = done {
+            self.say(Severity::Warning, &format!("web listeners: {e}"));
+        }
+    }
+
     /// Every service is ready: the base is.
     fn base_ready(&mut self) {
         self.ready = true;
@@ -301,7 +336,7 @@ impl Host {
             &refcode::BASE_READY,
             &format!("{up} s after the kernel started"),
         );
-        if RULE.due(None) {
+        if Self::rule().due(None) {
             self.confirm_slot();
         }
         // A button that appeared after the IPL looked.
@@ -409,6 +444,10 @@ impl Host {
             what.push(Ready::Control);
             fds.push(PollFd::from_borrowed_fd(listener.as_fd(), PollFlags::IN));
         }
+        if let Some(fd) = self.web.fd() {
+            what.push(Ready::Web);
+            fds.push(PollFd::from_borrowed_fd(fd, PollFlags::IN));
+        }
         for (i, device) in self.buttons.iter().enumerate() {
             what.push(Ready::Button(i));
             fds.push(PollFd::from_borrowed_fd(device.as_fd(), PollFlags::IN));
@@ -470,6 +509,11 @@ impl Host {
             match what {
                 Ready::Signal => self.signalled(now),
                 Ready::Control => self.serve_control(),
+                Ready::Web => {
+                    let addresses = self.web_addresses();
+                    let done = self.web.accept(&addresses);
+                    self.web_said(done);
+                }
                 Ready::Button(i) => {
                     if self.buttons.get(i).is_some_and(button::pressed) {
                         self.begin_shutdown(Kind::PowerOff, "the power button");
