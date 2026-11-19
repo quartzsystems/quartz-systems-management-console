@@ -18,8 +18,10 @@ members = [
     "lic/qsmchook",
     # The local console on the display and the serial port.
     "svc/console",
-    # The web server and its binary.
+    # The web server, its users, its messages and its binary.
     "web/webd",
+    "web/users",
+    "web/msgs",
     "lic/qsmcwebd",
 ]
 
@@ -73,6 +75,7 @@ clap = { version = "4.6.7", features = ["derive"] }
 hex = "0.4.3"
 libc = "0.2.190"
 rustix = { version = "1.1.6", features = ["fs", "mount", "event", "process", "system", "time", "termios"] }
+serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
 thiserror = "2.0.21"
 tracing = "0.1.44"
@@ -103,3 +106,13 @@ codegen-units = 1
 panic = "abort"
 strip = "symbols"
 debug = false
+
+# Argon2 unoptimized takes seconds per password hash (as QS/400 has it).
+[profile.dev.package.argon2]
+opt-level = 3
+[profile.dev.package.blake2]
+opt-level = 3
+[profile.test.package.argon2]
+opt-level = 3
+[profile.test.package.blake2]
+opt-level = 3

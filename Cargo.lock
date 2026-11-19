@@ -1439,6 +1439,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "qmcmsg"
+version = "0.1.0"
+dependencies = [
+ "qsweb",
+]
+
+[[package]]
 name = "qsipart"
 version = "0.1.0"
 source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=155aba213638b178cb730cff4a4113ef1d8fb525#155aba213638b178cb730cff4a4113ef1d8fb525"
@@ -2599,6 +2606,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b96554aa2acc8ccdb7e1c9a58a7a68dd5d13bccc69cd124cb09406db612a1c9b"
 dependencies = [
  "rustls-pki-types",
+]
+
+[[package]]
+name = "webusers"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "state",
+ "svcusers",
+ "users",
 ]
 
 [[package]]
