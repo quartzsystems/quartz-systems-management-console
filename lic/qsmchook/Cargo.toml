@@ -1,0 +1,21 @@
+[package]
+name = "qsmchook"
+description = "QS/MC test hooks: the harness's channel to the control socket, a service that fails on demand and the state churn. In a test image only, never in a release"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+release = { path = "../release", version = "0.1.0" }
+state.workspace = true
+stgd.workspace = true
+supervise.workspace = true
+netd.workspace = true
+hex.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+rustix.workspace = true
+
+[lints]
+workspace = true

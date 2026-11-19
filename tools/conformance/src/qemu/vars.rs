@@ -140,9 +140,82 @@ pub fn with_boot_entry(store: &[u8], load_option: &[u8]) -> Result<Vec<u8>, Stri
     )
 }
 
+/// A copy of `store` with an entry for each slot (`Boot0000` slot A,
+/// `Boot0001` slot B), `BootOrder` as `order` and, with `next`,
+/// `BootNext`: the firmware's side of a slot on trial.
+pub fn with_slots(
+    store: &[u8],
+    slot_a: &[u8],
+    slot_b: &[u8],
+    order: &[u16],
+    next: Option<u16>,
+) -> Result<Vec<u8>, String> {
+    let order: Vec<u8> = order.iter().flat_map(|n| n.to_le_bytes()).collect();
+    let next = next.map(u16::to_le_bytes);
+    let mut vars: Vec<(&str, &[u8])> = vec![
+        ("Boot0000", slot_a),
+        ("Boot0001", slot_b),
+        ("BootOrder", &order),
+    ];
+    if let Some(next) = &next {
+        vars.push(("BootNext", next));
+    }
+    with_variables(store, &vars)
+}
+
+/// The value of the global variable `name` in `store`: the last copy
+/// that is in use; `None` when it has none.
+pub fn read(store: &[u8], name: &str) -> Result<Option<Vec<u8>>, String> {
+    let (start, end) = area(store)?;
+    let wanted: Vec<u8> = name
+        .encode_utf16()
+        .chain([0])
+        .flat_map(u16::to_le_bytes)
+        .collect();
+    let mut found = None;
+    let mut at = start;
+    while at + VAR_HEADER <= end && u16_at(store, at) == Some(START_ID) {
+        let name_len = u32_at(store, at + 36).ok_or("short variable header")?;
+        let data_len = u32_at(store, at + 40).ok_or("short variable header")?;
+        let name_at = at + VAR_HEADER;
+        let data_at = name_at + name_len;
+        let in_use = store[at + 2] == VAR_ADDED;
+        let global = store.get(at + 44..at + 60) == Some(&GLOBAL.to_bytes_le()[..]);
+        if in_use && global && store.get(name_at..data_at) == Some(&wanted[..]) {
+            found = store.get(data_at..data_at + data_len).map(<[u8]>::to_vec);
+        }
+        at = align4(data_at + data_len);
+    }
+    Ok(found)
+}
+
+/// A variable of sixteen-bit numbers, as `BootOrder` is.
+pub fn numbers(store: &[u8], name: &str) -> Result<Option<Vec<u16>>, String> {
+    Ok(read(store, name)?.map(|bytes| {
+        bytes
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .map(|c| u16::from_le_bytes(*c))
+            .collect()
+    }))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_slots_entries_are_written_and_read_back() {
+        let out = with_slots(&empty(), b"a", b"b", &[0], Some(1)).unwrap();
+        assert_eq!(numbers(&out, "BootOrder").unwrap(), Some(vec![0]));
+        assert_eq!(numbers(&out, "BootNext").unwrap(), Some(vec![1]));
+        assert_eq!(read(&out, "Boot0001").unwrap(), Some(b"b".to_vec()));
+        assert_eq!(read(&out, "Boot0002").unwrap(), None);
+        // A later copy is the one in use.
+        let again = with_variables(&out, &[("BootOrder", &[1, 0, 0, 0])]).unwrap();
+        assert_eq!(numbers(&again, "BootOrder").unwrap(), Some(vec![1, 0]));
+    }
 
     /// An empty store: the volume header, the store header, erased space.
     fn empty() -> Vec<u8> {

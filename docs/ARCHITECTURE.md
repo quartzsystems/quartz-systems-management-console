@@ -26,7 +26,7 @@ recorded here.
 | Updates | The console reads a product stream's signed index, downloads, and brings an update to a host over QSI. Hosts fetch nothing. |
 | Outbound traffic | DHCP, DNS, NTP, QSI to managed systems, HTTPS to the configured product stream, and the BMC of a machine it is asked to power on. Nothing else. |
 | Identity | Release `V1R0M0` from `VERSION` (`1.0.0`). Fixes `QMnnnnn`. Message prefix `QMC`. Product identifier `qsmc`; environment prefix `QSMC_`; kernel command-line keys `qsmc.`; ESP vendor directory `QSMC`; ESP label `QSMC ESP`; record magic `QSMCREC`; data label `QSMCDATA`; seed label `QSMCSEED`; default host name `QSMC` and six hexadecimal digits. |
-| Reference codes | A console posts its own, as `REF <code> <text>`, in the families whose second character is `3` (`C3`, `A3`, `B3`, `D3`), so a console's line never reads as a QS/400 system's or a QS/VS host's. No family of either ends in `3` (`docs/REFCODES.md`). `NEEDS-CODY`. |
+| Reference codes | A console posts its own, as `REF <code> <text>`, in the families whose second character is `3` (`C3`, `A3`, `B3`, `D3`), so a console's line never reads as a QS/400 system's or a QS/VS host's. No family of either ends in `3` (`docs/REFCODES.md`). Confirmed in Phase 1. |
 
 A sentence on each:
 
@@ -98,17 +98,17 @@ its caller and depends on nothing of QS/VS outside `base/`.
 | Crate | What it is | QS/MC's use |
 | --- | --- | --- |
 | `appliance` | the description an appliance hands the base crates; civil time; Ethernet links; the load source's names | `lic/release` (`LOAD_SOURCE`, `appliance()`), PID 1 |
-| `supervise` | the service table, restart policy, the runner, the control protocol, signals from a descriptor | PID 1 (signals in Phase 0; the table in Phase 1) |
-| `state` | typed TOML state files | Phase 1 |
-| `logd` | the system log, the reference code history | Phase 1 |
-| `netd` | the management interface and NTP | Phase 1 |
-| `seed` | `seed.toml` on a labelled FAT volume | Phase 1 |
+| `supervise` | the service table, restart policy, the runner, the control protocol, signals from a descriptor | PID 1: the table, the control socket, signals; the services: readiness; the harness: the status types |
+| `state` | typed TOML state files | PID 1 (`host.toml`, `network.toml`, `identity.toml`), `netd`, the test hooks |
+| `logd` | the system log, the reference code history | `qsmclogd`; PID 1 and `refcode` send its records |
+| `netd` | the management interface and NTP | `qsmcnetd` |
+| `seed` | `seed.toml` on a labelled FAT volume | PID 1 (`QSMCSEED`) |
 | `users` | service tools user IDs | Phase 2 |
 | `panels` | the local console's panels | Phase 2 |
 | `install` | the installer's screens and answers | Phase 2 |
-| `identity` | the appliance's key pair and certificate | Phase 4 (QSI) |
-| `loadsource` | the load source: layout, A/B record, mirrored set label, boot entries, the media's payload | the build tool (layout, record, payload volume id) and the harness (GPT); PID 1 from Phase 1 |
-| `stgd` | the storage service for a mirrored load source | Phase 2 |
+| `identity` | the appliance's key pair and certificate | PID 1, at the first IPL with a `/data`; QSI presents it from Phase 4 |
+| `loadsource` | the load source: layout, A/B record, mirrored set label, boot entries, the media's payload | PID 1 (the disks, the record, the boot entries), the build tool and the harness (the writer) |
+| `stgd` | the storage service: the load source, mirrored through ublk | `qsmcstgd`, first in the table |
 | `fdpass` | open files handed between processes | Phase 3 (the web server) |
 | `stream` | the release stream's signed index | Phase 6 |
 
@@ -121,3 +121,76 @@ magic `QSMCREC` and QS/MC's partition type) holds the default slot, the
 pending slot, the attempts left and the release last confirmed in each.
 Phase 0 writes the first record (slot A, sequence 1) into the built
 image; PID 1 reads it from Phase 1.
+
+**The slot rule.** At each IPL PID 1 reads the record on every
+load-source disk (the copy with the highest sequence wins) and writes it
+back to every disk when this IPL changes it. A slot booted while it is
+pending is on trial: its one attempt is spent. When the console is up
+by the rule, the slot on trial is confirmed: it becomes the default in
+the record, its release is noted there, and `BootOrder` is rewritten
+with its entries first (`loadsource::boot::make_default`, an entry made
+for a slot that has none). A slot on trial that never gets there was
+only `BootNext`: the next IPL is on the old default, which clears the
+pending slot and posts `A3001035`; PID 1 also restarts into the other
+slot if the trial has not confirmed in 15 minutes.
+
+The rule is one constant, `RULE` in `lic/qsmcinit/src/slot/mod.rs`. In
+Phase 1 it is `Rule::BaseReady`: confirmed when every base service has
+said it is ready. From Phase 3 it is `Rule::ServiceReady` of the web
+server: confirmed when the web server answers. Nothing writes the other
+slot or sets a pending slot yet; that is the update phase.
+
+## The IPL
+
+PID 1 (`lic/qsmcinit/src/ipl/mod.rs`), each step posting its code:
+
+1. The kernel's file systems (proc, sysfs, devtmpfs, `/run`, efivarfs)
+   and cgroup2: `C3001010`. The banner, the slot from the command line,
+   the processor's line (`A3001015` when it lacks something).
+2. The load-source disks found (`loadsource::disks`) and the A/B record
+   read: `C3001030`.
+3. The control socket, then the service table started with everything
+   after the storage service held back; the loop turned until the
+   storage service is ready. A mirrored pair whose units each ran alone
+   is not assembled until the unit to keep is chosen: the IPL waits for
+   it (`A3003040`), for as long as it takes.
+4. `QSMCDATA` at `/data`, from the device the storage service names:
+   `C3001040`. When it cannot be mounted, `A3001040`, the state is in
+   memory only and the IPL goes on. Nothing is ever reformatted.
+5. The clock from the RTC: `C3001050`.
+6. The seed: `C3001060` or `C3001061` (`docs/SEED.md`).
+7. The state: `host.toml`, `network.toml`, `identity.toml`, with the
+   defaults for what is absent; the host name set: `C3001070`.
+8. The identity, made once, at the first IPL with a `/data`:
+   `C3001075` (`base/identity`).
+9. The services that waited started: `C3001080`.
+10. "Base ready" when every service has said so: `C3001090`; the slot
+    confirmed by the rule: `C3001095`.
+
+Then one loop: the signals, the control socket, the power button, the
+services' pipes, the heartbeat on the serial port and the status screen.
+On the installation media PID 1 stops after step 1 and the clock: the
+installer is Phase 2's.
+
+The service table is fixed: the storage service (5), the log service
+(10), the network service (20); the web server (30), the
+managed-systems service (40) and the scheduler (50) take their places
+in later phases. The orderly shutdown (the control socket, `SIGTERM`,
+the power button) ends them in reverse, unmounts `/data`, ends the
+storage service last and posts `D3001090` or `D3001091`.
+
+## The load source
+
+As `base/loadsource` lays it out, on one disk or mirrored on two: each
+disk has its own ESP with both slots and its own record partition, so
+the firmware and PID 1 can start from either alone. Mirrored, the data
+partitions are the members of one set (QS/400's `protect`), which the
+storage service serves as `/dev/ublkb0` and `/data` is mounted from; its
+label, beside the record on every disk, says which partitions are the
+members and how each stands. A unit that is missing or failed is posted
+at every IPL (`A3003020`); a returned unit is brought back in step from
+the write-intent maps, so only what changed is copied; a restarted
+storage service takes the device over and loses nothing. The release
+`disk` image is one disk; the harness writes either kind with the base
+crate's writer, and Phase 2's installer will write them for an
+operator.

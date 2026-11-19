@@ -1,6 +1,6 @@
 [package]
 name = "conformance"
-description = "QS/MC conformance harness: boots the images under QEMU with OVMF and checks what PID 1 says on the serial port"
+description = "QS/MC conformance harness: boots the images under QEMU with OVMF, checks what PID 1 says on the serial port, and reaches a test image's control socket through its test hooks"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -9,8 +9,18 @@ publish.workspace = true
 [dependencies]
 release = { path = "../../lic/release", version = "0.1.0" }
 refcode = { path = "../../lic/refcode", version = "0.1.0" }
+qsmchook = { path = "../../lic/qsmchook", version = "0.1.0" }
+appliance.workspace = true
+supervise.workspace = true
+state.workspace = true
+stgd.workspace = true
+seed.workspace = true
+identity.workspace = true
 loadsource.workspace = true
 diskimg.workspace = true
+abrec.workspace = true
+ntp.workspace = true
+hex.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
 

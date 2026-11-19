@@ -58,6 +58,19 @@ pub enum HarnessError {
         /// The serial log.
         log: String,
     },
+    /// A suite of the base system did not pass.
+    #[error("{suite}: {reason}")]
+    Suite {
+        /// The suite.
+        suite: &'static str,
+        /// Why.
+        reason: String,
+        /// The serial logs of its guests.
+        log: String,
+    },
+    /// No step or suite has the name asked for.
+    #[error("no step or suite is called `{0}`; `--suite list` lists them")]
+    NoSuchSuite(String),
     /// A file could not be read or written.
     #[error(transparent)]
     Io(#[from] std::io::Error),
@@ -67,7 +80,7 @@ impl HarnessError {
     /// The serial log, when the failure has one.
     pub fn log(&self) -> Option<&str> {
         match self {
-            HarnessError::Timeout { log, .. } => Some(log),
+            HarnessError::Timeout { log, .. } | HarnessError::Suite { log, .. } => Some(log),
             _ => None,
         }
     }

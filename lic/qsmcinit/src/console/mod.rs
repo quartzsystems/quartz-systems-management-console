@@ -9,10 +9,15 @@
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 
+use release::screen;
+
 /// The local display, as the kernel names its console.
 const DISPLAY: &str = "/dev/console";
 /// The serial port.
 const SERIAL: &str = "/dev/ttyS0";
+
+/// Clear the display and put the cursor at its top.
+const CLEAR: &str = "\x1b[2J\x1b[H";
 
 /// The two devices, each open or absent.
 pub struct Console {
@@ -50,5 +55,17 @@ impl Console {
     /// One line on the serial port alone.
     pub fn serial(&mut self, line: &str) {
         put(&mut self.serial, &format!("{line}\n"));
+    }
+
+    /// The status screen on the display: cleared and drawn again.
+    pub fn display_screen(&mut self, lines: &[String]) {
+        put(&mut self.display, &format!("{CLEAR}{}\n", lines.join("\n")));
+    }
+
+    /// The status screen on the serial port: a block between two
+    /// marker lines, since a serial log cannot be cleared.
+    pub fn serial_screen(&mut self, lines: &[String]) {
+        let block = format!("{}\n{}\n{}\n", screen::BEGIN, lines.join("\n"), screen::END);
+        put(&mut self.serial, &block);
     }
 }

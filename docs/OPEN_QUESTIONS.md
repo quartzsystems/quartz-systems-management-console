@@ -3,14 +3,17 @@
 What needs a decision, or a change outside this repository. Each item
 says who it waits on.
 
-## 1. The console's reference code families (NEEDS-CODY)
+## 1. The console's reference code families (closed)
 
 A console posts in the families whose second character is `3`: `C3`,
 `A3`, `B3`, `D3` (`docs/REFCODES.md`). No QS/400 family (`C1`, `C6`,
 `A6`, `B1`, `D1`) and no QS/VS family (`C2`, `A2`, `B2`, `D2`) ends in
 `3`, checked at both pinned commits, and a unit test keeps every code
-out of both. The word is `REF`, as a host's is. Confirm the range, or
-name another, before Phase 1 adds the base system's codes.
+out of both. The word is `REF`, as a host's is.
+
+**Closed in Phase 1:** confirmed by Cody, `C3`, `A3`, `B3`, `D3`,
+posted as `REF`. Phase 1's codes are in those families, in blocks laid
+out as QS/VS lays out its own.
 
 ## 2. The web UI prototype (NEEDS-CODY)
 
@@ -37,6 +40,11 @@ leaving the words of the message to each product; or QS/400 adds it to
 `qsitrust`, which owns the dependency on graviola. Then the pins move
 and `lic/qsmcinit/src/cpu/` goes.
 
+**Phase 1:** Cody's answer: QS/VS's to change, in a follow-up there.
+Not waited for: PID 1 keeps its own check, and takes QS/VS's when the
+pins next move (`BLOCKED(phase1)` in `docs/PHASE1.md`). The same
+answer covers items 4, 5 and 10.
+
 ## 4. QS/VS's QEMU driver is not usable from outside (QS/VS)
 
 QS/VS's `tools/conformance` depends on most of QS/VS (`qsvshook`,
@@ -53,6 +61,13 @@ under `base/` (or a `tools/` crate with `base/`'s rules) holding
 `qemu::firmware` with the variables' names passed in, `qemu::vars`,
 the serial capture and the launch arguments, with no dependency on any
 QS/VS crate outside `base/` and no `QSVS_` names in its code.
+
+**Phase 1:** answered as item 3: not waited for. QS/MC's driver grew
+what Phase 1's suites need (`tools/conformance/src/qemu/session.rs`
+and `channel.rs`: a second serial port for the test hooks' channel,
+the monitor, a NIC with its frames captured, SMBIOS OEM strings,
+several disks), on the same pattern as QS/VS's and with no code of
+it. `BLOCKED(phase1)` until QS/VS exposes one.
 
 ## 5. QS/VS's kernel has debugfs (QS/VS)
 
@@ -71,13 +86,19 @@ KVM, as QS/VS's is, and fails with a clear message where the runner has
 none; it then needs a self-hosted runner. Nothing has been pushed, so
 neither `ci.yml` nor `qemu.yml` has run on GitHub.
 
-## 7. The outbound rule and a packet filter
+## 7. The outbound rule and a packet filter (closed)
 
 The locked decision names what a console may reach. Phase 0's kernel
 has no netfilter (`# CONFIG_NETFILTER is not set`, as QS/VS's), so the
-rule is the services' own: nothing connects anywhere else. Whether a
-console also enforces it with a packet filter (QS/400's `netlink` has
-nftables) is for Phase 1, with the management network.
+rule is the services' own: nothing connects anywhere else.
+
+**Closed in Phase 1:** no packet filter in V1, by Cody's decision. The
+rule is kept by construction: each service connects only where its job
+is, and netfilter stays out of the kernel. The `sockets` suite shows it:
+nothing listens, and of every frame the console sends on its management
+interface, captured by QEMU, all are DHCP, DNS and NTP besides what the
+link itself needs (ARP, and IPv6 neighbour discovery and listener
+reports for the link-local address; `docs/PHASE1.md`).
 
 ## 8. The ISO's name
 
@@ -104,3 +125,43 @@ each time with the processor running in the firmware's memory (RIP near
 limit. The same ISO booted 20 of 20 times as a virtio-scsi CD-ROM, and
 as a virtio disk every time. QS/MC's harness uses virtio-scsi. Not
 seen on a real machine; QS/VS's `test --media iso` is exposed to it.
+
+## 11. A second network interface (QS/VS)
+
+The prototype's Network settings page has two sections: a private
+management network, toward the systems a console manages, and a public
+one, toward its operators and the product stream. `base/netd` manages
+one interface, and `base/state`'s `network.toml` describes one, so a
+console has one in Phase 1 (`docs/PHASE1.md`).
+
+The recommendation, as a change for QS/VS: `base/netd` manages a list
+of interfaces, each as it manages one now (by name or MAC, DHCP or
+static, an optional VLAN, its own carrier and trial), and
+`network.toml` goes to a version 2 with a migration from version 1:
+an `[[interface]]` table each, one of them marked as the one the
+default route and the name servers come from. The status screen's
+management line becomes a line an interface. QS/VS keeps its one
+management interface as a list of one. Nothing of it is written here.
+
+## 12. The hardware inventory is not in QS/VS's `base/` (QS/VS)
+
+QS/VS's scanner, `lic/hostinv`, reads the processors, memory, disks
+(name, model, serial, size, transport), network interfaces and PCI
+devices with their location codes, and the system serial number from
+DMI. It is outside `base/` and has a host's fields (VMX or SVM, huge
+pages, the IOMMU), though `inventory.toml`'s schema is already
+`base/state`'s.
+
+QS/MC has no inventory in Phase 1, by the phase's decision. What that
+leaves: the storage service is told each disk's name and the serial
+number its device reports (`lic/qsmcstgd/src/disks.rs`, two sysfs
+files) and no location code, so a failed unit is named by its number
+and serial; the console's serial number, in `identity.toml` and its
+certificate, is always derived from the first link's MAC (`M` and
+twelve hexadecimal digits), as QS/VS's is when DMI has none; the status
+screen shows what `netd` and the load source report.
+
+What QS/MC needs, as a change for QS/VS: the product-neutral part of
+`hostinv` (disks, links, PCI devices, location codes, the DMI serial)
+moved into `base/`, a host's own fields left in `lic/`. Phase 2's
+installer needs the disks and links with their location codes.

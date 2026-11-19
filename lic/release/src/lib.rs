@@ -6,10 +6,17 @@
 //! ID, the product text, the banner, the prefixes everything named
 //! after the product starts with, and the [`Appliance`] description the
 //! product-neutral base crates of QS/VS take.
+//!
+//! - [`names`]: what a QS/MC load source carries that is its own.
+//! - [`fact`]: the keys of the control socket's status.
+//! - [`screen`]: the status screen's text, which PID 1 draws and the
+//!   conformance harness reads.
 
 #![forbid(unsafe_code)]
 
+pub mod fact;
 pub mod names;
+pub mod screen;
 
 pub use appliance::{Appliance, Event, LoadSourceNames};
 pub use names::LOAD_SOURCE;
@@ -24,6 +31,10 @@ pub const BUILD_ID: &str = env!("QSMC_BUILD_ID");
 
 /// The product's short name.
 pub const NAME: &str = "QS/MC";
+
+/// The product's name in a test image's manifest: it says it is one,
+/// so a release image never takes it, nor it a release image's.
+pub const TEST_NAME: &str = "QS/MC (test image)";
 
 /// The product text.
 pub const PRODUCT: &str = "Quartz Systems/Management Console";
@@ -48,6 +59,16 @@ pub const DATA_DIR: &str = "/data";
 
 /// The run directory.
 pub const RUN_DIR: &str = "/run";
+
+/// PID 1's control socket.
+pub const CONTROL_SOCKET: &str = "/run/qsmcinit.sock";
+
+/// Where the service binaries are in a slot's initramfs.
+pub const BIN_DIR: &str = "/qsmc/bin";
+
+/// The key of a test image's hook switch, after [`KEY_PREFIX`]: an
+/// SMBIOS OEM string `qsmc.hook=<name>`. Only a test image reads it.
+pub const HOOK_KEY: &str = "hook";
 
 /// What a default host name starts with; six hexadecimal digits follow.
 pub const HOST_PREFIX: &str = "QSMC";
@@ -137,7 +158,9 @@ mod tests {
     fn the_appliance_description_is_qs_mc() {
         let a = appliance(|_| {}, |_, _| {});
         assert_eq!((a.id, a.name), ("qsmc", "QS/MC"));
-        assert_eq!(a.control_socket().to_str(), Some("/run/qsmcinit.sock"));
+        assert_eq!(a.control_socket().to_str(), Some(CONTROL_SOCKET));
+        assert_eq!(a.log_socket().to_str(), Some("/run/logd.sock"));
+        assert_eq!(a.storage_file("sock").to_str(), Some("/run/qsmcstgd.sock"));
         assert_eq!(a.state_dir().to_str(), Some("/data/state"));
         assert_eq!(a.log_dir().to_str(), Some("/data/log"));
         assert_eq!((a.banner)(), banner());

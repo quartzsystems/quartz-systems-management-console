@@ -2,6 +2,12 @@
 // licensed under the terms of the MIT license which can be found in the
 // root directory of this project.
 
-//! What QS/MC adds to the images `buildkit` writes.
+//! The steps that are QS/MC's own: the userland with or without the
+//! test hooks, the A/B record on the disk image and the image read
+//! back, the manifest held to its kind of image, and a load source
+//! written onto image files for the harness (`writer`).
 
 pub mod disk;
+pub mod manifest;
+pub mod userland;
+pub mod writer;

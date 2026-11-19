@@ -8,6 +8,12 @@ members = [
     "lic/qsmcinit",
     "lic/release",
     "lic/refcode",
+    # The services: the base crates' own, run as QS/MC.
+    "lic/qsmcstgd",
+    "lic/qsmclogd",
+    "lic/qsmcnetd",
+    # The test hooks: in a test image only, never in a release.
+    "lic/qsmchook",
 ]
 
 [workspace.package]
@@ -26,13 +32,24 @@ publish = false
 appliance = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "9f11fd5660556dabf789a062768418adf0548583" }
 supervise = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "9f11fd5660556dabf789a062768418adf0548583" }
 loadsource = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "9f11fd5660556dabf789a062768418adf0548583" }
+state = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "9f11fd5660556dabf789a062768418adf0548583" }
+logd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "9f11fd5660556dabf789a062768418adf0548583" }
+netd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "9f11fd5660556dabf789a062768418adf0548583" }
+seed = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "9f11fd5660556dabf789a062768418adf0548583" }
+identity = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "9f11fd5660556dabf789a062768418adf0548583" }
+stgd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "9f11fd5660556dabf789a062768418adf0548583" }
 buildkit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
 vrm = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
 diskimg = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
+abrec = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
+ipc = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
+ntp = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
 
 anyhow = "1.0.104"
 clap = { version = "4.6.7", features = ["derive"] }
-rustix = { version = "1.1.6", features = ["fs", "mount", "event", "process", "system", "time"] }
+hex = "0.4.3"
+libc = "0.2.190"
+rustix = { version = "1.1.6", features = ["fs", "mount", "event", "process", "system", "time", "termios"] }
 serde_json = "1.0.151"
 thiserror = "2.0.21"
 tracing = "0.1.44"

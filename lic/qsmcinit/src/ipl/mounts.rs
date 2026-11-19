@@ -3,11 +3,13 @@
 // root directory of this project.
 
 //! What PID 1 mounts: proc, sysfs, devtmpfs, a tmpfs on the run
-//! directory, then cgroup2.
+//! directory, efivarfs and cgroup2 first; then `QSMCDATA` at `/data`.
 
 use std::ffi::CStr;
+use std::path::Path;
 
-use rustix::mount::{MountFlags, mount};
+use loadsource::boot::EFIVARS;
+use rustix::mount::{MountFlags, UnmountFlags, mount, mount_remount, unmount};
 
 /// One mount: source, mount point, type, flags, options.
 struct Mount<'a> {
@@ -27,7 +29,7 @@ fn nodev() -> MountFlags {
 }
 
 /// The table, in order; `run` is the appliance's run directory.
-fn table(run: &str) -> [Mount<'_>; 5] {
+fn table(run: &str) -> [Mount<'_>; 6] {
     [
         Mount {
             source: "proc",
@@ -57,7 +59,16 @@ fn table(run: &str) -> [Mount<'_>; 5] {
             flags: nodev(),
             data: Some(c"mode=0755"),
         },
-        // Supervision puts each service in a group of its own (Phase 1).
+        // The firmware's boot entries, by which the slot is chosen.
+        Mount {
+            source: "efivarfs",
+            at: EFIVARS,
+            fs: "efivarfs",
+            flags: nodev(),
+            data: None,
+        },
+        // As Phase 0 mounted it: `base/supervise` puts no service in a
+        // group of its own, and nothing else does yet.
         Mount {
             source: "cgroup2",
             at: "/sys/fs/cgroup",
@@ -79,4 +90,22 @@ pub fn kernel(run: &str) -> Vec<(String, String)> {
         }
     }
     failed
+}
+
+/// Mount the xfs on `device` at `at`.
+pub fn data(device: &Path, at: &str) -> Result<(), String> {
+    let _ = std::fs::create_dir_all(at);
+    mount(device, at, "xfs", nodev(), None).map_err(|e| e.to_string())
+}
+
+/// Unmount `at`. When something still holds it, it is at least made
+/// read-only, which also leaves its log clean.
+pub fn unmount_data(at: &str) -> Result<(), String> {
+    match unmount(at, UnmountFlags::empty()) {
+        Ok(()) => Ok(()),
+        Err(busy) => match mount_remount(at, nodev().union(MountFlags::RDONLY), c"") {
+            Ok(()) => Err(format!("{busy}; made read-only instead")),
+            Err(e) => Err(format!("{busy}; not made read-only either: {e}")),
+        },
+    }
 }

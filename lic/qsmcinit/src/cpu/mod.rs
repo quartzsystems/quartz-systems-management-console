@@ -57,9 +57,30 @@ pub fn line(lacking: &[&str]) -> String {
     }
 }
 
+/// The status screen's processor fact for what is lacking.
+pub fn fact(lacking: &[&str]) -> String {
+    if lacking.is_empty() {
+        "has what the cryptography needs".to_string()
+    } else {
+        format!(
+            "lacks {}: the web server and QSI cannot run on it",
+            lacking.join(", ")
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_fact_says_what_is_lacking() {
+        assert_eq!(fact(&[]), "has what the cryptography needs");
+        assert_eq!(
+            fact(&["AES"]),
+            "lacks AES: the web server and QSI cannot run on it"
+        );
+    }
 
     #[test]
     fn the_four_are_qsi_s() {

@@ -2,23 +2,46 @@
 // licensed under the terms of the MIT license which can be found in the
 // root directory of this project.
 
-//! `build test`: the conformance suite against the built images. The
-//! serial log is printed on failure.
+//! `build test`: Phase 0's steps on the release image, then the base
+//! system's suites on the test image. The serial log is printed on
+//! failure and kept under the target's `conformance/`.
 
 use anyhow::Result;
-use buildkit::Ctx;
 use buildkit::host::paths;
-use conformance::suite::Images;
+use buildkit::{Ctx, UkiKind};
+use conformance::{Images, TestImage};
 use tracing::{error, info};
 
-/// Run the steps of `media`.
-pub fn test(ctx: &Ctx, media: conformance::Media) -> Result<()> {
+/// The test image, when it is built.
+fn test_image(test: &Ctx) -> Option<TestImage> {
+    let read = |p: std::path::PathBuf| paths::read_pointer(&p).ok();
+    Some(TestImage {
+        disk: read(test.paths.disk_pointer())?,
+        slot_a: read(test.paths.uki_pointer(UkiKind::SlotA))?,
+        slot_b: read(test.paths.uki_pointer(UkiKind::SlotB))?,
+    })
+}
+
+/// Run the steps and suites of `media`, or only `suite`.
+pub fn test(
+    release: &Ctx,
+    test: &Ctx,
+    media: conformance::Media,
+    suite: Option<&str>,
+) -> Result<()> {
+    if suite == Some("list") {
+        for name in conformance::suite::names(media) {
+            println!("{name}");
+        }
+        return Ok(());
+    }
     let images = Images {
-        disk: paths::read_pointer(&ctx.paths.disk_pointer()).ok(),
-        iso: paths::read_pointer(&ctx.paths.iso_pointer()).ok(),
+        disk: paths::read_pointer(&release.paths.disk_pointer()).ok(),
+        iso: paths::read_pointer(&release.paths.iso_pointer()).ok(),
+        test: test_image(test),
     };
-    let suite = conformance::Suite::new(images, ctx.paths.target.join("conformance"))?;
-    let l = suite.launch();
+    let runner = conformance::Suite::new(images, release.paths.target.join("conformance"))?;
+    let l = runner.launch();
     info!(
         "test: {} with {} ({})",
         l.qemu.display(),
@@ -31,13 +54,13 @@ pub fn test(ctx: &Ctx, media: conformance::Media) -> Result<()> {
     );
     let passed = |r: &conformance::Report| {
         info!(
-            "test: PASS {:<18} {:5.1}s  {}",
+            "test: PASS {:<18} {:6.1}s  {}",
             r.name,
             r.elapsed.as_secs_f64(),
             r.detail
         );
     };
-    match suite.run(media, passed) {
+    match runner.run(media, suite, passed) {
         Ok(reports) => {
             info!("test: PASS, {} step(s), media {media}", reports.len());
             Ok(())

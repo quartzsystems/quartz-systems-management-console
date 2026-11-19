@@ -6,17 +6,25 @@
 //!
 //! The pipeline is QS/400's `buildkit`, taken as a library; `product`
 //! describes QS/MC to it, with the load source of QS/VS's
-//! `base/loadsource`. What is QS/MC's own is here: the A/B record on
-//! the disk image (`image`), and the host checks and the QEMU suite
-//! (`host`).
+//! `base/loadsource`. What is QS/MC's own is here: the userland with or
+//! without the test hooks, the A/B record on the disk image, the
+//! manifest held to its image, a load source written onto image files
+//! (`image`), and the host checks and the QEMU suites (`host`).
+//!
+//! `--test-image` builds the test image: the same sources with the test
+//! hooks, under `test-image/` in the target root, a target of its own.
 
 mod host;
 mod image;
 mod product;
 
-use anyhow::Result;
+use std::fs;
+use std::path::PathBuf;
+
+use anyhow::{Context, Result};
 use buildkit::{Ctx, kernel, notices};
 use clap::{Parser, Subcommand};
+use product::Image;
 use tracing_subscriber::EnvFilter;
 
 #[derive(Parser)]
@@ -25,6 +33,10 @@ struct Cli {
     /// Stream tool output instead of writing it to target/logs.
     #[arg(short, long, global = true)]
     verbose: bool,
+    /// Build the test image: the release image's sources with the test
+    /// hooks, under `test-image/` in the target root. Never shipped.
+    #[arg(long, global = true)]
+    test_image: bool,
     #[command(subcommand)]
     command: Command,
 }
@@ -35,7 +47,8 @@ enum Command {
     Fetch,
     /// Configure and build the kernel.
     Kernel,
-    /// Build PID 1 for the musl target; verify it is static and stripped.
+    /// Build PID 1 and the services for the musl target; verify they are
+    /// static and stripped, and the test hooks only where they belong.
     Userland,
     /// Write the deterministic newc cpio.
     Initramfs,
@@ -48,19 +61,33 @@ enum Command {
         #[arg(long)]
         size: Option<u64>,
     },
+    /// Write a load source onto image files with `base/loadsource`'s
+    /// writer, from the built slot UKIs: one file for one disk, two for a
+    /// mirrored pair.
+    Loadsource {
+        /// The image files: one, or two for a mirrored pair.
+        #[arg(required = true, num_args = 1..=2)]
+        out: Vec<PathBuf>,
+        /// Each disk's size in bytes (default 1 GiB).
+        #[arg(long)]
+        size: Option<u64>,
+    },
     /// Write the UEFI-bootable installation ISO.
     Iso,
     /// Write and sign the artifact manifest.
     Manifest,
     /// Run the whole pipeline.
     All,
-    /// Boot under QEMU and check the serial port: `--media disk`
-    /// (default) boots slot A, slot B and slot A on a processor that
-    /// lacks what the cryptography needs; `--media iso` boots the ISO.
+    /// Boot under QEMU: `--media disk` (default) runs Phase 0's steps on
+    /// the release image, then the base system's suites on the test
+    /// image; `--media iso` boots the release ISO.
     Test {
         /// What to boot.
         #[arg(long, default_value = "disk")]
         media: conformance::Media,
+        /// Only this step or suite; `list` lists them.
+        #[arg(long)]
+        suite: Option<String>,
     },
     /// Check host prerequisites, the license headers and the two pins.
     Doctor,
@@ -75,17 +102,39 @@ enum Command {
     },
 }
 
-/// The pipeline in order. The disk step is QS/MC's own.
-fn all(ctx: &Ctx) -> Result<()> {
+/// The context of one image kind. A test image is built in its own
+/// directory of the target root, so nothing of it is ever among the
+/// release artifacts.
+fn context(image: Image, verbose: bool) -> Result<Ctx> {
+    let mut ctx = Ctx::new(product::qsmc(image)?, verbose)?;
+    if image == Image::Test {
+        let release = ctx.paths.target.clone();
+        ctx.paths.target = release.join(product::TEST_DIR);
+        // The kernel tarball the release build fetched serves both.
+        let pin = kernel::fetch::read_pin(&ctx.paths)?;
+        let tarball = format!("linux-{}.tar.xz", pin.version);
+        let (from, to) = (release.join("src").join(&tarball), ctx.paths.src());
+        if from.is_file() && !to.join(&tarball).is_file() {
+            fs::create_dir_all(&to)?;
+            fs::copy(&from, to.join(&tarball))
+                .with_context(|| format!("cannot copy {}", from.display()))?;
+        }
+    }
+    Ok(ctx)
+}
+
+/// The pipeline in order. The userland, disk and manifest steps are
+/// QS/MC's own.
+fn all(ctx: &Ctx, image: Image) -> Result<()> {
     tracing::info!("building {} {}", ctx.product.name, ctx.product.full());
     kernel::fetch::fetch(ctx)?;
     kernel::kernel(ctx)?;
-    buildkit::userland::userland(ctx)?;
+    image::userland::userland(ctx, image)?;
     buildkit::image::initramfs::initramfs(ctx)?;
     kernel::uki(ctx, false)?;
     image::disk::disk(ctx, None)?;
     buildkit::image::iso::iso(ctx)?;
-    buildkit::image::manifest::manifest(ctx)?;
+    image::manifest::manifest(ctx, image)?;
     Ok(())
 }
 
@@ -97,7 +146,12 @@ fn main() -> Result<()> {
         .with_target(false)
         .init();
     let cli = Cli::parse();
-    let ctx = Ctx::new(product::qsmc()?, cli.verbose)?;
+    let image = if cli.test_image {
+        Image::Test
+    } else {
+        Image::Release
+    };
+    let ctx = context(image, cli.verbose)?;
     if !cfg!(target_os = "linux")
         && !matches!(
             cli.command,
@@ -112,7 +166,7 @@ fn main() -> Result<()> {
         }
         Command::Kernel => kernel::kernel(&ctx)?,
         Command::Userland => {
-            buildkit::userland::userland(&ctx)?;
+            image::userland::userland(&ctx, image)?;
         }
         Command::Initramfs => {
             buildkit::image::initramfs::initramfs(&ctx)?;
@@ -123,14 +177,19 @@ fn main() -> Result<()> {
         Command::Disk { size } => {
             image::disk::disk(&ctx, size)?;
         }
+        Command::Loadsource { out, size } => image::writer::write(&ctx, &out, size)?,
         Command::Iso => {
             buildkit::image::iso::iso(&ctx)?;
         }
         Command::Manifest => {
-            buildkit::image::manifest::manifest(&ctx)?;
+            image::manifest::manifest(&ctx, image)?;
         }
-        Command::All => all(&ctx)?,
-        Command::Test { media } => host::testrun::test(&ctx, media)?,
+        Command::All => all(&ctx, image)?,
+        Command::Test { media, suite } => {
+            let release = context(Image::Release, cli.verbose)?;
+            let test = context(Image::Test, cli.verbose)?;
+            host::testrun::test(&release, &test, media, suite.as_deref())?;
+        }
         Command::Doctor => buildkit::host::doctor::doctor(&ctx)?,
         Command::Deny => buildkit::host::deny::deny(&ctx)?,
         Command::Notices { check } => {

@@ -2,18 +2,23 @@
 // licensed under the terms of the MIT license which can be found in the
 // root directory of this project.
 
-//! QS/MC PID 1, as Phase 0 has it: the kernel's file systems mounted,
-//! the banner, the slot and the processor's line on the display and the
-//! serial port, a heartbeat, children reaped, and a panic that posts
-//! its code and parks.
+//! QS/MC PID 1. The IPL in order, each step posting its reference
+//! code; then the base system: the service table supervised, the
+//! control socket, the status screen, slot confirmation, and an orderly
+//! shutdown on request, on `SIGTERM` and on the power button.
 
 // The parts that need no kernel are built and tested on any host.
 #![cfg_attr(not(target_os = "linux"), allow(dead_code))]
 
 mod console;
 mod cpu;
+#[cfg(all(target_os = "linux", test_hooks))]
+mod hooks;
+#[cfg(target_os = "linux")]
+mod host;
 mod ipl;
 mod product;
+mod slot;
 #[cfg(target_os = "linux")]
 mod sys;
 

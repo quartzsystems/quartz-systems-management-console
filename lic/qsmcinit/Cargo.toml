@@ -1,16 +1,25 @@
 [package]
 name = "qsmcinit"
-description = "QS/MC PID 1: the mounts, the banner, the slot, the processor's line, the heartbeat, reaping and the panic path"
+description = "QS/MC PID 1: the IPL in order, the service table, the control socket, the status screen, the slot and the orderly shutdown"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
+build = "build.rs"
 
 [dependencies]
 release = { path = "../release", version = "0.1.0" }
 refcode = { path = "../refcode", version = "0.1.0" }
 appliance.workspace = true
 supervise.workspace = true
+state.workspace = true
+logd.workspace = true
+seed.workspace = true
+identity.workspace = true
+loadsource.workspace = true
+stgd.workspace = true
+abrec.workspace = true
+diskimg.workspace = true
 
 # PID 1 is a Linux program; other hosts build a stub so the workspace checks.
 [target.'cfg(target_os = "linux")'.dependencies]

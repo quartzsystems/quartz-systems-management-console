@@ -10,6 +10,7 @@ build = "build.rs"
 [dependencies]
 vrm.workspace = true
 appliance.workspace = true
+supervise.workspace = true
 
 [build-dependencies]
 vrm.workspace = true

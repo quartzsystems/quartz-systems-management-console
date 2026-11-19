@@ -8,6 +8,9 @@ publish.workspace = true
 
 [dependencies]
 appliance.workspace = true
+logd.workspace = true
+supervise.workspace = true
+release = { path = "../release", version = "0.1.0" }
 
 [lints]
 workspace = true

@@ -6,7 +6,9 @@
 //! standard output, KVM with the host's processor when the build
 //! machine has it. A boot waits for lines in order and stops QEMU.
 
+pub mod channel;
 pub mod firmware;
+pub mod session;
 pub mod vars;
 
 use std::env;

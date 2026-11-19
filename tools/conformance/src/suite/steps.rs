@@ -96,6 +96,11 @@ fn esp(step: &'static str, image: &Path) -> Result<EspLocation, HarnessError> {
 }
 
 impl Step {
+    /// The step's name.
+    pub fn name(&self) -> &'static str {
+        self.name
+    }
+
     /// The lines the serial port must show, in order.
     fn expect(&self) -> Vec<String> {
         let mut e = vec![refcode::IPL_STARTED.tag(), format!("{NAME} {RELEASE} ")];
