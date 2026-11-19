@@ -13,13 +13,13 @@ webd = { path = "../webd", version = "0.1.0" }
 webusers = { path = "../users", version = "0.1.0" }
 qmcmsg = { path = "../msgs", version = "0.1.0" }
 qsweb.workspace = true
+users.workspace = true
 state.workspace = true
 serde.workspace = true
 appliance.workspace = true
 supervise.workspace = true
 
 [dev-dependencies]
-users.workspace = true
 
 [lints]
 workspace = true

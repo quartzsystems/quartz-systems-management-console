@@ -21,6 +21,8 @@ pub mod help;
 pub mod pages;
 pub mod signon;
 pub mod url;
+pub mod user_routes;
+pub mod users;
 pub mod welcome;
 
 pub use app::App;

@@ -262,3 +262,104 @@ fn console_settings_shows_the_console_s_own_values() {
     }
     let _ = std::fs::remove_dir_all(dir);
 }
+
+#[test]
+fn users_are_made_changed_and_deleted_and_the_last_administrator_stays() {
+    let (app, _, dir) = app("users");
+    let mut b = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.15",
+    };
+    b.sign_on("qsadmin", PASSWORD);
+    let token = b.csrf("/qsmc/console/users?create");
+    let r = b.send(
+        "POST",
+        "/qsmc/console/users",
+        &[
+            ("csrf", &token),
+            ("create", "OK"),
+            ("id", "Operator1"),
+            ("description", "Operations desk"),
+            ("role", "Operator"),
+            ("password", "Desk-shift-42"),
+            ("again", "Desk-shift-42"),
+        ],
+    );
+    assert_eq!(r.status, 303);
+    let list = b.send("GET", "/qsmc/console/users", &[]).text();
+    assert!(
+        list.contains("QMC8001") && list.contains("operator1"),
+        "{list}"
+    );
+    // The last enabled Administrator is kept.
+    let r = b.send(
+        "POST",
+        "/qsmc/console/users",
+        &[
+            ("csrf", &token),
+            ("properties", "OK"),
+            ("id", "qsadmin"),
+            ("role", "Viewer"),
+        ],
+    );
+    assert!(r.text().contains("QMC8010"));
+    let r = b.send(
+        "POST",
+        "/qsmc/confirm/user-delete",
+        &[("csrf", &token), ("ok", "OK"), ("u", "qsadmin")],
+    );
+    assert_eq!(r.status, 303);
+    assert!(
+        b.send("GET", "/qsmc/console/users", &[])
+            .text()
+            .contains("QMC8010")
+    );
+    // The new user signs on; a viewer's password change is its own.
+    let mut o = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.16",
+    };
+    assert_eq!(o.sign_on("operator1", "Desk-shift-42").status, 303);
+    assert_eq!(o.send("GET", "/qsmc/console/users", &[]).status, 403);
+    // Deleted through the confirmation page, its session ends.
+    let confirm = b
+        .send("GET", "/qsmc/confirm/user-delete?u=operator1", &[])
+        .text();
+    assert!(confirm.contains("Confirm Delete User"));
+    b.send(
+        "POST",
+        "/qsmc/confirm/user-delete",
+        &[("csrf", &token), ("ok", "OK"), ("u", "operator1")],
+    );
+    assert!(app.users().get("operator1").is_none());
+    assert!(
+        o.send("GET", "/qsmc/welcome", &[])
+            .text()
+            .contains("QMC9006")
+    );
+    // The roles: a viewer given Console settings.
+    let r = b.send(
+        "POST",
+        "/qsmc/console/roles",
+        &[
+            ("csrf", &token),
+            ("apply", "Apply"),
+            ("r9_2", "on"),
+            ("r0_2", "on"),
+        ],
+    );
+    assert_eq!(r.status, 303);
+    assert!(
+        app.users()
+            .matrix
+            .allows(Role::Viewer, webusers::Task::Settings)
+    );
+    assert!(
+        !app.users()
+            .matrix
+            .allows(Role::Operator, webusers::Task::View)
+    );
+    let _ = std::fs::remove_dir_all(dir);
+}

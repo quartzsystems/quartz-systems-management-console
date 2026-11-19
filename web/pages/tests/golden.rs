@@ -330,3 +330,73 @@ fn console_settings() {
         &[],
     );
 }
+
+fn user(id: &str, d: &str, role: &str, last: &str, from: &str, on: bool) -> webpages::users::Row {
+    webpages::users::Row {
+        id: id.into(),
+        description: d.into(),
+        role: role.into(),
+        last: last.into(),
+        from: from.into(),
+        enabled: on,
+    }
+}
+
+#[test]
+fn console_users() {
+    let v = webpages::users::Users {
+        rows: vec![
+            user(
+                "qsadmin",
+                "Console administrator",
+                "Administrator",
+                "10/30/26 06:58",
+                "10.0.10.55",
+                true,
+            ),
+            user(
+                "operator1",
+                "Operations desk",
+                "Operator",
+                "10/29/26 22:10",
+                "10.0.10.61",
+                true,
+            ),
+            user(
+                "viewer",
+                "Read-only monitoring",
+                "Viewer",
+                "10/28/26 09:00",
+                "10.0.22.7",
+                true,
+            ),
+            user(
+                "qsservice",
+                "Quartz service access",
+                "Service",
+                "10/02/26 14:30",
+                "172.16.0.9",
+                false,
+            ),
+        ],
+        form: webpages::users::Form::None,
+        messages: Vec::new(),
+    };
+    let c = ctx("/qsmc/console/users");
+    assert_golden(
+        &render("/qsmc/console/users", &webpages::users::users_page(&c, &v)),
+        "console-users.html",
+        &[],
+    );
+}
+
+#[test]
+fn console_roles() {
+    let c = ctx("/qsmc/console/roles");
+    let page = webpages::users::roles_page(&c, &webusers::Matrix::default(), Vec::new());
+    assert_golden(
+        &render("/qsmc/console/roles", &page),
+        "console-roles.html",
+        &[],
+    );
+}

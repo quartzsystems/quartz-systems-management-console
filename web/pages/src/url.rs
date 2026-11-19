@@ -24,6 +24,9 @@ pub fn proto(url: &str) -> Option<String> {
         return Some("../shared/qs400.css".into());
     }
     let route = path.strip_prefix(PREFIX)?;
+    if route.starts_with("/confirm/") {
+        return Some("../shared/confirm.html".into());
+    }
     if route.starts_with("/help/") || route.starts_with("/msg/") || route == "/help" {
         return Some("../shared/help.html".into());
     }

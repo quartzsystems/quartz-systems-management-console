@@ -221,7 +221,10 @@ fn refuse(rq: &Rq<'_>, task: Task) -> Response {
 
 /// The task a route needs; `None` for one every signed-on user may see.
 pub fn task_of(route: &str) -> Option<Task> {
-    if route.starts_with("/console/users") || route.starts_with("/console/roles") {
+    if route.starts_with("/console/users")
+        || route.starts_with("/console/roles")
+        || route == "/confirm/user-delete"
+    {
         return Some(Task::Users);
     }
     if route == "/console/version" {

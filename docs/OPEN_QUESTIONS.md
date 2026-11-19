@@ -356,3 +356,12 @@ inline `onclick` handler. QS/MC serves no script, and its content
 security policy blocks inline handlers, so the link does nothing there
 but go to `#`. The change, for QS/400: a plain link when the product
 serves no script (`Product::nav_script` false).
+
+## 23. The users' forms are not designed
+
+Found in Phase 3. On `console-users.html` Properties and Change
+password lead to the list itself and Create user... is a bare button:
+the prototype has no form for any of them. QS/MC shows each under the
+list as `qsweb`'s properties pattern (`?edit=`, `?password=`, after
+Create user...), with the password rules stated; the list is the
+golden. To decide: designed pages for the three.
