@@ -2,9 +2,9 @@
 # licensed under the terms of the MIT license which can be found in the
 # root directory of this project.
 #
-# The QEMU suite on a GitHub-hosted runner, as QS/VS has it: the images
-# built, then Phase 0's steps on the disk image (slot A, slot B, and a
-# processor that lacks what the cryptography needs) and on the ISO.
+# The QEMU suites on a GitHub-hosted runner, as QS/VS has them: the
+# release and test images built, then Phase 0's steps on the release
+# image, Phase 1's base suites on the test image, and the release ISO.
 #
 # NEEDS-CODY: nothing has been pushed, so this job has never run on
 # GitHub. A runner without KVM fails at its second step with a clear
@@ -34,7 +34,7 @@ jobs:
   images:
     name: build the images and boot them
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
 
@@ -82,6 +82,7 @@ jobs:
 
       - run: cargo run -q -p build -- doctor
       - run: cargo run -q -p build -- all
+      - run: cargo run -q -p build -- --test-image all
       - run: cargo run -q -p build -- test
       - run: cargo run -q -p build -- test --media iso
 

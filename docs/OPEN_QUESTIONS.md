@@ -165,3 +165,35 @@ What QS/MC needs, as a change for QS/VS: the product-neutral part of
 `hostinv` (disks, links, PCI devices, location codes, the DMI serial)
 moved into `base/`, a host's own fields left in `lic/`. Phase 2's
 installer needs the disks and links with their location codes.
+
+## 13. A mirrored unit absent at the IPL is copied whole when it returns (QS/400, QS/VS)
+
+Found by Phase 1's mirror suite. A mirrored set keeps a write-intent map
+of its own for a member that leaves while it runs, so the member comes
+back by what was written meanwhile: a unit failed under a running
+console and returned was brought back from "637 of 765 MiB already in
+step" (`docs/PHASE1.md`). A member already absent when the set is
+assembled is never seen leaving and gets no map (QS/400's `protect`,
+`set/intent.rs`: the store is read only for a member out of service,
+and nothing starts one for a member that is absent): when it returns,
+all of it is copied, "0 of 765 MiB in step". On a real console that is
+a disk pulled while it was powered off.
+
+The change, for QS/400 and QS/VS: when the set is assembled from a
+clean label with a member absent, `protect` starts that member's map
+there (the set's own map is clear after a clean stop, so the map is
+empty and correct), and `base/stgd` lets it. QS/MC's suite asserts the
+case that works and records this one; nothing is written here.
+
+## 14. A degraded IPL waits about twenty seconds for the missing disk (QS/VS)
+
+`base/stgd` waits for a missing member's disk ten seconds each time it
+looks for the load-source disks (`found_disks`, `DISK_WAIT`), and it
+looks twice before it serves a degraded set (the check for units that
+ran apart, then the assembly). A mirrored console with a unit missing
+reaches "Base ready" 16 to 34 s after the kernel started, by the
+machine's load, where a whole one takes under 2 s. The wait is there
+for controllers that are probed late. The change, for QS/VS: look once
+per start and pass what was found on. The phase's 10 s for "Base ready"
+is held for whole load sources; the harness gives a degraded IPL twice
+the boot timeout (`docs/PHASE1.md`).

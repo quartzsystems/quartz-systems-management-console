@@ -54,7 +54,8 @@ jobs:
           key: clippy-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       # PID 1 is cfg(target_os = "linux") and built for musl.
-      - run: cargo clippy -p qsmcinit --all-targets --locked --target x86_64-unknown-linux-musl -- -D warnings
+      - run: cargo clippy -p qsmcinit -p qsmcstgd -p qsmclogd -p qsmcnetd --all-targets --locked --target x86_64-unknown-linux-musl -- -D warnings
+      - run: QSMC_TEST_HOOKS=1 cargo clippy -p qsmcinit -p qsmchook --all-targets --locked --target x86_64-unknown-linux-musl -- -D warnings
 
   test:
     name: unit tests and the header check

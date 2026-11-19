@@ -29,8 +29,8 @@ Two things already exist and are reused, never rewritten or copied:
 
 | Phase | Delivers | Record |
 | --- | --- | --- |
-| **0 (current)** | Toolchain and build | `docs/PHASE0.md` |
-| 1 | PID 1 and base system: services, state, logging, the management network, time | |
+| 0 | Toolchain and build | `docs/PHASE0.md` |
+| **1 (current)** | PID 1 and base system: services, state, logging, the management network, time | `docs/PHASE1.md` |
 | 2 | Installer, ISO and the local console | |
 | 3 | The web server and Console Management pages | |
 | 4 | QSI and managed systems, proven on a QS/VS host; the browser terminal | |
@@ -40,9 +40,10 @@ Two things already exist and are reused, never rewritten or copied:
 | 8 | Release engineering and hardening | |
 
 Work that is not done is listed in the current phase's record,
-`docs/PHASE0.md`. Code and documents mark it `BLOCKED(phase0): reason`
-(one line) or `NEEDS-CODY` (Cody's hardware or sign-off). No other
-marker form.
+`docs/PHASE1.md`. Code and documents mark it `BLOCKED(phase1): reason`
+(one line) or `NEEDS-CODY` (Cody's hardware or sign-off); an earlier
+phase's `BLOCKED(phase0)` stays as it was written. No other marker
+form.
 
 ## Ground rules
 
@@ -68,7 +69,7 @@ marker form.
 - **The two pins.** QS/VS's crates are git dependencies at one commit of
   its `main`. QS/400's crates are git dependencies at one commit:
   exactly the commit that QS/VS commit pins, so the tree holds one copy
-  of every shared crate. Both are recorded in `docs/PHASE0.md`. Moving
+  of every shared crate. Both are recorded in `docs/PHASE0.md` (Phase 1 kept them). Moving
   either is its own commit, and they move together. Never path
   dependencies, never copies. `build doctor` fails when they disagree
   or `cargo tree -d` shows a QS/VS or QS/400 crate twice.
@@ -82,7 +83,7 @@ marker form.
   value.
 - No IBM text, product names or marks anywhere. The names in use are
   QS/MC, QS/VS and QS/400.
-- Anything not done is listed in `docs/PHASE0.md`.
+- Anything not done is listed in the current phase's record (`docs/PHASE1.md`).
 
 ## Locked decisions
 
@@ -127,7 +128,7 @@ See `docs/ARCHITECTURE.md`. Short form:
   name `QSMC` and six hexadecimal digits.
 - **Reference codes.** `REF <code> <text>`, in the families whose second
   character is `3` (`C3`, `A3`, `B3`, `D3`), which no QS/400 or QS/VS
-  family uses (`docs/REFCODES.md`; `NEEDS-CODY`).
+  family uses (`docs/REFCODES.md`); confirmed in Phase 1.
 - **Command line.** Baked: `console=ttyS0,115200 console=tty0 panic=-1
   quiet`, then `qsmc.slot=A` or `qsmc.slot=B`; the media UKI carries
   `qsmc.install=1` instead.
@@ -139,29 +140,36 @@ VERSION         1.0.0, the release (V1R0M0)
 kernel/         VERSION, SHA256 (QS/VS's), config/qsmc.config
 tools/          host tools
   build/          the orchestrator, a thin binary over buildkit: cargo run -p build -- <cmd>
-    src/product/    QS/MC as buildkit's Product: names, kernel symbols, the media
-    src/image/      the A/B record on the disk image and the image read back
+    src/product/    QS/MC as buildkit's Product, release or test image: names, kernel, initramfs, media
+    src/image/      the userland and its hook check, the disk's record, the manifest, the load-source writer
     src/host/       doctor rows, the license header check, the two pins, `test`
   conformance/    the QEMU harness
-    src/qemu/       launch, OVMF, serial capture, the boot entry in a variable store
-    src/suite/      Phase 0's steps
+    src/qemu/       launch, OVMF, variable store; a guest's session; the test hooks' channel
+    src/image/      a load source on image files (base/loadsource's writer), a seed volume
+    src/suite/      Phase 0's steps; base/: Phase 1's suites
 lic/            PID 1, release, the product's binaries
   qsmcinit/       PID 1
-    src/ipl/        the IPL in order: mounts, the command line
-    src/console/    /dev/console and /dev/ttyS0
+    src/ipl/        the IPL in order: mounts, the record, storage and /data, clock, seed, state, identity
+    src/host/       the running console: the loop, the table, the control socket, shutdown, the load source's line
+    src/slot/       the slot rule (RULE: when a slot on trial confirms)
+    src/console/    /dev/console and /dev/ttyS0, the status screen
     src/cpu/        what the cryptography needs of the processor
-    src/sys/        the panic path, reaping, the loop and the heartbeat
-    src/product.rs  QS/MC as the base crates see it, with PID 1's poster and notes
-  release/        V1R0M0 over QS/400's vrm, the banner, the prefixes, the Appliance, LOAD_SOURCE
-  refcode/        the console's reference codes (docs/REFCODES.md) and the poster
-docs/           ARCHITECTURE, PHASE0, REFCODES, OPEN_QUESTIONS
+    src/sys/        the panic path, reaping, the power button
+    src/hooks.rs    a test image's hooks (cfg(test_hooks) only)
+  qsmcstgd/       base/stgd run as QS/MC
+  qsmclogd/       base/logd run as QS/MC
+  qsmcnetd/       base/netd run as QS/MC
+  qsmchook/       the test hooks: the channel, flaky, the churn (test image only)
+  release/        V1R0M0 over QS/400's vrm, the banner, the prefixes, the Appliance, LOAD_SOURCE, status facts and screen
+  refcode/        the console's reference codes (docs/REFCODES.md), each base event's, the poster
+docs/           ARCHITECTURE, PHASE0, PHASE1, REFCODES, SEED, OPEN_QUESTIONS
 ```
 
 Category folders are made as phases need them. The full set: `tools/`
 (host tools), `lic/` (PID 1, release, the product's binaries), `web/`
 (the server, sessions, templates, the terminal relay, static files),
 `mgmt/` (managed systems: the QSI client's use, pairing, events, what
-is kept about each system), `svc/` (the local console). Phase 0 has
+is kept about each system), `svc/` (the local console). Phases 0 and 1
 `tools/` and `lic/`.
 
 ## Commands
@@ -172,13 +180,17 @@ with `QSMC_TARGET_DIR`.
 ```
 cargo run -p build -- doctor          host prerequisites, the license headers, the two pins, no shared crate twice
 cargo run -p build -- all             fetch, kernel, userland, initramfs, uki, disk, iso, manifest
-cargo run -p build -- test            slot A, slot B, and slot A on a processor lacking what the cryptography needs
+cargo run -p build -- --test-image all   the same with the test hooks, under test-image/ in the target
+cargo run -p build -- test            Phase 0's steps on the release image, then Phase 1's suites on the test image
+cargo run -p build -- test --suite <name>   one step or suite; `list` lists them
 cargo run -p build -- test --media iso   the installation ISO
+cargo run -p build -- loadsource a.img [b.img]   a load source (two files: mirrored) from the built UKIs
 cargo run -p build -- deny            cargo-deny and the C-linkage check
 cargo run -p build -- notices         rewrite lic/release/NOTICES.txt (--check in CI)
 cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
-cargo clippy -p qsmcinit --all-targets --target x86_64-unknown-linux-musl -- -D warnings
+cargo clippy -p qsmcinit -p qsmcstgd -p qsmclogd -p qsmcnetd --all-targets --target x86_64-unknown-linux-musl -- -D warnings
+QSMC_TEST_HOOKS=1 cargo clippy -p qsmcinit -p qsmchook --all-targets --target x86_64-unknown-linux-musl -- -D warnings
 cargo test --workspace
 cargo test -p build -- --ignored host::pins   the pin checks against cargo's checkout of QS/VS
 ```
@@ -190,7 +202,13 @@ Single steps: `fetch`, `kernel`, `userland`, `initramfs`, `uki`, `disk`,
 Environment: `QSMC_TARGET_DIR`, `QSMC_JOBS`, `QSMC_SIGNING_KEY`,
 `QSMC_BUILD_ID`, `QSMC_RELEASE`, `QSMC_OVMF_CODE`, `QSMC_OVMF_VARS`,
 `QSMC_QEMU`, `QSMC_NO_KVM`, `QSMC_BOOT_TIMEOUT` (`docs/PHASE0.md` says
-what each does).
+what each does), and `QSMC_TEST_HOOKS`, which the userland step sets
+itself (`docs/PHASE1.md`).
+
+A test image's hooks are switched on for one boot by an SMBIOS OEM
+string `qsmc.hook=<name>` (`churn`, `flaky-fails`, `refuse-confirm`);
+the harness reaches the control socket through the channel on the
+guest's second serial port.
 
 ## Documents
 
@@ -199,8 +217,13 @@ what each does).
 - `docs/PHASE0.md`: the toolchain: what exists, how to run it, both
   pinned commits, every base crate and whether it is linked, hashes,
   the acceptance table with evidence, what is not done.
+- `docs/PHASE1.md`: the base system: what exists, how to run it, every
+  base crate and how it is used, kernel additions, where a crate
+  differed from the handoff, hashes, the acceptance table with
+  evidence, what is not done.
 - `docs/REFCODES.md`: the console's reference codes, their range and
-  blocks.
+  blocks, and what to do for each `A3` and `B3` code.
+- `docs/SEED.md`: what a QS/MC seed holds over the base format.
 - `docs/OPEN_QUESTIONS.md`: what needs a decision.
 - QS/400's `docs/BUILDKIT.md` (in its repository): the pipeline and the
   `Product` description.
