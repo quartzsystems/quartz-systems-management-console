@@ -41,10 +41,73 @@ fn welcome(rq: &Rq<'_>) -> Response {
     rq.page(crate::welcome::page(&rq.ctx, &v))
 }
 
+/// The first word of a status line (`10.0.2.15/24 on eth0, ...`), or
+/// `none`.
+pub fn address(line: &str) -> String {
+    line.split_whitespace()
+        .next()
+        .filter(|a| a.contains('/'))
+        .unwrap_or("none")
+        .to_string()
+}
+
+fn console(rq: &Rq<'_>) -> Response {
+    let app = rq.app;
+    let s = app.settings();
+    let host = app.host();
+    let zone = host.zone();
+    let now = i64::try_from(app.console.now()).unwrap_or(0);
+    let when = format!(
+        "{} {} {zone}",
+        crate::fmt::date(now, zone, &s.date_format),
+        crate::fmt::time(now, zone, &s.time_format, true)
+    );
+    let ntp = if host.ntp_servers.is_empty() {
+        "none".to_string()
+    } else {
+        host.ntp_servers.join(", ")
+    };
+    let cert = app.certs.get().map_or_else(
+        || "not made yet".to_string(),
+        |c| {
+            let i = c.shown().info;
+            let name = i.common_name.clone().unwrap_or_else(|| i.subject.clone());
+            let until = i64::try_from(i.not_after).unwrap_or(0);
+            format!(
+                "{name}, expires {}",
+                crate::fmt::date(until, zone, &s.date_format)
+            )
+        },
+    );
+    let build = release::BUILD_ID;
+    let v = crate::console::Settings {
+        console: app.console.name(),
+        values: vec![
+            format!("{} users, 4 roles", app.users().users.len()),
+            format!(
+                "Public {}, private {}",
+                address(&app.console.fact(release::fact::MANAGEMENT)),
+                address(&app.console.fact(release::fact::PRIVATE))
+            ),
+            format!("{when}, NTP {ntp}"),
+            cert,
+            crate::backup::last(app, zone, &s.date_format),
+            format!("{} {} build {build}", release::NAME, release::RELEASE),
+            format!("Uptime {}", uptime(app.console.uptime())),
+            format!("English (US), {}, {}", s.date_format, s.time_format),
+            format!("{} minutes idle", s.idle_minutes),
+            format!("{} build {build}", release::RELEASE),
+        ],
+        messages: Vec::new(),
+    };
+    rq.page(crate::console::page(&rq.ctx, &v))
+}
+
 /// The page for `route`, `None` when there is none.
 pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
     Some(match route {
         "/welcome" => welcome(rq),
+        "/console" => console(rq),
         _ => return None,
     })
 }

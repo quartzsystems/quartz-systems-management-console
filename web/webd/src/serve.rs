@@ -63,6 +63,10 @@ pub fn stylesheet(req: &Request) -> Response {
 pub trait Pages: Send + Sync {
     /// The answer to `req`.
     fn page(&self, req: &Request, peer: &Peer) -> Response;
+
+    /// The server has started with `certs`, which the pages may show
+    /// and replace.
+    fn started(&self, _certs: Arc<crate::tls::Certs>) {}
 }
 
 /// No pages: the stylesheet only, every other path not found.

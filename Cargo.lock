@@ -2606,6 +2606,7 @@ dependencies = [
 name = "webpages"
 version = "0.1.0"
 dependencies = [
+ "appliance",
  "qmcmsg",
  "qsweb",
  "release",

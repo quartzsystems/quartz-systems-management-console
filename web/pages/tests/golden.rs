@@ -302,3 +302,31 @@ fn shared_help() {
         ],
     );
 }
+
+#[test]
+fn console_settings() {
+    let v = webpages::console::Settings {
+        console: "QSHQMC1".into(),
+        values: [
+            "4 users, 4 roles",
+            "Public 10.0.10.40/24, private 192.168.250.1/24",
+            "10/30/26 07:14:02 EDT, NTP 10.0.10.1",
+            "qshqmc1.quartz.example, expires 03/14/27",
+            "Last backup 10/26/26 02:00 to backup.quartz.example",
+            "QS/MC V1R0M0 build 26290 - current",
+            "Uptime 41 days 3:12",
+            "English (US), MM/DD/YY, 24-hour",
+            "30 minutes idle",
+            "V1R0M0 build 26290",
+        ]
+        .map(String::from)
+        .to_vec(),
+        messages: Vec::new(),
+    };
+    let c = ctx("/qsmc/console");
+    assert_golden(
+        &render("/qsmc/console", &webpages::console::page(&c, &v)),
+        "console.html",
+        &[],
+    );
+}

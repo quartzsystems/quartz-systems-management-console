@@ -31,6 +31,8 @@ pub trait Console: Send + Sync {
     fn uptime(&self) -> u64;
     /// Unix seconds now.
     fn now(&self) -> u64;
+    /// A fact of PID 1's status (`release::fact`), empty when it has none.
+    fn fact(&self, key: &str) -> String;
 }
 
 /// The web server's pages and what they keep.
@@ -43,6 +45,8 @@ pub struct App {
     settings: Mutex<WebSettings>,
     /// The console.
     pub console: Box<dyn Console>,
+    /// The web certificate, once the server has started.
+    pub certs: std::sync::OnceLock<std::sync::Arc<webd::tls::Certs>>,
 }
 
 fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
@@ -99,6 +103,7 @@ impl App {
             users: Mutex::new(users),
             settings: Mutex::new(settings),
             console,
+            certs: std::sync::OnceLock::new(),
         })
     }
 
@@ -118,6 +123,20 @@ impl App {
         self.store.save(&next).map_err(|e| e.to_string())?;
         *users = next;
         Ok(())
+    }
+
+    /// `host.toml`: the name, the display zone, the time servers.
+    pub fn host(&self) -> state::Host {
+        self.store
+            .load::<state::Host>()
+            .ok()
+            .flatten()
+            .unwrap_or_default()
+    }
+
+    /// The state directory's store.
+    pub fn store(&self) -> &Store {
+        &self.store
     }
 
     /// The settings.
@@ -164,5 +183,9 @@ impl App {
 impl webd::serve::Pages for App {
     fn page(&self, req: &Request, peer: &Peer) -> Response {
         routes::route(self, req, peer)
+    }
+
+    fn started(&self, certs: std::sync::Arc<webd::tls::Certs>) {
+        let _ = self.certs.set(certs);
     }
 }

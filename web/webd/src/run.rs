@@ -117,6 +117,7 @@ pub fn run(pages: Arc<dyn Pages>) -> Result<(), String> {
             shown.sha256
         ));
     }
+    pages.started(certs.clone());
     let serving = Arc::new(Serving {
         tls: tls::server_config(certs.clone())?,
         site: Arc::new(Site { pages }),

@@ -28,6 +28,12 @@ impl Console for Fixed {
     fn now(&self) -> u64 {
         self.0.load(Ordering::Relaxed)
     }
+    fn fact(&self, key: &str) -> String {
+        match key {
+            "management" => "192.0.2.10/24 on eth0, gateway 192.0.2.1".into(),
+            _ => String::new(),
+        }
+    }
 }
 
 const PASSWORD: &str = "Install-pass-7";
@@ -233,5 +239,26 @@ fn five_wrong_passwords_lock_the_id_and_a_session_has_a_length() {
     };
     assert_eq!(missing.status, 404);
     assert!(missing.text().contains("QMC9020"));
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+#[test]
+fn console_settings_shows_the_console_s_own_values() {
+    let (app, _, dir) = app("settings");
+    let mut b = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.14",
+    };
+    b.sign_on("qsadmin", PASSWORD);
+    let t = b.send("GET", "/qsmc/console", &[]).text();
+    for want in [
+        "1 users, 4 roles",
+        "Public 192.0.2.10/24, private none",
+        "No backup made yet",
+        "30 minutes idle",
+    ] {
+        assert!(t.contains(want), "{want} is not on the page");
+    }
     let _ = std::fs::remove_dir_all(dir);
 }

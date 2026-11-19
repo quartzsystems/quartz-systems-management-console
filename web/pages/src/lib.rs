@@ -14,6 +14,9 @@
 #![forbid(unsafe_code)]
 
 pub mod app;
+pub mod backup;
+pub mod console;
+pub mod fmt;
 pub mod help;
 pub mod pages;
 pub mod signon;

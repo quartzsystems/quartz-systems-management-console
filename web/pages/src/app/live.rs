@@ -34,4 +34,12 @@ impl super::Console for Live {
             .duration_since(UNIX_EPOCH)
             .map_or(0, |d| d.as_secs())
     }
+
+    fn fact(&self, key: &str) -> String {
+        Client::new(release::CONTROL_SOCKET)
+            .status()
+            .ok()
+            .and_then(|s| s.fact(key).map(str::to_string))
+            .unwrap_or_default()
+    }
 }
