@@ -43,19 +43,51 @@ dns = ["192.0.2.53"]
 | The volume's label | `QSMCSEED` (`release::SEED_LABEL`) |
 | The codes | `C3001060 Seed checked`, `C3001061 Seed applied`, `A3001060 Seed not valid` (`docs/REFCODES.md`) |
 | A default host name | `QSMC` and the last six hexadecimal digits of the first Ethernet link's MAC address |
-| Tables of its own | none yet |
+| The interface roles | `open`, first: operators reach the console on it, with the default route, the name servers and the time; `private`, optional, toward the systems it manages, with no default route (`release::INTERFACE_ROLES`) |
+| Tables of its own | none |
+
+`[network]` is read in either form of `network.toml` (`base/state`,
+version 2 since QS/VS's `f0ef0f1`): the keys of one interface, which is
+then `open`, or one `[[network.interface]]` table an interface, each
+with `role` and, besides version 1's keys, `carries_route`,
+`carries_dns` and `carries_time`. A role QS/MC does not have, or
+`private` first, is refused by the network service and by the
+installer. Either form becomes a `network.toml` of version 2:
+
+```toml
+schema_version = 2
+
+[[network.interface]]
+role = "open"
+mode = "dhcp"
+
+[[network.interface]]
+role = "private"
+device = "eth1"
+mode = "static"
+address = "198.51.100.1/24"
+carries_route = false
+carries_dns = false
+carries_time = false
+```
 
 `schema_version = 2` adds `[install]`, an unattended installation's
-answers. A running console reads the `[host]` and `[network]` tables
-and leaves that one alone; the installer that reads it is Phase 2's.
+answers, which the installer reads (`lic/qsmcinstall`,
+`docs/INSTALL.md`): the disks by serial number or location code, the
+first service tools user's ID and its Argon2id hash. With it the
+installer writes the disks, `network.toml` with both roles as given,
+the users file and `host.toml`, and shows nothing but its progress. A
+running console reads the `[host]` and `[network]` tables and leaves
+`[install]` alone; an installed console is configured, so it reads no
+seed at all.
 
-The network is one interface, the one `base/netd` manages
-(`docs/OPEN_QUESTIONS.md` has the second interface). What the console
-keeps for itself (`identity.toml` with its derived serial number, and
-the identity's key and certificate) does not make it configured.
+What the console keeps for itself (`identity.toml` with its derived
+serial number, `inventory.toml`, and the identity's key and
+certificate) does not make it configured.
 
 ## Making a seed volume
 
 Any FAT volume labelled `QSMCSEED` with `seed.toml` at its root: a USB
-stick, or a virtual disk. The harness makes its own with QS/400's
-`diskimg::fat` (`tools/conformance/src/image/mod.rs`, `seed_volume`).
+stick, or a virtual disk. The harness makes its own with `base/qemu`'s
+`disk::seed_volume`, and its answers files with
+`tools/conformance/src/suite/install/mod.rs` (`answers`).

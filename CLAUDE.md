@@ -30,8 +30,8 @@ Two things already exist and are reused, never rewritten or copied:
 | Phase | Delivers | Record |
 | --- | --- | --- |
 | 0 | Toolchain and build | `docs/PHASE0.md` |
-| **1 (current)** | PID 1 and base system: services, state, logging, the management network, time | `docs/PHASE1.md` |
-| 2 | Installer, ISO and the local console | |
+| 1 | PID 1 and base system: services, state, logging, the management network, time | `docs/PHASE1.md` |
+| **2 (current)** | Installer, ISO and the local console | `docs/PHASE2.md` |
 | 3 | The web server and Console Management pages | |
 | 4 | QSI and managed systems, proven on a QS/VS host; the browser terminal | |
 | 5 | Partitions, profiles and virtual resources | |
@@ -40,10 +40,10 @@ Two things already exist and are reused, never rewritten or copied:
 | 8 | Release engineering and hardening | |
 
 Work that is not done is listed in the current phase's record,
-`docs/PHASE1.md`. Code and documents mark it `BLOCKED(phase1): reason`
+`docs/PHASE2.md`. Code and documents mark it `BLOCKED(phase2): reason`
 (one line) or `NEEDS-CODY` (Cody's hardware or sign-off); an earlier
-phase's `BLOCKED(phase0)` stays as it was written. No other marker
-form.
+phase's `BLOCKED(phase0)` or `BLOCKED(phase1)` stays as it was written.
+No other marker form.
 
 ## Ground rules
 
@@ -69,7 +69,8 @@ form.
 - **The two pins.** QS/VS's crates are git dependencies at one commit of
   its `main`. QS/400's crates are git dependencies at one commit:
   exactly the commit that QS/VS commit pins, so the tree holds one copy
-  of every shared crate. Both are recorded in `docs/PHASE0.md` (Phase 1 kept them). Moving
+  of every shared crate. Both are recorded in `docs/PHASE2.md`, where
+  they last moved (`docs/PHASE0.md` has the first). Moving
   either is its own commit, and they move together. Never path
   dependencies, never copies. `build doctor` fails when they disagree
   or `cargo tree -d` shows a QS/VS or QS/400 crate twice.
@@ -83,7 +84,7 @@ form.
   value.
 - No IBM text, product names or marks anywhere. The names in use are
   QS/MC, QS/VS and QS/400.
-- Anything not done is listed in the current phase's record (`docs/PHASE1.md`).
+- Anything not done is listed in the current phase's record (`docs/PHASE2.md`).
 
 ## Locked decisions
 
@@ -129,6 +130,20 @@ See `docs/ARCHITECTURE.md`. Short form:
 - **Reference codes.** `REF <code> <text>`, in the families whose second
   character is `3` (`C3`, `A3`, `B3`, `D3`), which no QS/400 or QS/VS
   family uses (`docs/REFCODES.md`); confirmed in Phase 1.
+- **Network roles.** `open`, first: operators reach the console on it,
+  with the default route, the name servers and the time; `private`,
+  optional, toward the systems it manages, with no default route. The
+  installer and the local console configure `open`; `private` is set
+  from a seed and, from Phase 3, the web interface.
+- **Installation.** The ISO's media UKI runs `qsmcinstall` over
+  `base/install`; the payload is `base/loadsource::payload`, signed by
+  the build's key and checked before any write. The smallest load-source
+  disk is 16 GiB; protection is none on one disk or mirrored on two. The
+  user made there is the first service tools user, and Phase 3's first
+  Administrator from the same hash.
+- **Local console.** `qsmccons` over `base/panels`, a session on the
+  display and one on the serial port, idle sign-off after ten minutes;
+  it changes nothing itself and manages nothing but the console.
 - **Command line.** Baked: `console=ttyS0,115200 console=tty0 panic=-1
   quiet`, then `qsmc.slot=A` or `qsmc.slot=B`; the media UKI carries
   `qsmc.install=1` instead.
@@ -144,25 +159,28 @@ tools/          host tools
     src/image/      the userland and its hook check, the disk's record, the manifest, the load-source writer
     src/host/       doctor rows, the license header check, the two pins, `test`
   conformance/    the QEMU harness
-    src/qemu/       launch, OVMF, variable store; a guest's session; the test hooks' channel
-    src/image/      a load source on image files (base/loadsource's writer), a seed volume
-    src/suite/      Phase 0's steps; base/: Phase 1's suites
+    src/qemu/       base/qemu (as `driver`) with QS/MC's variables; a suite's machine and its session's cursor; the test hooks' channel; golden screens
+    src/image/      a load source on image files (base/loadsource's writer) and what the suites read of a disk
+    src/suite/      Phase 0's steps; base/: Phase 1's suites; install/: Phase 2's, the installer and the local console
+    golden/         every installer and local console screen, as text
 lic/            PID 1, release, the product's binaries
   qsmcinit/       PID 1
-    src/ipl/        the IPL in order: mounts, the record, storage and /data, clock, seed, state, identity
-    src/host/       the running console: the loop, the table, the control socket, shutdown, the load source's line
+    src/ipl/        the IPL in order: mounts, the record, storage and /data (the panel for the unit to keep), clock, seed, state and inventory, identity; the media's hand-off to the installer
+    src/host/       the running console: the loop, the table, the control socket, shutdown, the load source's line, the serial port lent to a session
     src/slot/       the slot rule (RULE: when a slot on trial confirms)
     src/console/    /dev/console and /dev/ttyS0, the status screen
-    src/cpu/        what the cryptography needs of the processor
     src/sys/        the panic path, reaping, the power button
     src/hooks.rs    a test image's hooks (cfg(test_hooks) only)
+  qsmcinstall/    the installer over base/install: QS/MC's Target, the media's check, the answers of a seed
   qsmcstgd/       base/stgd run as QS/MC
   qsmclogd/       base/logd run as QS/MC
   qsmcnetd/       base/netd run as QS/MC
   qsmchook/       the test hooks: the channel, flaky, the churn (test image only)
-  release/        V1R0M0 over QS/400's vrm, the banner, the prefixes, the Appliance, LOAD_SOURCE, status facts and screen
+  release/        V1R0M0 over QS/400's vrm, the banner, the prefixes, the Appliance and its interface roles, LOAD_SOURCE, status facts and screen, the processor's words
   refcode/        the console's reference codes (docs/REFCODES.md), each base event's, the poster
-docs/           ARCHITECTURE, PHASE0, PHASE1, REFCODES, SEED, OPEN_QUESTIONS
+svc/            the local console
+  console/        qsmccons over base/panels: the sessions, the main menu, status, network, disk units, the one panel for the unit to keep
+docs/           ARCHITECTURE, PHASE0, PHASE1, PHASE2, INSTALL, LOCALCONSOLE, REFCODES, SEED, OPEN_QUESTIONS
 ```
 
 Category folders are made as phases need them. The full set: `tools/`
@@ -170,7 +188,7 @@ Category folders are made as phases need them. The full set: `tools/`
 (the server, sessions, templates, the terminal relay, static files),
 `mgmt/` (managed systems: the QSI client's use, pairing, events, what
 is kept about each system), `svc/` (the local console). Phases 0 and 1
-`tools/` and `lic/`.
+made `tools/` and `lic/`, Phase 2 `svc/`.
 
 ## Commands
 
@@ -189,8 +207,8 @@ cargo run -p build -- deny            cargo-deny and the C-linkage check
 cargo run -p build -- notices         rewrite lic/release/NOTICES.txt (--check in CI)
 cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
-cargo clippy -p qsmcinit -p qsmcstgd -p qsmclogd -p qsmcnetd --all-targets --target x86_64-unknown-linux-musl -- -D warnings
-QSMC_TEST_HOOKS=1 cargo clippy -p qsmcinit -p qsmchook --all-targets --target x86_64-unknown-linux-musl -- -D warnings
+cargo clippy -p qsmcinit -p qsmcstgd -p qsmclogd -p qsmcnetd -p qsmccons -p qsmcinstall --all-targets --target x86_64-unknown-linux-musl -- -D warnings
+QSMC_TEST_HOOKS=1 cargo clippy -p qsmcinit -p qsmchook -p qsmccons --all-targets --target x86_64-unknown-linux-musl -- -D warnings
 cargo test --workspace
 cargo test -p build -- --ignored host::pins   the pin checks against cargo's checkout of QS/VS
 ```
@@ -202,11 +220,13 @@ Single steps: `fetch`, `kernel`, `userland`, `initramfs`, `uki`, `disk`,
 Environment: `QSMC_TARGET_DIR`, `QSMC_JOBS`, `QSMC_SIGNING_KEY`,
 `QSMC_BUILD_ID`, `QSMC_RELEASE`, `QSMC_OVMF_CODE`, `QSMC_OVMF_VARS`,
 `QSMC_QEMU`, `QSMC_NO_KVM`, `QSMC_BOOT_TIMEOUT` (`docs/PHASE0.md` says
-what each does), and `QSMC_TEST_HOOKS`, which the userland step sets
-itself (`docs/PHASE1.md`).
+what each does), `QSMC_TEST_HOOKS`, which the userland step sets itself
+(`docs/PHASE1.md`), and `QSMC_GOLDEN=update`, which writes the golden
+screens instead of comparing (`docs/PHASE2.md`).
 
 A test image's hooks are switched on for one boot by an SMBIOS OEM
-string `qsmc.hook=<name>` (`churn`, `flaky-fails`, `refuse-confirm`);
+string `qsmc.hook=<name>` (`churn`, `flaky-fails`, `refuse-confirm`,
+`short-idle`);
 the harness reaches the control socket through the channel on the
 guest's second serial port.
 
@@ -221,6 +241,13 @@ guest's second serial port.
   base crate and how it is used, kernel additions, where a crate
   differed from the handoff, hashes, the acceptance table with
   evidence, what is not done.
+- `docs/PHASE2.md`: the installer and the local console: the new pins
+  and what they changed, what was deleted in favour of `base/`, kernel
+  additions, hashes, the acceptance table with evidence, what is not
+  done.
+- `docs/INSTALL.md`: an operator's guide to installing, attended and
+  unattended, and what a console needs of its machine.
+- `docs/LOCALCONSOLE.md`: every panel of the local console.
 - `docs/REFCODES.md`: the console's reference codes, their range and
   blocks, and what to do for each `A3` and `B3` code.
 - `docs/SEED.md`: what a QS/MC seed holds over the base format.

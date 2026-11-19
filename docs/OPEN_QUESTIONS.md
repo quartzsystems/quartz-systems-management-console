@@ -21,7 +21,7 @@ Phase 3 serves the prototype's pages as templates. It is not needed
 until then, but Phase 3 wants it committed under `design/` in this
 repository first.
 
-## 3. The processor check is not in QS/VS's `base/` (QS/VS)
+## 3. The processor check is not in QS/VS's `base/` (closed)
 
 QSI's and the web server's cryptography (graviola) needs AVX2, ADX, AES
 and PCLMULQDQ (QS/400's `docs/QSI.md`, section 12). QS/VS's PID 1, its
@@ -45,7 +45,12 @@ Not waited for: PID 1 keeps its own check, and takes QS/VS's when the
 pins next move (`BLOCKED(phase1)` in `docs/PHASE1.md`). The same
 answer covers items 4, 5 and 10.
 
-## 4. QS/VS's QEMU driver is not usable from outside (QS/VS)
+**Closed in Phase 2:** QS/VS moved the check into `base/processor`
+(`9e35754`, in its `f0ef0f1`). PID 1 asks `processor::lacking()`;
+`lic/qsmcinit/src/cpu/` is gone, and QS/MC's words for the line and the
+status fact are `release::processor`.
+
+## 4. QS/VS's QEMU driver is not usable from outside (closed)
 
 QS/VS's `tools/conformance` depends on most of QS/VS (`qsvshook`,
 `qsvmm`, `partd`, `qsictl`, `release`, ...) and reads `QSVS_`
@@ -69,7 +74,23 @@ the monitor, a NIC with its frames captured, SMBIOS OEM strings,
 several disks), on the same pattern as QS/VS's and with no code of
 it. `BLOCKED(phase1)` until QS/VS exposes one.
 
-## 5. QS/VS's kernel has debugfs (QS/VS)
+**Closed in Phase 2:** QS/VS moved its driver into `base/qemu`
+(`650a6b7`). The harness launches every machine with it (as `driver`,
+the name QS/VS's harness gives it): q35 and OVMF, the variable store,
+the serial port, the monitor, disks, NICs, the CD-ROM and USB stick,
+the 24x80 terminal and its keys, sparse copies and seed volumes. QS/MC's
+`qemu/firmware.rs`, `qemu/vars.rs`, its launch and its session's pipes
+are gone. What stays QS/MC's in `tools/conformance/src/qemu/`: its
+variables and the machine's size, the machine a suite describes mapped
+onto `driver::Launch`, the expect cursor its suites use, the test hooks'
+channel, the golden screens. One thing `base/qemu` has not, the capture
+of the NIC's frames the `sockets` suite reads, is added through QEMU's
+monitor (`object_add filter-dump`) once the machine is launched: no
+driver code is written here. Two small gaps, as changes for QS/VS: a
+frame capture of the user-network NIC in `Launch`, and `cpu` honoured
+without KVM (it is `-cpu host` or nothing).
+
+## 5. QS/VS's kernel has debugfs (closed)
 
 QS/VS's fragment says `# CONFIG_DEBUG_FS is not set`, but
 `x86_64_defconfig` has `CONFIG_BLK_DEV_IO_TRACE=y`, which selects
@@ -78,6 +99,10 @@ QS/VS's fragment says `# CONFIG_DEBUG_FS is not set`, but
 `CONFIG_DEBUG_FS=y` and `CONFIG_BLK_DEV_IO_TRACE=y`. QS/MC's fragment
 turns `BLK_DEV_IO_TRACE` off and checks both. QS/VS should do the same
 and add `DEBUG_FS` to its `REQUIRED_N`.
+
+**Closed in Phase 2:** QS/VS did (`20cf33d`): its fragment turns block
+tracing off and its check holds debugfs off. QS/MC's fragment already
+had both; the kernel pin did not move.
 
 ## 6. The QEMU job in CI (NEEDS-CODY)
 
@@ -114,7 +139,7 @@ manifest records no db certificate (`Product::secure_boot_db` gives
 none). QS/400's `pesign` and QS/VS's `build release` show how; that is
 Phase 8's.
 
-## 10. The ISO hangs on an IDE CD-ROM under OVMF (QS/VS)
+## 10. The ISO hangs on an IDE CD-ROM under OVMF (closed)
 
 Booted as an IDE CD-ROM of q35 (`-device ide-cd,bus=ide.0`, as QS/VS's
 harness boots its ISO), with Ubuntu's OVMF 4M images and QEMU 10.2.1
@@ -126,7 +151,12 @@ limit. The same ISO booted 20 of 20 times as a virtio-scsi CD-ROM, and
 as a virtio disk every time. QS/MC's harness uses virtio-scsi. Not
 seen on a real machine; QS/VS's `test --media iso` is exposed to it.
 
-## 11. A second network interface (QS/VS)
+**Closed in Phase 2:** `base/qemu` attaches an ISO as a virtio-scsi
+CD-ROM, and QS/VS's harness boots its ISO that way since `f0ef0f1`; its
+`docs/QUALIFICATION.md` keeps a real SATA or USB drive as the case to
+watch. QS/MC boots its ISO through `base/qemu` the same way.
+
+## 11. A second network interface (closed)
 
 The prototype's Network settings page has two sections: a private
 management network, toward the systems a console manages, and a public
@@ -143,7 +173,20 @@ default route and the name servers come from. The status screen's
 management line becomes a line an interface. QS/VS keeps its one
 management interface as a list of one. Nothing of it is written here.
 
-## 12. The hardware inventory is not in QS/VS's `base/` (QS/VS)
+**Closed in Phase 2:** `base/netd` manages a list of interfaces since
+`bd9a4ea`, each with the role the appliance names, and `network.toml`
+is version 2, migrated from version 1 by `base/state`. Cody's answer
+for the roles: QS/MC names two, `release::INTERFACE_ROLES`. `open`, the
+first, is the one operators reach the console on, with the default
+route, the name servers and the time; `private`, optional, faces the
+systems it manages and has no default route. The installer and the
+local console configure `open` (the base forms edit the first
+interface); `private` is set from a seed and, from Phase 3, the web
+interface's Network settings. PID 1 shows both lines on the status
+screen. Phase 2's unattended suite installs both and shows that only
+`open` carries the default route.
+
+## 12. The hardware inventory is not in QS/VS's `base/` (closed)
 
 QS/VS's scanner, `lic/hostinv`, reads the processors, memory, disks
 (name, model, serial, size, transport), network interfaces and PCI
@@ -165,6 +208,15 @@ What QS/MC needs, as a change for QS/VS: the product-neutral part of
 `hostinv` (disks, links, PCI devices, location codes, the DMI serial)
 moved into `base/`, a host's own fields left in `lic/`. Phase 2's
 installer needs the disks and links with their location codes.
+
+**Closed in Phase 2:** `base/inventory` (`267c0bd`). PID 1 reads it at
+every IPL into `inventory.toml` (a serial number derived from the MAC
+is kept once in `identity.toml`, as before) and shows it on the status
+screen's Machine row; the storage service is told each disk's location
+code from it, so a missing unit is named by its place; the installer
+and option 3 list the disks and links from it. `qsmcstgd`'s two sysfs
+reads and the test hooks' own SMBIOS reader are gone
+(`inventory::oem_strings`).
 
 ## 13. A mirrored unit absent at the IPL is copied whole when it returns (QS/400, QS/VS)
 
@@ -197,3 +249,57 @@ for controllers that are probed late. The change, for QS/VS: look once
 per start and pass what was found on. The phase's 10 s for "Base ready"
 is held for whole load sources; the harness gives a degraded IPL twice
 the boot timeout (`docs/PHASE1.md`).
+
+## 15. The installation media's check is QS/VS's own (QS/VS)
+
+Found in Phase 2. The payload an installer writes from is
+`base/loadsource::payload` (its manifest, its file names, the volume
+identifier), but the check of it, the ed25519 signature against the
+initramfs's trusted keys and each UKI against the manifest, is in
+QS/VS's `lic/qsvsinstall/src/media.rs`, and the build's writing of the
+payload and of the trusted keys in QS/VS's `tools/build`. Nothing in
+them is a host's.
+
+QS/MC writes the same check (`lic/qsmcinstall/src/media.rs`, marked
+`BLOCKED(phase2)`) and its build writes the payload
+(`tools/build/src/product/media.rs`). The change, for QS/VS:
+`loadsource::payload` gains `verify(root, keys)` with its `signed` and
+`matches`, and the device's search by volume identifier; then the pins
+move and QS/MC's copy goes.
+
+## 16. The disk unit panels are QS/VS's own (QS/VS)
+
+Found in Phase 2. A load source's panels, the units with their states,
+starting mirrored protection with a second disk, replacing a failed unit
+and watching its rebuild, are the same for every appliance with a
+mirrored load source, and they only ask `base/stgd`. QS/VS's are in its
+`svc/tools/src/disks.rs`, beside its pool and virtual disk options.
+
+QS/MC writes its own over `stgd`'s client (`svc/console/src/disks.rs`,
+marked `BLOCKED(phase2)`). The change, for QS/VS: the three panels move
+into `base/panels` behind a small trait (the storage service's status,
+start protection, replace, the machine's disks), as `keep::Units` is for
+the unit to keep; QS/VS adds its own options beside them.
+
+## 17. Words of `base/panels` that are a host's (QS/VS)
+
+Found in Phase 2. `panels::tools::power` says "Every partition that runs
+on this host ends with it" and its help "Partitions that run on the host
+end with it": not so of a console. QS/MC takes `panels::tools::Confirm`
+and gives its own words (`svc/console/src/menu.rs`). The change, for
+QS/VS: `power` takes the lines about what ends with the machine from its
+caller. The rest of the base help says "the host" where it means the
+machine, which reads true of a console too, and is left.
+
+## 18. Writing a load source for an installer is QS/VS's own (QS/VS)
+
+Found in Phase 2. QS/VS's installer target (`lic/qsvsinstall/src/target.rs`)
+writes a load source in eight steps that use only `base/loadsource`
+(the table, the set's label, the data file system, both slots, the
+record, the boot entries) and `base/users` and `base/state` for the
+state. QS/MC's `Target` (`lic/qsmcinstall/src/target.rs`) makes the same
+calls, in its own words; the products differ only in the welcome's
+text, the smallest disk and the codes. The change, for QS/VS: a
+`base/install` helper that carries out those steps for a product's
+`LoadSourceNames` and codes, so a product's `Target` is its names and
+its words.

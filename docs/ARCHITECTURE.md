@@ -27,6 +27,9 @@ recorded here.
 | Outbound traffic | DHCP, DNS, NTP, QSI to managed systems, HTTPS to the configured product stream, and the BMC of a machine it is asked to power on. Nothing else. |
 | Identity | Release `V1R0M0` from `VERSION` (`1.0.0`). Fixes `QMnnnnn`. Message prefix `QMC`. Product identifier `qsmc`; environment prefix `QSMC_`; kernel command-line keys `qsmc.`; ESP vendor directory `QSMC`; ESP label `QSMC ESP`; record magic `QSMCREC`; data label `QSMCDATA`; seed label `QSMCSEED`; default host name `QSMC` and six hexadecimal digits. |
 | Reference codes | A console posts its own, as `REF <code> <text>`, in the families whose second character is `3` (`C3`, `A3`, `B3`, `D3`), so a console's line never reads as a QS/400 system's or a QS/VS host's. No family of either ends in `3` (`docs/REFCODES.md`). Confirmed in Phase 1. |
+| Network roles | Two, as `network.toml` names them: `open`, first, the network operators reach the console on, with the default route, the name servers and the time; `private`, optional, toward the systems it manages, with no default route. Decided in Phase 2. |
+| Installation | The ISO's media UKI runs the installer (`qsmcinstall`, over `base/install`) in place of the services. It installs from the payload beside it, both slots and a manifest signed by the build's key, checked before any write. The smallest load-source disk is 16 GiB; none or mirrored protection. The user it makes is the first service tools user. Decided in Phase 2. |
+| Local console | `qsmccons` over `base/panels`, on the display and the serial port, a session each, idle sign-off after ten minutes. It changes nothing itself: `netd`, PID 1 and the storage service do. It manages nothing but the console. Decided in Phase 2. |
 
 A sentence on each:
 
@@ -70,6 +73,14 @@ A sentence on each:
   `lic/release`, and what is on an installed disk is held by a test.
 - **Reference codes.** The `3` families keep a console's codes apart
   from both other products' on a screen an operator reads side by side.
+- **Network roles.** The network the console is reached on and the one
+  it reaches hosts on are kept apart, and only the first carries what
+  leaves the machine by default.
+- **Installation.** A console is installed the way a host is, by the
+  base installer's screens or a seed's answers, and installs only what
+  its own build signed.
+- **Local console.** What must work without the network (its address,
+  its disks, its users, its clock, shutting down) is at the machine.
 
 ## The two-pin rule
 
@@ -78,9 +89,11 @@ A sentence on each:
   commit pins in its own `Cargo.toml`. Cargo then resolves QS/VS's
   `abrec`, `ipc`, `protect` and the rest to the same source as QS/MC's,
   and the graph holds one copy of every shared crate.
-- Both commits are recorded in `docs/PHASE0.md`. Moving either is its
-  own commit, and they move together: a new QS/VS commit brings the
-  QS/400 commit it pins, and QS/400 is never moved alone.
+- Both commits are recorded in the record of the phase that last moved
+  them (`docs/PHASE2.md`: QS/VS `f0ef0f1`, QS/400 `423c65d`; the first
+  were `docs/PHASE0.md`'s). Moving either is its own commit, and they
+  move together: a new QS/VS commit brings the QS/400 commit it pins,
+  and QS/400 is never moved alone.
 - Never path dependencies, never copies.
 - `cargo run -p build -- doctor` holds it: the QS/400 commit in
   `Cargo.toml` is read against the one in cargo's checkout of the
@@ -101,11 +114,14 @@ its caller and depends on nothing of QS/VS outside `base/`.
 | `supervise` | the service table, restart policy, the runner, the control protocol, signals from a descriptor | PID 1: the table, the control socket, signals; the services: readiness; the harness: the status types |
 | `state` | typed TOML state files | PID 1 (`host.toml`, `network.toml`, `identity.toml`), `netd`, the test hooks |
 | `logd` | the system log, the reference code history | `qsmclogd`; PID 1 and `refcode` send its records |
-| `netd` | the management interface and NTP | `qsmcnetd` |
-| `seed` | `seed.toml` on a labelled FAT volume | PID 1 (`QSMCSEED`) |
-| `users` | service tools user IDs | Phase 2 |
-| `panels` | the local console's panels | Phase 2 |
-| `install` | the installer's screens and answers | Phase 2 |
+| `netd` | the network interfaces, each with its role, and NTP | `qsmcnetd`, with QS/MC's roles `open` and `private`; the console's network panel; the installer's clock |
+| `seed` | `seed.toml` on a labelled FAT volume | PID 1 (`QSMCSEED`); the installer's answers |
+| `users` | service tools user IDs | the installer (the first user), the local console (sign-on, the users panel), the harness (an answers file's hash) |
+| `panels` | panels with help, the console on display and serial, the common forms and panels, the unit to keep | the installer (through `install`), the local console |
+| `install` | the installer's screens and answers | `qsmcinstall` |
+| `processor` | what QSI's cryptography needs of the processor | PID 1's processor line, the console's status |
+| `inventory` | the hardware inventory with location codes | PID 1 (`inventory.toml`, the Machine row), `qsmcstgd`, the installer, the console, the test hooks' OEM strings |
+| `qemu` | a harness's QEMU driver | the harness, as `driver` |
 | `identity` | the appliance's key pair and certificate | PID 1, at the first IPL with a `/data`; QSI presents it from Phase 4 |
 | `loadsource` | the load source: layout, A/B record, mirrored set label, boot entries, the media's payload | PID 1 (the disks, the record, the boot entries), the build tool and the harness (the writer) |
 | `stgd` | the storage service: the load source, mirrored through ublk | `qsmcstgd`, first in the table |
@@ -160,7 +176,8 @@ PID 1 (`lic/qsmcinit/src/ipl/mod.rs`), each step posting its code:
 5. The clock from the RTC: `C3001050`.
 6. The seed: `C3001060` or `C3001061` (`docs/SEED.md`).
 7. The state: `host.toml`, `network.toml`, `identity.toml`, with the
-   defaults for what is absent; the host name set: `C3001070`.
+   defaults for what is absent; the inventory read and written to
+   `inventory.toml`; the host name set: `C3001070`.
 8. The identity, made once, at the first IPL with a `/data`:
    `C3001075` (`base/identity`).
 9. The services that waited started: `C3001080`.
@@ -169,13 +186,15 @@ PID 1 (`lic/qsmcinit/src/ipl/mod.rs`), each step posting its code:
 
 Then one loop: the signals, the control socket, the power button, the
 services' pipes, the heartbeat on the serial port and the status screen.
-On the installation media PID 1 stops after step 1 and the clock: the
-installer is Phase 2's.
+The serial port is lent to the local console while it has a session
+there. On the installation media PID 1 runs the installer after step 1
+and the clock, in place of everything else, and restarts the machine
+when it ends.
 
 The service table is fixed: the storage service (5), the log service
-(10), the network service (20); the web server (30), the
-managed-systems service (40) and the scheduler (50) take their places
-in later phases. The orderly shutdown (the control socket, `SIGTERM`,
+(10), the network service (20), the local console (25); the web server
+(30), the managed-systems service (40) and the scheduler (50) take their
+places in later phases. The orderly shutdown (the control socket, `SIGTERM`,
 the power button) ends them in reverse, unmounts `/data`, ends the
 storage service last and posts `D3001090` or `D3001091`.
 
@@ -191,6 +210,7 @@ members and how each stands. A unit that is missing or failed is posted
 at every IPL (`A3003020`); a returned unit is brought back in step from
 the write-intent maps, so only what changed is copied; a restarted
 storage service takes the device over and loses nothing. The release
-`disk` image is one disk; the harness writes either kind with the base
-crate's writer, and Phase 2's installer will write them for an
-operator.
+`disk` image is one disk; the installer writes either kind for an
+operator (`docs/INSTALL.md`), and the harness with the base crate's
+writer. A unit missing, the local console's option 2 replaces it, and
+a load source of one disk is mirrored from there too.
