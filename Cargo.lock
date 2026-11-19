@@ -1569,7 +1569,10 @@ dependencies = [
 name = "qsmcwebd"
 version = "0.1.0"
 dependencies = [
+ "release",
+ "users",
  "webd",
+ "webpages",
 ]
 
 [[package]]
@@ -2597,6 +2600,21 @@ dependencies = [
  "supervise",
  "x509kit",
  "zeroize",
+]
+
+[[package]]
+name = "webpages"
+version = "0.1.0"
+dependencies = [
+ "qmcmsg",
+ "qsweb",
+ "release",
+ "serde",
+ "state",
+ "supervise",
+ "users",
+ "webd",
+ "webusers",
 ]
 
 [[package]]

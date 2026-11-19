@@ -1,0 +1,24 @@
+[package]
+name = "webpages"
+description = "QS/MC's web pages: the prototype's, rendered from views"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+release = { path = "../../lic/release", version = "0.1.0" }
+webd = { path = "../webd", version = "0.1.0" }
+webusers = { path = "../users", version = "0.1.0" }
+qmcmsg = { path = "../msgs", version = "0.1.0" }
+qsweb.workspace = true
+state.workspace = true
+serde.workspace = true
+supervise.workspace = true
+
+[dev-dependencies]
+users.workspace = true
+
+[lints]
+workspace = true

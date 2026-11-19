@@ -171,8 +171,7 @@ mod tests {
     #[test]
     fn a_disabled_user_cannot_sign_on() {
         let mut l = list();
-        l.add("op", "", Role::Operator, "Secret-word-1", 2)
-            .unwrap();
+        l.add("op", "", Role::Operator, "Secret-word-1", 2).unwrap();
         l.set_enabled("op", false).unwrap();
         let mut r = Rules::default();
         let ip: IpAddr = "192.0.2.8".parse().unwrap();

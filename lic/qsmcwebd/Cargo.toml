@@ -9,6 +9,9 @@ publish.workspace = true
 
 [dependencies]
 webd = { path = "../../web/webd", version = "0.1.0" }
+webpages = { path = "../../web/pages", version = "0.1.0" }
+release = { path = "../release", version = "0.1.0" }
+users.workspace = true
 
 [lints]
 workspace = true

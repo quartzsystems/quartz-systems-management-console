@@ -22,6 +22,7 @@ members = [
     "web/webd",
     "web/users",
     "web/msgs",
+    "web/pages",
     "lic/qsmcwebd",
 ]
 

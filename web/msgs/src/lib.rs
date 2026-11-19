@@ -73,6 +73,9 @@ catalogue! {
     LATER_RELEASE = "QMC9030", 0, "&1 arrives in a later release of this console.",
         "This function of the console is not available yet.",
         "Use the functions under Console Management.";
+    NO_SYSTEMS = "QMC9031", 0, "No managed system has been added to this console.",
+        "Managed systems are added and reached over QSI, which arrives in a later release.",
+        "Use the functions under Console Management.";
 
     // Users and roles.
     USER_CREATED = "QMC8001", 0, "User &1 created with role &2.",

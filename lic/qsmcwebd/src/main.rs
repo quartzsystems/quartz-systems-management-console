@@ -2,15 +2,21 @@
 // licensed under the terms of the MIT license which can be found in the
 // root directory of this project.
 
-//! QS/MC's web server: `web/webd` run as a service. It listens on
-//! nothing of its own: PID 1 hands it 443 and 80 on the `open` address.
+//! QS/MC's web server: `web/webd` run as a service with the console's
+//! pages (`web/pages`). It listens on nothing of its own: PID 1 hands
+//! it 443 and 80 on the `open` address.
 
 #[cfg(target_os = "linux")]
 fn main() {
+    use std::path::Path;
     use std::sync::Arc;
 
+    let state = Path::new(release::DATA_DIR).join("state");
+    let users_db = state.join(users::FILE);
+    let app = webpages::App::open(&state, &users_db, Box::new(webpages::app::live::Live));
     // It returns only when it cannot go on; supervision starts it again.
-    if let Err(e) = webd::run::run(Arc::new(webd::serve::NoPages)) {
+    let stopped = app.and_then(|app| webd::run::run(Arc::new(app)));
+    if let Err(e) = stopped {
         eprintln!("the web server stopped: {e}");
     }
     std::process::exit(1);

@@ -47,7 +47,7 @@ pub fn secured(r: Response) -> Response {
 pub fn stylesheet(req: &Request) -> Response {
     let etag = css_etag();
     if req
-        .header("If-None-Match")
+        .header("if-none-match")
         .is_some_and(|tags| tags.split(',').any(|t| t.trim() == etag))
     {
         return Response::new(304, "text/css", Vec::new())
@@ -108,7 +108,7 @@ pub struct Redirect;
 /// and query.
 pub fn https_location(req: &Request, local: &str) -> String {
     let host = req
-        .header("Host")
+        .header("host")
         .map(str::trim)
         .filter(|h| !h.is_empty() && h.bytes().all(|b| b.is_ascii_graphic()))
         .unwrap_or(local);
@@ -149,7 +149,7 @@ mod tests {
     fn request(target: &str, host: Option<&str>) -> Request {
         let mut r = Request::new("GET", target);
         if let Some(h) = host {
-            r.headers.push(("Host".into(), h.into()));
+            r.headers.push(("host".into(), h.into()));
         }
         r
     }
@@ -179,7 +179,7 @@ mod tests {
         assert_eq!(r.status, 200);
         assert_eq!(r.bytes(), qsweb::CSS);
         let mut again = request(CSS_PATH, None);
-        again.headers.push(("If-None-Match".into(), css_etag()));
+        again.headers.push(("if-none-match".into(), css_etag()));
         assert_eq!(stylesheet(&again).status, 304);
     }
 
