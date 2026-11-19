@@ -1,0 +1,24 @@
+                              QS/MC Local Console
+                                                                 System:  mc-01
+
+ Select one of the following:
+
+      1. Display console status
+      2. Work with disk units
+      3. Configure network
+      4. Work with the web interface
+      5. Work with service tools user IDs
+      6. Date and time
+      7. Display logs
+      8. Service functions
+      9. Power off or restart
+
+
+
+
+
+ Selection
+
+
+ F1=Help   F3=Sign off   F12=Sign off
+

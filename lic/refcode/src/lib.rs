@@ -149,6 +149,31 @@ pub const PROTECTION_STARTED: RefCode = progress("C3003040", "Mirrored protectio
 /// The unit to keep of two that ran apart was chosen.
 pub const UNIT_KEPT: RefCode = progress("C3003050", "Load-source unit kept");
 
+// C3004xxx: the installer, in the order of its steps.
+
+/// The installation's first write.
+pub const INSTALL_STARTED: RefCode = progress("C3004000", "Installation started");
+/// The media's manifest is signed by a trusted key and its files match.
+pub const INSTALL_VERIFIED: RefCode = progress("C3004010", "Installation media verified");
+/// Each load-source disk has its partition table.
+pub const INSTALL_PARTITIONED: RefCode = progress("C3004020", "Disks partitioned");
+/// The mirrored set's label is written, or there is no protection.
+pub const INSTALL_PROTECTED: RefCode = progress("C3004030", "Protection set up");
+/// `QSMCDATA` is made.
+pub const INSTALL_FORMATTED: RefCode = progress("C3004040", "Data file system made");
+/// Slot A's UKI is on every disk's ESP.
+pub const INSTALL_SLOT_A: RefCode = progress("C3004050", "Slot A copied");
+/// Slot B's UKI is on every disk's ESP.
+pub const INSTALL_SLOT_B: RefCode = progress("C3004055", "Slot B copied");
+/// The A/B record is on every disk.
+pub const INSTALL_RECORD: RefCode = progress("C3004060", "A/B record written");
+/// The firmware has an entry for each disk.
+pub const INSTALL_BOOT: RefCode = progress("C3004070", "Boot entries written");
+/// The state files and the first service tools user are written.
+pub const INSTALL_STATE: RefCode = progress("C3004080", "State written");
+/// Every step is done.
+pub const INSTALL_COMPLETE: RefCode = progress("C3004090", "Installation complete");
+
 // A3001xxx: attention from PID 1, numbered after the IPL step.
 
 /// A kernel file system did not mount.
@@ -273,6 +298,33 @@ pub const BOOT_ENTRIES_NOT_WRITTEN: RefCode = attention(
     "The new unit holds both slots but the firmware has no entry for it: add one in the firmware's setup",
 );
 
+// A3004xxx: attention from the installer.
+
+/// The media failed its check; nothing was written.
+pub const INSTALL_MEDIA_REFUSED: RefCode = attention(
+    "A3004010",
+    "Installation media refused",
+    "Nothing was written: install from media of a QS/MC build, written whole, and start again",
+);
+/// The answers of a seed volume cannot be used.
+pub const INSTALL_ANSWERS_INVALID: RefCode = attention(
+    "A3004015",
+    "Installation answers not valid",
+    "Nothing was written: correct seed.toml as the screen says, or install by hand",
+);
+/// The firmware took no boot entry; the disks start by their default path.
+pub const INSTALL_BOOT_NOT_WRITTEN: RefCode = attention(
+    "A3004070",
+    "Installation boot entries not written",
+    "The disks start by the firmware's default path; if the console does not start, add an entry for each disk in the firmware's setup",
+);
+/// A step of the installation failed.
+pub const INSTALL_FAILED: RefCode = attention(
+    "A3004090",
+    "Installation failed",
+    "The disks are partly written: start the installation over; if the same step fails, check or replace the disk named",
+);
+
 // B3xxxxxx: fatal; the console parks.
 
 /// PID 1 panicked.
@@ -322,6 +374,17 @@ pub const ALL: &[&RefCode] = &[
     &REBUILD_FINISHED,
     &PROTECTION_STARTED,
     &UNIT_KEPT,
+    &INSTALL_STARTED,
+    &INSTALL_VERIFIED,
+    &INSTALL_PARTITIONED,
+    &INSTALL_PROTECTED,
+    &INSTALL_FORMATTED,
+    &INSTALL_SLOT_A,
+    &INSTALL_SLOT_B,
+    &INSTALL_RECORD,
+    &INSTALL_BOOT,
+    &INSTALL_STATE,
+    &INSTALL_COMPLETE,
     &NOT_MOUNTED,
     &PROCESSOR_LACKS,
     &RECORD_INVALID,
@@ -341,6 +404,10 @@ pub const ALL: &[&RefCode] = &[
     &REBUILD_FAILED,
     &UNITS_APART,
     &BOOT_ENTRIES_NOT_WRITTEN,
+    &INSTALL_MEDIA_REFUSED,
+    &INSTALL_ANSWERS_INVALID,
+    &INSTALL_BOOT_NOT_WRITTEN,
+    &INSTALL_FAILED,
     &PANIC,
     &STORAGE_LOST,
     &SHUTDOWN_STARTED,

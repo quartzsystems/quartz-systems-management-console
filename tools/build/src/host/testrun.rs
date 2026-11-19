@@ -19,6 +19,7 @@ fn test_image(test: &Ctx) -> Option<TestImage> {
         disk: read(test.paths.disk_pointer())?,
         slot_a: read(test.paths.uki_pointer(UkiKind::SlotA))?,
         slot_b: read(test.paths.uki_pointer(UkiKind::SlotB))?,
+        iso: read(test.paths.iso_pointer()),
     })
 }
 

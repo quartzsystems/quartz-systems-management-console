@@ -8,11 +8,15 @@
 //! from the RTC, the seed, the state, the identity, the services. "Base
 //! ready" is posted by the loop when every service has said so, and the
 //! slot confirmed by the rule (`crate::slot::RULE`). On installation
-//! media nothing follows the clock: the installer is Phase 2's.
+//! media the installer runs after the clock, in place of the rest.
 
+#[cfg(target_os = "linux")]
+mod choose;
 #[cfg(target_os = "linux")]
 mod clock;
 pub mod cmdline;
+#[cfg(target_os = "linux")]
+mod install;
 #[cfg(target_os = "linux")]
 pub mod mounts;
 pub mod state;
@@ -34,8 +38,9 @@ mod on_console {
     use supervise::run::Supervisor;
     use supervise::signal::{CHLD, INT, Signals, TERM};
 
+    use super::choose::Chooser;
     use super::cmdline::{self, Source};
-    use super::{clock, mounts, state as state_step};
+    use super::{clock, install, mounts, state as state_step};
     use crate::console::Console;
     use crate::host::{Host, table};
     use crate::product::QSMC;
@@ -84,8 +89,8 @@ mod on_console {
     /// with everything after the storage service held back, and the
     /// loop turned until that service is ready or will not be. A
     /// mirrored pair whose units each ran without the other is not
-    /// assembled until the unit to keep is chosen: nothing else starts
-    /// meanwhile, for as long as it takes.
+    /// assembled until the unit to keep is chosen at the console's one
+    /// panel: nothing else starts meanwhile, for as long as it takes.
     fn storage(host: &mut Host) {
         let control = QSMC.control_socket();
         let _ = std::fs::remove_file(&control);
@@ -100,16 +105,18 @@ mod on_console {
         host.quiet = true;
         host.start(sup, listener);
         let marker = stgd::choose_marker(&QSMC);
+        let mut chooser = Chooser::new(marker.clone());
         let mut give_up = Instant::now() + STORAGE_WAIT;
         let mut waiting = false;
         while !host.storage_settled() {
-            if marker.exists() {
-                if !waiting {
-                    waiting = true;
-                    host.line(
-                        "The units of the load source ran apart: the IPL waits until the unit to keep is chosen",
-                    );
-                }
+            // Said while the serial port is still PID 1's.
+            if !waiting && marker.exists() {
+                waiting = true;
+                host.line(
+                    "The units of the load source ran apart: the IPL waits until the unit to keep is chosen",
+                );
+            }
+            if chooser.wanted(host) {
                 host.storage_waits();
                 give_up = Instant::now() + STORAGE_WAIT;
             } else if Instant::now() >= give_up {
@@ -117,6 +124,7 @@ mod on_console {
             }
             host.pump();
         }
+        chooser.end(host);
         if waiting {
             host.line("The unit to keep was chosen: the IPL goes on");
         }
@@ -267,7 +275,7 @@ mod on_console {
         processor(&mut host);
         if source == Source::Install {
             clock(&mut host);
-            host.run();
+            install::run(host);
         }
         let sources = disks::load_sources_within(QSMC.load_source, DISK_WAIT);
         record(&mut host, source, &sources);

@@ -68,6 +68,27 @@ pub const CONTROL_SOCKET: &str = "/run/qsmcinit.sock";
 /// Where the service binaries are in a slot's initramfs.
 pub const BIN_DIR: &str = "/qsmc/bin";
 
+/// The installer, in the media's initramfs.
+pub const INSTALLER: &str = "/qsmc/bin/qsmcinstall";
+
+/// The local console's binary, in a slot's initramfs.
+pub const CONSOLE: &str = "/qsmc/bin/qsmccons";
+
+/// The local console's argument for its one panel: the unit to keep of
+/// a mirrored load source whose units ran apart.
+pub const KEEP_UNIT: &str = "keep-unit";
+
+/// The trusted signers' public keys in the media's initramfs, 32 bytes
+/// each: what the installer checks the payload's manifest against.
+pub const TRUSTED_KEYS: &str = "/qsmc/keys/system.pub";
+
+/// The local console's title.
+pub const CONSOLE_TITLE: &str = "QS/MC Local Console";
+
+/// The smallest load-source disk QS/MC installs on: 16 GiB. A console
+/// wants 64 GiB or more (`docs/INSTALL.md`).
+pub const MIN_DISK_BYTES: u64 = 16 << 30;
+
 /// The key of a test image's hook switch, after [`KEY_PREFIX`]: an
 /// SMBIOS OEM string `qsmc.hook=<name>`. Only a test image reads it.
 pub const HOOK_KEY: &str = "hook";
@@ -162,6 +183,11 @@ mod tests {
         assert_eq!(default_host_name(0x00ab_12cd), "QSMCAB12CD");
         assert_eq!(default_host_name(0xffab_12cd), "QSMCAB12CD");
         assert_eq!(PRODUCT, "Quartz Systems/Management Console");
+        assert_eq!(MIN_DISK_BYTES, 17_179_869_184);
+        for path in [INSTALLER, CONSOLE, TRUSTED_KEYS] {
+            assert!(path.starts_with("/qsmc/"), "{path}");
+        }
+        assert!(INSTALLER.starts_with(BIN_DIR) && CONSOLE.starts_with(BIN_DIR));
     }
 
     #[test]

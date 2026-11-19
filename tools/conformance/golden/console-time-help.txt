@@ -1,0 +1,24 @@
+                              Help: Date and Time
+                                                                 System:  mc-01
+
+ The host keeps its clock in UTC. The UTC offset says how dates
+ and times are displayed on this console: +hh:mm is one hour east
+ of UTC. Blank displays UTC. Only fixed offsets are known; there
+ is no change for summer time.
+
+ Time servers: when given, the host keeps its clock in step with
+ them. Blank the field to stop that.
+
+ With no time servers you may set the clock by hand: type the
+ date and the time as they are now, in the offset shown, and
+ press Enter. Blank leaves the clock as it is.
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

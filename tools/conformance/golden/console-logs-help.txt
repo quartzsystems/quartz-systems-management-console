@@ -1,0 +1,24 @@
+                               Help: Display Logs
+                                                                 System:  mc-01
+
+ 1 shows the reference code history: every code the console has
+ posted, kept across IPLs, newest first.
+
+ 2 shows the system log: what PID 1 and the services say,
+ newest first. Its oldest lines go when it is full.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

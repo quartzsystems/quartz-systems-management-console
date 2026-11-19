@@ -1,0 +1,24 @@
+                            Help: Service Functions
+                                                                 System:  mc-01
+
+ Service functions are what a service provider asks for: the
+ console's dumps, and its code updates from the product stream
+ or a removable volume. They arrive in Phase 6.
+
+ Enter, F3 or F12 goes back.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

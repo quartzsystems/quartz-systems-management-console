@@ -229,7 +229,8 @@ fn storage_killed(run: &Run<'_>) -> Result<String, String> {
 
 /// Suite 8: each disk run alone, then both: the IPL stops with the code
 /// until the unit to keep is chosen (here through the test hooks'
-/// channel; Phase 2's screen asks an operator).
+/// channel, while the console's panel shows the question; Phase 2's
+/// `apart-panel` answers at the panel).
 pub fn apart(run: &Run<'_>) -> Result<String, String> {
     let pair = run.mirrored("apart")?;
     for alone in [0, 1] {
@@ -252,9 +253,24 @@ pub fn apart(run: &Run<'_>) -> Result<String, String> {
     }
     channel.ask(&format!("{} vda", command::KEEP))?;
     let deadline = run.deadline();
-    guest.expect(&refcode::UNIT_KEPT.tag(), deadline)?;
-    guest.expect(&refcode::DATA_MOUNTED.tag(), deadline)?;
     let secs = base_ready(&mut guest, deadline)?;
+    // The console's panel had the serial port while the IPL waited: a
+    // code posted then is on the display and in the history, which
+    // takes what PID 1 queued before the log service once it is up.
+    let by = Instant::now() + Duration::from_secs(20);
+    loop {
+        let history = super::channel(&mut guest)?.text("/data/log/refcodes.ndjson")?;
+        let lacking = [&refcode::UNIT_KEPT, &refcode::DATA_MOUNTED]
+            .into_iter()
+            .find(|code| !history.contains(code.code));
+        match lacking {
+            None => break,
+            Some(code) if Instant::now() > by => {
+                return Err(format!("the history lacks `{}`", code.line()));
+            }
+            Some(_) => std::thread::sleep(Duration::from_millis(500)),
+        }
+    }
     power_off(&mut guest)?;
     Ok(format!(
         "both disks ran alone: `{}` and the IPL waited 15 s and more; unit 1 kept through the \

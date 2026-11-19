@@ -1,0 +1,24 @@
+                            Help: Configure Network
+                                                                 System:  mc-01
+
+ The console has two network roles. open is the network you
+ reach the console on: it has the default route, the name
+ servers and the time. private is optional and faces the hosts
+ the console manages; it has no default route.
+
+ 1 changes the open interface: DHCP or a static address, its
+ VLAN and name servers. The change is tried first and put back
+ by itself if the interface does not come up within 30 seconds
+ and you have not kept it. Nothing restarts.
+
+ The private interface is shown here and changed in the web
+ interface's Network settings.
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

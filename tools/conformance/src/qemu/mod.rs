@@ -8,6 +8,7 @@
 //! the harness's own (`session`, `channel`).
 
 pub mod channel;
+pub mod golden;
 pub mod session;
 
 use std::env;

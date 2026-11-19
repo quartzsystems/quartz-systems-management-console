@@ -3,14 +3,16 @@
 // root directory of this project.
 
 //! The initramfs of every UKI: `/init` (qsmcinit), the mount points and
-//! a console node. A slot's has the services under `/qsmc/bin/`, and
-//! `qsmchook` there in a test image; the media's has PID 1 alone, which
-//! starts no services there until the installer comes in Phase 2.
+//! a console node. A slot's has the services and the local console under
+//! `/qsmc/bin/`, and `qsmchook` there in a test image; the media's has
+//! the installer there and the trusted signer's public key under
+//! `/qsmc/keys/`, which the installer checks the payload against.
 
 use anyhow::Result;
 use buildkit::image::cpio::Entry;
 use buildkit::image::initramfs::binary;
 use buildkit::{Ctx, UkiKind};
+use ed25519_dalek::SigningKey;
 
 /// The entries of a UKI of `kind`. The kernel does not mount devtmpfs
 /// for an initramfs, so a static console node lets it open the first
@@ -29,13 +31,31 @@ fn all(ctx: &Ctx, hooks: bool, kind: UkiKind) -> Result<Vec<Entry>> {
         Entry::dir("run"),
         Entry::dir("sys"),
     ];
-    if kind != UkiKind::Media {
+    if kind == UkiKind::Media {
+        entries.push(Entry::file(
+            &format!("qsmc/bin/{}", super::INSTALLER),
+            binary(ctx, super::INSTALLER)?,
+        ));
+        entries.push(Entry::dir("qsmc/keys"));
+        let key = buildkit::image::manifest::signing_key(ctx)?;
+        entries.push(Entry::file(
+            release::TRUSTED_KEYS.trim_start_matches('/'),
+            trusted_keys(&key),
+        ));
+    } else {
         let hook = hooks.then_some(super::HOOK);
-        for name in super::SERVICES.into_iter().chain(hook) {
+        let names = super::SERVICES.into_iter().chain([super::CONSOLE]);
+        for name in names.chain(hook) {
             entries.push(Entry::file(&format!("qsmc/bin/{name}"), binary(ctx, name)?));
         }
     }
     Ok(entries)
+}
+
+/// The trusted signers' public keys, 32 bytes each: the build's own.
+/// A release's further keys are Phase 8's.
+fn trusted_keys(key: &SigningKey) -> Vec<u8> {
+    key.verifying_key().to_bytes().to_vec()
 }
 
 /// The release image's entries.

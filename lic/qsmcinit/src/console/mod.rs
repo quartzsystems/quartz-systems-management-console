@@ -52,6 +52,12 @@ impl Console {
         put(&mut self.serial, &text);
     }
 
+    /// One line on the display alone: the serial port is the local
+    /// console's for a session.
+    pub fn display(&mut self, line: &str) {
+        put(&mut self.display, &format!("{line}\n"));
+    }
+
     /// One line on the serial port alone.
     pub fn serial(&mut self, line: &str) {
         put(&mut self.serial, &format!("{line}\n"));

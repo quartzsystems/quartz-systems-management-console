@@ -65,7 +65,7 @@ impl Source {
 }
 
 /// What the media UKI says after its slot line.
-pub const MEDIA_LINE: &str = "The installer arrives in Phase 2; this IPL starts no services";
+pub const MEDIA_LINE: &str = "The installer runs in place of the services";
 
 #[cfg(test)]
 mod tests {

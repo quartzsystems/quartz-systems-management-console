@@ -12,8 +12,12 @@ members = [
     "lic/qsmcstgd",
     "lic/qsmclogd",
     "lic/qsmcnetd",
+    # The installer, on the media UKI.
+    "lic/qsmcinstall",
     # The test hooks: in a test image only, never in a release.
     "lic/qsmchook",
+    # The local console on the display and the serial port.
+    "svc/console",
 ]
 
 [workspace.package]
@@ -39,6 +43,9 @@ seed = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server",
 identity = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
 stgd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
 processor = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
+users = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
+panels = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
+install = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
 inventory = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
 # base/qemu, the harness's QEMU driver, named as QS/VS's harness names it.
 driver = { package = "qemu", git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "f0ef0f15c216c4ac6203f05e141c92926aee5705" }
@@ -48,8 +55,14 @@ diskimg = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "
 abrec = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
 ipc = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
 ntp = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
+netlink = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
+console = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99", default-features = false }
+scrkit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
+svcusers = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "423c65dea0b8c9fab3d2c3efaba6e9f27e679c99" }
 
 anyhow = "1.0.104"
+ed25519-dalek = "3.0.0"
+sha2 = "0.11.0"
 clap = { version = "4.6.7", features = ["derive"] }
 hex = "0.4.3"
 libc = "0.2.190"

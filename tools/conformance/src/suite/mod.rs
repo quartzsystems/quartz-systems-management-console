@@ -10,10 +10,13 @@
 //!
 //! - `disk`: Phase 0's three steps (slot A, slot B by its firmware boot
 //!   entry, a processor without what the cryptography needs), then the
-//!   base system's suites.
-//! - `iso`: the installation media, with two heartbeats.
+//!   base system's suites, then Phase 2's ([`install`]): the installer
+//!   from the test image's ISO and the local console of what it
+//!   installed.
+//! - `iso`: the installation media, to the installer's first screen.
 
 pub mod base;
+pub mod install;
 pub(crate) mod steps;
 
 use std::cell::RefCell;
@@ -92,6 +95,7 @@ pub fn names(media: Media) -> Vec<&'static str> {
             .iter()
             .map(steps::Step::name)
             .chain(base::SUITES.iter().map(|(name, _)| *name))
+            .chain(install::SUITES.iter().map(|(name, _)| *name))
             .collect(),
         Media::Iso => steps::ISO.iter().map(steps::Step::name).collect(),
     }
@@ -169,7 +173,8 @@ impl Suite {
             reports.push(report);
         }
         if media == Media::Disk {
-            for (name, suite) in base::SUITES.iter().filter(|(n, _)| wanted(n)) {
+            let all = base::SUITES.iter().chain(install::SUITES);
+            for (name, suite) in all.filter(|(n, _)| wanted(n)) {
                 let report = self.base(name, *suite)?;
                 passed(&report);
                 reports.push(report);

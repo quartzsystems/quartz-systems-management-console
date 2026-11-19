@@ -1,0 +1,24 @@
+                        Select Load-Source Unit to Keep
+                                                                 System:  QS/MC
+
+ Each unit ran without the other. Type 1 by the unit to keep.
+
+ Opt Unit  Location                Serial              Last written
+        1  P0000-B00-D02-F0        QSMCHD0             yyyy-mm-dd hh:mm UTC
+        2  P0000-B00-D03-F0        QSMCHD1             yyyy-mm-dd hh:mm UTC
+
+ The host has started nothing and waits for this choice. The unit
+ that is not kept is written again from the one that is: whatever
+ was written to it while it ran alone is lost.
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F1=Help
+

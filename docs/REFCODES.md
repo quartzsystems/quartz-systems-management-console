@@ -67,8 +67,14 @@ is, and an attention code has the number of the step it belongs to.
 | `C3001xxx`, `A3001xxx`, `B3001xxx`, `D3001xxx` | PID 1: the IPL in order, supervision, the slot, shutdown |
 | `C3002xxx`, `A3002xxx` | the management network and time (`base/netd`) |
 | `C3003xxx`, `A3003xxx`, `B3003xxx` | the load source and its protection (`base/stgd`, and PID 1 when the storage service is lost) |
+| `C3004xxx`, `A3004xxx` | the installer (`lic/qsmcinstall`), in the order of its steps |
 
 Later phases take further blocks and record them here.
+
+The installer's codes are in its log (`/run/install.log` on the media,
+copied to `/data/log/install.log` by its state step) and on its progress
+screen, a step a line with its code. The installer runs before there is
+a data file system, so they are not in the reference code history.
 
 ## Progress and power down
 
@@ -97,6 +103,17 @@ Later phases take further blocks and record them here.
 | `C3003035` | Rebuild finished | the replacement unit is in step |
 | `C3003040` | Mirrored protection started | protection was started; it takes effect at the next IPL |
 | `C3003050` | Load-source unit kept | of two units that ran apart, the one to keep was chosen |
+| `C3004000` | Installation started | F10 on the summary, or valid answers: the first disk is about to be written |
+| `C3004010` | Installation media verified | the payload's manifest is signed by a key of the installer's initramfs and both UKIs match it, with the product, release and build |
+| `C3004020` | Disks partitioned | each chosen disk has its new table and the kernel sees its partitions |
+| `C3004030` | Protection set up | two disks: the mirrored set's label is written; one disk: nothing to do |
+| `C3004040` | Data file system made | `QSMCDATA` is made on the data partition |
+| `C3004050` | Slot A copied | slot A's UKI is on every disk's ESP and reads back |
+| `C3004055` | Slot B copied | slot B's UKI is on every disk's ESP and reads back |
+| `C3004060` | A/B record written | the initial record, slot A the default, is on every disk |
+| `C3004070` | Boot entries written | the firmware has an entry for each disk, slot A first, or `A3004070` was posted |
+| `C3004080` | State written | `network.toml`, the service tools users and `host.toml`, last, are on the data file system |
+| `C3004090` | Installation complete | every step is done; the console restarts into slot A |
 | `D3001000` | Console shutdown started | an orderly shutdown began: power off or restart, and who asked (the control socket, `SIGTERM`, the power button) |
 | `D3001090` | Console powering off | the services are ended and `/data` unmounted; on the console only |
 | `D3001091` | Console restarting | the same, before a restart |
@@ -124,9 +141,13 @@ Later phases take further blocks and record them here.
 | `A3003030` | Rebuild not finished | a resynchronization or rebuild ended before the unit was in step | The unit is still out of step; it is tried again at the next IPL. If it fails again, replace its disk |
 | `A3003040` | Load-source units ran apart | each disk of the pair ran without the other: the IPL waits for the unit to keep | Each disk ran without the other: choose the unit to keep; the other is written again from it |
 | `A3003070` | Boot entries not written | a new unit was written but the firmware took no entry for it | The new unit holds both slots but the firmware has no entry for it: add one in the firmware's setup |
+| `A3004010` | Installation media refused | the payload is missing, not signed by a trusted key, of another release, or a file does not match the manifest; before any write | Nothing was written: install from media of a QS/MC build, written whole, and start again |
+| `A3004015` | Installation answers not valid | a seed volume's `[install]` table names a disk that is not there or too small, a bad user ID or hash, or an interface role QS/MC does not have | Nothing was written: correct seed.toml as the screen says, or install by hand |
+| `A3004070` | Installation boot entries not written | the firmware's variables could not be written | The disks start by the firmware's default path; if the console does not start, add an entry for each disk in the firmware's setup |
+| `A3004090` | Installation failed | a step failed, with the step and why; the progress screen names it | The disks are partly written: start the installation over; if the same step fails, check or replace the disk named |
 | `B3001000` | Console PID 1 failed | by PID 1's panic handler, with the panic message, before it parks | Restart the console; report this code with the text after it |
 | `B3003000` | Storage service lost | the storage service failed five times while `/data` was on the mirrored set | The data file system has no server and nothing more is written: restart the console |
 
-In Phase 1 the unit to keep (`A3003040`) is chosen through a test
-image's hook; the screen that asks an operator is Phase 2's local
-console.
+When the units ran apart (`A3003040`) the console shows the one panel
+of `base/panels` for the unit to keep, on the display and the serial
+port at once (`docs/LOCALCONSOLE.md`).

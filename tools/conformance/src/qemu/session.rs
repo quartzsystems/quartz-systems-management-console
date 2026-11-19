@@ -54,6 +54,9 @@ pub struct Machine {
     pub usb: Option<PathBuf>,
     /// The harness types at the serial port.
     pub keys: bool,
+    /// The MAC of a second NIC, on a user network of its own: the
+    /// `private` interface's.
+    pub second_nic: Option<String>,
 }
 
 /// The base driver's launch of `m`. The driver makes either every disk
@@ -100,6 +103,15 @@ pub fn launch_of(l: &Launch, m: &Machine, scratch: &Path) -> Result<driver::Laun
         usb: m.usb.clone(),
         media_first: m.cdrom.is_some() || m.usb.is_some(),
         keys: m.keys,
+        uplinks: m
+            .second_nic
+            .iter()
+            .map(|mac| driver::UplinkNic {
+                mac: mac.clone(),
+                far: driver::Far::User(None),
+                mtu: None,
+            })
+            .collect(),
         ..l.base()
     })
 }

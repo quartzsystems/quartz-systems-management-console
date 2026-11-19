@@ -11,7 +11,7 @@
 //! and the data partition's bytes on both, so both units are in step
 //! and the label says so.
 //!
-//! The installer that does this for an operator is Phase 2's; this is
+//! The installer does this for an operator (`lic/qsmcinstall`); this is
 //! the harness's, and `build loadsource` runs it.
 
 use std::fs::{File, OpenOptions};
@@ -217,6 +217,28 @@ pub fn label_of(path: &Path) -> Result<Option<SetLabel>, String> {
         .read()
         .ok()
         .and_then(|stored| SetLabel::decode(&stored.payload)))
+}
+
+/// The bytes of the ESP of the disk at `path`, by its table.
+pub fn esp_of(path: &Path) -> Result<Vec<u8>, String> {
+    let mut file = open(path)?;
+    let entries = loadsource::gpt::entries(&mut file).map_err(text)?;
+    let esp = entries
+        .iter()
+        .find(|e| e.type_guid == diskimg::layout::ESP_TYPE_GUID)
+        .ok_or_else(|| format!("{} has no ESP", path.display()))?;
+    let at = esp.first_lba * diskimg::SECTOR;
+    let len = (esp.last_lba + 1 - esp.first_lba) * diskimg::SECTOR;
+    let mut bytes = vec![0u8; usize::try_from(len).map_err(text)?];
+    file.seek(SeekFrom::Start(at)).map_err(text)?;
+    file.read_exact(&mut bytes).map_err(text)?;
+    Ok(bytes)
+}
+
+/// Whether the disk at `path` has a GPT: whether anything wrote one.
+pub fn has_table(path: &Path) -> Result<bool, String> {
+    let mut file = open(path)?;
+    Ok(loadsource::gpt::entries(&mut file).is_ok_and(|e| !e.is_empty()))
 }
 
 /// Where the partitions of the load-source disk at `path` are, by its

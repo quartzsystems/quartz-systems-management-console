@@ -1,0 +1,24 @@
+                                 Install QS/MC
+                                                            System:  QSMC123456
+
+ Everything on these disks will be erased:
+
+   P0000-B00-D02-F0  virtio-blk  serial QSMCHD0  17.1 GB
+
+ It becomes an unprotected load source.
+
+ Nothing is erased yet. The disks are written after the summary.
+
+
+
+
+
+ Type ERASE to confirm  . . . :
+
+
+
+
+
+
+ Enter=Continue   F1=Help   F3=Exit   F12=Cancel
+

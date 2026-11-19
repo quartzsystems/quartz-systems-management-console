@@ -1,0 +1,24 @@
+                          Configure Management Network
+                                                                 System:  mc-01
+
+ Management . . : none: waiting for DHCP on eth0
+
+ The new configuration was not kept.
+ It had: none: waiting for DHCP on eth0.999
+
+ The configuration of before is in use again.
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue
+

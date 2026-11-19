@@ -1,0 +1,24 @@
+                                 Install QS/MC
+                                                            System:  QSMC123456
+
+ QS/MC V1R0M0 <build> (Quartz Systems/Management Console)
+
+ This installs the management console on this machine. It erases the
+ disks you choose and makes them its load source, then sets its host
+ name, its open network (the one operators reach it on), the time and
+ the first user of this local console. QS/VS hosts and their
+ partitions are then managed from the console's web interface.
+
+ Nothing is written until you have seen the summary and pressed F10.
+
+ Press Enter to continue, or F3 to leave without installing.
+
+
+
+
+
+
+
+
+ Enter=Continue   F1=Help   F3=Exit
+

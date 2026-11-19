@@ -1,0 +1,24 @@
+                           Help: Power Off or Restart
+                                                                 System:  mc-01
+
+ 1 shuts the console down in order and powers it off.
+ 2 shuts it down in order and restarts it.
+
+ Either asks you to confirm first. The QS/VS hosts and the
+ partitions the console manages run on without it; they cannot
+ be managed until it is back.
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

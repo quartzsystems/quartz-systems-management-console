@@ -1,0 +1,24 @@
+                          Help: Display Console Status
+                                                                 System:  mc-01
+
+ What the console is running and how, drawn again every second.
+
+ Release and slot: the code running and which of the two slots
+ it came from. Network: each interface by its role. open is the
+ network operators reach the console on; private, when there is
+ one, faces the systems it manages. Load source: its disks and
+ their protection. Processor: whether it has what QSI and the
+ web server need. Each service of the console with its state.
+
+ F8 shows more rows, F7 goes back. Enter, F3 or F12 leaves.
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

@@ -1,0 +1,24 @@
+                                 Install QS/MC
+                                                                 System:  mc-01
+
+ Load-source disk . . . : P0000-B00-D02-F0  serial QSMCHD0  17.1 GB
+ Protection . . . . . . : None
+ Host name  . . . . . . : mc-01
+ Interface  . . . . . . : auto
+ Address  . . . . . . . : from DHCP
+ Time zone  . . . . . . : UTC
+ Time servers . . . . . : none
+ Service tools user . . : ADMIN
+ Secure Boot  . . . . . : Not known: the firmware does not say
+
+ F10 erases the disks named and installs. F12 goes back.
+
+
+
+
+
+
+
+
+ F1=Help   F3=Exit   F10=Install   F12=Cancel
+

@@ -53,6 +53,16 @@ pub fn responder(clock: Arc<dyn Clock>) -> Result<(String, ntp::server::Running)
     Ok((format!("{DHCP_GATEWAY}:{port}"), running))
 }
 
+/// An SNTP responder [`AHEAD`] of the host's clock.
+pub fn responder_ahead() -> Result<(String, ntp::server::Running), String> {
+    responder(Arc::new(Ahead))
+}
+
+/// How far `secs`, the console's clock, is from the responder's.
+pub fn off_ahead(secs: i64) -> i64 {
+    secs - (now_secs() + AHEAD)
+}
+
 /// The suite.
 pub fn time(run: &Run<'_>) -> Result<String, String> {
     let (server, responder) = responder(Arc::new(Ahead))?;

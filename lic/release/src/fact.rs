@@ -40,3 +40,10 @@ pub const READY: &str = "ready";
 pub const PROCESSOR: &str = "processor";
 /// The machine: its serial number and what the inventory counts.
 pub const MACHINE: &str = "machine";
+/// Whose the serial port is: [`SERIAL_SESSION`] while the local console
+/// has a session there, [`SERIAL_IDLE`] while it is PID 1's.
+pub const SERIAL_CONSOLE: &str = "console.serial";
+/// [`SERIAL_CONSOLE`] while a session is on the serial port.
+pub const SERIAL_SESSION: &str = "session";
+/// [`SERIAL_CONSOLE`] when the port is PID 1's again.
+pub const SERIAL_IDLE: &str = "idle";

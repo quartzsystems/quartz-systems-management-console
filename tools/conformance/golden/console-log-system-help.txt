@@ -1,0 +1,24 @@
+                               Help: Display logs
+                                                                 System:  mc-01
+
+ The newest line is at the top. F8 shows older lines, F7 newer
+ ones. Times are in the display zone.
+
+ The reference code history is every code the host has posted,
+ kept across IPLs and never cut. The system log is what PID 1
+ and the services say; its oldest lines go when it is full.
+
+ A line marked W is a warning or an attention code, one marked
+ E an error. To see only those, type 2 or 3 in the Show field
+ and press Enter.
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

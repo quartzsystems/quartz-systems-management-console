@@ -1,0 +1,24 @@
+                       Help: Work with the Web Interface
+                                                                 System:  mc-01
+
+ The web interface is how the console is used: hosts, partitions
+ and the console's own settings. Its server is not in this
+ release of the console yet; it arrives in Phase 3.
+
+ When it is, this option resets an Administrator's password
+ when nobody can sign on to the web interface, and shows or
+ replaces the certificate the web server presents.
+
+ Enter, F3 or F12 goes back.
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

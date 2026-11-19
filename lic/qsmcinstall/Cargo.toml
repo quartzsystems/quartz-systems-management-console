@@ -1,0 +1,34 @@
+[package]
+name = "qsmcinstall"
+description = "QS/MC's installer: the base installer's screens over QS/MC's disks, media and state"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+release = { path = "../release", version = "0.1.0" }
+refcode = { path = "../refcode", version = "0.1.0" }
+appliance.workspace = true
+state.workspace = true
+seed.workspace = true
+users.workspace = true
+panels.workspace = true
+install.workspace = true
+loadsource.workspace = true
+netd.workspace = true
+inventory.workspace = true
+abrec.workspace = true
+diskimg.workspace = true
+netlink.workspace = true
+console.workspace = true
+uuid.workspace = true
+hex.workspace = true
+ed25519-dalek.workspace = true
+sha2.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+rustix.workspace = true
+
+[lints]
+workspace = true

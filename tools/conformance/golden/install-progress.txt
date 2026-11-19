@@ -1,0 +1,24 @@
+                                 Install QS/MC
+                                                                 System:  mc-01
+
+ Installing. Do not power the machine off.
+
+   X  C3004020  Partitioning the disks
+   X  C3004030  Setting up protection
+   X  C3004040  Making the data file system
+   X  C3004050  Copying slot A
+   X  C3004055  Copying slot B
+   X  C3004060  Writing the A/B record
+   X  C3004070  Writing boot entries
+   X  C3004080  Writing state
+
+ 100%  ##################################################
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,24 @@
+                                 Install QS/MC
+                                                            System:  QSMC123456
+
+ Type 1 by the load-source disk, or by two disks for mirrored protection.
+
+ Opt Location                Model               Serial                  Size
+     P0000-B00-D02-F0        virtio-blk          QSMCHD0              16.1 GB *
+     P0000-B00-D03-F0        virtio-blk          QSMCHD1              17.1 GB
+
+ * Smaller than a load source may be (17.1 GB); cannot be chosen.
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F1=Help   F3=Exit   F12=Cancel
+

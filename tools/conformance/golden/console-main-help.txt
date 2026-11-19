@@ -1,0 +1,24 @@
+                           Help: QS/MC Local Console
+                                                                 System:  mc-01
+
+ This console looks after the management console itself. It
+ works with no QS/VS host, partition or web user: those are
+ managed from the web interface.
+
+ Type the number of an option and press Enter. 1 shows what the
+ console is running and how. 2 shows its load-source disks and
+ protects or repairs them. 3 sets its open network. 4 is for the
+ web interface, 8 for service functions: both arrive later. 5
+ works with the users of this console. 6 sets the clock and the
+ time servers. 7 shows the logs. 9 powers off or restarts.
+
+ F3 or F12 signs you off. So do ten minutes without a key.
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

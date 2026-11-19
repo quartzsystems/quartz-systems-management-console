@@ -1,0 +1,24 @@
+                               Configure Network
+                                                                 System:  mc-01
+
+ Open, configured : DHCP on the first link with carrier
+ Open, now  . . . : <now>
+ Private  . . . . : none configured
+
+ The private interface is set in the web interface's Network
+ settings (Phase 3) or by a seed volume; it is shown here only.
+
+ Select one of the following:
+
+      1. Change the open interface
+
+
+
+
+
+
+ Selection
+
+
+ F1=Help   F3=Exit   F12=Cancel
+

@@ -7,7 +7,8 @@
 //! is mounted from what it names, and it is stopped after `/data` is
 //! unmounted.
 //!
-//! The places later phases take: the web server at 30 (Phase 3), the
+//! The local console is at 25, after the network service it asks. The
+//! places later phases take: the web server at 30 (Phase 3), the
 //! managed-systems service at 40 (Phase 4), the scheduler at 50
 //! (Phase 7).
 
@@ -17,7 +18,7 @@ use supervise::Service;
 use supervise::table::Caps;
 use supervise::table::caps::{
     DAC_OVERRIDE, FOWNER, IPC_LOCK, NET_ADMIN, NET_BIND_SERVICE, NET_RAW, SYS_ADMIN, SYS_RAWIO,
-    SYS_RESOURCE, SYS_TIME, SYSLOG,
+    SYS_RESOURCE, SYS_TIME, SYS_TTY_CONFIG, SYSLOG,
 };
 
 /// What a base service is given to say it is ready.
@@ -64,13 +65,32 @@ pub const NETD: Service = Service {
     caps: Caps::Only(&[NET_ADMIN, NET_RAW, NET_BIND_SERVICE, SYS_TIME]),
 };
 
-/// The base services.
-#[cfg(not(test_hooks))]
-pub static TABLE: &[Service] = &[STGD, LOGD, NETD];
+/// The local console on the display and the serial port. It takes the
+/// display from the kernel's console, which needs `SYS_TTY_CONFIG`.
+pub const CONSOLE: Service = Service {
+    name: "console",
+    binary: release::CONSOLE,
+    args: &[],
+    order: 25,
+    needs: &[],
+    ready_within: READY_WITHIN,
+    caps: Caps::Only(&[SYS_TTY_CONFIG]),
+};
 
-/// The base services and, in a test image, the test hooks' two.
+/// The base services and the local console.
+#[cfg(not(test_hooks))]
+pub static TABLE: &[Service] = &[STGD, LOGD, NETD, CONSOLE];
+
+/// The same and, in a test image, the test hooks' two.
 #[cfg(test_hooks)]
-pub static TABLE: &[Service] = &[crate::hooks::CHANNEL, STGD, LOGD, NETD, crate::hooks::FLAKY];
+pub static TABLE: &[Service] = &[
+    crate::hooks::CHANNEL,
+    STGD,
+    LOGD,
+    NETD,
+    CONSOLE,
+    crate::hooks::FLAKY,
+];
 
 #[cfg(test)]
 mod tests {
@@ -82,9 +102,9 @@ mod tests {
         let names: Vec<&str> = supervise::table::start_order(TABLE)
             .into_iter()
             .map(|i| TABLE[i].name)
-            .filter(|n| ["stgd", "logd", "netd"].contains(n))
+            .filter(|n| ["stgd", "logd", "netd", "console"].contains(n))
             .collect();
-        assert_eq!(names, ["stgd", "logd", "netd"]);
+        assert_eq!(names, ["stgd", "logd", "netd", "console"]);
         for service in TABLE {
             assert!(service.binary.starts_with(release::BIN_DIR));
         }

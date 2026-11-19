@@ -75,6 +75,15 @@ pub const GROUPS_Y: &[(&str, &[&str])] = &[
         ],
     ),
     (
+        "installation",
+        &[
+            "EFI_PARTITION",
+            "MSDOS_PARTITION",
+            "HID_GENERIC",
+            "FB_DEVICE",
+        ],
+    ),
+    (
         "management port",
         &[
             "NETDEVICES",

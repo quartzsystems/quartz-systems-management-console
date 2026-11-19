@@ -1,0 +1,24 @@
+                       Help: Confirm power off or restart
+                                                                 System:  mc-01
+
+ F10 starts an orderly shutdown: the console's services end one
+ after another, its data is written and its file system
+ unmounted, and then the machine powers off or restarts.
+
+ Nothing the console manages is stopped. F12 goes back and
+ nothing happens.
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

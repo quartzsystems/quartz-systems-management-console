@@ -58,20 +58,23 @@ pub const DISK: [Step; 3] = [
     },
 ];
 
-/// The ISO's step.
+/// The ISO's step: the installer's first screen follows PID 1's lines,
+/// and it has the serial port, so there is no heartbeat.
 pub const ISO: [Step; 1] = [Step {
     name: "ipl-media",
     from: From::Media,
     cpu: None,
-    heartbeats: 2,
+    heartbeats: 0,
 }];
 
 /// The processor's line on a processor with what is needed, and on one
 /// without it.
 const HAS: &str = "Processor has what the cryptography needs";
 const LACKS: &str = "Processor lacks ";
+/// What PID 1 says as it hands the media IPL to the installer.
+const INSTALLER: &str = "The installer has the display and the serial port from here";
 /// What the media UKI says after its slot line.
-const MEDIA: &str = "The installer arrives in Phase 2";
+const MEDIA: &str = "The installer runs in place of the services";
 
 fn setup(step: &'static str, reason: &dyn std::fmt::Display) -> HarnessError {
     HarnessError::Setup {
@@ -113,6 +116,13 @@ impl Step {
                 ));
                 e.push(MEDIA.to_string());
             }
+        }
+        if let From::Media = self.from {
+            e.push(refcode::MOUNTED.tag());
+            e.push(HAS.to_string());
+            e.push(INSTALLER.to_string());
+            e.push(format!("Install {NAME}"));
+            return e;
         }
         e.push(refcode::MOUNTED.tag());
         if self.cpu == Some(LACKING_CPU) {

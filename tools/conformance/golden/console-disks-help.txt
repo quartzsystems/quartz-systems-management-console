@@ -1,0 +1,24 @@
+                           Help: Work with Disk Units
+                                                                 System:  mc-01
+
+ The load source is the disk the console starts from and keeps
+ its own data on, or a mirrored pair of disks. Each unit is
+ shown by its location code, serial number, size and state.
+
+ 1 adds a second disk to a load source of one: it becomes a
+ mirrored pair at the next IPL, and the new disk is written
+ from the first. 2 puts a new disk in the place of a unit
+ that is missing or failed; it is rebuilt while the console
+ runs. The disk chosen is erased. 5 shows the units again.
+
+ While a unit is not in step the console runs, but a second
+ failure would stop it.
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

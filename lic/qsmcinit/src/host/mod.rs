@@ -115,6 +115,9 @@ pub struct Host {
     drawn: Vec<String>,
     /// The date last drawn on the display.
     drawn_date: String,
+    /// The serial port is the local console's: PID 1 writes nothing
+    /// there until it is given back.
+    serial_lent: bool,
 }
 
 impl Host {
@@ -153,11 +156,28 @@ impl Host {
             trial_until: None,
             drawn: Vec::new(),
             drawn_date: String::new(),
+            serial_lent: false,
         }
     }
 
+    /// A line on the display, and on the serial port while it is PID 1's.
+    fn show(&mut self, line: &str) {
+        if self.serial_lent {
+            self.console.display(line);
+        } else {
+            self.console.line(line);
+        }
+    }
+
+    /// Lend the serial port to the local console, or take it back: the
+    /// status screen is drawn again when it is back.
+    pub fn lend_serial(&mut self, lent: bool) {
+        self.serial_lent = lent;
+        self.drawn.clear();
+    }
+
     fn take(&mut self, posted: Posting) {
-        self.console.line(&posted.line);
+        self.show(&posted.line);
         let reference = posted
             .line
             .strip_prefix(refcode::WORD)
@@ -179,7 +199,7 @@ impl Host {
 
     /// One line on the console that is no reference code, logged too.
     pub fn line(&mut self, line: &str) {
-        self.console.line(line);
+        self.show(line);
         self.say(Severity::Info, line);
     }
 
@@ -229,6 +249,10 @@ impl Host {
                         |d| format!("started again in {} s", d.as_secs()),
                     );
                     self.say(Severity::Warning, &format!("{service}: {how}; {next}"));
+                    // A console that ended has no session any more.
+                    if service == table::CONSOLE.name && self.serial_lent {
+                        self.lend_serial(false);
+                    }
                 }
                 Occurrence::GaveUp { service } if service == stgd::NAME && self.served => {
                     // The kernel holds every request to /data for a
@@ -362,7 +386,7 @@ impl Host {
             .cloned()
             .collect();
         let changed = undated != self.drawn;
-        if changed {
+        if changed && !self.serial_lent {
             self.console.serial_screen(&lines);
             self.drawn = undated;
         }
@@ -464,7 +488,7 @@ impl Host {
             self.occurred(occurrences);
         }
         if now >= self.heartbeat_at {
-            if !self.quiet {
+            if !self.quiet && !self.serial_lent {
                 self.console.serial(&refcode::HEARTBEAT.line());
             }
             self.heartbeat_at += HEARTBEAT;

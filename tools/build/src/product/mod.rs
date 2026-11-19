@@ -28,6 +28,12 @@ pub const INIT: &str = "qsmcinit";
 /// The service packages, `/qsmc/bin/<name>` in a slot's initramfs.
 pub const SERVICES: [&str; 3] = ["qsmcstgd", "qsmclogd", "qsmcnetd"];
 
+/// The local console, `/qsmc/bin/qsmccons` in a slot's initramfs.
+pub const CONSOLE: &str = "qsmccons";
+
+/// The installer, `/qsmc/bin/qsmcinstall` in the media's initramfs.
+pub const INSTALLER: &str = "qsmcinstall";
+
 /// The test hooks' package: in a test image only.
 pub const HOOK: &str = "qsmchook";
 
@@ -61,12 +67,16 @@ const RELEASE_PACKAGES: &[Package] = &[
     package(SERVICES[0]),
     package(SERVICES[1]),
     package(SERVICES[2]),
+    package(CONSOLE),
+    package(INSTALLER),
 ];
 const TEST_PACKAGES: &[Package] = &[
     package(INIT),
     package(SERVICES[0]),
     package(SERVICES[1]),
     package(SERVICES[2]),
+    package(CONSOLE),
+    package(INSTALLER),
     package(HOOK),
 ];
 
@@ -181,7 +191,19 @@ mod tests {
         assert_eq!(spec.volume_id, 0x5153_4d43);
         assert!(p.repo.join("VERSION").is_file());
         let names: Vec<&str> = p.packages.iter().map(|p| p.name).collect();
-        assert_eq!(names, ["qsmcinit", "qsmcstgd", "qsmclogd", "qsmcnetd"]);
+        assert_eq!(
+            names,
+            [
+                "qsmcinit",
+                "qsmcstgd",
+                "qsmclogd",
+                "qsmcnetd",
+                "qsmccons",
+                "qsmcinstall"
+            ]
+        );
+        assert_eq!(format!("/qsmc/bin/{CONSOLE}"), release::CONSOLE);
+        assert_eq!(format!("/qsmc/bin/{INSTALLER}"), release::INSTALLER);
         let test = qsmc(Image::Test).unwrap();
         assert_eq!(test.name, "QS/MC (test image)");
         assert_eq!(test.packages.last().map(|p| p.name), Some(HOOK));

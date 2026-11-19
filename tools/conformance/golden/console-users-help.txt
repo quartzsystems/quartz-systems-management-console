@@ -1,0 +1,24 @@
+                     Help: Work with Service Tools User IDs
+                                                                 System:  mc-01
+
+ The user IDs that can sign on to Service Tools. Every one of
+ them can do everything here.
+
+ F6 adds a user ID. Type 2 by a user ID to give it a new
+ password, which also enables an ID that wrong passwords have
+ disabled. Type 4 by a user ID to remove it; the last one stays.
+
+ Passwords are never shown and never kept: only a salted hash.
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

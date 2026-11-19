@@ -1,0 +1,30 @@
+[package]
+name = "qsmccons"
+description = "QS/MC's local console: base/panels with QS/MC's menu, status, network and disk units, on the display and the serial port"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+build = "build.rs"
+
+[dependencies]
+release = { path = "../../lic/release", version = "0.1.0" }
+appliance.workspace = true
+state.workspace = true
+supervise.workspace = true
+netd.workspace = true
+stgd.workspace = true
+logd.workspace = true
+users.workspace = true
+panels.workspace = true
+inventory.workspace = true
+processor.workspace = true
+console.workspace = true
+svcusers.workspace = true
+serde_json.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+rustix.workspace = true
+
+[lints]
+workspace = true

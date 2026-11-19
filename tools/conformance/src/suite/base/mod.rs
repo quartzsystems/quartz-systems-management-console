@@ -13,7 +13,7 @@ mod power;
 mod slot;
 mod status;
 mod supervision;
-mod time;
+pub(crate) mod time;
 
 use std::cell::RefCell;
 use std::ops::{Deref, DerefMut};
@@ -66,6 +66,9 @@ pub struct TestImage {
     pub slot_a: PathBuf,
     /// Its slot B UKI.
     pub slot_b: PathBuf,
+    /// Its installation ISO, when it is built: the installer's suites
+    /// install the test image from it.
+    pub iso: Option<PathBuf>,
 }
 
 /// What a suite is run with.

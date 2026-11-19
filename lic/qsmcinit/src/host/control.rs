@@ -54,6 +54,8 @@ impl Control for Host {
             self.facts.management = value;
         } else if key == fact::PRIVATE {
             self.facts.private = value;
+        } else if key == fact::SERIAL_CONSOLE {
+            self.lend_serial(value == fact::SERIAL_SESSION);
         } else {
             self.say(Severity::Info, &format!("noted {key}: {value}"));
         }
