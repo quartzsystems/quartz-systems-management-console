@@ -118,13 +118,28 @@ pub fn boot<'a>(run: &Run<'a>, machine: Machine) -> Result<Console<'a>, String> 
     let mut guest = install::boot_installed(run, &machine, run.launch.timeout)?;
     webd_ready(&mut guest, Duration::from_secs(60))?;
     listening_443(&mut guest, Duration::from_secs(60))?;
-    let sha = served(&mut guest)?;
     let (https, http) = (machine.forwards[0].0, machine.forwards[1].0);
-    Ok(Console {
-        guest,
-        browser: Browser::new(https, http, &sha)?,
-        machine,
-    })
+    // PID 1 binds 443 before the web server has the set, and the web
+    // server may make its certificate again for the address first: the
+    // certificate read is the one served once a request is answered.
+    let until = Instant::now() + Duration::from_secs(30);
+    loop {
+        let sha = served(&mut guest)?;
+        let mut browser = Browser::new(https, http, &sha)?;
+        match browser.get(webd::product::CSS_PATH) {
+            Ok(_) => {
+                return Ok(Console {
+                    guest,
+                    browser,
+                    machine,
+                });
+            }
+            Err(e) if Instant::now() > until => {
+                return Err(format!("the certificate read is not the one served: {e}"));
+            }
+            Err(_) => std::thread::sleep(Duration::from_millis(500)),
+        }
+    }
 }
 
 /// An installed console, booted, with a browser.
