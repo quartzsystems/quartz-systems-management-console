@@ -6,3 +6,5 @@
 *.config text eol=lf
 # The notices file is compared byte for byte.
 lic/release/NOTICES.txt text eol=lf
+# Fuzz inputs are bytes: stored and checked out as they are.
+tools/fuzz/corpus/** binary
