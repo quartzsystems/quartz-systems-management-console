@@ -143,8 +143,14 @@ fn one(serving: &Serving, stream: TcpStream, from: SocketAddr, port: u16) {
             secure: true,
         };
         qsweb::http::serve(&mut tls, &peer, serving.site.as_ref());
+        // The close is said and the connection ends: nothing more is
+        // waited for from a client that may have gone silent.
         tls.conn.send_close_notify();
-        let _ = tls.conn.complete_io(&mut tls.sock);
+        while tls.conn.wants_write() {
+            if tls.conn.write_tls(&mut tls.sock).is_err() {
+                break;
+            }
+        }
     } else {
         let mut plain = stream;
         let peer = Peer {
