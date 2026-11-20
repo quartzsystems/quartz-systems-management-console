@@ -563,6 +563,10 @@ impl Host {
                 self.console.serial(&refcode::HEARTBEAT.line());
             }
             self.heartbeat_at += HEARTBEAT;
+            // A set of listeners that could not be bound is tried again.
+            if self.web.retry {
+                self.web_follow();
+            }
         }
         self.log.flush();
         if self.shutdown.is_some() {

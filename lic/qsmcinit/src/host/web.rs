@@ -24,6 +24,8 @@ pub struct Web {
     client: Option<UnixStream>,
     /// The addresses last sent.
     sent: Option<Vec<Ipv4Addr>>,
+    /// The last set could not be bound: try again at the heartbeat.
+    pub retry: bool,
 }
 
 /// The address in a status line (`10.0.2.15/24 on eth0, gateway ...`).
@@ -83,8 +85,14 @@ impl Web {
     }
 
     /// The addresses may have changed: send a new set when they did.
+    /// An address gone a moment (the interface changed, a lease renewed)
+    /// leaves the listeners as they are: a socket bound to it answers
+    /// again when it is back. Only the web server's first set may be
+    /// empty. A set that cannot be bound whole is not sent; the web
+    /// server keeps the one it has, and [`Web::retry`] says to try again.
     pub fn follow(&mut self, addresses: &[Ipv4Addr]) -> Result<(), String> {
-        if self.client.is_none() || self.sent.as_deref() == Some(addresses) {
+        let gone = addresses.is_empty() && self.sent.is_some();
+        if self.client.is_none() || gone || self.sent.as_deref() == Some(addresses) {
             return Ok(());
         }
         let mut bound = Vec::new();
@@ -103,6 +111,12 @@ impl Web {
                 Err(e) => failed.push(format!("{a}: {e}")),
             }
         }
+        if !failed.is_empty() {
+            // The web server's listeners of before may still be closing.
+            self.retry = true;
+            return Err(format!("not bound, tried again: {}", failed.join("; ")));
+        }
+        self.retry = false;
         let fds: Vec<BorrowedFd<'_>> = bound.iter().map(AsFd::as_fd).collect();
         let sent = self.client.as_mut().map(|c| {
             c.write_all(set_text(&on).as_bytes())
@@ -114,15 +128,8 @@ impl Web {
         }
         // PID 1's copies close here; the web server's stay open.
         drop(bound);
-        // Kept as sent even when one failed: the web server holds the
-        // others, which could not be bound again. The next address
-        // change, or the web server's next start, tries again.
         self.sent = Some(addresses.to_vec());
-        if failed.is_empty() {
-            Ok(())
-        } else {
-            Err(format!("not bound: {}", failed.join("; ")))
-        }
+        Ok(())
     }
 }
 
@@ -144,5 +151,23 @@ mod tests {
         let a = Ipv4Addr::new(192, 0, 2, 7);
         assert_eq!(set_text(&[a]), "443 192.0.2.7\n80 192.0.2.7\n\n");
         assert_eq!(set_text(&[]), "\n");
+    }
+
+    #[test]
+    fn an_address_gone_a_moment_keeps_the_listeners() {
+        use std::io::Read as _;
+        let (ours, theirs) = UnixStream::pair().unwrap();
+        let a = Ipv4Addr::new(192, 0, 2, 7);
+        let mut web = Web {
+            client: Some(ours),
+            sent: Some(vec![a]),
+            ..Web::default()
+        };
+        assert_eq!(web.follow(&[]), Ok(()));
+        assert_eq!(web.follow(&[a]), Ok(()));
+        assert_eq!(web.sent.as_deref(), Some([a].as_slice()));
+        theirs.set_nonblocking(true).unwrap();
+        let mut buf = [0u8; 8];
+        assert!((&theirs).read(&mut buf).is_err(), "a set was sent");
     }
 }
