@@ -133,7 +133,7 @@ checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 [[package]]
 name = "appliance"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=fd245e6593d61906191e183d43c0724bdb9cb5e5#fd245e6593d61906191e183d43c0724bdb9cb5e5"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=8c54d47bed19e4e597272ab939220241329da986#8c54d47bed19e4e597272ab939220241329da986"
 
 [[package]]
 name = "arbitrary"
@@ -976,7 +976,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e35d6e78f4cebb90e51d543db8fe41528851d6deeef6ef21ebd4bfdc1e784776"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -993,7 +993,7 @@ dependencies = [
 [[package]]
 name = "fdpass"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=fd245e6593d61906191e183d43c0724bdb9cb5e5#fd245e6593d61906191e183d43c0724bdb9cb5e5"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=8c54d47bed19e4e597272ab939220241329da986#8c54d47bed19e4e597272ab939220241329da986"
 dependencies = [
  "rustix",
 ]
@@ -1492,7 +1492,7 @@ checksum = "5d15f86d12da44cd8d4ec3c73984537eb7f4cadcb9776a575a0a8a05ca11005c"
 [[package]]
 name = "logd"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=fd245e6593d61906191e183d43c0724bdb9cb5e5#fd245e6593d61906191e183d43c0724bdb9cb5e5"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=8c54d47bed19e4e597272ab939220241329da986#8c54d47bed19e4e597272ab939220241329da986"
 dependencies = [
  "appliance",
  "ipc",
@@ -1818,7 +1818,7 @@ dependencies = [
 [[package]]
 name = "processor"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=fd245e6593d61906191e183d43c0724bdb9cb5e5#fd245e6593d61906191e183d43c0724bdb9cb5e5"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=8c54d47bed19e4e597272ab939220241329da986#8c54d47bed19e4e597272ab939220241329da986"
 
 [[package]]
 name = "protect"
@@ -2217,7 +2217,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2613,7 +2613,7 @@ checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 [[package]]
 name = "state"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=fd245e6593d61906191e183d43c0724bdb9cb5e5#fd245e6593d61906191e183d43c0724bdb9cb5e5"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=8c54d47bed19e4e597272ab939220241329da986#8c54d47bed19e4e597272ab939220241329da986"
 dependencies = [
  "appliance",
  "serde",
@@ -2651,7 +2651,7 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 [[package]]
 name = "supervise"
 version = "0.1.0"
-source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=fd245e6593d61906191e183d43c0724bdb9cb5e5#fd245e6593d61906191e183d43c0724bdb9cb5e5"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=8c54d47bed19e4e597272ab939220241329da986#8c54d47bed19e4e597272ab939220241329da986"
 dependencies = [
  "ipc",
  "libc",
