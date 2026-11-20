@@ -18,6 +18,7 @@
 pub mod base;
 pub mod install;
 pub(crate) mod steps;
+pub mod web;
 
 use std::cell::RefCell;
 use std::fmt;
@@ -96,6 +97,7 @@ pub fn names(media: Media) -> Vec<&'static str> {
             .map(steps::Step::name)
             .chain(base::SUITES.iter().map(|(name, _)| *name))
             .chain(install::SUITES.iter().map(|(name, _)| *name))
+            .chain(web::SUITES.iter().map(|(name, _)| *name))
             .collect(),
         Media::Iso => steps::ISO.iter().map(steps::Step::name).collect(),
     }
@@ -173,7 +175,10 @@ impl Suite {
             reports.push(report);
         }
         if media == Media::Disk {
-            let all = base::SUITES.iter().chain(install::SUITES);
+            let all = base::SUITES
+                .iter()
+                .chain(install::SUITES)
+                .chain(web::SUITES);
             for (name, suite) in all.filter(|(n, _)| wanted(n)) {
                 let report = self.base(name, *suite)?;
                 passed(&report);

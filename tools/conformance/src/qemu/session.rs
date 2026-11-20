@@ -57,6 +57,9 @@ pub struct Machine {
     /// The MAC of a second NIC, on a user network of its own: the
     /// `private` interface's.
     pub second_nic: Option<String>,
+    /// Host ports forwarded to the guest's ports on the first NIC
+    /// (`host`, `guest`): a browser's way in.
+    pub forwards: Vec<(u16, u16)>,
 }
 
 /// The base driver's launch of `m`. The driver makes either every disk
@@ -103,6 +106,7 @@ pub fn launch_of(l: &Launch, m: &Machine, scratch: &Path) -> Result<driver::Laun
         usb: m.usb.clone(),
         media_first: m.cdrom.is_some() || m.usb.is_some(),
         keys: m.keys,
+        forwards: m.forwards.clone(),
         uplinks: m
             .second_nic
             .iter()

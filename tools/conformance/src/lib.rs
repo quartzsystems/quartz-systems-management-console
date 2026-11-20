@@ -13,6 +13,8 @@
 //! - [`image`]: a load source written onto image files with
 //!   `base/loadsource`'s writer, a seed volume, a sparse copy.
 //! - [`suite`]: Phase 0's steps and the base system's suites.
+//! - [`web`]: a browser of the web interface, pinned to the certificate
+//!   it expects.
 //!
 //! QS/VS's harness (`tools/conformance` there) cannot be taken from
 //! outside: it depends on most of QS/VS's own crates and reads `QSVS_`
@@ -25,6 +27,7 @@ pub mod error;
 pub mod image;
 pub mod qemu;
 pub mod suite;
+pub mod web;
 
 pub use error::HarnessError;
 pub use suite::{Images, Media, Report, Suite, TestImage};

@@ -10,7 +10,7 @@ mod identity;
 mod mirror;
 pub mod network;
 mod power;
-mod slot;
+pub(crate) mod slot;
 mod status;
 mod supervision;
 pub(crate) mod time;

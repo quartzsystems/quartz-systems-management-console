@@ -44,7 +44,7 @@ fn esp(image: &Path) -> Result<EspLocation, String> {
 
 /// Slot B on trial: pending in the record with one attempt, and the
 /// firmware's `BootNext`, while `BootOrder` has slot A alone.
-fn on_trial(run: &Run<'_>, name: &str) -> Result<Machine, String> {
+pub(crate) fn on_trial(run: &Run<'_>, name: &str) -> Result<Machine, String> {
     let disk = run.disk_copy(&format!("{name}-disk"))?;
     set_record(
         &disk.path,
