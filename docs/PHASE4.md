@@ -34,12 +34,21 @@ passed: the 32 disk steps and suites of Phases 0 to 2 and the ISO step,
 out waiting for the guest to power off; 683.1 s the second time), and
 the fourteen web suites of Phase 3.
 
-QS/VS's catalogue was written only by its `build release`; QS/VS commit
+QS/VS's catalogue was written only by its `build release`. QS/VS commit
 `8c54d47` ("Write the catalogue alone for a console") adds `build
 catalogue FILE`, which gives the release's `catalogue.json` exactly
-(201 codes, 274 messages). BLOCKED(phase4): that commit is to be on
-QS/VS's `main` before the QS/VS pin moves to it and the build puts the
-catalogue in the image.
+(201 codes, 274 messages), and changes nothing else: its build tool,
+`CLAUDE.md` and `docs/PHASE11.md`. It pins the same QS/400 commit, so
+QS/400 stays where it is.
+
+| Commit | What |
+| --- | --- |
+| `a20cd87` Move the QS/VS pin to 8c54d47 | QS/VS from `fd245e6593d61906191e183d43c0724bdb9cb5e5` to `8c54d47bed19e4e597272ab939220241329da986`; QS/400 unchanged at `cb58b010a8b96ac48a66e06079e1ff4e4af371c7`. `Cargo.lock` changed in the QS/VS revision only |
+
+The image's step (`tools/build/src/product/catalogue.rs`) runs that
+command in cargo's checkout of the pinned QS/VS, with the commit as its
+build identifier, and puts the result in a slot's initramfs at
+`/qsmc/catalogue.json`; it is made once a pin, under the target.
 
 ## What exists
 
@@ -121,9 +130,7 @@ EVIDENCE
 
 ## Not done
 
-- BLOCKED(phase4): the QS/VS pin's move to `8c54d47`, and with it the
-  catalogue in the image, waits on that commit being on QS/VS's `main`;
-  until then a host's code is explained with `QMC1201`.
+
 - `NEEDS-CODY`: the Dell's QS/VS host paired from a real console; a
   partition's console used in a browser; every page looked at in a
   browser beside the prototype.

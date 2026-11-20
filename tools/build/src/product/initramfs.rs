@@ -43,6 +43,11 @@ fn all(ctx: &Ctx, hooks: bool, kind: UkiKind) -> Result<Vec<Entry>> {
             trusted_keys(&key),
         ));
     } else {
+        // The QS/VS catalogue a host's codes are explained from.
+        entries.push(Entry::file(
+            release::CATALOGUE.trim_start_matches('/'),
+            super::catalogue::catalogue(ctx)?,
+        ));
         let hook = hooks.then_some(super::HOOK);
         let names = super::SERVICES.into_iter().chain([super::CONSOLE]);
         for name in names.chain(hook) {

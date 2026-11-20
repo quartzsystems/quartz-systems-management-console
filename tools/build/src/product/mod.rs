@@ -11,6 +11,7 @@
 //! under its own directory of the target root and its manifest names it
 //! a test image.
 
+mod catalogue;
 mod initramfs;
 pub mod kernel;
 mod media;
