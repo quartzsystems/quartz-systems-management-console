@@ -1,0 +1,24 @@
+                            Confirm New Certificate
+                                                                 System:  mc-01
+
+ The web server's certificate will be replaced with a new
+ self-signed one for the console's name and open address, valid
+ for a year. Browsers warn about it until it is accepted again.
+
+ Press F10 to confirm, or F12 to go back.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ F1=Help   F10=Confirm   F12=Cancel
+

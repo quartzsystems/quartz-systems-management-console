@@ -1,0 +1,24 @@
+                        Help: Confirm Default Listening
+                                                                 System:  mc-01
+
+ Use this when the Allow web UI from list of Network settings
+ keeps you out. F10 empties it; F12 goes back and nothing
+ happens.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

@@ -1,0 +1,24 @@
+                           Confirm Default Listening
+                                                                 System:  mc-01
+
+ The web interface will answer every address again, on the open
+ interface only: the Allow web UI from list is emptied.
+
+ Press F10 to confirm, or F12 to go back.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ F1=Help   F10=Confirm   F12=Cancel
+

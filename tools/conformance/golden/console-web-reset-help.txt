@@ -1,0 +1,24 @@
+                      Help: Reset or Make an Administrator
+                                                                 System:  mc-01
+
+ Type a web user ID and its new password twice. The password is
+ not shown as you type, and only its hash leaves this panel.
+
+ The user ID becomes an enabled Administrator: its old password
+ stops working, and a lock from wrong passwords ends. A user ID
+ the web interface does not have is made. Its sessions are not
+ ended. The change is in the web interface's audit.
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

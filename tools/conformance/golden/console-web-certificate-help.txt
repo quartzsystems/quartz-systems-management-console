@@ -1,0 +1,24 @@
+                         Help: Confirm New Certificate
+                                                                 System:  mc-01
+
+ F10 makes the new certificate. New connections are served with
+ it; the sessions open keep the one they have. Compare its
+ fingerprint, shown after, with the one a browser shows.
+
+ An imported certificate is replaced too. F12 goes back and
+ nothing happens.
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

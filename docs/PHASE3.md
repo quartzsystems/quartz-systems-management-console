@@ -90,9 +90,6 @@ windows open (`docs/OPEN_QUESTIONS.md`, item 19).
 
 ## Not done
 
-- Section 4: option 4's golden screens (`console-web-reset`,
-  `-certificate`, `-listening` and the helps) are written by the
-  `console-panels` suite's next run with `QSMC_GOLDEN=update`.
 - Section 5: the suites that reach the web interface from outside.
 - The documents `docs/WEBUSERS.md` and `docs/MESSAGES.md`.
 - `NEEDS-CODY`: every page looked at in a browser beside the
