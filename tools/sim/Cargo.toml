@@ -1,0 +1,28 @@
+[package]
+name = "sim"
+description = "A managed system for tests: a QS/VS host or a standalone system speaking real QSI over TLS, with the prototype's fixture data and faults on request. A host tool, in no image"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "qsmcsim"
+path = "src/main.rs"
+
+[dependencies]
+qsi.workspace = true
+qsisess.workspace = true
+qsitrust.workspace = true
+qsipart.workspace = true
+srcdata.workspace = true
+ipc.workspace = true
+rustls.workspace = true
+sha2.workspace = true
+
+[dev-dependencies]
+termlook.workspace = true
+
+[lints]
+workspace = true

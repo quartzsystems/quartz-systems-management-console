@@ -1,0 +1,84 @@
+# Work with Active Jobs, the prototype's terminal picture
+# (shared/img/5250-24x80.png), as console cells. The size, the cursor
+# (0-based) and the system's name; then the rows' text, their colours
+# (g w r b t p y; upper case at high intensity) and their flags (u
+# underline, r reverse, n nondisplay, c column separators, . none).
+size 24 80
+cursor 23 5
+system QSHQ400
+
+                            Work with Active Jobs                        QSHQ400
+                                                             10/29/26  14:05:12 
+CPU %:    23.4     Elapsed time:   00:01:00     Active jobs:   318              
+                                                                                
+Type options, press Enter.                                                      
+  2=Change   3=Hold   4=End   5=Work with   6=Release   7=Display message       
+  8=Work with spooled files   13=Disconnect ...                                 
+                                                                                
+                        Current                                                 
+Opt  Subsystem/Job  User        Type  CPU %  Function        Status             
+     QBATCH         QSYS        SBS      .0                   DEQW              
+       NIGHTLY      QPGMR       BCH    14.8  PGM-NIGHTLY      RUN               
+       RGZPFM01     QPGMR       BCH     6.1  CMD-RGZPFM       RUN               
+       INVBATCH     CWELLMAN    BCH      .0  PGM-INVLOAD      MSGW              
+     QHTTPSVR       QSYS        SBS      .0                   DEQW              
+       ADMIN        QTMHHTTP    BCH      .3  PGM-QZHBMAIN     RUN               
+       API          QTMHHTTP    BCH      .1  PGM-QZHBMAIN     RUN               
+     QINTER         QSYS        SBS      .0                   DEQW              
+       QPADEV0001   QSECOFR     INT      .0  CMD-WRKACTJOB    MSGW              
+       QPADEV0003   CWELLMAN    INT     1.2  CMD-WRKACTJOB    RUN               
+                                                                         More...
+Parameters or command                                                           
+===>                                                                            
+F3=Exit   F5=Refresh   F7=Find   F10=Restart statistics   F11=Elapsed data      
+
+ggggggggggggggggggggggggggggwwwwgwwwwgwwwwwwgwwwwggggggggggggggggggggggggwwwwwww
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+wwwggwwwwwwwwwwwwwggwwwwggggggggwwwwggwwwgwggwwwwwwwwggggggggwwwwwwggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggwwwwwww
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+.uu.............................................................................
+.uu.............................................................................
+.uu.............................................................................
+.uu.............................................................................
+.uu.............................................................................
+.uu.............................................................................
+.uu.............................................................................
+.uu.............................................................................
+.uu.............................................................................
+.uu.............................................................................
+................................................................................
+................................................................................
+.....uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
+................................................................................
+

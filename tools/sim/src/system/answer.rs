@@ -1,0 +1,286 @@
+// Copyright (C), 2026 Quartz Systems. Some rights reserved. This work is
+// licensed under the terms of the MIT license which can be found in the
+// root directory of this project.
+
+//! What the system answers to each request a pinned console sends, in
+//! the words a QS/VS host uses. Pairing and the console's stream are the
+//! connection's (`net`); this is everything else.
+
+use qsi::any::{AnyReply, AnyRequest};
+use qsi::base::{self, Keylock, PowerAction, PowerState};
+use qsi::host::model::{IplSource, IplType, PartitionState};
+use qsi::host::{console, host, panel, partitions, refcodes};
+use qsi::{Empty, PeerKind};
+
+use super::{System, codes};
+
+/// What a request comes to.
+#[derive(Debug)]
+#[allow(clippy::large_enum_variant, reason = "made once and passed on")]
+pub enum Answer {
+    /// A reply.
+    Reply(AnyReply),
+    /// A refusal: the message first, then the others that apply.
+    Refuse(Vec<(String, String)>),
+    /// A subscription from the event's number given.
+    Subscribe(Option<u64>),
+    /// A console to attach: the partition and whether to take it over.
+    Attach(u32, bool),
+    /// An operation this system does not answer.
+    Unknown,
+    /// A power down begun: the connection's controller carries it out.
+    Power(PowerAction, bool),
+}
+
+fn refuse(id: &str, text: &str) -> Answer {
+    Answer::Refuse(vec![(id.into(), text.into())])
+}
+
+/// A partition named by ID that is not there.
+fn no_partition(id: u32) -> Answer {
+    refuse("QVS2001", &format!("Partition {id} does not exist."))
+}
+
+/// Answer `r`, asked by `user`.
+#[allow(clippy::too_many_lines, reason = "one arm a request")]
+pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
+    s.note(format!(
+        "request {:04X}/{:04X} from user {user}",
+        req.family(),
+        req.op()
+    ));
+    let host = s.hello.kind == PeerKind::Host;
+    match req {
+        AnyRequest::Base(b) => match b {
+            base::Request::Identify(_) => {
+                Answer::Reply(AnyReply::Base(base::Reply::Identify(s.identify())))
+            }
+            base::Request::State(_) => Answer::Reply(AnyReply::Base(base::Reply::State(s.state()))),
+            base::Request::Refcodes(q) => {
+                let limit = usize::try_from(q.limit.clamp(1, 500)).unwrap_or(500);
+                let mut codes: Vec<_> = s
+                    .codes
+                    .iter()
+                    .rev()
+                    .filter(|c| q.before.is_none_or(|b| c.seq < b))
+                    .take(limit + 1)
+                    .cloned()
+                    .collect();
+                let more = (codes.len() > limit).then(|| codes[limit - 1].seq);
+                codes.truncate(limit);
+                Answer::Reply(AnyReply::Base(base::Reply::Refcodes(base::RefcodeList {
+                    codes,
+                    more,
+                })))
+            }
+            base::Request::Subscribe(q) => Answer::Subscribe(q.since),
+            base::Request::Unsubscribe(_) => {
+                Answer::Reply(AnyReply::Base(base::Reply::Unsubscribe(Empty)))
+            }
+            base::Request::Time(_) => {
+                Answer::Reply(AnyReply::Base(base::Reply::Time(base::Time {
+                    unix_ns: i64::try_from(super::now_ms()).unwrap_or(0) * 1_000_000,
+                    offset_s: 0,
+                    zone: "UTC".into(),
+                })))
+            }
+            base::Request::Power(p) => {
+                if let Some((id, text)) = s.faults.refuse_power.clone() {
+                    return refuse(&id, &text);
+                }
+                if s.power != PowerState::Running {
+                    return refuse(
+                        "QVS1010",
+                        &format!("The host is {:?}: it cannot be powered down now.", s.power),
+                    );
+                }
+                Answer::Power(p.action, p.immediate)
+            }
+            _ => Answer::Unknown,
+        },
+        AnyRequest::Host(h) if host => match h {
+            host::Request::Host(_) => match &s.host {
+                Some(x) => Answer::Reply(AnyReply::Host(host::Reply::Host(x.clone()))),
+                None => refuse("QSI0301", "The partition manager did not answer."),
+            },
+            host::Request::Hardware(_) => match &s.hardware {
+                Some(x) => Answer::Reply(AnyReply::Host(host::Reply::Hardware(x.clone()))),
+                None => refuse("QSI0301", "The partition manager did not answer."),
+            },
+            _ => Answer::Unknown,
+        },
+        AnyRequest::Partitions(p) if host => match p {
+            partitions::Request::List(_) => {
+                Answer::Reply(AnyReply::Partitions(partitions::Reply::List(s.statuses())))
+            }
+            partitions::Request::Get(g) => match s.part(g.id) {
+                Some(p) => Answer::Reply(AnyReply::Partitions(partitions::Reply::Get(
+                    partitions::Partition {
+                        definition: p.definition.clone(),
+                        status: p.status.clone(),
+                    },
+                ))),
+                None => no_partition(g.id),
+            },
+            partitions::Request::Adapters(_) => Answer::Reply(AnyReply::Partitions(
+                partitions::Reply::Adapters(Vec::new()),
+            )),
+        },
+        AnyRequest::Refcodes(refcodes::Request::History(q)) if host => {
+            let Some(p) = s.part(q.id) else {
+                return no_partition(q.id);
+            };
+            let limit = usize::try_from(q.limit.clamp(1, 256)).unwrap_or(256);
+            let mut codes: Vec<_> = p
+                .history
+                .iter()
+                .rev()
+                .filter(|c| q.before.is_none_or(|b| c.refcode.seq < b))
+                .take(limit + 1)
+                .cloned()
+                .collect();
+            let more = (codes.len() > limit).then(|| codes[limit - 1].refcode.seq);
+            codes.truncate(limit);
+            Answer::Reply(AnyReply::Refcodes(refcodes::Reply::History(
+                refcodes::Page { codes, more },
+            )))
+        }
+        AnyRequest::Panel(panel::Request::Function(f)) if host => function(s, f),
+        AnyRequest::Console(cq) if host => match cq {
+            console::Request::Attach(at) => match s.part(at.id) {
+                None => no_partition(at.id),
+                Some(p) if p.status.state == PartitionState::NotActivated => refuse(
+                    "QVS2003",
+                    &format!("Partition {} is not activated.", p.status.name),
+                ),
+                Some(_) => Answer::Attach(at.id, at.take_over),
+            },
+            console::Request::Screen(sq) => {
+                let Some(p) = s.part(sq.id) else {
+                    return no_partition(sq.id);
+                };
+                let frame = p.screen.as_ref().map(|r| r.frame.clone());
+                let text = frame.as_ref().map_or_else(String::new, |f| {
+                    f.cells
+                        .chunks(usize::from(f.cols).max(1))
+                        .map(|row| row.iter().map(|c| c.ch).collect::<String>())
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                });
+                Answer::Reply(AnyReply::Console(console::Reply::Screen(
+                    console::Capture {
+                        serial: false,
+                        frame,
+                        text,
+                    },
+                )))
+            }
+        },
+        _ => Answer::Unknown,
+    }
+}
+
+/// A control panel function, as `docs/PANEL.md` of QS/VS has them.
+fn function(s: &mut System, f: &panel::Function) -> Answer {
+    if let Some((id, text)) = s.faults.refuse_panel.clone() {
+        return refuse(&id, &text);
+    }
+    let Some(p) = s.part(f.id) else {
+        return no_partition(f.id);
+    };
+    let name = p.status.name.clone();
+    let keylock = p.definition.keylock;
+    let running = p.status.state != PartitionState::NotActivated;
+    let manual = keylock == Keylock::Manual;
+    let needs_manual = matches!(f.function, 3 | 8 | 21 | 22 | 34);
+    let needs_running = matches!(f.function, 3 | 8 | 21 | 22 | 34);
+    if !matches!(f.function, 1..=3 | 8 | 11..=22 | 34) {
+        return refuse(
+            "QVS2306",
+            &format!(
+                "Function {:02} is not a control panel function.",
+                f.function
+            ),
+        );
+    }
+    if needs_running && !running {
+        return refuse("QVS2003", &format!("Partition {name} is not activated."));
+    }
+    if needs_manual && !manual {
+        return refuse(
+            "QVS2307",
+            &format!(
+                "Function {:02} needs the keylock in manual; it is {}.",
+                f.function,
+                format!("{keylock:?}").to_lowercase()
+            ),
+        );
+    }
+    let code = p.status.code.clone();
+    let text = match f.function {
+        1 => format!(
+            "01  IPL source {}, IPL type {}, keylock {}",
+            word_source(f.args.source.unwrap_or(IplSource::A)),
+            word_type(f.args.ipl_type.unwrap_or(IplType::Unattended)),
+            format!("{keylock:?}").to_lowercase()
+        ),
+        2 => {
+            if let Some(k) = f.args.keylock
+                && let Some(p) = s.part(f.id)
+            {
+                p.definition.keylock = k;
+            }
+            "02  next activation selected".into()
+        }
+        11 => format!("11  {code}"),
+        12..=19 => format!("{:02}  00000000", f.function),
+        20 => format!(
+            "20  type QS/400 partition, serial number {}, host QS/VS V1R0M0, system V1R2M0",
+            p_serial(s, f.id)
+        ),
+        3 => {
+            codes::restart(s, f.id);
+            "03  IPL restarted".into()
+        }
+        8 => {
+            codes::end(s, f.id);
+            "08  partition powered off".into()
+        }
+        21 => "21  dedicated service tools shown on the console".into(),
+        22 => {
+            codes::dump(s, f.id);
+            format!("22  dump {}-1 begun", name.to_lowercase())
+        }
+        _ => {
+            return refuse(
+                "QVS2309",
+                &format!("Partition {name} is not held: there is no memory to dump again."),
+            );
+        }
+    };
+    Answer::Reply(AnyReply::Panel(panel::Reply::Function(panel::Shown {
+        text,
+    })))
+}
+
+fn p_serial(s: &mut System, id: u32) -> String {
+    s.part(id)
+        .map(|p| p.definition.serial.clone())
+        .unwrap_or_default()
+}
+
+fn word_source(s: IplSource) -> &'static str {
+    match s {
+        IplSource::B => "B",
+        IplSource::D => "D",
+        IplSource::Recorded => "recorded",
+        _ => "A",
+    }
+}
+
+fn word_type(t: IplType) -> &'static str {
+    match t {
+        IplType::Attended => "attended",
+        _ => "unattended",
+    }
+}

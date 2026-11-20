@@ -4,9 +4,11 @@ resolver = "3"
 # the product never links (`tools/fuzz/Cargo.toml`).
 exclude = ["tools/fuzz"]
 members = [
-    # Host tools: the build orchestrator and the conformance harness.
+    # Host tools: the build orchestrator, the conformance harness and the
+    # simulated managed systems.
     "tools/build",
     "tools/conformance",
+    "tools/sim",
     # Licensed Internal Code: PID 1, release identity, reference codes.
     "lic/qsmcinit",
     "lic/release",
@@ -72,6 +74,12 @@ scrkit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "c
 svcusers = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
 qsweb = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
 x509kit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+qsi = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+qsisess = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+qsitrust = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+qsipart = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+termlook = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+srcdata = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
 
 anyhow = "1.0.104"
 ed25519-dalek = "3.0.0"
