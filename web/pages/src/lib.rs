@@ -23,6 +23,8 @@ pub mod datetime;
 pub mod datetime_routes;
 pub mod fmt;
 pub mod help;
+pub mod locale;
+pub mod locale_routes;
 pub mod network;
 pub mod network_routes;
 pub mod pages;

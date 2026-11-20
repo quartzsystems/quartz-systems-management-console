@@ -560,3 +560,24 @@ fn console_shutdown() {
         ],
     );
 }
+
+#[test]
+fn console_locale() {
+    use webpages::locale::{Locale, page};
+    let v = Locale {
+        language: String::new(),
+        date: String::new(),
+        time: String::new(),
+        number: String::new(),
+        idle: "30".into(),
+        max: "12".into(),
+        terminals: true,
+        messages: Vec::new(),
+    };
+    let c = ctx("/qsmc/console/locale");
+    assert_golden(
+        &render("/qsmc/console/locale", &page(&c, &v)),
+        "console-locale.html",
+        &[],
+    );
+}

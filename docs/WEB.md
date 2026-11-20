@@ -118,7 +118,9 @@ Golden corrections, each the only difference allowed:
 Sessions, the sign-on lock-out and the window of an `open` address
 change are timed by the console's uptime, which setting the clock does
 not move; what is shown and kept (a user's last sign-on, the backups'
-dates) is the wall clock. Date and time's time zone is the display
+dates) is the wall clock. Language, locale and session keeps the date, time
+and number formats every page shows; the display offset is on Date and
+time, where the prototype has it. Date and time's time zone is the display
 offset `host.toml` keeps (`UTC`, `UTC+hh:mm`): the page offers each
 half hour from UTC-12:00 to UTC+14:00 and the three quarter-hour
 offsets, with no summer time. Its NTP status is PID 1's `synced` fact:

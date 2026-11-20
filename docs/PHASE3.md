@@ -90,8 +90,8 @@ windows open (`docs/OPEN_QUESTIONS.md`, item 19).
 
 ## Not done
 
-- Section 3, pages 10 to 12: Language and locale, Console version,
-  the components page under `/dev/`.
+- Section 3, pages 11 and 12: Console version, the components page
+  under `/dev/`.
 - Section 4: the local console's option 4.
 - Section 5: the suites that reach the web interface from outside.
 - The documents `docs/WEBUSERS.md` and `docs/MESSAGES.md`.

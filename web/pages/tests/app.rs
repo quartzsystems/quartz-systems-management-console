@@ -905,3 +905,54 @@ fn shut_down_or_restart_asks_pid_1_and_tells_every_session() {
     assert!(t.contains("Message from qsadmin: Back at noon"), "{t}");
     let _ = std::fs::remove_dir_all(dir);
 }
+
+#[test]
+fn language_and_locale_keep_the_formats_and_the_timeouts() {
+    let (app, _, dir) = app("locale");
+    let mut b = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.24",
+        host: None,
+    };
+    b.sign_on("qsadmin", PASSWORD);
+    let token = b.csrf("/qsmc/console/locale");
+    let post = |b: &mut Browser<'_>, f: &[(&str, &str)]| {
+        // The first of a name counts: the test's own fields first.
+        let mut all = vec![("csrf", token.as_str()), ("apply", "Apply")];
+        all.extend_from_slice(f);
+        all.extend_from_slice(&[
+            ("df", "YYYY-MM-DD"),
+            ("tf", "12-hour AM/PM"),
+            ("nf", "1.234,56"),
+            ("to", "15"),
+            ("max", "8"),
+        ]);
+        b.send("POST", "/qsmc/console/locale", &all).text()
+    };
+    let t = post(&mut b, &[("l", "German"), ("tw", "on")]);
+    assert!(
+        t.contains("The language German is not in this release."),
+        "{t}"
+    );
+    assert!(t.contains("Keeping terminal window sessions open is not in this release."));
+    assert_eq!(app.settings().idle_minutes, 30);
+    let t = post(&mut b, &[("l", "English (US)"), ("to", "0")]);
+    assert!(t.contains("1 to 480 minutes"), "{t}");
+    let t = post(&mut b, &[("l", "English (US)")]);
+    assert!(t.contains("QMC8600"), "{t}");
+    let s = app.settings();
+    assert_eq!(
+        (
+            s.date_format.as_str(),
+            s.time_format.as_str(),
+            s.idle_minutes,
+            s.max_hours
+        ),
+        ("YYYY-MM-DD", "12-hour AM/PM", 15, 8)
+    );
+    // The pages show dates in the new format.
+    let t = b.send("GET", "/qsmc/console", &[]).text();
+    assert!(t.contains("2026-09-21"), "{t}");
+    let _ = std::fs::remove_dir_all(dir);
+}
