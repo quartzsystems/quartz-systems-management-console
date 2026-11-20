@@ -89,6 +89,16 @@ enum Command {
         #[arg(long)]
         suite: Option<String>,
     },
+    /// Build the fuzzer with coverage counters and run its targets
+    /// (`tools/fuzz`): a backup's reader and the certificate import.
+    Fuzz {
+        /// Only this target.
+        #[arg(long)]
+        target: Option<String>,
+        /// Seconds each.
+        #[arg(long, default_value_t = 60)]
+        secs: u64,
+    },
     /// Check host prerequisites, the license headers and the two pins.
     Doctor,
     /// Run cargo-deny plus the C-linkage check of the compiled graph.
@@ -190,6 +200,7 @@ fn main() -> Result<()> {
             let test = context(Image::Test, cli.verbose)?;
             host::testrun::test(&release, &test, media, suite.as_deref())?;
         }
+        Command::Fuzz { target, secs } => host::fuzz::fuzz(&ctx, target.as_deref(), secs)?,
         Command::Doctor => buildkit::host::doctor::doctor(&ctx)?,
         Command::Deny => buildkit::host::deny::deny(&ctx)?,
         Command::Notices { check } => {

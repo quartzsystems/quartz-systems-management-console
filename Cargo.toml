@@ -1,5 +1,8 @@
 [workspace]
 resolver = "3"
+# The fuzzer is a workspace of its own: QS/400's fuzzer brings crates
+# the product never links (`tools/fuzz/Cargo.toml`).
+exclude = ["tools/fuzz"]
 members = [
     # Host tools: the build orchestrator and the conformance harness.
     "tools/build",

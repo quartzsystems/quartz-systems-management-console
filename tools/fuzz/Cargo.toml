@@ -1,0 +1,36 @@
+# A workspace of its own: QS/400's fuzzer brings QS/400's parsers and
+# its own `release` crate, which the product's tree must not hold. The
+# pins are the main workspace's (`docs/PHASE3.md`).
+[workspace]
+resolver = "3"
+
+[package]
+name = "qsmcfuzz"
+description = "QS/MC's fuzz targets over QS/400's fuzzer: a backup's reader and the certificate import"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+rust-version = "1.98"
+publish = false
+
+[[bin]]
+name = "qsmcfuzz"
+path = "src/main.rs"
+
+[dependencies]
+# QS/400's fuzzer: its coverage counters, mutator and loop.
+fuzz = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
+qmcbackup = { path = "../../web/backup", version = "0.1.0" }
+webd = { path = "../../web/webd", version = "0.1.0" }
+
+# The fuzzer's build (`build fuzz`), as QS/400 has it.
+[profile.fuzz]
+inherits = "release"
+panic = "unwind"
+lto = false
+codegen-units = 1
+opt-level = 2
+debug-assertions = true
+
+[profile.dev.package.argon2]
+opt-level = 3
