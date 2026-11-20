@@ -78,7 +78,7 @@ fn run(cmd: &mut Command) -> Result<String> {
 
 /// The root of cargo's checkout of QS/VS: the workspace a QS/VS package
 /// of the graph sits in.
-fn qsvs_checkout(repo: &Path) -> Result<PathBuf> {
+pub fn qsvs_checkout(repo: &Path) -> Result<PathBuf> {
     let json = run(cargo(repo).args(["metadata", "--format-version", "1", "--locked"]))?;
     let meta: serde_json::Value = serde_json::from_str(&json)?;
     let source = format!("git+{QSVS_GIT}");

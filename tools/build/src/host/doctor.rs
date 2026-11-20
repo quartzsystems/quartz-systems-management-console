@@ -66,7 +66,32 @@ fn once(ctx: &Ctx) -> Row {
     }
 }
 
+/// The QS/VS test disk suite 10 runs a real host from: not required,
+/// and how to make one when it is missing.
+fn qsvs_disk(ctx: &Ctx) -> Row {
+    let name = format!("QS/VS test disk ({})", conformance::suite::mgmt::host::DISK);
+    let mut r = match std::env::var(conformance::suite::mgmt::host::DISK) {
+        Ok(p) if std::path::Path::new(&p).is_file() => row(&name, true, p),
+        _ => {
+            let checkout = super::pins::qsvs_checkout(&ctx.paths.repo).map_or_else(
+                |_| "cargo's checkout of QS/VS at the pin".into(),
+                |c| c.display().to_string(),
+            );
+            row(
+                &name,
+                false,
+                format!(
+                    "for `build test --suite mgmt-host` only: in {checkout}, `cargo run -p build -- --test-image all`, \
+                     then install a disk with its `install-serial` suite and name it"
+                ),
+            )
+        }
+    };
+    r.required = false;
+    r
+}
+
 /// QS/MC's rows.
 pub fn rows(ctx: &Ctx) -> Vec<Row> {
-    vec![ovmf(), headers(ctx), pins(ctx), once(ctx)]
+    vec![ovmf(), headers(ctx), pins(ctx), once(ctx), qsvs_disk(ctx)]
 }

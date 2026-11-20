@@ -147,6 +147,25 @@ pub fn until(
     }
 }
 
+/// The lines of the console's logs that hold `what`, the last 40.
+pub fn logs(guest: &mut crate::qemu::session::Session, what: &[&str]) -> String {
+    let Ok(ch) = crate::suite::base::channel(guest) else {
+        return String::new();
+    };
+    let mut lines = Vec::new();
+    for name in ch.ls("/data/log").unwrap_or_default() {
+        if let Ok(bytes) = ch.cat(&format!("/data/log/{name}")) {
+            for l in String::from_utf8_lossy(&bytes).lines() {
+                if what.iter().any(|w| l.contains(w)) {
+                    lines.push(l.to_string());
+                }
+            }
+        }
+    }
+    let from = lines.len().saturating_sub(40);
+    lines[from..].join("\n")
+}
+
 /// The text of `path`, which must answer 200.
 pub fn page(b: &mut Browser, path: &str) -> Result<String, String> {
     let a = b.get(path)?;

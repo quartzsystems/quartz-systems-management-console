@@ -58,20 +58,24 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             Ok(w.contains(">27</a>") && w.contains("<span class=\"err\">3</span>"))
         },
     )?;
-    // The fixture's values, as the prototype shows them.
-    let servers = page(b, "/qsmc/servers")?;
+    // The fixture's values, as the prototype shows them: the branch
+    // hosts first by name, headquarters on page 2.
+    let first = page(b, "/qsmc/servers")?;
     for want in [
-        "QSHQVS1",
-        "3.50",
-        "40.0",
-        "10-9F11A2",
-        "9Q04-M2",
         "QSBR01VS1",
+        "QSBR25VS1",
+        "10-9F1818",
         "Page 1 of 2",
         "27 entries",
     ] {
-        if !servers.contains(want) {
+        if !first.contains(want) {
             return Err(format!("Servers lacks `{want}`"));
+        }
+    }
+    let second = page(b, "/qsmc/servers?page=2")?;
+    for want in ["QSHQVS1", "3.50", "40.0", "10-9F11A2", "9Q04-M2"] {
+        if !second.contains(want) {
+            return Err(format!("Servers' page 2 lacks `{want}`"));
         }
     }
     let memory = page(b, "/qsmc/server/QSHQVS1/memory")?;

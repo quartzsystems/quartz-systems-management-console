@@ -54,7 +54,8 @@ pub fn roles(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             b.clone_session()
         } else {
             let id = role.label().to_lowercase();
-            let pw = format!("{}-pass-42", role.label());
+            // A password may not hold the user ID.
+            let pw = "Roles-check-42".to_string();
             submit(
                 b,
                 "/qsmc/console/users",

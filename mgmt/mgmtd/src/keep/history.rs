@@ -6,7 +6,7 @@
 //! system by its cursor and from its events, kept bounded on disk
 //! (`release::MGMT_DIR`, a file a system), newest kept.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 use std::fs;
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
@@ -15,12 +15,20 @@ use mgmtproto::calls::{Filter, Page, Row};
 use qsi::base::Refcode;
 use qsi::host::refcodes::{Posted, Source};
 
+/// One system's codes, in the order they came, with what is kept of
+/// each (partition, sequence) to drop one seen again.
+#[derive(Debug, Default)]
+struct Kept {
+    rows: Vec<Row>,
+    seen: HashSet<(u32, u64)>,
+}
+
 /// Every system's history.
 #[derive(Debug, Default)]
 pub struct History {
     dir: Option<PathBuf>,
     keep: usize,
-    by: BTreeMap<String, Vec<Row>>,
+    by: BTreeMap<String, Kept>,
 }
 
 fn clean(s: &str) -> String {
@@ -103,8 +111,12 @@ impl History {
                 continue;
             };
             let text = fs::read_to_string(&path).unwrap_or_default();
-            let rows = text.lines().filter_map(|l| parse(name, l)).collect();
-            h.by.insert(name.to_string(), rows);
+            let rows: Vec<Row> = text.lines().filter_map(|l| parse(name, l)).collect();
+            let seen = rows
+                .iter()
+                .map(|r| (r.partition, r.posted.refcode.seq))
+                .collect();
+            h.by.insert(name.to_string(), Kept { rows, seen });
         }
         h
     }
@@ -119,42 +131,42 @@ impl History {
         self.by
             .get(system)
             .into_iter()
-            .flatten()
+            .flat_map(|k| k.rows.iter())
             .filter(|r| r.partition == partition)
             .map(|r| r.posted.refcode.seq)
             .max()
             .unwrap_or(0)
     }
 
-    /// Add `rows` of `system`, those not kept yet.
+    /// Add `rows` of `system`, those not kept yet, after what came
+    /// before them: codes are kept in the order they came, as the
+    /// sources number them each on their own.
     pub fn add(&mut self, system: &str, rows: Vec<Row>) {
         let keep = self.keep;
-        let list = self.by.entry(system.to_string()).or_default();
-        let mut new = Vec::new();
-        for r in rows {
-            let seen = list.iter().any(|o| {
-                o.partition == r.partition && o.posted.refcode.seq == r.posted.refcode.seq
-            });
-            if !seen && r.posted.refcode.seq > 0 {
-                new.push(r);
-            }
-        }
+        let k = self.by.entry(system.to_string()).or_default();
+        let mut new: Vec<Row> = rows
+            .into_iter()
+            .filter(|r| r.posted.refcode.seq > 0)
+            .filter(|r| k.seen.insert((r.partition, r.posted.refcode.seq)))
+            .collect();
         if new.is_empty() {
             return;
         }
+        // A page read newest first comes in order of its own source.
         new.sort_by_key(|r| (r.posted.refcode.time_ms, r.posted.refcode.seq));
-        list.extend(new.iter().cloned());
-        list.sort_by_key(|r| (r.posted.refcode.time_ms, r.posted.refcode.seq));
-        let over = list.len() > keep + keep / 4;
+        k.rows.extend(new.iter().cloned());
+        let over = k.rows.len() > keep + keep / 4;
         if over {
-            let cut = list.len() - keep;
-            list.drain(..cut);
+            let cut = k.rows.len() - keep;
+            for r in k.rows.drain(..cut) {
+                k.seen.remove(&(r.partition, r.posted.refcode.seq));
+            }
         }
         let Some(path) = self.file(system) else {
             return;
         };
         if over {
-            let all: String = self.by[system].iter().map(line).collect();
+            let all: String = self.by[system].rows.iter().map(line).collect();
             let tmp = path.with_extension("codes.new");
             if fs::write(&tmp, all).is_ok() {
                 let _ = fs::rename(&tmp, &path);
@@ -176,20 +188,20 @@ impl History {
     /// The rows `filter` matches, newest first, `rows` of them after the
     /// first `skip`.
     pub fn query(&self, filter: &Filter, skip: u32, rows: u32) -> Page {
-        let matching: Vec<&Row> = self
+        let matching: Vec<(usize, &Row)> = self
             .by
             .iter()
             .filter(|(name, _)| filter.system.is_empty() || **name == filter.system)
-            .flat_map(|(_, list)| list.iter())
-            .filter(|r| filter.partition.is_none_or(|p| r.partition == p))
-            .filter(|r| filter.from_ms == 0 || r.posted.refcode.time_ms >= filter.from_ms)
-            .filter(|r| filter.to_ms == 0 || r.posted.refcode.time_ms < filter.to_ms)
-            .filter(|r| filter.code.is_empty() || r.posted.refcode.code == filter.code)
+            .flat_map(|(_, k)| k.rows.iter().enumerate())
+            .filter(|(_, r)| filter.partition.is_none_or(|p| r.partition == p))
+            .filter(|(_, r)| filter.from_ms == 0 || r.posted.refcode.time_ms >= filter.from_ms)
+            .filter(|(_, r)| filter.to_ms == 0 || r.posted.refcode.time_ms < filter.to_ms)
+            .filter(|(_, r)| filter.code.is_empty() || r.posted.refcode.code == filter.code)
             .collect();
+        // Newest first; at the same time, the later to come first.
         let mut sorted = matching;
-        sorted.sort_by(|a, b| {
-            (b.posted.refcode.time_ms, b.posted.refcode.seq)
-                .cmp(&(a.posted.refcode.time_ms, a.posted.refcode.seq))
+        sorted.sort_by(|(ia, a), (ib, b)| {
+            (b.posted.refcode.time_ms, ib).cmp(&(a.posted.refcode.time_ms, ia))
         });
         Page {
             total: u32::try_from(sorted.len()).unwrap_or(u32::MAX),
@@ -197,7 +209,7 @@ impl History {
                 .into_iter()
                 .skip(skip as usize)
                 .take(rows as usize)
-                .cloned()
+                .map(|(_, r)| r.clone())
                 .collect(),
         }
     }

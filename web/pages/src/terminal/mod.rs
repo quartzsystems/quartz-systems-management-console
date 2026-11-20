@@ -599,7 +599,17 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
     if let Some(rest) = route.strip_prefix("/partition/") {
         let mut parts = rest.split('/');
         let (host, id, page) = (parts.next()?, parts.next()?.parse().ok()?, parts.next()?);
-        return (page == "panel").then(|| panel_route(rq, host, id));
+        return Some(if page == "panel" {
+            panel_route(rq, host, id)
+        } else {
+            // A partition's own pages are Phase 5's.
+            crate::pages::later(
+                rq,
+                "Partition properties",
+                "Systems Management",
+                "/partitions",
+            )
+        });
     }
     let rest = route.strip_prefix("/terminal/")?;
     let mut parts = rest.split('/');

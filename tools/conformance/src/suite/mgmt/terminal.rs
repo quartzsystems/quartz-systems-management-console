@@ -54,7 +54,11 @@ pub fn terminal(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     let mut one = b.websocket(&format!("{WINDOW}/ws"))?;
     let first = one.recv(Duration::from_secs(5));
     if !first.iter().any(|m| m.contains("\"t\":\"screen\"")) {
-        return Err(format!("the socket sent no screen: {first:?}"));
+        let l = super::logs(&mut c.guest, &["webd", "mgmtd", "panicked", "console"]);
+        return Err(format!(
+            "the socket sent no screen ({first:?}, closed {}):\n{l}",
+            one.closed
+        ));
     }
     let mut other = b.fresh();
     signed_on(&mut other, ADMIN, PASSWORD)?;

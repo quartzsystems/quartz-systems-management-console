@@ -137,12 +137,21 @@ fn one(serving: &Serving, stream: TcpStream, from: SocketAddr, port: u16) {
         let Ok(conn) = ServerConnection::new(serving.tls.clone()) else {
             return;
         };
+        // The terminal window's socket waits for the browser a short
+        // while at a time: its read timeout is set through a clone of
+        // the stream, and goes back to the idle limit after.
+        let Ok(timed) = stream.try_clone() else {
+            return;
+        };
+        let timeout = move |d: Option<std::time::Duration>| {
+            let _ = timed.set_read_timeout(Some(d.unwrap_or(IDLE)));
+        };
         let mut tls = StreamOwned::new(conn, stream);
         let peer = Peer {
             addr: from,
             secure: true,
         };
-        qsweb::http::serve(&mut tls, &peer, serving.site.as_ref());
+        qsweb::http::serve_guarded_timed(&mut tls, &peer, &serving.site, &timeout);
         // The close is said and the connection ends: nothing more is
         // waited for from a client that may have gone silent.
         tls.conn.send_close_notify();

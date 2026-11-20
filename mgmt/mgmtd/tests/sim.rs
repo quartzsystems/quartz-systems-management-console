@@ -277,3 +277,52 @@ fn a_console_shared_by_two_windows() {
     assert!(matches!(next(&mut a, &mut pa), Out::Update(_)));
     assert_eq!(sim(&host, "keys QSHQVS1 1"), "[Char('W')]");
 }
+
+#[test]
+fn codes_posted_in_a_burst_are_kept() {
+    let host = sim::fixture::qshqvs1();
+    let at = sim::net::listen(host.clone(), "127.0.0.1:0").unwrap();
+    let (mut svc, _d) = service("burst");
+    let pw = sim(&host, "pair QSHQVS1");
+    svc.add(at.ip().to_string(), at.port(), pw, "qsadmin".into())
+        .unwrap();
+    for i in 0..30 {
+        sim(
+            &host,
+            &format!("pcode QSHQVS1 1 C6004031 Partition IPL step {i}"),
+        );
+    }
+    sim(
+        &host,
+        "code QSHQVS1 C2005090 Partition started: QSDEV01, side A",
+    );
+    sim(&host, "code QSHQVS1 A2999999 A code no table has");
+    until("the codes kept", 20, || {
+        let p = svc.history(
+            Filter {
+                system: "QSHQVS1".into(),
+                ..Filter::default()
+            },
+            0,
+            100,
+        );
+        p.rows.iter().any(|r| r.posted.refcode.code == "A2999999")
+    });
+    let p = svc.history(
+        Filter {
+            system: "QSHQVS1".into(),
+            ..Filter::default()
+        },
+        0,
+        100,
+    );
+    assert_eq!(
+        p.total,
+        33,
+        "{:?}",
+        p.rows
+            .iter()
+            .map(|r| &r.posted.refcode.code)
+            .collect::<Vec<_>>()
+    );
+}

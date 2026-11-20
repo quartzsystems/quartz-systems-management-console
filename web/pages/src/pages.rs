@@ -159,6 +159,21 @@ fn console(rq: &Rq<'_>) -> Response {
     rq.page(crate::console::page(&rq.ctx, &v))
 }
 
+/// A function a later phase brings, as a page that says so.
+pub fn later(rq: &Rq<'_>, what: &str, group: &'static str, item: &'static str) -> Response {
+    let m = qmcmsg::message(qsweb::msg::Kind::Info, &qmcmsg::LATER_RELEASE, &[what]);
+    rq.page(qsweb::frame::Page {
+        title: what.into(),
+        crumb: vec![group.into(), what.into()],
+        h1: what.into(),
+        messages: vec![m],
+        body: String::new(),
+        help: "later".into(),
+        nav: Some((group, Some(item))),
+        ..qsweb::frame::Page::default()
+    })
+}
+
 /// `/server/<name>/<tab>`: a managed system's pages; its virtual
 /// resources are a later phase's.
 fn server(rq: &Rq<'_>, route: &str) -> Option<Response> {
@@ -169,12 +184,12 @@ fn server(rq: &Rq<'_>, route: &str) -> Option<Response> {
         return Some(crate::systems::power::route(rq, name));
     }
     if tab == "virtual" {
-        let m = qmcmsg::message(
-            qsweb::msg::Kind::Info,
-            &qmcmsg::LATER_RELEASE,
-            &["Virtual resources"],
-        );
-        return Some(rq.done("/servers", m));
+        return Some(later(
+            rq,
+            "Virtual resources",
+            "Systems Management",
+            "/servers",
+        ));
     }
     if crate::systems::props::TABS.iter().any(|(r, _)| *r == tab) {
         return Some(crate::systems::props::route(rq, name, tab));
