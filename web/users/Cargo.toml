@@ -12,6 +12,9 @@ state.workspace = true
 users.workspace = true
 svcusers.workspace = true
 serde.workspace = true
+release = { path = "../../lic/release", version = "0.1.0" }
+ipc.workspace = true
+supervise.workspace = true
 
 [lints]
 workspace = true

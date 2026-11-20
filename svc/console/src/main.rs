@@ -22,6 +22,7 @@ mod keep;
 mod menu;
 mod network;
 mod status;
+mod web;
 
 #[cfg(target_os = "linux")]
 mod on_console {

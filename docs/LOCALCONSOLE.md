@@ -117,13 +117,36 @@ one, shown only.
   host name alone is made at once.
 
 The `private` interface is set from the web interface's Network
-settings (Phase 3) or by a seed volume.
+settings or by a seed volume.
 
 ### 4. Work with the web interface
 
-Not available yet: the web interface arrives in Phase 3. The option will
-then reset a web interface Administrator's password and show or replace
-the web server's certificate.
+What a console needs when nobody can sign on to the web interface. The
+panel shows whether the web server is running, where it answers
+(`https://<open address>/qsmc/`, 443 with 80 redirecting), the
+addresses it answers (Allow web UI from), its certificate's subject,
+dates and SHA-256 and SHA-1 fingerprints, and the enabled
+Administrators. F5 shows them again. While the web server is down it
+says so and lists the Administrators from `webusers.toml`.
+
+- **1. Reset or make an Administrator.** A web user ID and its new
+  password twice, by the password rules on the screen. The ID becomes an
+  enabled Administrator with that password, and a lock from wrong
+  passwords ends; an ID the web interface does not have is made. Only
+  the password's hash leaves the panel.
+- **2. Make a new self-signed certificate**, after a confirmation: ECDSA
+  P-256 for the console's name and `open` address, a year. The panel
+  says the new SHA-256.
+- **3. Restore the default listening rule**, after a confirmation: the
+  Allow web UI from list is emptied, so every address is answered, on
+  `open` only.
+
+Each is asked of the web server over its socket (`/run/qsmcwebd.sock`)
+and audited there with who asked at which session. When the web server
+does not answer, PID 1 makes the change on the files instead: the
+users' list or `web.toml`, or the certificate is deleted so the web
+server makes a new one when it starts. PID 1 refuses while the web
+server runs.
 
 ### 5. Work with service tools user IDs
 
@@ -173,6 +196,8 @@ users are on the data file system this is about. Times are UTC.
 
 The panels never edit a file. The network service applies and keeps the
 network and sets the clock; PID 1 keeps the host name, the zone and the
-time servers, and does the power; the storage service has the disks.
+time servers, and does the power; the storage service has the disks;
+the web server keeps its users, its settings and its certificate, and
+PID 1 changes them while it is down.
 The service tools users are kept by `base/users` in
 `/data/state/users.db`, as salted hashes.

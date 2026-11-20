@@ -57,6 +57,8 @@ impl Control for Host {
             self.facts.private = value;
         } else if key == fact::SERIAL_CONSOLE {
             self.lend_serial(value == fact::SERIAL_SESSION);
+        } else if super::webreq::is_request(&key) {
+            self.web_request(&key, &value);
         } else {
             self.say(Severity::Info, &format!("noted {key}: {value}"));
         }
@@ -154,6 +156,48 @@ impl Control for Host {
 }
 
 impl Host {
+    /// The local console's option 4 while the web server is down
+    /// (`webreq`): made here, its outcome in [`fact::WEB_REQUEST`]. The
+    /// value is never logged: a reset carries a password's hash.
+    fn web_request(&mut self, key: &str, value: &str) {
+        let running = self.sup.as_ref().is_some_and(|sup| {
+            sup.status()
+                .iter()
+                .any(|s| s.name == super::table::WEBD.name && s.pid != 0)
+        });
+        let done = if running {
+            Err("the web server is running: the local console asks it".into())
+        } else {
+            let (tx, rx) = std::sync::mpsc::channel();
+            let (key, value) = (key.to_string(), value.to_string());
+            let now = u64::try_from(appliance::time::now_secs()).unwrap_or(0);
+            // Written by another thread, as host.toml is.
+            std::thread::spawn(move || {
+                let _ = tx.send(super::webreq::apply(
+                    &key,
+                    &value,
+                    std::path::Path::new(release::DATA_DIR),
+                    now,
+                ));
+            });
+            rx.recv_timeout(WRITE_WAIT)
+                .unwrap_or_else(|_| Err("the data file system does not answer".into()))
+        };
+        self.web_request = match &done {
+            Ok(()) => format!("{key}: done"),
+            Err(e) => format!("{key}: {e}"),
+        };
+        let line = format!("web interface request {}", self.web_request);
+        self.say(
+            if done.is_ok() {
+                Severity::Info
+            } else {
+                Severity::Warning
+            },
+            &line,
+        );
+    }
+
     /// Write `host.toml` and take the name and the zone into use.
     fn host_settings(
         &mut self,

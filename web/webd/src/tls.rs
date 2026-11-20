@@ -26,9 +26,9 @@ use x509kit::x509::CertInfo;
 pub const SELF_SIGNED_DAYS: u32 = 365;
 
 /// The certificate's file, the chain with the leaf first.
-pub const CERT_FILE: &str = "certificate.pem";
+pub const CERT_FILE: &str = release::WEB_CERT_FILE;
 /// The key's file, PKCS #8, readable by its owner only.
-pub const KEY_FILE: &str = "key.pem";
+pub const KEY_FILE: &str = release::WEB_KEY_FILE;
 
 /// The provider every TLS object here uses.
 pub fn provider() -> Arc<CryptoProvider> {

@@ -10,13 +10,18 @@
 //! - [`role`]: roles, tasks and the matrix.
 //! - [`list`]: the users and what may be done to them.
 //! - [`sign`]: sign-on: the lock-out and the limit per address.
+//! - [`settings`]: `web.toml`, the web interface's own settings.
+//! - [`control`]: the web server's socket, for the local console.
 
 #![forbid(unsafe_code)]
 
+pub mod control;
 pub mod list;
 pub mod role;
+pub mod settings;
 pub mod sign;
 
 pub use list::{User, WebUsers};
 pub use role::{Matrix, ROLES, Role, TASKS, Task};
+pub use settings::WebSettings;
 pub use sign::{Refused, Rules};

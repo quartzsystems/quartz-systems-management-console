@@ -321,7 +321,7 @@ const PANELS: [(u8, &str, &str); 9] = [
 ];
 
 /// Suite 14: every menu panel and its help against its golden file,
-/// the two placeholders among them.
+/// the service functions' placeholder among them, and option 4's three.
 pub fn panels(run: &Run<'_>) -> Result<String, String> {
     let disk = installed(run, Kind::Single, "panels")?;
     let mut guest = boot_installed(run, &installed_machine(run, &disk), run.launch.timeout)?;
@@ -333,14 +333,32 @@ pub fn panels(run: &Run<'_>) -> Result<String, String> {
     held += 2;
     for (number, title, name) in PANELS {
         let shown = option(&mut guest, number, title, deadline)?;
-        // The status display's rows move; its frame is held.
-        if number != 1 {
+        // The status display's rows move, and so do the web interface's
+        // address, dates and fingerprints: their helps are held.
+        if number != 1 && number != 4 {
             golden(name, &shown)?;
             held += 1;
         }
         help(&mut guest, name, title, deadline)?;
         held += 1;
         match number {
+            4 => {
+                if !shown.contains("Web server . . . : running") {
+                    return Err(format!("the web server is not shown running:\n{shown}"));
+                }
+                for (n, panel, file) in [
+                    (1, "Reset or Make an Administrator", "console-web-reset"),
+                    (2, "Confirm New Certificate", "console-web-certificate"),
+                    (3, "Confirm Default Listening", "console-web-listening"),
+                ] {
+                    let shown = option(&mut guest, n, panel, deadline)?;
+                    golden(file, &shown)?;
+                    help(&mut guest, file, panel, deadline)?;
+                    held += 2;
+                    guest.type_keys(key::F12)?;
+                    titled(&mut guest, title, deadline)?;
+                }
+            }
             7 => {
                 for (n, log, file) in [
                     (1, "Display Reference Code History", "console-log-history"),
@@ -373,8 +391,8 @@ pub fn panels(run: &Run<'_>) -> Result<String, String> {
     power_off(&mut guest)?;
     Ok(format!(
         "{held} screens and helps equal to their golden files: the main menu, its nine \
-         panels (the web interface's and the service functions' placeholders naming Phases 3 \
-         and 6), the logs, the restart's confirmation"
+         panels (the service functions' placeholder naming Phase 6), the web interface's \
+         three, the logs, the restart's confirmation"
     ))
 }
 

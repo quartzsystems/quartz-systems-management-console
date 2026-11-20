@@ -60,7 +60,7 @@ impl Panel<Env, Outcome> for MainMenu {
             Some(1) => Flow::Push(Box::new(crate::status::Status::default())),
             Some(2) => Flow::Push(Box::new(crate::disks::DiskUnits)),
             Some(3) => Flow::Push(Box::new(crate::network::NetworkMenu)),
-            Some(4) => Flow::Push(Box::new(Later::WEB)),
+            Some(4) => Flow::Push(Box::new(crate::web::WebMenu)),
             Some(5) => Flow::Push(Box::new(UsersPanel)),
             Some(6) => Flow::Push(Box::new(TimePanel::new(env))),
             Some(7) => Flow::Push(Box::new(Choice::LOGS)),
@@ -88,10 +88,11 @@ impl Panel<Env, Outcome> for MainMenu {
                 "",
                 "Type the number of an option and press Enter. 1 shows what the",
                 "console is running and how. 2 shows its load-source disks and",
-                "protects or repairs them. 3 sets its open network. 4 is for the",
-                "web interface, 8 for service functions: both arrive later. 5",
-                "works with the users of this console. 6 sets the clock and the",
-                "time servers. 7 shows the logs. 9 powers off or restarts.",
+                "protects or repairs them. 3 sets its open network. 4 shows the",
+                "web interface and resets an Administrator's password. 5 works",
+                "with the users of this console. 6 sets the clock and the time",
+                "servers. 7 shows the logs. 8, service functions, arrives later.",
+                "9 powers off or restarts.",
                 "",
                 "F3 or F12 signs you off. So do ten minutes without a key.",
             ],
@@ -183,33 +184,6 @@ pub struct Later {
 }
 
 impl Later {
-    /// Option 4.
-    pub const WEB: Later = Later {
-        name: "console-web",
-        title: "Work with the Web Interface",
-        lines: &[
-            "The web interface is not available yet. It arrives in Phase 3.",
-            "",
-            "This option will then hold:",
-            "  - resetting the password of a web interface Administrator",
-            "  - the web server's certificate: showing it and making a new one",
-        ],
-        help: Help {
-            title: "Work with the Web Interface",
-            lines: &[
-                "The web interface is how the console is used: hosts, partitions",
-                "and the console's own settings. Its server is not in this",
-                "release of the console yet; it arrives in Phase 3.",
-                "",
-                "When it is, this option resets an Administrator's password",
-                "when nobody can sign on to the web interface, and shows or",
-                "replaces the certificate the web server presents.",
-                "",
-                "Enter, F3 or F12 goes back.",
-            ],
-        },
-    };
-
     /// Option 8.
     pub const SERVICE: Later = Later {
         name: "console-service",
@@ -371,12 +345,10 @@ mod tests {
 
     #[test]
     fn the_placeholders_name_their_phases() {
-        assert!(Later::WEB.lines[0].contains("Phase 3"));
         assert!(Later::SERVICE.lines[0].contains("Phase 6"));
-        for later in [&Later::WEB, &Later::SERVICE] {
-            assert!(later.lines.iter().all(|l| l.len() <= 76));
-            assert!(later.help.lines.iter().all(|l| l.len() <= 76));
-        }
+        let later = &Later::SERVICE;
+        assert!(later.lines.iter().all(|l| l.len() <= 76));
+        assert!(later.help.lines.iter().all(|l| l.len() <= 76));
     }
 
     #[test]

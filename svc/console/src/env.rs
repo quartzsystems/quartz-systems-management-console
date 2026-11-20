@@ -24,6 +24,7 @@ use stgd::{Calls as _, Client as StorageClient};
 use supervise::control::{Calls as _, Client, HostStatus};
 use svcusers::FileStore;
 use users::Users;
+use webusers::control::{Calls as _, Client as WebClient, WebStatus};
 
 /// The lines of a log a display reads: the newest.
 const LOG_LINES: usize = 2000;
@@ -76,6 +77,7 @@ pub struct Env {
     net: NetClient,
     storage: StorageClient,
     store: Store,
+    web: WebClient,
     /// The host name, as PID 1's status last said it.
     name: String,
 }
@@ -91,6 +93,7 @@ impl Env {
             control: Client::new(appliance.control_socket()),
             net: NetClient::new(appliance.net_socket()),
             storage: StorageClient::of(&appliance),
+            web: WebClient::new(release::WEBD_SOCKET),
             store: Store::at(appliance.state_dir()),
             name: release::NAME.into(),
         }
@@ -170,6 +173,108 @@ impl Env {
     /// Tell PID 1 a fact.
     pub fn note(&mut self, key: &str, value: &str) {
         let _ = self.control.note(key.to_string(), value.to_string());
+    }
+
+    /// The web server's status; `None` when it does not answer.
+    pub fn web(&mut self) -> Option<WebStatus> {
+        self.web.status().ok()
+    }
+
+    /// The enabled Administrators as `webusers.toml` has them: what the
+    /// web server would say, read while it is down.
+    pub fn administrators(&self) -> Vec<String> {
+        self.store
+            .load::<webusers::WebUsers>()
+            .ok()
+            .flatten()
+            .map(|list| {
+                list.users
+                    .iter()
+                    .filter(|u| u.enabled && u.role == webusers::Role::Administrator)
+                    .map(|u| u.id.clone())
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    /// One of option 4's changes: asked of the web server, or of PID 1
+    /// (`note` with `value`) when the web server does not answer. Says
+    /// which answered: `true` for the web server.
+    fn web_change<T>(
+        &mut self,
+        ask: impl FnOnce(&mut WebClient, String) -> Result<Result<T, String>, ipc::WireError>,
+        note: &str,
+        value: &str,
+    ) -> Result<Option<T>, String> {
+        let by = format!("{} at the {}", self.user, self.place);
+        if let Ok(r) = ask(&mut self.web, by) {
+            return r.map(Some).map_err(|e| sentence(&e));
+        }
+        self.note(note, value);
+        let said = self
+            .status()
+            .fact(release::fact::WEB_REQUEST)
+            .unwrap_or("")
+            .to_string();
+        match said.strip_prefix(note).and_then(|r| r.strip_prefix(": ")) {
+            Some("done") => Ok(None),
+            Some(why) => Err(sentence(why)),
+            None => Err("PID 1 did not say how the change went.".into()),
+        }
+    }
+
+    /// Reset or make Administrator `id` with the password of `hash`.
+    pub fn reset_admin(&mut self, id: &str, hash: &str) -> Result<(), String> {
+        let (i, h) = (id.to_string(), hash.to_string());
+        let r = self
+            .web_change(
+                |w, by| w.reset_admin(i, h, by),
+                webusers::control::NOTE_RESET,
+                &format!("{id} {hash}"),
+            )
+            .map(|_| ());
+        println!(
+            "web interface Administrator {id} reset by {} at the {}: {}",
+            self.user,
+            self.place,
+            r.as_ref().map_or_else(Clone::clone, |()| "done".into())
+        );
+        r
+    }
+
+    /// A new self-signed certificate: its SHA-256 when the web server
+    /// made it, `None` when it makes one at its next start.
+    pub fn new_certificate(&mut self) -> Result<Option<String>, String> {
+        let r = self.web_change(
+            WebClient::new_certificate,
+            webusers::control::NOTE_CERTIFICATE,
+            "",
+        );
+        println!(
+            "web certificate renewed by {} at the {}: {}",
+            self.user,
+            self.place,
+            r.as_ref().map_or_else(Clone::clone, |_| "done".to_string())
+        );
+        r
+    }
+
+    /// The default listening rule.
+    pub fn default_listening(&mut self) -> Result<(), String> {
+        let r = self
+            .web_change(
+                WebClient::default_listening,
+                webusers::control::NOTE_LISTENING,
+                "",
+            )
+            .map(|_| ());
+        println!(
+            "web listening rule restored by {} at the {}: {}",
+            self.user,
+            self.place,
+            r.as_ref().map_or_else(Clone::clone, |()| "done".into())
+        );
+        r
     }
 }
 

@@ -40,6 +40,9 @@ pub const READY: &str = "ready";
 pub const PROCESSOR: &str = "processor";
 /// The machine: its serial number and what the inventory counts.
 pub const MACHINE: &str = "machine";
+/// The outcome of the last web interface request made to PID 1 while
+/// the web server was down: `<key>: done` or `<key>: <why not>`.
+pub const WEB_REQUEST: &str = "web.request";
 /// The last synchronization with a time server: `<seconds since the
 /// epoch> <server>`; empty until there is one.
 pub const SYNCED: &str = "synced";

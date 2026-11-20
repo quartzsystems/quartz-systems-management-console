@@ -11,6 +11,7 @@ mod shutdown;
 pub mod storage;
 pub mod table;
 pub mod web;
+pub mod webreq;
 
 use std::fs::File;
 use std::os::fd::AsFd;
@@ -89,6 +90,9 @@ pub struct Host {
     reference: String,
     /// The last time synchronization, as [`fact::SYNCED`] says it.
     synced: String,
+    /// The outcome of the last web interface request, as
+    /// [`fact::WEB_REQUEST`] says it.
+    web_request: String,
     /// Set once the IPL reaches the storage service.
     sup: Option<Supervisor>,
     listener: Option<UnixListener>,
@@ -136,6 +140,7 @@ impl Host {
             signals,
             reference: String::new(),
             synced: String::new(),
+            web_request: String::new(),
             sup: None,
             listener: None,
             web: web::Web::default(),
@@ -412,6 +417,7 @@ impl Host {
             (fact::LOAD_SOURCE, load_source),
             (fact::REFERENCE, self.reference.clone()),
             (fact::SYNCED, self.synced.clone()),
+            (fact::WEB_REQUEST, self.web_request.clone()),
             (fact::DATA, self.facts.data.clone()),
             (
                 fact::READY,

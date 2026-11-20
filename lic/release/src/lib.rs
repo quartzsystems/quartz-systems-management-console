@@ -86,6 +86,12 @@ pub const WEBD_SOCKET: &str = "/run/qsmcwebd.sock";
 /// The web server's certificate and key, under `/data`.
 pub const WEB_DIR: &str = "/data/web";
 
+/// The web certificate's file under [`WEB_DIR`], the chain with the
+/// leaf first.
+pub const WEB_CERT_FILE: &str = "certificate.pem";
+/// Its key's file, PKCS #8, readable by its owner only.
+pub const WEB_KEY_FILE: &str = "key.pem";
+
 /// A restore's folder under `/data` (`docs/BACKUP.md`): the web server
 /// leaves the backup's payload there as [`restore::PENDING`]; PID 1
 /// applies it at the next IPL and keeps the state before it as

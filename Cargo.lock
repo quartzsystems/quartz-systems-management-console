@@ -1470,6 +1470,7 @@ dependencies = [
  "appliance",
  "console",
  "inventory",
+ "ipc",
  "logd",
  "netd",
  "panels",
@@ -1482,6 +1483,8 @@ dependencies = [
  "supervise",
  "svcusers",
  "users",
+ "webusers",
+ "zeroize",
 ]
 
 [[package]]
@@ -1519,6 +1522,8 @@ dependencies = [
  "state",
  "stgd",
  "supervise",
+ "users",
+ "webusers",
 ]
 
 [[package]]
@@ -2646,8 +2651,11 @@ dependencies = [
 name = "webusers"
 version = "0.1.0"
 dependencies = [
+ "ipc",
+ "release",
  "serde",
  "state",
+ "supervise",
  "svcusers",
  "users",
 ]

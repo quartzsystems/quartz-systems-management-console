@@ -6,6 +6,7 @@
 //! the session table, the task each route needs, and the pages. Every
 //! change made through it is audited ([`App::audit`]).
 
+pub mod control;
 #[cfg(target_os = "linux")]
 pub mod live;
 pub mod routes;

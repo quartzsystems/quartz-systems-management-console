@@ -240,20 +240,29 @@ impl WebUsers {
     }
 
     /// Make or reset an Administrator for the local console: `id` with
-    /// `password`, enabled and Administrator, made when it is not there.
-    pub fn reset_admin(&mut self, id: &str, password: &str, now: u64) -> Result<(), String> {
+    /// the password of `hash` (the local console checks the rules and
+    /// hashes), enabled and Administrator, made when it is not there.
+    pub fn reset_admin(&mut self, id: &str, hash: &str, now: u64) -> Result<(), String> {
         let id = check_id(id)?;
-        if self.get(&id).is_none() {
-            return self.add(
-                &id,
-                "Made at the local console",
-                Role::Administrator,
-                password,
-                now,
-            );
+        if !users::valid_hash(hash) {
+            return Err("The password hash is not an Argon2id hash.".into());
         }
-        self.set_password(&id, password, now)?;
+        if self.get(&id).is_none() {
+            self.users.push(User {
+                id,
+                description: "Made at the local console".into(),
+                role: Role::Administrator,
+                hash: hash.into(),
+                enabled: true,
+                last_sign_on: 0,
+                last_from: String::new(),
+                changed: now,
+            });
+            return Ok(());
+        }
         let u = self.get_mut(&id)?;
+        hash.clone_into(&mut u.hash);
+        u.changed = now;
         u.enabled = true;
         u.role = Role::Administrator;
         Ok(())
@@ -322,7 +331,8 @@ mod tests {
             list.add("QSADMIN", "", Role::Operator, "Long-enough-1", 2)
                 .is_err()
         );
-        list.reset_admin("rescue", "Strong-word-9", 3).unwrap();
+        assert!(list.reset_admin("rescue", "not a hash", 3).is_err());
+        list.reset_admin("rescue", &hash(), 3).unwrap();
         assert!(
             list.get("rescue")
                 .is_some_and(|u| u.role == Role::Administrator)
