@@ -27,7 +27,8 @@ pub use settings::WebSettings;
 pub trait Console: Send + Sync {
     /// The console's name.
     fn name(&self) -> String;
-    /// Seconds since the console started.
+    /// Seconds since the console started: what sessions, the lock-out
+    /// and a trial are timed by, as setting the clock does not move it.
     fn uptime(&self) -> u64;
     /// Unix seconds now.
     fn now(&self) -> u64;
@@ -83,7 +84,7 @@ pub struct App {
     /// The console.
     pub console: Box<dyn Console>,
     /// A change of the `open` address on trial: the address it is
-    /// kept at (empty: any, with DHCP) and until when.
+    /// kept at (empty: any, with DHCP) and until when (uptime).
     pub pending: Mutex<Option<(String, u64)>>,
     /// The web certificate, once the server has started.
     pub certs: std::sync::OnceLock<std::sync::Arc<webd::tls::Certs>>,
@@ -95,7 +96,7 @@ fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
 
 /// Session values: the role at sign-on, when it began, where from.
 pub const ROLE: &str = "role";
-/// See [`ROLE`].
+/// See [`ROLE`]. The uptime the session began at.
 pub const SINCE: &str = "since";
 /// See [`ROLE`].
 pub const FROM: &str = "from";
@@ -203,7 +204,7 @@ impl App {
         password: &str,
         from: IpAddr,
     ) -> Result<(String, Role), webusers::Refused> {
-        let now = self.console.now();
+        let now = self.console.uptime();
         let users = lock(&self.users);
         lock(&self.rules).sign_on(&users, id, password, from, now)
     }

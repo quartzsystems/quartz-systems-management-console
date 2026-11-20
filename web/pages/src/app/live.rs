@@ -73,7 +73,9 @@ impl super::Console for Live {
     fn set_host(&self, name: &str, zone: &str, ntp: &[String]) -> Result<(), String> {
         pid1()
             .set_host(name.into(), zone.into(), ntp.to_vec())
-            .map_err(|e| e.to_string())?
+            .map_err(|e| e.to_string())??;
+        // The network service reads the name and the time servers again.
+        net().reload().map_err(|e| e.to_string())?
     }
 
     fn set_clock(&self, secs: i64) -> Result<(), String> {

@@ -299,7 +299,7 @@ fn post(rq: &Rq<'_>) -> Response {
                 *app.pending
                     .lock()
                     .unwrap_or_else(std::sync::PoisonError::into_inner) =
-                    Some((at.clone(), app.console.now() + u64::from(WINDOW)));
+                    Some((at.clone(), app.console.uptime() + u64::from(WINDOW)));
                 // Nothing here is reached once the address moves: the
                 // page says where to go.
                 return show(

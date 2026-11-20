@@ -72,6 +72,13 @@ with `mirror` fixed (`474cc38`, below).
 - `webd` asked for HTTP headers by their capitalized names; `qsweb`
   keeps them lower case, so the redirect's host and the stylesheet's
   `304` would not have worked. Found by the pages' tests.
+- Setting the clock by hand ended the operator's session: sessions,
+  the lock-out and the network window were timed by the wall clock.
+  They are timed by the uptime (`docs/WEB.md`, Time). Found by Date
+  and time's test. The network page's host name went to PID 1 but
+  not to the network service, which reads it only on a reload; the
+  web server now asks for one after each host change, as the local
+  console does.
 
 ## Prototype choices answered with a message
 
@@ -83,7 +90,7 @@ windows open (`docs/OPEN_QUESTIONS.md`, item 19).
 
 ## Not done
 
-- Section 3, pages 6 to 12: Date and time, Certificates, Backup and
+- Section 3, pages 7 to 12: Certificates, Backup and
   restore, Shut down or restart, Language and locale, Console version,
   the components page under `/dev/`.
 - Section 4: the local console's option 4.

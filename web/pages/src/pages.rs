@@ -111,6 +111,7 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         "/console/users" => crate::user_routes::users(rq),
         "/console/roles" => crate::user_routes::roles(rq),
         "/console/network" => crate::network_routes::network(rq),
+        "/console/datetime" => crate::datetime_routes::datetime(rq),
         "/confirm/user-delete" => crate::user_routes::delete(rq),
         _ => return None,
     })

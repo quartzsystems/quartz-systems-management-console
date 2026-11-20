@@ -40,6 +40,9 @@ pub const READY: &str = "ready";
 pub const PROCESSOR: &str = "processor";
 /// The machine: its serial number and what the inventory counts.
 pub const MACHINE: &str = "machine";
+/// The last synchronization with a time server: `<seconds since the
+/// epoch> <server>`; empty until there is one.
+pub const SYNCED: &str = "synced";
 /// Whose the serial port is: [`SERIAL_SESSION`] while the local console
 /// has a session there, [`SERIAL_IDLE`] while it is PID 1's.
 pub const SERIAL_CONSOLE: &str = "console.serial";

@@ -8,7 +8,7 @@
 
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicI64, AtomicU64, Ordering};
 
 use qsweb::http::{Peer, Request, Response};
 use webd::serve::Pages as _;
@@ -16,23 +16,46 @@ use webpages::App;
 use webpages::app::Console;
 use webusers::Role;
 
-struct Fixed(Arc<AtomicU64>, Arc<AtomicU64>);
+/// The clock, the confirmations, and the state directory PID 1 writes.
+struct Fixed(Arc<AtomicU64>, Arc<AtomicU64>, PathBuf);
+
+/// Where the test clock starts.
+const START: u64 = 1_790_000_000;
 
 impl Console for Fixed {
     fn name(&self) -> String {
         "QSHQMC1".into()
     }
     fn uptime(&self) -> u64 {
-        3600
+        self.0.load(Ordering::Relaxed) - START + 3600
     }
     fn now(&self) -> u64 {
-        self.0.load(Ordering::Relaxed)
+        self.0
+            .load(Ordering::Relaxed)
+            .saturating_add_signed(SHIFT.with(|s| s.load(Ordering::Relaxed)))
     }
     fn apply_network_confirmed(&self, _n: &str, _s: u32) -> Result<(), String> {
         Ok(())
     }
     fn confirm_network(&self) -> Result<(), String> {
         self.1.fetch_add(1, Ordering::Relaxed);
+        Ok(())
+    }
+    fn set_host(&self, name: &str, zone: &str, ntp: &[String]) -> Result<(), String> {
+        use state::Document as _;
+        let host = state::Host {
+            name: Some(name.into()),
+            time_zone: zone.into(),
+            ntp_servers: ntp.to_vec(),
+        };
+        host.validate()?;
+        state::Store::at(&self.2)
+            .save(&host)
+            .map_err(|e| e.to_string())
+    }
+    fn set_clock(&self, secs: i64) -> Result<(), String> {
+        let ticks = i64::try_from(self.0.load(Ordering::Relaxed)).unwrap_or(0);
+        SHIFT.with(|s| s.store(secs - ticks, Ordering::Relaxed));
         Ok(())
     }
     fn fact(&self, key: &str) -> String {
@@ -48,6 +71,8 @@ const PASSWORD: &str = "Install-pass-7";
 thread_local! {
     /// The confirmations of this thread's test console.
     static CONFIRMS: Arc<AtomicU64> = Arc::new(AtomicU64::new(0));
+    /// How far this thread's test clock was set by hand.
+    static SHIFT: AtomicI64 = const { AtomicI64::new(0) };
 }
 
 fn app(name: &str) -> (App, Arc<AtomicU64>, PathBuf) {
@@ -57,11 +82,15 @@ fn app(name: &str) -> (App, Arc<AtomicU64>, PathBuf) {
     let db = dir.join("users.db");
     let hash = users::hash(PASSWORD).unwrap();
     std::fs::write(&db, users::first("QSADMIN", &hash, 1).unwrap()).unwrap();
-    let clock = Arc::new(AtomicU64::new(1_790_000_000));
+    let clock = Arc::new(AtomicU64::new(START));
     let app = App::open(
         &dir,
         &db,
-        Box::new(Fixed(clock.clone(), CONFIRMS.with(Clone::clone))),
+        Box::new(Fixed(
+            clock.clone(),
+            CONFIRMS.with(Clone::clone),
+            dir.clone(),
+        )),
     )
     .unwrap();
     (app, clock, dir)
@@ -465,5 +494,76 @@ fn network_settings_refuse_what_waits_and_keep_the_allow_list() {
     assert_eq!(app.settings().allow, ["192.0.2.0/24", "10.0.0.0/8"]);
     assert!(app.admits("192.0.2.200".parse().unwrap()));
     assert!(!app.admits("198.51.100.1".parse().unwrap()));
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+#[test]
+fn date_and_time_sets_the_servers_the_offset_and_the_clock() {
+    let (app, clock, dir) = app("datetime");
+    let mut b = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.19",
+        host: None,
+    };
+    b.sign_on("qsadmin", PASSWORD);
+    let page = b.send("GET", "/qsmc/console/datetime", &[]).text();
+    assert!(page.contains("Not used"), "{page}");
+    let token = b.csrf("/qsmc/console/datetime");
+    let post = |b: &mut Browser<'_>, f: &[(&str, &str)]| {
+        let mut all = vec![("csrf", token.as_str()), ("apply", "Apply")];
+        all.extend_from_slice(f);
+        b.send("POST", "/qsmc/console/datetime", &all).text()
+    };
+    // Serving time is not in V1; no server and no clock is refused.
+    let t = post(
+        &mut b,
+        &[("serve", "on"), ("s", "ntp"), ("ntp", "10.0.10.1")],
+    );
+    assert!(t.contains("QMC8700"), "{t}");
+    let t = post(&mut b, &[("s", "ntp"), ("ntp", " "), ("tz", "UTC")]);
+    assert!(t.contains("QMC8011"), "{t}");
+    // Servers and an offset go to host.toml.
+    let t = post(
+        &mut b,
+        &[
+            ("s", "ntp"),
+            ("ntp", "10.0.10.1, time.quartz.example"),
+            ("tz", "UTC-04:00"),
+        ],
+    );
+    assert!(t.contains("QMC8200"), "{t}");
+    let host = app.host();
+    assert_eq!(host.time_zone, "UTC-04:00");
+    assert_eq!(host.ntp_servers, ["10.0.10.1", "time.quartz.example"]);
+    assert!(t.contains("Not synchronized"), "{t}");
+    // By hand: no servers, and the clock at the offset's time.
+    let t = post(
+        &mut b,
+        &[
+            ("s", "manual"),
+            ("md", "10/30/26"),
+            ("mt", "07:14"),
+            ("tz", "UTC-04:00"),
+        ],
+    );
+    assert!(
+        t.contains("QMC8201") && t.contains("10/30/26 07:14 UTC-04:00"),
+        "{t}"
+    );
+    assert!(app.host().ntp_servers.is_empty());
+    let at = appliance::time::from_civil(2026, 10, 30, 11, 14, 0);
+    let shift = SHIFT.with(|s| s.load(Ordering::Relaxed));
+    assert_eq!(
+        clock.load(Ordering::Relaxed).saturating_add_signed(shift),
+        u64::try_from(at).unwrap()
+    );
+    // The session, timed by the uptime, goes on.
+    assert_eq!(b.send("GET", "/qsmc/welcome", &[]).status, 200);
+    let t = post(
+        &mut b,
+        &[("s", "manual"), ("md", "02/30/26"), ("mt", "07:14")],
+    );
+    assert!(t.contains("is not a date"), "{t}");
     let _ = std::fs::remove_dir_all(dir);
 }

@@ -16,6 +16,8 @@
 pub mod app;
 pub mod backup;
 pub mod console;
+pub mod datetime;
+pub mod datetime_routes;
 pub mod fmt;
 pub mod help;
 pub mod network;

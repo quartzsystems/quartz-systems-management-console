@@ -111,3 +111,14 @@ Golden corrections, each the only difference allowed:
 | `shared/error.html` | no `Job log` button; `Technical details` for `Technical description` | QS/MC has no job log; `qsweb`'s heading |
 | `shared/notauth.html` | the closing paragraph is QS/MC's (`Brand::notauth_note`) | the prototype's names QS/400's security officer |
 | `shared/help.html` | the window's wordmark, title and footer are QS/MC's; Contents and Index lead to the help pages; Close window carries `qsweb`'s inline handler | as above; the handler is `qsweb`'s (item 22) |
+
+## Time
+
+Sessions, the sign-on lock-out and the window of an `open` address
+change are timed by the console's uptime, which setting the clock does
+not move; what is shown and kept (a user's last sign-on, the backups'
+dates) is the wall clock. Date and time's time zone is the display
+offset `host.toml` keeps (`UTC`, `UTC+hh:mm`): the page offers each
+half hour from UTC-12:00 to UTC+14:00 and the three quarter-hour
+offsets, with no summer time. Its NTP status is PID 1's `synced` fact:
+when and with which server the network service last posted `C3002030`.

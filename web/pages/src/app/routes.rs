@@ -101,7 +101,7 @@ fn reached(app: &App, req: &Request, session: &str, user: &str, from: &str) {
     let Some((address, until)) = pending.clone() else {
         return;
     };
-    if app.console.now() > until {
+    if app.console.uptime() > until {
         *pending = None;
         return;
     }
@@ -139,7 +139,8 @@ fn sign_on(app: &App, req: &Request, peer: &Peer) -> Response {
             let now = app.console.now();
             app.sessions.update(&s.id, |s| {
                 s.data.insert(ROLE.into(), role.label().into());
-                s.data.insert(SINCE.into(), now.to_string());
+                s.data
+                    .insert(SINCE.into(), app.console.uptime().to_string());
                 s.data.insert(FROM.into(), from.to_string());
             });
             let _ = app.change_users(|u| {
@@ -177,7 +178,7 @@ fn live(app: &App, req: &Request) -> Result<(Session, Role), bool> {
     let still = app.users().get(&s.user).is_some_and(|u| u.enabled);
     let role = Role::parse(s.get(ROLE));
     match role {
-        Some(role) if still && app.console.now().saturating_sub(since) < max => Ok((s, role)),
+        Some(role) if still && app.console.uptime().saturating_sub(since) < max => Ok((s, role)),
         _ => {
             app.sessions.remove(id);
             Err(true)

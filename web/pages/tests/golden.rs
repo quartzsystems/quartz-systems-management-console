@@ -435,3 +435,31 @@ fn console_network() {
         &[],
     );
 }
+
+#[test]
+fn console_datetime() {
+    use webpages::datetime::{DateTime, page};
+    let v = DateTime {
+        now: "10/30/26 07:14:02 EDT".into(),
+        zones: vec![
+            "America/New_York (Eastern)".into(),
+            "UTC".into(),
+            "America/Chicago".into(),
+        ],
+        zone: String::new(),
+        from_servers: true,
+        servers: "10.0.10.1, time.quartz.example".into(),
+        date: "10/30/26".into(),
+        time: "07:14".into(),
+        status: ("Active".into(), Some(true)),
+        detail: ", last sync 07:12:00, offset +0.002 s".into(),
+        serve: true,
+        messages: Vec::new(),
+    };
+    let c = ctx("/qsmc/console/datetime");
+    assert_golden(
+        &render("/qsmc/console/datetime", &page(&c, &v)),
+        "console-datetime.html",
+        &[],
+    );
+}

@@ -87,6 +87,8 @@ pub struct Host {
     signals: Signals,
     /// The current reference code and its text.
     reference: String,
+    /// The last time synchronization, as [`fact::SYNCED`] says it.
+    synced: String,
     /// Set once the IPL reaches the storage service.
     sup: Option<Supervisor>,
     listener: Option<UnixListener>,
@@ -133,6 +135,7 @@ impl Host {
             log: Sender::new(log_socket),
             signals,
             reference: String::new(),
+            synced: String::new(),
             sup: None,
             listener: None,
             web: web::Web::default(),
@@ -189,6 +192,13 @@ impl Host {
             .unwrap_or(&posted.line)
             .trim_start();
         self.reference = reference.to_string();
+        let synced = format!("{} ", refcode::TIME_SYNCHRONIZED.code);
+        if let Some(rest) = reference.strip_prefix(&synced) {
+            let server = rest
+                .strip_prefix(refcode::TIME_SYNCHRONIZED.text)
+                .map_or(rest, |r| r.trim_start_matches(':').trim());
+            self.synced = format!("{} {server}", now_secs());
+        }
         self.log.send(posted.record);
     }
 
@@ -391,6 +401,7 @@ impl Host {
             (fact::DATE, self.facts.zone.display(now)),
             (fact::LOAD_SOURCE, load_source),
             (fact::REFERENCE, self.reference.clone()),
+            (fact::SYNCED, self.synced.clone()),
             (fact::DATA, self.facts.data.clone()),
             (
                 fact::READY,

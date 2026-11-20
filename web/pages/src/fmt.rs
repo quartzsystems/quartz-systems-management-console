@@ -53,9 +53,69 @@ pub fn number(n: u64, format: &str) -> String {
     out
 }
 
+/// A date typed in `format`: year, month, day. Two-digit years are
+/// 2000 to 2099.
+pub fn parse_date(text: &str, format: &str) -> Option<(i64, i64, i64)> {
+    let parts: Vec<i64> = text
+        .trim()
+        .split(['/', '-'])
+        .map(|p| p.parse().ok())
+        .collect::<Option<_>>()?;
+    let [one, two, three] = parts[..] else {
+        return None;
+    };
+    let (y, m, d) = match format {
+        "DD/MM/YY" => (three, two, one),
+        "YYYY-MM-DD" => (one, two, three),
+        _ => (three, one, two),
+    };
+    let y = if y < 100 { 2000 + y } else { y };
+    let days = match m {
+        2 if y % 4 == 0 && (y % 100 != 0 || y % 400 == 0) => 29,
+        2 => 28,
+        4 | 6 | 9 | 11 => 30,
+        1..=12 => 31,
+        _ => return None,
+    };
+    ((1970..=2099).contains(&y) && (1..=days).contains(&d)).then_some((y, m, d))
+}
+
+/// A time typed as `HH:MM`, or `h:mm AM` / `h:mm PM`: hour and minute.
+pub fn parse_time(text: &str) -> Option<(i64, i64)> {
+    let t = text.trim().to_ascii_uppercase();
+    let (t, half) = if let Some(t) = t.strip_suffix("AM") {
+        (t.trim().to_string(), Some(0))
+    } else if let Some(t) = t.strip_suffix("PM") {
+        (t.trim().to_string(), Some(12))
+    } else {
+        (t, None)
+    };
+    let (h, m) = t.split_once(':')?;
+    let (h, m): (i64, i64) = (h.parse().ok()?, m.parse().ok()?);
+    let h = match half {
+        Some(add) if (1..=12).contains(&h) => h % 12 + add,
+        Some(_) => return None,
+        None => h,
+    };
+    ((0..24).contains(&h) && (0..60).contains(&m)).then_some((h, m))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn typed_dates_and_times() {
+        assert_eq!(parse_date("10/30/26", "MM/DD/YY"), Some((2026, 10, 30)));
+        assert_eq!(parse_date("30/10/26", "DD/MM/YY"), Some((2026, 10, 30)));
+        assert_eq!(parse_date("2028-02-29", "YYYY-MM-DD"), Some((2028, 2, 29)));
+        assert_eq!(parse_date("02/29/27", "MM/DD/YY"), None);
+        assert_eq!(parse_date("13/01/26", "MM/DD/YY"), None);
+        assert_eq!(parse_time("07:14"), Some((7, 14)));
+        assert_eq!(parse_time("12:05 am"), Some((0, 5)));
+        assert_eq!(parse_time("1:30 PM"), Some((13, 30)));
+        assert_eq!(parse_time("24:00"), None);
+    }
 
     #[test]
     fn the_prototype_s_forms() {
