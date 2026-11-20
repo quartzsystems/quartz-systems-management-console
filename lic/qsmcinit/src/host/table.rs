@@ -123,8 +123,25 @@ pub static WITHOUT_WEB: &[Service] = &[
     crate::hooks::FLAKY,
 ];
 
+/// A test image's table with the `webd-fails` hook: the web server
+/// fails at once.
+#[cfg(test_hooks)]
+pub static FAILING_WEB: &[Service] = &[
+    crate::hooks::CHANNEL,
+    STGD,
+    LOGD,
+    NETD,
+    CONSOLE,
+    crate::hooks::FAILING_WEBD,
+    crate::hooks::FLAKY,
+];
+
 /// The table for this processor.
 pub fn chosen() -> &'static [Service] {
+    #[cfg(test_hooks)]
+    if crate::hooks::has(crate::hooks::WEBD_FAILS) {
+        return FAILING_WEB;
+    }
     if processor::lacking().is_empty() {
         TABLE
     } else {

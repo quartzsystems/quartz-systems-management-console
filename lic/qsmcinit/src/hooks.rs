@@ -22,6 +22,9 @@ pub const MARKER: &str = "TEST IMAGE: the test hooks are in this image; it is no
 /// The hook that keeps a slot on trial from confirming.
 pub const REFUSE_CONFIRM: &str = "refuse-confirm";
 
+/// The hook that runs a web server that fails at once.
+pub const WEBD_FAILS: &str = "webd-fails";
+
 /// The test hooks' binary.
 const BINARY: &str = "/qsmc/bin/qsmchook";
 
@@ -34,6 +37,13 @@ pub const CHANNEL: Service = Service {
     needs: &[],
     ready_within: Duration::from_secs(10),
     caps: supervise::table::Caps::All,
+};
+
+/// The web server of [`WEBD_FAILS`]: the test hooks' binary, failing.
+pub const FAILING_WEBD: Service = Service {
+    binary: BINARY,
+    args: &["fail"],
+    ..crate::host::table::WEBD
 };
 
 /// A service that fails on demand.

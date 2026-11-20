@@ -13,7 +13,12 @@ fn main() {
             eprintln!("the channel did not start: {e}");
         }
         Some("flaky") => qsmchook::serve::flaky(),
-        other => eprintln!("qsmchook channel | flaky, not {other:?}"),
+        // The web server of the `webd-fails` hook: it fails at once.
+        Some("fail") => {
+            eprintln!("failing, as the {} hook asks", qsmchook::WEBD_FAILS);
+            std::process::exit(3);
+        }
+        other => eprintln!("qsmchook channel | flaky | fail, not {other:?}"),
     }
     std::process::exit(1);
 }

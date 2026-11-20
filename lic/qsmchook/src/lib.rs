@@ -30,6 +30,9 @@ pub const REFUSE_CONFIRM: &str = "refuse-confirm";
 pub const FLAKY_FAILS: &str = "flaky-fails";
 /// The hook that churns the state files once `/data` is mounted.
 pub const CHURN: &str = "churn";
+/// The hook that runs, for the web server, a binary that fails at once:
+/// a slot whose web server cannot start.
+pub const WEBD_FAILS: &str = "webd-fails";
 
 /// The SMBIOS OEM string that switches the hook `name` on:
 /// `qsmc.hook=<name>`.
