@@ -385,10 +385,9 @@ kept only if the operator reaches the console again within the trial.
 changes has carrier and an address (`trial.rs`), so a static address
 the operator cannot reach would be kept. The change, for QS/VS: an
 apply that is kept only by `confirm` within the trial and taken back
-otherwise, whatever the interface says. Until it is there, the Network
-settings page refuses a change to the `open` interface's address, mask
-and gateway with `QMC8104` (`BLOCKED(phase3)`); the local console's
-option 3 changes them.
+otherwise, whatever the interface says. Until it was there, the Network
+settings page refused a change to the `open` interface's address, mask
+and gateway, and the local console's option 3 changed them.
 
 **Closed in Phase 3:** QS/VS `ff181be` added `apply_confirmed`, kept
 only when `confirm` is called in its window; QS/MC moved its QS/VS pin
