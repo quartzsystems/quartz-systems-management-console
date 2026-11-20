@@ -749,6 +749,21 @@ dependencies = [
 
 [[package]]
 name = "curve25519-dalek"
+version = "4.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97fb8b7c4503de7d6ae7b42ab72a5a59857b4c937ec27a3d4539dba95b5ab2be"
+dependencies = [
+ "cfg-if",
+ "cpufeatures 0.2.17",
+ "curve25519-dalek-derive",
+ "fiat-crypto 0.2.9",
+ "rand_core 0.6.4",
+ "rustc_version",
+ "subtle",
+]
+
+[[package]]
+name = "curve25519-dalek"
 version = "5.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5eed333089e2e1c1ac8c6c0398e5e2497b4c9926ca6d0365ed1e099afa5bc23"
@@ -757,7 +772,7 @@ dependencies = [
  "cpufeatures 0.3.1",
  "curve25519-dalek-derive",
  "digest 0.11.3",
- "fiat-crypto",
+ "fiat-crypto 0.3.0",
  "rustc_version",
  "subtle",
  "zeroize",
@@ -935,7 +950,7 @@ version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ebaa1a2bf1290ab3bfe5a7b771d050ebffab2711c19a81691c683a5144a25de"
 dependencies = [
- "curve25519-dalek",
+ "curve25519-dalek 5.0.0",
  "ed25519",
  "sha2 0.11.1",
  "subtle",
@@ -990,6 +1005,12 @@ source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=cb58b010a8
 dependencies = [
  "libc",
 ]
+
+[[package]]
+name = "fiat-crypto"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
 
 [[package]]
 name = "fiat-crypto"
@@ -1218,6 +1239,15 @@ name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+
+[[package]]
+name = "hkdf"
+version = "0.12.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b5f8eb2ad728638ea2c7d47a21db23b7b58a72ed6a38256b8a1849f15fbbdf7"
+dependencies = [
+ "hmac 0.12.1",
+]
 
 [[package]]
 name = "hmac"
@@ -1460,6 +1490,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d15f86d12da44cd8d4ec3c73984537eb7f4cadcb9776a575a0a8a05ca11005c"
 
 [[package]]
+name = "logd"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=fd245e6593d61906191e183d43c0724bdb9cb5e5#fd245e6593d61906191e183d43c0724bdb9cb5e5"
+dependencies = [
+ "appliance",
+ "ipc",
+ "rustix",
+ "serde",
+ "serde_json",
+ "supervise",
+]
+
+[[package]]
 name = "lpstore"
 version = "0.1.0"
 source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=cb58b010a8b96ac48a66e06079e1ff4e4af371c7#cb58b010a8b96ac48a66e06079e1ff4e4af371c7"
@@ -1523,6 +1566,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6b0ca1155a9ecc25aa12e8313a119f32edf0255fea2f44839c4ac0a12b2ac157"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "mgmtd"
+version = "0.1.0"
+dependencies = [
+ "ipc",
+ "mgmtproto",
+ "qmcmsg",
+ "qsi",
+ "qsipart",
+ "qsisess",
+ "qsitrust",
+ "refcode",
+ "rustls",
+ "serde",
+ "state",
+]
+
+[[package]]
+name = "mgmtproto"
+version = "0.1.0"
+dependencies = [
+ "ipc",
+ "qsi",
+ "qsipart",
 ]
 
 [[package]]
@@ -1853,6 +1922,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "qmcmsg"
+version = "0.1.0"
+dependencies = [
+ "qsweb",
+]
+
+[[package]]
 name = "qsh"
 version = "0.1.0"
 source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=cb58b010a8b96ac48a66e06079e1ff4e4af371c7#cb58b010a8b96ac48a66e06079e1ff4e4af371c7"
@@ -1893,10 +1969,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "qsitrust"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=cb58b010a8b96ac48a66e06079e1ff4e4af371c7#cb58b010a8b96ac48a66e06079e1ff4e4af371c7"
+dependencies = [
+ "graviola",
+ "rand_core 0.6.4",
+ "rustls",
+ "rustls-graviola",
+ "spake2",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "qsmcfuzz"
 version = "0.1.0"
 dependencies = [
  "fuzz",
+ "mgmtd",
  "qmcbackup",
  "webd",
 ]
@@ -1980,6 +2070,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed2bf2547551a7053d6fdfafda3f938979645c44812fbfcda098faae3f1a362d"
 dependencies = [
  "bitflags 2.13.2",
+]
+
+[[package]]
+name = "refcode"
+version = "0.1.0"
+dependencies = [
+ "appliance",
+ "logd",
+ "release 0.1.0",
+ "supervise",
 ]
 
 [[package]]
@@ -2431,6 +2531,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "spake2"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c5482afe85a0b6ce956c945401598dbc527593c77ba51d0a87a586938b1b893a"
+dependencies = [
+ "curve25519-dalek 4.1.3",
+ "hkdf",
+ "rand_core 0.6.4",
+ "sha2 0.10.9",
+]
+
+[[package]]
 name = "spki"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2497,6 +2609,17 @@ name = "stable_deref_trait"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
+
+[[package]]
+name = "state"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=fd245e6593d61906191e183d43c0724bdb9cb5e5#fd245e6593d61906191e183d43c0724bdb9cb5e5"
+dependencies = [
+ "appliance",
+ "serde",
+ "thiserror 2.0.21",
+ "toml",
+]
 
 [[package]]
 name = "store"
@@ -2734,10 +2857,12 @@ version = "1.2.1+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d5755c51863cdac711f1956baf8eb9588e060755f7d3c4c979e70ea1e1f32cd7"
 dependencies = [
+ "indexmap",
  "serde_core",
  "serde_spanned",
  "toml_datetime",
  "toml_parser",
+ "toml_writer",
  "winnow",
 ]
 
@@ -2758,6 +2883,12 @@ checksum = "baa693a8032d7e1cada7d0041e96126df243179ff061456783ac7f12bda4744c"
 dependencies = [
  "winnow",
 ]
+
+[[package]]
+name = "toml_writer"
+version = "1.2.0+spec-1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "009dbb7700f11c55ef83aebbe4c0e9cf1f1ac0844bd8d6f00dc38f302026e13a"
 
 [[package]]
 name = "tracing"

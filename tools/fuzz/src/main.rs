@@ -38,6 +38,12 @@ fn cert_import(data: &[u8]) {
     }
 }
 
+/// A managed system's bytes after the handshake, as the managed-systems
+/// service takes them.
+fn mgmt_peer(data: &[u8]) {
+    mgmtd::system::fuzzing::peer(data);
+}
+
 const PAYLOAD: &[u8] =
     b"QSMCPAY1console QSHQMC1\nrelease V1R0M0\nbuild 1\nmade 1\n\n\x00\x0fstate/host.toml\x00\x00\x01\xa4\x00\x00\x00\x03abc";
 
@@ -64,6 +70,27 @@ pub static TARGETS: &[Target] = &[
             b"state/",
             b"web/",
             b"\n\n",
+        ],
+        max_len: 64 * 1024,
+    },
+    Target {
+        name: "mgmt-peer",
+        what: "a managed system's frames after the handshake: replies, events, streams",
+        run: mgmt_peer,
+        seeds: &[b"QI\x10\x12\x00\x00\x00\x10\x00\x00"],
+        dict: &[
+            b"QI",
+            b"\x10\x11",
+            b"\x10\x12",
+            b"\x10\x13",
+            b"\x10\x20",
+            b"\x10\x21",
+            b"\x10\x22",
+            b"\x10\x23",
+            b"\x00\x01",
+            b"\x00\x15",
+            b"\x00\x17",
+            b"\x04\x01",
         ],
         max_len: 64 * 1024,
     },

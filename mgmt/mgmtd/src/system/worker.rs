@@ -18,7 +18,7 @@ use mgmtproto::Refusal;
 use mgmtproto::kept::Link as State;
 use qsi::any::AnyRequest;
 use qsi::base;
-use qsisess::{Incoming, Reply};
+use qsisess::{Incoming, Reply, Session};
 use qsitrust::Fingerprint;
 
 use super::console::Consoles;
@@ -192,13 +192,13 @@ impl Worker {
         self.inner.log(&format!("{name}: connected"));
         let since = Some(self.entry.kept().last_seq).filter(|s| *s > 0);
         self.mine(
-            &mut link,
+            &mut link.session,
             Mine::Subscribe,
             &AnyRequest::Base(base::Request::Subscribe(base::Subscribe { since })),
         );
         let early = std::mem::take(&mut link.early);
         for i in early {
-            self.incoming(&mut link, i);
+            self.incoming(&mut link.session, i);
         }
         let mut saved = Instant::now();
         let mut seen = self.entry.kept().last_seq;
@@ -217,7 +217,7 @@ impl Worker {
                         self.entry.kept().last_contact = now_s();
                     }
                     for i in got {
-                        if let Some(why) = self.incoming(&mut link, i) {
+                        if let Some(why) = self.incoming(&mut link.session, i) {
                             link.close();
                             return self.end(&why);
                         }
@@ -276,8 +276,8 @@ impl Worker {
     }
 
     /// Ask for this thread's own purposes.
-    pub(super) fn mine(&mut self, link: &mut Link, what: Mine, req: &AnyRequest) {
-        if let Ok(id) = link.session.request_any("QSMC", req) {
+    pub(super) fn mine(&mut self, s: &mut Session, what: Mine, req: &AnyRequest) {
+        if let Ok(id) = s.request_any("QSMC", req) {
             self.pending.insert(id, Pending::Mine(what));
         }
     }
@@ -331,18 +331,18 @@ impl Worker {
     }
 
     /// What came: `Some(why)` when the session must end.
-    fn incoming(&mut self, link: &mut Link, i: Incoming) -> Option<String> {
+    pub(crate) fn incoming(&mut self, s: &mut Session, i: Incoming) -> Option<String> {
         match i {
             Incoming::Reply(r) => match self.pending.remove(&r.id) {
                 Some(Pending::Theirs(tx, _)) => {
                     let _ = tx.send(refusal(&r).map_or(Ok(r), Err));
                 }
-                Some(Pending::Mine(m)) => self.reply(link, m, &r),
+                Some(Pending::Mine(m)) => self.reply(s, m, &r),
                 None => {}
             },
-            Incoming::Event(e) => self.event(link, &e),
+            Incoming::Event(e) => self.event(s, &e),
             Incoming::Data { stream, bytes } => {
-                self.consoles.data(&mut link.session, stream, &bytes);
+                self.consoles.data(s, stream, &bytes);
             }
             Incoming::StreamClosed { stream } => {
                 self.consoles

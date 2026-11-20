@@ -14,10 +14,9 @@ use qsi::base::{self, Replay};
 use qsi::host::refcodes::{Posted, Source};
 use qsi::host::{host, partitions, profiles, refcodes};
 use qsi::{base::Refcode, caps};
-use qsisess::{Event, Reply};
+use qsisess::{Event, Reply, Session};
 
 use super::worker::{Mine, Worker};
-use crate::peer::link::Link;
 use crate::peer::pair::refusal;
 
 /// Codes read a page at a time.
@@ -25,60 +24,57 @@ const PAGE: u32 = 200;
 
 impl Worker {
     /// Read everything the pages show.
-    fn read_all(&mut self, link: &mut Link) {
+    fn read_all(&mut self, s: &mut Session) {
+        let has = s.peer().map_or(0, |h| h.caps);
         self.mine(
-            link,
+            s,
             Mine::Identify,
             &AnyRequest::Base(base::Request::Identify(Empty)),
         );
         self.mine(
-            link,
+            s,
             Mine::State,
             &AnyRequest::Base(base::Request::State(Empty)),
         );
         self.mine(
-            link,
+            s,
             Mine::BaseCodes,
             &AnyRequest::Base(base::Request::Refcodes(base::Refcodes {
                 before: None,
                 limit: PAGE,
             })),
         );
-        if link.hello.caps & caps::HOST != 0 {
+        if has & caps::HOST != 0 {
+            self.mine(s, Mine::Host, &AnyRequest::Host(host::Request::Host(Empty)));
             self.mine(
-                link,
-                Mine::Host,
-                &AnyRequest::Host(host::Request::Host(Empty)),
-            );
-            self.mine(
-                link,
+                s,
                 Mine::Hardware,
                 &AnyRequest::Host(host::Request::Hardware(Empty)),
             );
         }
-        if link.hello.caps & caps::PARTITIONS != 0 {
+        if has & caps::PARTITIONS != 0 {
             self.mine(
-                link,
+                s,
                 Mine::List,
                 &AnyRequest::Partitions(partitions::Request::List(Empty)),
             );
         }
     }
 
-    fn read_list(&mut self, link: &mut Link) {
+    fn read_list(&mut self, s: &mut Session) {
         if !self.asking(&Mine::List) {
             self.mine(
-                link,
+                s,
                 Mine::List,
                 &AnyRequest::Partitions(partitions::Request::List(Empty)),
             );
         }
     }
 
-    fn read_state(&mut self, link: &mut Link) {
+    fn read_state(&mut self, s: &mut Session) {
         if !self.asking(&Mine::State) {
             self.mine(
-                link,
+                s,
                 Mine::State,
                 &AnyRequest::Base(base::Request::State(Empty)),
             );
@@ -113,7 +109,7 @@ impl Worker {
 
     /// A reply to one of the thread's own reads.
     #[allow(clippy::too_many_lines, reason = "one arm a read")]
-    pub(super) fn reply(&mut self, link: &mut Link, what: Mine, r: &Reply) {
+    pub(super) fn reply(&mut self, s: &mut Session, what: Mine, r: &Reply) {
         if let Mine::Attach(id) = what {
             let answer = if let Some(no) = refusal(r) {
                 Err(no)
@@ -136,10 +132,10 @@ impl Worker {
             return;
         };
         match (what, any) {
-            (Mine::Subscribe, AnyReply::Base(base::Reply::Subscribe(s))) => {
+            (Mine::Subscribe, AnyReply::Base(base::Reply::Subscribe(sub))) => {
                 let nothing = self.entry.kept().identity.is_none();
-                if nothing || s.replay != Replay::Resumed {
-                    self.read_all(link);
+                if nothing || sub.replay != Replay::Resumed {
+                    self.read_all(s);
                 }
             }
             (Mine::Identify, AnyReply::Base(base::Reply::Identify(i))) => {
@@ -160,7 +156,7 @@ impl Worker {
                 for p in &list {
                     if !p.profile.is_empty() {
                         self.mine(
-                            link,
+                            s,
                             Mine::Profile(p.id),
                             &AnyRequest::Profiles(profiles::Request::Get(profiles::Get {
                                 id: p.id,
@@ -172,7 +168,7 @@ impl Worker {
                     let had = self.entry.kept().partitions.iter().any(|o| o.id == p.id);
                     if fresh || !had {
                         self.mine(
-                            link,
+                            s,
                             Mine::PartCodes(p.id),
                             &AnyRequest::Refcodes(refcodes::Request::History(refcodes::History {
                                 id: p.id,
@@ -210,7 +206,7 @@ impl Worker {
                 self.keep_rows(rows);
                 if let Some(before) = list.more.filter(|_| !done) {
                     self.mine(
-                        link,
+                        s,
                         Mine::BaseCodes,
                         &AnyRequest::Base(base::Request::Refcodes(base::Refcodes {
                             before: Some(before),
@@ -232,7 +228,7 @@ impl Worker {
                 self.keep_rows(rows);
                 if let Some(before) = page.more.filter(|_| !done) {
                     self.mine(
-                        link,
+                        s,
                         Mine::PartCodes(id),
                         &AnyRequest::Refcodes(refcodes::Request::History(refcodes::History {
                             id,
@@ -247,7 +243,7 @@ impl Worker {
     }
 
     /// An event.
-    pub(super) fn event(&mut self, link: &mut Link, e: &Event) {
+    pub(super) fn event(&mut self, s: &mut Session, e: &Event) {
         let Ok(Some(any)) = e.decode() else {
             return;
         };
@@ -256,19 +252,19 @@ impl Worker {
             AnyEvent::Base(base::Event::Identity(i)) => self.entry.kept().identity = Some(i),
             AnyEvent::Base(base::Event::Refcode(r)) => {
                 self.code(0, "", r, Source::Host);
-                self.read_state(link);
+                self.read_state(s);
             }
             AnyEvent::Host(host::Event::Resources(h)) => self.entry.kept().host = Some(h),
             AnyEvent::Host(_) => {
                 if !self.asking(&Mine::Hardware) {
                     self.mine(
-                        link,
+                        s,
                         Mine::Hardware,
                         &AnyRequest::Host(host::Request::Hardware(Empty)),
                     );
                 }
             }
-            AnyEvent::Partitions(_) | AnyEvent::Profiles(_) => self.read_list(link),
+            AnyEvent::Partitions(_) | AnyEvent::Profiles(_) => self.read_list(s),
             AnyEvent::Refcodes(refcodes::Event::Code(c)) => {
                 if c.current {
                     let mut k = self.entry.kept();

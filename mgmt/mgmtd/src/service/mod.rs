@@ -94,6 +94,27 @@ impl Drop for Setup<'_> {
 }
 
 impl Inner {
+    /// A service with no files and no systems, its identity made from a
+    /// fixed seed: for the fuzzer.
+    pub fn bare() -> Arc<Self> {
+        let seed = [7u8; 32];
+        Arc::new(Self {
+            identity: Identity::from_seed(&seed, "FUZZMC", "", 0, [1; 16]),
+            me: hello("FUZZMC", "V1R0M0"),
+            limits: Limits::default(),
+            store: None,
+            identity_dir: None,
+            paired: Mutex::new(Systems::default()),
+            history: Mutex::new(History::open(None, 4096)),
+            entries: Mutex::new(Vec::new()),
+            setups: (Mutex::new(0), Condvar::new()),
+            log: Box::new(|_| {}),
+            post: Box::new(|_, _| {}),
+            windows: AtomicU32::new(0),
+            next_window: AtomicU64::new(1),
+        })
+    }
+
     /// Wait for a place among the connections being set up.
     pub fn setup(&self) -> Setup<'_> {
         let (m, c) = &self.setups;
