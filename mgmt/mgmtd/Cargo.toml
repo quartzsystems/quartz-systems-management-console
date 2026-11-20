@@ -10,6 +10,7 @@ publish.workspace = true
 [dependencies]
 mgmtproto = { path = "../proto", version = "0.1.0" }
 qmcmsg = { path = "../../web/msgs", version = "0.1.0" }
+refcode = { path = "../../lic/refcode", version = "0.1.0" }
 ipc.workspace = true
 qsi.workspace = true
 qsisess.workspace = true

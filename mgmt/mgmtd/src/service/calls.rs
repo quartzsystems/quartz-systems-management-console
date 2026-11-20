@@ -181,6 +181,10 @@ impl Mgmt for Service {
         inner.save(&next);
         let entry = system::start(&inner, kept_of(&p));
         inner.entries().push(entry);
+        inner.post(
+            &refcode::SYSTEM_PAIRED,
+            &format!("{} at {address}:{port}, by user {user}", p.name),
+        );
         Ok(inner.first_read(&p.name))
     }
 
@@ -243,6 +247,10 @@ impl Mgmt for Service {
         inner.save(&next);
         let entry = system::start(&inner, kept_of(&p));
         inner.entries().push(entry);
+        inner.post(
+            &refcode::SYSTEM_PAIRED_AGAIN,
+            &format!("{}, by user {user}", p.name),
+        );
         Ok(inner.first_read(&p.name))
     }
 
@@ -259,7 +267,10 @@ impl Mgmt for Service {
         };
         inner.save(&next);
         inner.history().remove(&e.name);
-        inner.log(&format!("{} removed for user {user}", e.name));
+        inner.post(
+            &refcode::SYSTEM_REMOVED,
+            &format!("{}, by user {user}", e.name),
+        );
         Ok(())
     }
 
@@ -362,20 +373,22 @@ impl Mgmt for Service {
     }
 
     fn backup_files(&mut self) -> Vec<File> {
-        let Some(store) = &self.0.store else {
-            return Vec::new();
-        };
-        let dir = store.dir().to_path_buf();
-        ["systems.toml", "mgmt.toml", "identity.crt", "identity.key"]
-            .iter()
-            .filter_map(|f| {
-                let bytes = std::fs::read(dir.join(f)).ok()?;
-                Some(File {
-                    path: format!("state/{f}"),
-                    mode: if *f == "identity.key" { 0o600 } else { 0o644 },
-                    bytes,
-                })
+        let read = |dir: &std::path::Path, f: &str, top: &str, mode: u32| {
+            std::fs::read(dir.join(f)).ok().map(|bytes| File {
+                path: format!("{top}/{f}"),
+                mode,
+                bytes,
             })
-            .collect()
+        };
+        let mut out = Vec::new();
+        if let Some(d) = &self.0.identity_dir {
+            out.extend(read(d, "identity.crt", "state", 0o644));
+            out.extend(read(d, "identity.key", "state", 0o600));
+        }
+        if let Some(store) = &self.0.store {
+            out.extend(read(store.dir(), "systems.toml", "mgmt", 0o600));
+            out.extend(read(store.dir(), "mgmt.toml", "mgmt", 0o600));
+        }
+        out
     }
 }

@@ -247,6 +247,12 @@ pub const IDENTITY_NOT_GENERATED: RefCode = attention(
     "Console identity not generated",
     "It is made again at the next IPL; if this is posted again, check that the data file system has room",
 );
+/// Managed-systems files not given.
+pub const MGMT_NOT_SHARED: RefCode = attention(
+    "A3001076",
+    "Managed-systems files not given",
+    "The managed-systems service does not start and the console manages no system: check that the data file system is mounted and has room, and report this code with the system log",
+);
 /// A service failed too often and is no longer restarted.
 pub const SERVICE_STOPPED: RefCode = attention(
     "A3001080",
@@ -358,6 +364,29 @@ pub const STORAGE_LOST: RefCode = fatal(
 
 // D3001xxx: power down.
 
+// C3005xxx, A3005xxx: the managed-systems service (`mgmt/mgmtd`).
+
+/// Managed-systems service started.
+pub const MGMT_STARTED: RefCode = progress("C3005000", "Managed-systems service started");
+/// Managed system paired.
+pub const SYSTEM_PAIRED: RefCode = progress("C3005010", "Managed system paired");
+/// Managed system paired again.
+pub const SYSTEM_PAIRED_AGAIN: RefCode = progress("C3005020", "Managed system paired again");
+/// Managed system removed.
+pub const SYSTEM_REMOVED: RefCode = progress("C3005030", "Managed system removed");
+/// Managed systems not read.
+pub const MGMT_STATE_INVALID: RefCode = attention(
+    "A3005010",
+    "Managed systems not read",
+    "The console manages none of the systems the file held: restore a backup of the console, or add the systems again with new pairing passwords",
+);
+/// Managed system certificate changed.
+pub const SYSTEM_CERTIFICATE_CHANGED: RefCode = attention(
+    "A3005020",
+    "Managed system certificate changed",
+    "Find out at the managed system why its certificate changed; when it is the system, pair it again with Reset connection",
+);
+
 /// An orderly shutdown began.
 pub const SHUTDOWN_STARTED: RefCode = power_down("D3001000", "Console shutdown started");
 /// The console powers off.
@@ -414,6 +443,7 @@ pub const ALL: &[&RefCode] = &[
     &SEED_INVALID,
     &STATE_INVALID,
     &IDENTITY_NOT_GENERATED,
+    &MGMT_NOT_SHARED,
     &SERVICE_STOPPED,
     &BOOT_ORDER_NOT_WRITTEN,
     &NO_INTERFACE,
@@ -433,6 +463,12 @@ pub const ALL: &[&RefCode] = &[
     &SHUTDOWN_STARTED,
     &POWER_OFF,
     &RESTART,
+    &MGMT_STARTED,
+    &SYSTEM_PAIRED,
+    &SYSTEM_PAIRED_AGAIN,
+    &SYSTEM_REMOVED,
+    &MGMT_STATE_INVALID,
+    &SYSTEM_CERTIFICATE_CHANGED,
 ];
 
 /// The word a posted line starts with.

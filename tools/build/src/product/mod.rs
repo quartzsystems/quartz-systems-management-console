@@ -26,7 +26,7 @@ use release::LOAD_SOURCE;
 pub const INIT: &str = "qsmcinit";
 
 /// The service packages, `/qsmc/bin/<name>` in a slot's initramfs.
-pub const SERVICES: [&str; 4] = ["qsmcstgd", "qsmclogd", "qsmcnetd", "qsmcwebd"];
+pub const SERVICES: [&str; 5] = ["qsmcstgd", "qsmclogd", "qsmcnetd", "qsmcwebd", "qsmcmgmtd"];
 
 /// The local console, `/qsmc/bin/qsmccons` in a slot's initramfs.
 pub const CONSOLE: &str = "qsmccons";
@@ -68,6 +68,7 @@ const RELEASE_PACKAGES: &[Package] = &[
     package(SERVICES[1]),
     package(SERVICES[2]),
     package(SERVICES[3]),
+    package(SERVICES[4]),
     package(CONSOLE),
     package(INSTALLER),
 ];
@@ -77,6 +78,7 @@ const TEST_PACKAGES: &[Package] = &[
     package(SERVICES[1]),
     package(SERVICES[2]),
     package(SERVICES[3]),
+    package(SERVICES[4]),
     package(CONSOLE),
     package(INSTALLER),
     package(HOOK),
@@ -201,6 +203,7 @@ mod tests {
                 "qsmclogd",
                 "qsmcnetd",
                 "qsmcwebd",
+                "qsmcmgmtd",
                 "qsmccons",
                 "qsmcinstall"
             ]

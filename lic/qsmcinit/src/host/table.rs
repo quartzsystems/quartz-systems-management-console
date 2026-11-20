@@ -8,18 +8,17 @@
 //! unmounted.
 //!
 //! The local console is at 25, after the network service it asks; the
-//! web server at 30, left out on a processor that lacks what its
-//! cryptography needs. The places later phases take: the
-//! managed-systems service at 40 (Phase 4), the scheduler at 50
-//! (Phase 7).
+//! web server at 30 and the managed-systems service at 40, both left
+//! out on a processor that lacks what their cryptography needs. The
+//! place a later phase takes: the scheduler at 50 (Phase 7).
 
 use std::time::Duration;
 
 use supervise::Service;
 use supervise::table::Caps;
 use supervise::table::caps::{
-    DAC_OVERRIDE, FOWNER, IPC_LOCK, NET_ADMIN, NET_BIND_SERVICE, NET_RAW, SYS_ADMIN, SYS_RAWIO,
-    SYS_RESOURCE, SYS_TIME, SYS_TTY_CONFIG, SYSLOG,
+    DAC_OVERRIDE, FOWNER, IPC_LOCK, NET_ADMIN, NET_BIND_SERVICE, NET_RAW, SETGID, SETUID,
+    SYS_ADMIN, SYS_RAWIO, SYS_RESOURCE, SYS_TIME, SYS_TTY_CONFIG, SYSLOG,
 };
 
 /// What a base service is given to say it is ready.
@@ -91,9 +90,23 @@ pub const WEBD: Service = Service {
     caps: Caps::Only(&[]),
 };
 
-/// The base services, the local console and the web server.
+/// The managed-systems service: it binds its sockets as root, then
+/// becomes its own user for good (`release::MGMT_ID`), which alone
+/// reads the console's QSI key. Nothing else is left it.
+pub const MGMTD: Service = Service {
+    name: "mgmtd",
+    binary: release::MGMTD,
+    args: &[],
+    order: 40,
+    needs: &[],
+    ready_within: READY_WITHIN,
+    caps: Caps::Only(&[SETUID, SETGID]),
+};
+
+/// The base services, the local console, the web server and the
+/// managed-systems service.
 #[cfg(not(test_hooks))]
-pub static TABLE: &[Service] = &[STGD, LOGD, NETD, CONSOLE, WEBD];
+pub static TABLE: &[Service] = &[STGD, LOGD, NETD, CONSOLE, WEBD, MGMTD];
 
 /// The same and, in a test image, the test hooks' two.
 #[cfg(test_hooks)]
@@ -104,11 +117,12 @@ pub static TABLE: &[Service] = &[
     NETD,
     CONSOLE,
     WEBD,
+    MGMTD,
     crate::hooks::FLAKY,
 ];
 
 /// The table of a processor without what the cryptography needs: no
-/// web server.
+/// web server and no managed-systems service.
 #[cfg(not(test_hooks))]
 pub static WITHOUT_WEB: &[Service] = &[STGD, LOGD, NETD, CONSOLE];
 
@@ -133,6 +147,7 @@ pub static FAILING_WEB: &[Service] = &[
     NETD,
     CONSOLE,
     crate::hooks::FAILING_WEBD,
+    MGMTD,
     crate::hooks::FLAKY,
 ];
 
@@ -165,15 +180,17 @@ mod tests {
         for service in TABLE {
             assert!(service.binary.starts_with(release::BIN_DIR));
         }
-        // The web server took its place; the later phases' are free.
+        // The web server and the managed-systems service took their
+        // places; the later phase's is free.
         assert!(TABLE.iter().any(|s| s.name == WEBD.name && s.order == 30));
-        assert!(TABLE.iter().all(|s| ![40, 50].contains(&s.order)));
-        // Without the web server the table is the same less it.
+        assert!(TABLE.iter().any(|s| s.name == MGMTD.name && s.order == 40));
+        assert!(TABLE.iter().all(|s| s.order != 50));
+        // Without them the table is the same less both.
         assert_eq!(supervise::table::check(WITHOUT_WEB), Ok(()));
         let less: Vec<&str> = TABLE
             .iter()
             .map(|s| s.name)
-            .filter(|n| *n != WEBD.name)
+            .filter(|n| *n != WEBD.name && *n != MGMTD.name)
             .collect();
         let without: Vec<&str> = WITHOUT_WEB.iter().map(|s| s.name).collect();
         assert_eq!(less, without);

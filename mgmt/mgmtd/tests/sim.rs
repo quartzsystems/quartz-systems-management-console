@@ -40,8 +40,10 @@ fn service(name: &str) -> (Service, PathBuf) {
         name: "QSHQMC1".into(),
         release: "V1R0M0".into(),
         state_dir: Some(d.join("state")),
+        identity_dir: None,
         history_dir: Some(d.join("mgmt")),
         log: Box::new(|l| eprintln!("mgmtd: {l}")),
+        post: Box::new(|_, _| {}),
     });
     (svc, d)
 }

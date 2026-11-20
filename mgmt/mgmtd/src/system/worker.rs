@@ -137,6 +137,10 @@ impl Worker {
                 Err(f) => {
                     let mut k = self.entry.kept();
                     if matches!(f, Failed::Changed(_)) {
+                        if k.link != State::Changed {
+                            let at = format!("{} at {}:{}", k.name, k.address, k.port);
+                            self.inner.post(&refcode::SYSTEM_CERTIFICATE_CHANGED, &at);
+                        }
                         k.link = State::Changed;
                         k.reason = "it answered with a certificate other than the one pinned when it was paired; pair it again when that is right".into();
                     } else {

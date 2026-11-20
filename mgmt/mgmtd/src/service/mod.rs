@@ -38,6 +38,9 @@ fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
     m.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
+/// How the console's own codes are posted: the code and its text.
+pub type Poster = Box<dyn Fn(&str, &str) + Send + Sync>;
+
 /// How the service is started.
 pub struct Config {
     /// The console's QSI identity.
@@ -49,10 +52,14 @@ pub struct Config {
     /// Where `systems.toml` and `mgmt.toml` are; none to keep them in
     /// memory.
     pub state_dir: Option<PathBuf>,
+    /// Where the identity's two files are, for a backup.
+    pub identity_dir: Option<PathBuf>,
     /// Where the reference code history is kept; none for memory.
     pub history_dir: Option<PathBuf>,
     /// A line for the log.
     pub log: Box<dyn Fn(&str) + Send + Sync>,
+    /// Post one of the console's own codes: the code and its text.
+    pub post: Poster,
 }
 
 /// What every thread shares.
@@ -64,11 +71,13 @@ pub struct Inner {
     /// Its limits.
     pub limits: Limits,
     store: Option<Store>,
+    identity_dir: Option<PathBuf>,
     paired: Mutex<Systems>,
     history: Mutex<History>,
     entries: Mutex<Vec<Entry>>,
     setups: (Mutex<u32>, Condvar),
     log: Box<dyn Fn(&str) + Send + Sync>,
+    post: Poster,
     windows: AtomicU32,
     next_window: AtomicU64,
 }
@@ -107,6 +116,13 @@ impl Inner {
     /// A line for the log.
     pub fn log(&self, line: &str) {
         (self.log)(line);
+    }
+
+    /// Post `code` with `detail`, and say it in the log.
+    pub fn post(&self, code: &refcode::RefCode, detail: &str) {
+        let text = code.text_with(detail);
+        self.log(&format!("{} {text}", code.code));
+        (self.post)(code.code, &text);
     }
 
     /// Note the last event seen of `name`, so a new session resumes
@@ -173,8 +189,12 @@ impl Service {
     /// Start it: read the files and start a thread for each system.
     pub fn start(c: Config) -> Self {
         let store = c.state_dir.as_ref().map(Store::at);
-        let read =
-            |what: &str, e: String| (c.log)(&format!("{what} not read, defaults in use: {e}"));
+        let read = |what: &str, e: String| {
+            (c.post)(
+                refcode::MGMT_STATE_INVALID.code,
+                &refcode::MGMT_STATE_INVALID.text_with(&format!("{what}: {e}")),
+            );
+        };
         let limits = match store.as_ref().map(Store::load::<Limits>) {
             Some(Ok(Some(l))) => l,
             Some(Err(e)) => {
@@ -197,11 +217,13 @@ impl Service {
             identity: c.identity,
             limits,
             store,
+            identity_dir: c.identity_dir,
             paired: Mutex::new(systems.clone()),
             history: Mutex::new(history),
             entries: Mutex::new(Vec::new()),
             setups: (Mutex::new(0), Condvar::new()),
             log: c.log,
+            post: c.post,
             windows: AtomicU32::new(0),
             next_window: AtomicU64::new(1),
         });
@@ -210,7 +232,13 @@ impl Service {
             .iter()
             .map(|p| system::start(&inner, kept_of(p)))
             .collect();
+        let n = entries.len();
         *inner.entries() = entries;
+        let fp = inner.identity.fingerprint().hex();
+        inner.post(
+            &refcode::MGMT_STARTED,
+            &format!("{n} systems, certificate {fp}"),
+        );
         Self(inner)
     }
 

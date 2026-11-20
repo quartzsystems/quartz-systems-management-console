@@ -72,6 +72,7 @@ is, and an attention code has the number of the step it belongs to.
 | `C3002xxx`, `A3002xxx` | the management network and time (`base/netd`) |
 | `C3003xxx`, `A3003xxx`, `B3003xxx` | the load source and its protection (`base/stgd`, and PID 1 when the storage service is lost) |
 | `C3004xxx`, `A3004xxx` | the installer (`lic/qsmcinstall`), in the order of its steps |
+| `C3005xxx`, `A3005xxx` | the managed-systems service (`mgmt/mgmtd`): its start, systems paired and removed, a certificate changed. A system lost and found again posts nothing: it is in the log and on the Connectivity page |
 
 Later phases take further blocks and record them here.
 
@@ -118,6 +119,10 @@ a data file system, so they are not in the reference code history.
 | `C3004070` | Boot entries written | the firmware has an entry for each disk, slot A first, or `A3004070` was posted |
 | `C3004080` | State written | `network.toml`, the service tools users and `host.toml`, last, are on the data file system |
 | `C3004090` | Installation complete | every step is done; the console restarts into slot A |
+| `C3005000` | Managed-systems service started | `mgmtd` has its identity and its systems, with how many and its certificate's SHA-256 |
+| `C3005010` | Managed system paired | a managed system was paired from the web interface, with its name, its address and the user |
+| `C3005020` | Managed system paired again | Reset connection paired a managed system again, with its name and the user |
+| `C3005030` | Managed system removed | a managed system and its pin were forgotten, with its name and the user |
 | `D3001000` | Console shutdown started | an orderly shutdown began: power off or restart, and who asked (the control socket, `SIGTERM`, the power button) |
 | `D3001090` | Console powering off | the services are ended and `/data` unmounted; on the console only |
 | `D3001091` | Console restarting | the same, before a restart |
@@ -135,6 +140,7 @@ a data file system, so they are not in the reference code history.
 | `A3001060` | Seed not valid | a seed volume was found and refused, with why; nothing was written | Correct seed.toml on the QSMCSEED volume as the text says and restart; the console runs on its defaults meanwhile |
 | `A3001070` | State file not valid | a state file was refused, with which and why | The file named is not used and its defaults are; set those settings again |
 | `A3001075` | Console identity not generated | the key pair or certificate could not be written | It is made again at the next IPL; if this is posted again, check that the data file system has room |
+| `A3001076` | Managed-systems files not given | the managed-systems service's folder or the console's identity could not be made its user's, with why | The managed-systems service does not start and the console manages no system: check that the data file system is mounted and has room, and report this code with the system log |
 | `A3001080` | Service stopped | a service failed five times in ten minutes and is not started again, with which | Restart the console; if the service stops again, report this code with the system log |
 | `A3001095` | Boot order not written | the slot was confirmed in the record but `BootOrder` could not be written | The record holds the slot; in the firmware's setup, put the confirmed slot's entry first |
 | `A3002005` | No management interface | no Ethernet link with carrier, or not the device configured | Connect a cable to a supported Ethernet port, or correct the device named in the network settings |
@@ -149,6 +155,8 @@ a data file system, so they are not in the reference code history.
 | `A3004015` | Installation answers not valid | a seed volume's `[install]` table names a disk that is not there or too small, a bad user ID or hash, or an interface role QS/MC does not have | Nothing was written: correct seed.toml as the screen says, or install by hand |
 | `A3004070` | Installation boot entries not written | the firmware's variables could not be written | The disks start by the firmware's default path; if the console does not start, add an entry for each disk in the firmware's setup |
 | `A3004090` | Installation failed | a step failed, with the step and why; the progress screen names it | The disks are partly written: start the installation over; if the same step fails, check or replace the disk named |
+| `A3005010` | Managed systems not read | `systems.toml` or `mgmt.toml` could not be read; the service runs without what it held | The console manages none of the systems the file held: restore a backup of the console, or add the systems again with new pairing passwords |
+| `A3005020` | Managed system certificate changed | a managed system answered with a certificate other than the one pinned, with its name and address; it is not trusted | Find out at the managed system why its certificate changed; when it is the system, pair it again with Reset connection |
 | `B3001000` | Console PID 1 failed | by PID 1's panic handler, with the panic message, before it parks | Restart the console; report this code with the text after it |
 | `B3003000` | Storage service lost | the storage service failed five times while `/data` was on the mirrored set | The data file system has no server and nothing more is written: restart the console |
 

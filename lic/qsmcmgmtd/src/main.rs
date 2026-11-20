@@ -51,6 +51,20 @@ fn identity(state: &std::path::Path) -> qsitrust::Identity {
     }
 }
 
+/// Post a code through PID 1, whose socket is shared with the service's
+/// group; a busy PID 1 is tried again a few times.
+#[cfg(target_os = "linux")]
+fn post(code: &str, text: &str) {
+    use supervise::control::{Calls as _, Client};
+    let mut c = Client::new(release::CONTROL_SOCKET);
+    for _ in 0..5 {
+        if c.post(code.to_string(), text.to_string()).is_ok() {
+            return;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(200));
+    }
+}
+
 #[cfg(target_os = "linux")]
 fn run() -> Result<(), String> {
     use std::path::Path;
@@ -74,8 +88,10 @@ fn run() -> Result<(), String> {
         name,
         release: release::RELEASE.to_string(),
         state_dir: Some(mgmt.to_path_buf()),
+        identity_dir: Some(state.clone()),
         history_dir: Some(mgmt.join("refcodes")),
         log: Box::new(|l| eprintln!("{l}")),
+        post: Box::new(post),
     });
     let s2 = svc.clone();
     std::thread::spawn(move || mgmtd::service::consoles::serve(&consoles, &s2));

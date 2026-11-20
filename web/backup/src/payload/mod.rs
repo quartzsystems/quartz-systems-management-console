@@ -14,8 +14,9 @@ pub const MAGIC: &[u8; 8] = b"QSMCPAY1";
 pub const MOST_FILES: usize = 4096;
 /// The most bytes a payload holds: under the web server's upload limit.
 pub const MOST_BYTES: usize = 7 * 1024 * 1024;
-/// The top folders a path may begin with: `/data/state`, `/data/web`.
-pub const TOPS: [&str; 2] = ["state", "web"];
+/// The top folders a path may begin with: `/data/state`, `/data/web`
+/// and the managed-systems service's `/data/mgmt`.
+pub const TOPS: [&str; 3] = ["state", "web", "mgmt"];
 
 /// What a backup says of itself.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]

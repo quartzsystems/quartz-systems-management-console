@@ -17,6 +17,7 @@ mod clock;
 pub mod cmdline;
 #[cfg(target_os = "linux")]
 mod install;
+mod mgmt;
 #[cfg(target_os = "linux")]
 pub mod mounts;
 pub mod restore;
@@ -95,8 +96,16 @@ mod on_console {
     fn storage(host: &mut Host) {
         let control = QSMC.control_socket();
         let _ = std::fs::remove_file(&control);
+        // Shared with the managed-systems service's group, which posts
+        // its codes through it (`docs/MGMT.md`).
         let listener = UnixListener::bind(&control)
             .and_then(|l| l.set_nonblocking(true).map(|()| l))
+            .and_then(|l| {
+                use std::os::unix::fs::PermissionsExt as _;
+                std::os::unix::fs::chown(&control, Some(0), Some(release::MGMT_ID))?;
+                std::fs::set_permissions(&control, std::fs::Permissions::from_mode(0o660))?;
+                Ok(l)
+            })
             .map_err(|e| host.line(&format!("{}: {e}", control.display())))
             .ok();
         // A table that is not one is a failure of PID 1 itself.
@@ -243,6 +252,10 @@ mod on_console {
             Ok(true) => host.post(&refcode::IDENTITY_GENERATED, identity::CERT_FILE),
             Ok(false) => {}
             Err(e) => host.post(&refcode::IDENTITY_NOT_GENERATED, &e.to_string()),
+        }
+        // The managed-systems service's user alone reads the key.
+        if let Err(e) = super::mgmt::share(&QSMC.state_dir()) {
+            host.post(&refcode::MGMT_NOT_SHARED, &e.to_string());
         }
     }
 
