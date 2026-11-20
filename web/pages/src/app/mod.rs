@@ -88,6 +88,8 @@ pub struct App {
     pub pending: Mutex<Option<(String, u64)>>,
     /// The web certificate, once the server has started.
     pub certs: std::sync::OnceLock<std::sync::Arc<webd::tls::Certs>>,
+    /// A message for every session: the console is going down.
+    pub announced: Mutex<Option<qsweb::msg::Message>>,
 }
 
 fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
@@ -146,6 +148,7 @@ impl App {
             console,
             certs: std::sync::OnceLock::new(),
             pending: Mutex::new(None),
+            announced: Mutex::new(None),
         })
     }
 

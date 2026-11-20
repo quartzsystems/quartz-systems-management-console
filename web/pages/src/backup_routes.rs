@@ -337,7 +337,10 @@ pub fn confirm(rq: &Rq<'_>) -> Response {
             return rq.done(back, error(&qmcmsg::NOT_VALID, &[&e]));
         }
         let pending = qmcmsg::message(Kind::Info, &qmcmsg::RESTORE_PENDING, &[&b.manifest.console]);
-        let restarted = app.console.power_down(true, rq.user());
+        let restarted = app.console.power_down(
+            true,
+            &format!("{} from the web interface: a restore", rq.user()),
+        );
         rq.audit("restart the console for a restore", outcome(&restarted));
         return match restarted {
             Ok(()) => rq.done(

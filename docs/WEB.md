@@ -1,3 +1,4 @@
+| `qsmc/console-shutdown.html` | the form begins before the Restart / Power off choice and the message, not after them | as drawn, the choice and the message would not be sent; `qsweb`'s confirmation has them in its form |
 # The web server
 
 QS/MC's management surface: `web/webd`, run as the service `webd`

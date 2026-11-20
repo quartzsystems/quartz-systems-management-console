@@ -529,3 +529,34 @@ fn console_backup() {
         &[],
     );
 }
+
+#[test]
+fn console_shutdown() {
+    use webpages::shutdown::{Shutdown, page};
+    let v = Shutdown {
+        console: "QSHQMC1".into(),
+        uptime: "41 days 3:12".into(),
+        systems: "2".into(),
+        terminals: "1 (qsadmin -> QSDEV01)".into(),
+        scheduled: "0".into(),
+        restart: true,
+        message: "Console restart for update 26300, back in 5 minutes".into(),
+        messages: Vec::new(),
+    };
+    let c = ctx("/qsmc/console/shutdown");
+    // The choice and the message are in the form, so they are sent.
+    assert_golden(
+        &render("/qsmc/console/shutdown", &page(&c, &v)),
+        "console-shutdown.html",
+        &[
+            (
+                "</table><p class=\"small grey\"><input type=\"radio\" name=\"how\"",
+                "</table><form method=\"post\"><p class=\"small grey\"><input type=\"radio\" name=\"how\"",
+            ),
+            (
+                "size=\"50\"></p><form method=\"post\"><div",
+                "size=\"50\"></p><div",
+            ),
+        ],
+    );
+}

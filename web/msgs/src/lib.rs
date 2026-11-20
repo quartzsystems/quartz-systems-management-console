@@ -161,6 +161,9 @@ catalogue! {
         "An Administrator asked the console to power off.", "Start it at the machine.";
     RESTART_STARTED = "QMC8501", 0, "The console is restarting.",
         "An Administrator asked the console to restart.", "Sign on again when it is back.";
+    ANNOUNCED = "QMC8502", 0, "Message from &1: &2",
+        "A user shutting down or restarting the console left a message for everyone signed on.",
+        "None.";
 
     // Language, locale and session.
     SETTINGS_SAVED = "QMC8600", 0, "Settings changed.",

@@ -115,6 +115,7 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         "/console/backup" => crate::backup_routes::backup(rq),
         "/confirm/restore" => crate::backup_routes::confirm(rq),
         "/console/certs" => crate::certs_routes::certs(rq),
+        "/console/shutdown" => crate::shutdown_routes::shutdown(rq),
         "/confirm/cert-new" => crate::certs_routes::renew(rq),
         "/confirm/ca-remove" => crate::certs_routes::remove(rq),
         "/confirm/user-delete" => crate::user_routes::delete(rq),

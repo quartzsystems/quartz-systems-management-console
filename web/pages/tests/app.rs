@@ -53,6 +53,10 @@ impl Console for Fixed {
             .save(&host)
             .map_err(|e| e.to_string())
     }
+    fn power_down(&self, restart: bool, by: &str) -> Result<(), String> {
+        POWERED.with(|p| *p.borrow_mut() = Some((restart, by.to_string())));
+        Ok(())
+    }
     fn set_clock(&self, secs: i64) -> Result<(), String> {
         let ticks = i64::try_from(self.0.load(Ordering::Relaxed)).unwrap_or(0);
         SHIFT.with(|s| s.store(secs - ticks, Ordering::Relaxed));
@@ -73,6 +77,8 @@ thread_local! {
     static CONFIRMS: Arc<AtomicU64> = Arc::new(AtomicU64::new(0));
     /// How far this thread's test clock was set by hand.
     static SHIFT: AtomicI64 = const { AtomicI64::new(0) };
+    /// The power-down this thread's test console was asked for.
+    static POWERED: std::cell::RefCell<Option<(bool, String)>> = const { std::cell::RefCell::new(None) };
 }
 
 fn app(name: &str) -> (App, Arc<AtomicU64>, PathBuf) {
@@ -838,8 +844,64 @@ fn a_backup_is_made_opened_and_left_for_the_restart() {
     assert!(staged.join("pending").exists() && !staged.join("uploaded").exists());
     let pending = std::fs::read(staged.join("pending")).unwrap();
     assert_eq!(qmcbackup::Backup::decode(&pending).unwrap(), opened);
-    // The test console cannot restart: the page says it waits.
+    // And the console restarts for it.
     let t = b.send("GET", restore, &[]).text();
-    assert!(t.contains("QMC8401"), "{t}");
+    assert!(t.contains("QMC8501"), "{t}");
+    let powered = POWERED.with(|p| p.borrow_mut().take());
+    assert_eq!(
+        powered,
+        Some((true, "qsadmin from the web interface: a restore".into()))
+    );
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+#[test]
+fn shut_down_or_restart_asks_pid_1_and_tells_every_session() {
+    let (app, _, dir) = app("shutdown");
+    let mut b = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.22",
+        host: None,
+    };
+    b.sign_on("qsadmin", PASSWORD);
+    let t = b.send("GET", "/qsmc/console/shutdown", &[]).text();
+    assert!(t.contains("1:00") && t.contains("QSHQMC1"), "{t}");
+    let token = b.csrf("/qsmc/console/shutdown");
+    let r = b.send(
+        "POST",
+        "/qsmc/console/shutdown",
+        &[("csrf", &token), ("cancel", "Cancel")],
+    );
+    assert_eq!(r.header("Location"), Some("/qsmc/console"));
+    assert!(POWERED.with(|p| p.borrow().is_none()));
+    let t = b
+        .send(
+            "POST",
+            "/qsmc/console/shutdown",
+            &[
+                ("csrf", &token),
+                ("how", "off"),
+                ("m", "Back at noon"),
+                ("ok", "OK"),
+            ],
+        )
+        .text();
+    assert!(t.contains("QMC8500"), "{t}");
+    let powered = POWERED.with(|p| p.borrow_mut().take());
+    assert_eq!(
+        powered,
+        Some((false, "qsadmin from the web interface: Back at noon".into()))
+    );
+    // Another session sees the message on its next page.
+    let mut other = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.23",
+        host: None,
+    };
+    other.sign_on("qsadmin", PASSWORD);
+    let t = other.send("GET", "/qsmc/welcome", &[]).text();
+    assert!(t.contains("Message from qsadmin: Back at noon"), "{t}");
     let _ = std::fs::remove_dir_all(dir);
 }

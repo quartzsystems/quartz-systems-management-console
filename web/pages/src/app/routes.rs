@@ -56,6 +56,15 @@ impl Rq<'_> {
         if let Some(m) = self.app.sessions.take_flash(&self.session.id) {
             page.messages.insert(0, m);
         }
+        if let Some(m) = self
+            .app
+            .announced
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .clone()
+        {
+            page.messages.insert(0, m);
+        }
         Response::html(200, render(&self.ctx, &page))
     }
 

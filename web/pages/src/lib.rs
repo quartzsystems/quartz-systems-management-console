@@ -26,6 +26,8 @@ pub mod help;
 pub mod network;
 pub mod network_routes;
 pub mod pages;
+pub mod shutdown;
+pub mod shutdown_routes;
 pub mod signon;
 pub mod url;
 pub mod user_routes;
