@@ -1,4 +1,3 @@
-| `qsmc/console-shutdown.html` | the form begins before the Restart / Power off choice and the message, not after them | as drawn, the choice and the message would not be sent; `qsweb`'s confirmation has them in its form |
 # The web server
 
 QS/MC's management surface: `web/webd`, run as the service `webd`
@@ -82,7 +81,9 @@ The web certificate is not the console's QSI identity
 
 Every answer on 443 carries `Content-Security-Policy: default-src
 'none'; style-src 'self'; img-src 'self'; form-action 'self';
-frame-ancestors 'none'; base-uri 'none'`, `X-Frame-Options: DENY`,
+frame-ancestors 'none'; base-uri 'none'` but the terminal window, whose
+policy also allows its script, its socket and its style attributes
+(`docs/TERMINAL.md`); `X-Frame-Options: DENY`,
 `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, and
 `Cache-Control: no-store` unless it says otherwise. There is no
 `Strict-Transport-Security`: with a self-signed certificate it would
@@ -97,8 +98,9 @@ in on), and nothing else.
 The stylesheet is `qsweb::CSS`, served byte for byte at
 `/qsmc/shared/qs400.css` with an entity tag (its SHA-256's first 16
 hex digits) and `max-age=3600`; a matching `If-None-Match` is answered
-`304`. No page carries a script in this phase, so the navigation
-script is not served.
+`304`. The one script is QS/400's terminal script,
+`/qsmc/terminal/script.js` (`termlook::script::text`), on the terminal
+window only; `qsweb`'s navigation script is not served.
 
 ## Pages and their golden files
 
@@ -121,6 +123,16 @@ Golden corrections, each the only difference allowed:
 | `shared/notauth.html` | the closing paragraph is QS/MC's (`Brand::notauth_note`) | the prototype's names QS/400's security officer |
 | `shared/help.html` | the window's wordmark, title and footer are QS/MC's; Contents and Index lead to the help pages; Close window carries `qsweb`'s inline handler | as above; the handler is `qsweb`'s (item 22) |
 | `shared/components.html` | the job actions (`../nav/active-jobs.html` and the two beside it) lead to the page itself | QS/MC has no job pages; the page is served under `/dev/components` in a test image only, with its error page example at `/dev/error` |
+| `qsmc/connectivity.html` | Reset connection and Change password lead to the add form (`add-system.html`) | both pair the system again with a new password; QSI has no service password to change |
+| `qsmc/add-system.html` | Verify TLS certificate: grey text, the system's own certificate pinned when paired, not a box for a certificate authority | QSI trusts a system by the certificate pinned at pairing (`docs/MGMT.md`) |
+| `qsmc/add-system-result.html` | the form carries the system's name (`ms`); a Certificate SHA-256 row after Reference code | Add and Cancel act on that system; the operator compares the fingerprint with the one the system shows |
+| `qsmc/servers-empty.html`, `-error.html`, `-paged.html` | Systems Management drawn open, as on `servers.html` | the console opens the group on every state of the page |
+| `qsmc/servers-paged.html` | the boxes are `s1` to `s25`, not `s0` to `s24`; `Page 1 of 2`, not `of 3` | the other states number from 1; 27 entries at 25 a page are two pages |
+| `qsmc/confirm-poweroff.html`, `confirm-poweron.html` | the form begins before the choice, with the system's name | as drawn, the radios and selects are outside the form and would not be sent |
+| `qsmc/terminal.html`, `terminal-disconnected.html` | the picture has `id="term"`; the window's `<script>` element is the server's (dropped from the comparison by its source) | the script replaces the picture by its id |
+| `qsmc/terminal-disconnected.html` | the status line names `QSTEST01`, not `QSDEV01` | the window is of `QSTEST01` |
+| `qsmc/terminal-config.html` | one form, not one inside another; the strip's box named `strip`, not `cp`; Open and Cancel named | a form in a form is not valid HTML; the code page is `cp` already |
+| `qsmc/console-shutdown.html` | the form begins before the Restart / Power off choice and the message, not after them | as drawn, the choice and the message would not be sent; `qsweb`'s confirmation has them in its form |
 
 ## Time
 
@@ -151,3 +163,41 @@ systems are trusted by their pinned QSI certificates. Download CA
 certificate gives the chain's last certificate, which is the
 certificate itself while it is self-signed. The prototype has no
 certificate request, and there is none.
+
+## The managed systems' pages
+
+Phase 4's pages read the managed-systems service (`docs/MGMT.md`) over
+its socket: a list from what it keeps, never waiting on a managed
+system; an action as a live request, whose refusal shows the console's
+message for it and then every message the managed system gave, its own
+identifiers first-level and, for a QS/VS host's `QVS` identifiers, their
+second-level text from the catalogue (`/qsmc/msg/<id>`). The routes
+mirror the prototype's files:
+
+| Prototype | Route |
+| --- | --- |
+| `connectivity.html` | `/qsmc/connectivity` (`?test=`, `POST` Test all) |
+| `add-system.html`, `add-system-result.html` | `/qsmc/servers/add`, `/qsmc/servers/add/result`, `/qsmc/servers/reset?ms=`; Remove `/qsmc/confirm/system-remove?ms=` |
+| `servers.html` and its states | `/qsmc/servers?t=&s=&sort=&page=&rows=` |
+| `system-general.html` and its six tabs | `/qsmc/server/<name>/<tab>` |
+| `confirm-poweroff.html`, `confirm-poweron.html` | `/qsmc/server/<name>/confirm?op=poweroff\|restart\|poweron` |
+| `refcode-history.html`, `refcode.html` | `/qsmc/refcodes?ms=&p=&f=&t=&page=`, `/qsmc/refcode/<code>?ms=&p=&seq=` |
+| `terminal-config.html`, `terminal.html`, `terminal-disconnected.html` | `/qsmc/terminal`, `/qsmc/terminal/<host>/<id>` (`docs/TERMINAL.md`) |
+| `control-panel.html` | `/qsmc/partition/<host>/<id>/panel`; 08 and 22 `/qsmc/confirm/panel` |
+
+Welcome's strip counts the managed systems and partitions by state from
+what is kept; its serviceable events, dumps and updates stay as Phase 3
+left them until Phase 6.
+
+What a page offers and QSI v1 or this release does not do answers with
+a message: a host's name (`QMC1008`) and power-on parameters
+(`QMC2220`), Power on (`QMC2201`), Servers' actions of later phases
+(Schedule operations, Create partition, Manage partition profiles,
+Manage system profiles, Virtual resources, Manage dumps: `QMC9030`), a
+standalone system's console (`QMC3004`), and the terminal toolbar's
+Copy, Paste, Keypad and Keyboard Map (`QMC8700`).
+
+A host's code is explained from the catalogue its QS/VS release writes,
+built into the image at `/qsmc/catalogue.json`; a partition's QS/400
+code from `srcdata`; the console's own from `refcode`. A code none of
+them knows is shown with its text as posted and `QMC1201`.

@@ -34,18 +34,17 @@ Two things already exist and are reused, never rewritten or copied:
 | 0 | Toolchain and build | `docs/PHASE0.md` |
 | 1 | PID 1 and base system: services, state, logging, the management network, time | `docs/PHASE1.md` |
 | 2 | Installer, ISO and the local console | `docs/PHASE2.md` |
-| **3 (current)** | The web server and Console Management pages | `docs/PHASE3.md` |
-| 4 | QSI and managed systems, proven on a QS/VS host; the browser terminal | |
+| 3 | The web server and Console Management pages | `docs/PHASE3.md` |
+| **4 (current)** | QSI and managed systems, proven on a QS/VS host; the browser terminal | `docs/PHASE4.md` |
 | 5 | Partitions, profiles and virtual resources | |
 | 6 | Service management and updates | |
 | 7 | System plans | |
 | 8 | Release engineering and hardening | |
 
 Work that is not done is listed in the current phase's record,
-`docs/PHASE3.md`. Code and documents mark it `BLOCKED(phase3): reason`
+`docs/PHASE4.md`. Code and documents mark it `BLOCKED(phase4): reason`
 (one line) or `NEEDS-CODY` (Cody's hardware or sign-off); an earlier
-phase's `BLOCKED(phase0)`, `BLOCKED(phase1)` or `BLOCKED(phase2)` stays
-as it was written.
+phase's `BLOCKED(phase0)` to `BLOCKED(phase3)` stays as it was written.
 No other marker form.
 
 ## Ground rules
@@ -72,7 +71,7 @@ No other marker form.
 - **The two pins.** QS/VS's crates are git dependencies at one commit of
   its `main`. QS/400's crates are git dependencies at one commit:
   exactly the commit that QS/VS commit pins, so the tree holds one copy
-  of every shared crate. Both are recorded in `docs/PHASE3.md`, where
+  of every shared crate. Both are recorded in `docs/PHASE4.md`, where
   they last moved (`docs/PHASE0.md` has the first). Moving
   either is its own commit, and they move together. Never path
   dependencies, never copies. `build doctor` fails when they disagree
@@ -87,7 +86,7 @@ No other marker form.
   value.
 - No IBM text, product names or marks anywhere. The names in use are
   QS/MC, QS/VS and QS/400.
-- Anything not done is listed in the current phase's record (`docs/PHASE3.md`).
+- Anything not done is listed in the current phase's record (`docs/PHASE4.md`).
 
 ## Locked decisions
 
@@ -115,6 +114,9 @@ See `docs/ARCHITECTURE.md`. Short form:
 - **QSI.** QS/400's crates, used as a client: mutual TLS 1.3 with pinned
   certificates, pairing by the managed system's one-time password,
   events with replay, streams for consoles, uploads and downloads.
+- **Managed systems.** `mgmtd` (`qsmcmgmtd`, at 40), its own user for
+  good, alone holds the QSI key and every session; the web server asks
+  it on local sockets and holds neither (`docs/MGMT.md`).
 - **A partition's console.** Frames of a cell grid from the managed
   side, drawn in the browser by one small script; keys go back as key
   events. The only script in the product.
@@ -157,6 +159,7 @@ See `docs/ARCHITECTURE.md`. Short form:
 VERSION         1.0.0, the release (V1R0M0)
 kernel/         VERSION, SHA256 (QS/VS's), config/qsmc.config
 tools/          host tools
+  sim/            the simulated managed systems (docs/SIM.md): sim, binary qsmcsim; screens/ the recorded console screen
   build/          the orchestrator, a thin binary over buildkit: cargo run -p build -- <cmd>
     src/product/    QS/MC as buildkit's Product, release or test image: names, kernel, initramfs, media
     src/image/      the userland and its hook check, the disk's record, the manifest, the load-source writer
@@ -167,7 +170,7 @@ tools/          host tools
     src/web/        a browser of the web interface, pinned to the certificate it expects
     src/suite/      Phase 0's steps; base/: Phase 1's suites; install/: Phase 2's, the installer and the local console; web/: Phase 3's
     golden/         every installer and local console screen, as text
-  fuzz/           qsmcfuzz over QS/400's fuzzer: a backup's reader, the certificate import
+  fuzz/           qsmcfuzz over QS/400's fuzzer: a backup's reader, the certificate import, what mgmtd does with a peer's messages
 lic/            PID 1, release, the product's binaries
   qsmcinit/       PID 1
     src/ipl/        the IPL in order: mounts, the record, storage and /data (the panel for the unit to keep), a restore, clock, seed, state and inventory, identity; the media's hand-off to the installer
@@ -182,17 +185,22 @@ lic/            PID 1, release, the product's binaries
   qsmcnetd/       base/netd run as QS/MC
   qsmchook/       the test hooks: the channel, flaky, the churn, a failing web server (test image only)
   qsmcwebd/       the web server's binary: web/webd with web/pages, and its socket for the local console
+  qsmcmgmtd/      the managed-systems service's binary: its sockets bound, its own user for good, mgmt/mgmtd
   release/        V1R0M0 over QS/400's vrm, the banner, the prefixes, the Appliance and its interface roles, LOAD_SOURCE, status facts and screen, the processor's words
   refcode/        the console's reference codes (docs/REFCODES.md), each base event's, the poster
 web/            the web interface (docs/WEB.md)
   webd/           qsweb under rustls: the listeners PID 1 hands over, TLS and the certificate, the limits and headers, the self-test
   users/          web users, roles and the matrix, sign-on rules, web.toml, the web server's socket protocol (docs/WEBUSERS.md)
   msgs/           the QMC message catalogue (docs/MESSAGES.md)
-  pages/          every page from its view, a module and its routes each; the App: sessions, the task of each route, audit
+  pages/          every page from its view, a module and its routes each; the App: sessions, the task of each route, audit;
+                  systems/ the managed systems' pages, refcodes/ explanations and the history, terminal/ the window, its socket, the control panel
   backup/         the backup file: the payload PID 1 restores, sealed under a passphrase (docs/BACKUP.md)
+mgmt/           managed systems (docs/MGMT.md)
+  proto/          mgmtproto: what is kept of a system, the requests on mgmtd's socket, a terminal window's connection
+  mgmtd/          the service: keep/ systems.toml, mgmt.toml, the history; peer/ a QSI connection, pairing; system/ a thread a system, its consoles shared; service/ the requests, the console socket
 svc/            the local console
   console/        qsmccons over base/panels: the sessions, the main menu, status, network, disk units, the web interface (option 4), the one panel for the unit to keep
-docs/           ARCHITECTURE, PHASE0-3, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, OPEN_QUESTIONS
+docs/           ARCHITECTURE, PHASE0-4, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, MGMT, TERMINAL, SIM, OPEN_QUESTIONS
 design/         qsmc-prototype/: the web UI's approved design, every page a golden rendering (its README is the handoff)
 ```
 
@@ -201,7 +209,8 @@ Category folders are made as phases need them. The full set: `tools/`
 (the server, sessions, templates, the terminal relay, static files),
 `mgmt/` (managed systems: the QSI client's use, pairing, events, what
 is kept about each system), `svc/` (the local console). Phases 0 and 1
-made `tools/` and `lic/`, Phase 2 `svc/`, Phase 3 `web/`.
+made `tools/` and `lic/`, Phase 2 `svc/`, Phase 3 `web/`, Phase 4
+`mgmt/`.
 
 ## Commands
 
@@ -212,7 +221,9 @@ with `QSMC_TARGET_DIR`.
 cargo run -p build -- doctor          host prerequisites, the license headers, the two pins, no shared crate twice
 cargo run -p build -- all             fetch, kernel, userland, initramfs, uki, disk, iso, manifest
 cargo run -p build -- --test-image all   the same with the test hooks, under test-image/ in the target
-cargo run -p build -- test            Phase 0's steps on the release image, then Phases 1 to 3's suites on the test image
+cargo run -p build -- test            Phase 0's steps on the release image, then Phases 1 to 4's suites on the test image
+cargo run -p build -- test --suite mgmt-host   suite 10 on a real QS/VS host: QSMC_QSVS_DISK names its installed test disk
+cargo run -p sim --bin qsmcsim        the prototype's managed systems on the network, told what to do on standard input
 cargo run -p build -- fuzz            the fuzzer with coverage counters, every target 60 s (--target NAME, --secs N)
 cargo run -p build -- test --suite <name>   one step or suite; `list` lists them
 cargo run -p build -- test --media iso   the installation ISO
@@ -221,7 +232,7 @@ cargo run -p build -- deny            cargo-deny and the C-linkage check
 cargo run -p build -- notices         rewrite lic/release/NOTICES.txt (--check in CI)
 cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
-cargo clippy -p qsmcinit -p qsmcstgd -p qsmclogd -p qsmcnetd -p qsmccons -p qsmcinstall -p qsmcwebd --all-targets --target x86_64-unknown-linux-musl -- -D warnings
+cargo clippy -p qsmcinit -p qsmcstgd -p qsmclogd -p qsmcnetd -p qsmccons -p qsmcinstall -p qsmcwebd -p qsmcmgmtd --all-targets --target x86_64-unknown-linux-musl -- -D warnings
 QSMC_TEST_HOOKS=1 cargo clippy -p qsmcinit -p qsmchook -p qsmccons -p webpages --all-targets --target x86_64-unknown-linux-musl -- -D warnings
 cargo test --workspace
 cargo test -p build -- --ignored host::pins   the pin checks against cargo's checkout of QS/VS
@@ -263,6 +274,14 @@ guest's second serial port.
 - `docs/PHASE3.md`: the web server and Console Management pages: the
   new pins and what they changed, the acceptance table with evidence,
   what is not done.
+- `docs/PHASE4.md`: QSI and managed systems: the new pins, what exists,
+  the pages live, the acceptance table with evidence, the joint gate
+  with QS/VS, what is not done.
+- `docs/MGMT.md`: the managed-systems service: what it keeps, sessions,
+  pairing as the console does it, its sockets, what each failure shows.
+- `docs/TERMINAL.md`: the terminal window: the exchange, viewers, roles,
+  the picture, its script and policy.
+- `docs/SIM.md`: the simulated managed systems and what they are told.
 - `docs/WEB.md`: the web server: its listeners, TLS, limits and
   headers, static files, how a page is added against its golden file
   and every golden correction, time, Certificates.

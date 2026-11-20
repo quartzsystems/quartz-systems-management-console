@@ -7,16 +7,28 @@ user whose role has the Console settings task.
 
 ## What a backup holds
 
-Every file under `/data/state` and `/data/web`:
+Every file under `/data/state` and `/data/web`, and the managed
+systems' files under `/data/mgmt`:
 
 | Folder | What |
 | --- | --- |
 | `state/` | the state files (`host.toml`, `network.toml`, `inventory.toml`, `webusers.toml`, `web.toml`, `trusted.toml`, `backups.toml`), the service tools users (`users.db`), and the console's QSI identity: its key and certificate |
 | `web/` | the web certificate and its key |
+| `mgmt/` | `systems.toml`, the managed systems as paired with their pins, and `mgmt.toml` (`docs/MGMT.md`) |
+
+The QSI key and the `mgmt/` files are the managed-systems service's
+user's alone: the web server cannot read them, and asks the service for
+them (`backup_files`) as it makes a backup. They pass through the web
+server only inside the backup being made or opened, under its
+passphrase. A console restored from a backup has the identity its
+managed systems pinned and its systems' pins, so its sessions resume
+without pairing again; the next IPL gives the files back to the
+service's user.
 
 Not held: the logs and the reference code history under `/data/log`
-(the log service's, not restored over a running one), and anything of
-a later phase. A file being written (a name beginning `.` or ending
+(the log service's, not restored over a running one), the managed
+systems' reference code histories under `/data/mgmt/refcodes`, and
+anything of a later phase. A file being written (a name beginning `.` or ending
 `.new`) is left out.
 
 ## The file

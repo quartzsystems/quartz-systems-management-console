@@ -1,7 +1,3 @@
-| `A3001045` | Restore taken back | the IPL after a restore found it not confirmed: the restored console did not start its web server, or the restore was cut short; the state before it is back | The console runs on the state it had before the restore; restore the backup again, and if it is taken back again, report this code with the system log |
-| `A3001046` | Restore refused | the restore waiting for this IPL could not be read, or is of a newer release, with why | Nothing was changed; restore a backup made by a console of this release or an earlier one |
-| `C3001096` | Restore confirmed | the web server answered on the restored state: the state before the restore is deleted |
-| `C3001045` | Restore applied | a restore made from the web interface was put in place before the state was read, with the backup's console and date; the state before it is kept until the restore is confirmed |
 # Console reference codes
 
 A QS/MC console posts reference codes the way a QS/400 system and a
@@ -90,6 +86,7 @@ a data file system, so they are not in the reference code history.
 | `C3001010` | Kernel file systems mounted | proc, sysfs, devtmpfs, the tmpfs on `/run`, efivarfs and cgroup2 are mounted |
 | `C3001030` | A/B record read | the load-source disks were found and the record read, with the record and how many disks |
 | `C3001040` | Data file system mounted | `QSMCDATA` is mounted at `/data`, with the device: the data partition, or the mirrored set's `/dev/ublkb0` |
+| `C3001045` | Restore applied | a restore made from the web interface was put in place before the state was read, with the backup's console and date; the state before it is kept until the restore is confirmed |
 | `C3001050` | Clock set from the RTC | the system clock was set from the RTC, with the time |
 | `C3001060` | Seed checked | the seed step applied nothing: the console is configured, or there is no seed volume |
 | `C3001061` | Seed applied | `network.toml` and `host.toml` were written from a `QSMCSEED` volume |
@@ -98,6 +95,7 @@ a data file system, so they are not in the reference code history.
 | `C3001080` | Services started | what waited for `/data` was started, with the table |
 | `C3001090` | Base ready | every service said it is ready, with the seconds since the kernel started |
 | `C3001095` | Slot confirmed | a slot on trial became the default in the record and in `BootOrder` |
+| `C3001096` | Restore confirmed | the web server answered on the restored state: the state before the restore is deleted |
 | `C3002010` | Management interface up | the management interface is up and has carrier |
 | `C3002020` | Management address acquired | it has its address, with the gateway |
 | `C3002030` | Time synchronized | the clock is in step with a time server, and the RTC written from it |
@@ -136,6 +134,8 @@ a data file system, so they are not in the reference code history.
 | `A3001030` | A/B record not valid | no load-source disk was found, or the record could not be read or written | The console runs from the slot the firmware started; if this is posted at every IPL, the load-source disk may be failing: replace it |
 | `A3001035` | Pending slot not confirmed | the slot on trial did not confirm: this IPL is on the other | The console went back to the slot it ran before; the update in the other slot did not start its services and is not used |
 | `A3001040` | Data file system not mounted | `/data` could not be mounted; state is in memory only | Nothing is kept across a restart: check the load-source disks and their connections; the data file system is never reformatted by the console |
+| `A3001045` | Restore taken back | the IPL after a restore found it not confirmed: the restored console did not start its web server, or the restore was cut short; the state before it is back | The console runs on the state it had before the restore; restore the backup again, and if it is taken back again, report this code with the system log |
+| `A3001046` | Restore refused | the restore waiting for this IPL could not be read, or is of a newer release, with why | Nothing was changed; restore a backup made by a console of this release or an earlier one |
 | `A3001050` | Clock not set from the RTC | the RTC could not be read | Configure a time server; if the machine has a real-time clock, check its battery |
 | `A3001060` | Seed not valid | a seed volume was found and refused, with why; nothing was written | Correct seed.toml on the QSMCSEED volume as the text says and restart; the console runs on its defaults meanwhile |
 | `A3001070` | State file not valid | a state file was refused, with which and why | The file named is not used and its defaults are; set those settings again |

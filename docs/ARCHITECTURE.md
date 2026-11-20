@@ -30,7 +30,8 @@ recorded here.
 | Network roles | Two, as `network.toml` names them: `open`, first, the network operators reach the console on, with the default route, the name servers and the time; `private`, optional, toward the systems it manages, with no default route. Decided in Phase 2. |
 | Installation | The ISO's media UKI runs the installer (`qsmcinstall`, over `base/install`) in place of the services. It installs from the payload beside it, both slots and a manifest signed by the build's key, checked before any write. The smallest load-source disk is 16 GiB; none or mirrored protection. The user it makes is the first service tools user. Decided in Phase 2. |
 | Local console | `qsmccons` over `base/panels`, on the display and the serial port, a session each, idle sign-off after ten minutes. It changes nothing itself: `netd`, PID 1 and the storage service do. It manages nothing but the console. Decided in Phase 2. |
-| Web interface | `webd` (`qsmcwebd`): QS/400's `qsweb` under rustls with graviola, TLS 1.2 and 1.3, handed 443 and 80 on `open` by PID 1; no script. Its own users in four roles with a role matrix, the first Administrator from the installation's user. An ECDSA P-256 self-signed certificate made at first start, not the QSI identity. Backups always under a passphrase, through the browser only, restored by PID 1 at an IPL. English only. Every message a `QMC` one. Decided in Phase 3. |
+| Web interface | `webd` (`qsmcwebd`): QS/400's `qsweb` under rustls with graviola, TLS 1.2 and 1.3, handed 443 and 80 on `open` by PID 1; no script but the terminal window's. Its own users in four roles with a role matrix, the first Administrator from the installation's user. An ECDSA P-256 self-signed certificate made at first start, not the QSI identity. Backups always under a passphrase, through the browser only, restored by PID 1 at an IPL. English only. Every message a `QMC` one. Decided in Phase 3. |
+| Managed systems | `mgmtd` (`qsmcmgmtd`), at 40 in PID 1's table: its own user (23990) for good, the only reader of the console's QSI key, a QSI session with every managed system over QS/400's `qsi`, `qsisess` and `qsitrust`, kept open and resumed with its events. The web server asks it on two local sockets and holds no key and no session. A list never waits on a managed system. Pairing by the system's one-time password, never kept. A partition's console shared among windows by `mgmtd`, the host's one viewer; drawn by QS/400's `termlook` and its script, the only script served, on the terminal window only. Decided in Phase 4. |
 
 A sentence on each:
 
@@ -59,6 +60,9 @@ A sentence on each:
 - **What it manages.** A console holds no partition and runs no
   workload: everything it shows or does is on a managed system, asked
   over QSI.
+- **Managed systems.** The key managed systems trust is held by one
+  unprivileged service apart from the listener that faces browsers, so
+  a fault in a page reaches neither the key nor a session.
 - **QSI.** The console is a QSI client and nothing of the protocol is
   restated: QS/400's `qsi`, `qsisess` and `qsitrust` are the messages,
   the session and the trust rules a QS/VS host's server speaks.
@@ -91,7 +95,7 @@ A sentence on each:
   `abrec`, `ipc`, `protect` and the rest to the same source as QS/MC's,
   and the graph holds one copy of every shared crate.
 - Both commits are recorded in the record of the phase that last moved
-  them (`docs/PHASE3.md`: QS/VS `3de567e`, QS/400 `155aba2`; the first
+  them (`docs/PHASE4.md`: QS/VS `fd245e6`, QS/400 `cb58b01`; the first
   were `docs/PHASE0.md`'s). Moving either is its own commit, and they
   move together: a new QS/VS commit brings the QS/400 commit it pins,
   and QS/400 is never moved alone.
@@ -202,8 +206,8 @@ when it ends.
 The service table is fixed: the storage service (5), the log service
 (10), the network service (20), the local console (25), the web server
 (30, from Phase 3, absent on a processor without what the cryptography
-needs); the managed-systems service (40) and the scheduler (50) take
-their places in later phases. PID 1 binds the web server's 443 and 80
+needs), the managed-systems service (40, from Phase 4, absent with the
+web server); the scheduler (50) takes its place in a later phase. PID 1 binds the web server's 443 and 80
 on the `open` address and hands them over (`docs/WEB.md`). The orderly shutdown (the control socket, `SIGTERM`,
 the power button) ends them in reverse, unmounts `/data`, ends the
 storage service last and posts `D3001090` or `D3001091`.

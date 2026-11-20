@@ -58,10 +58,22 @@ Every route names its task (`webpages::app::routes::task_of`); a test
 holds that no route of the navigation tree lacks one. Users and roles
 and the delete confirmation need Users and roles; Console version and
 Welcome, View; every other Console Management page and confirmation,
-Console settings. The later phases' routes need the task their pages
-will: View for systems, partitions and groups, System plans, Serviceable
-events for events, reference codes, dumps and connectivity, Code
-updates for updates. A route the role lacks answers Not authorized
+Console settings. The managed systems' pages of Phase 4:
+
+| Route | Task |
+| --- | --- |
+| Servers, a system's properties, Open terminal window, a terminal window and its picture, the control panel | View |
+| Saving a system's General or Power-on parameters tab | Console settings |
+| Add managed system, Reset connection, Remove | Console settings |
+| Power off, Restart, Power on (the confirmation and its POST) | Power on / off managed systems |
+| Connectivity and Test connection, Reference code history, an explanation | Serviceable events |
+| A key typed in a terminal window, control panel functions 01 to 49, the confirmation of 08 and 22 | Open terminal window |
+| Control panel functions 50 to 70 | Control panel functions 50-70 |
+
+A Viewer sees a terminal window and cannot type (`docs/TERMINAL.md`).
+The later phases' routes need the task their pages will: View for
+partitions and groups, System plans, Serviceable events for events and
+dumps, Code updates for updates. A route the role lacks answers Not authorized
 (403, `QMC9010`), and the attempt is audited. A change of the matrix
 applies at each user's next sign-on.
 
@@ -92,3 +104,12 @@ roles, every setting, the certificate, a backup and a restore, a power
 down, a sign-on and its refusal, a page refused. Never a password, a
 passphrase or a key. The local console's option 4 is audited by the web
 server as `from the local console`, with the session's user.
+
+Phase 4's actions are each audited with the managed system's answer
+(`paired with QSHQVS1`, `refused: QVS1011 ...`): adding, pairing again,
+testing and removing a managed system, its description and power-on
+parameters, power off and restart and power on, a control panel
+function, a terminal window opened or disconnected and its socket,
+Print Screen. Every request to a managed system also carries the
+signed-on user's ID, for the managed system's own log. The pairing
+password is in no line.

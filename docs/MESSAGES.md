@@ -13,6 +13,13 @@ request refused.
 
 | Range | What |
 | --- | --- |
+| `QMC1001`-`QMC1008` | managed systems added, paired again, tested, removed, described, a name that is the system's |
+| `QMC1101`-`QMC1120` | what a managed system's connection and pairing failed with, and the managed-systems service not answering |
+| `QMC1201`-`QMC1202` | reference codes: one this release cannot explain, a date filter |
+| `QMC2201`-`QMC2220` | power on, off and restart of a managed system, and its power-on parameters |
+| `QMC3003`-`QMC3004` | terminal windows: too many open, a standalone system's console |
+| `QMC4001`-`QMC4002` | a terminal window's console closed or disconnected |
+| `QMC5003`, `QMC5010` | control panel functions carried out and refused |
 | `QMC8001`-`QMC8011` | users, roles and form values |
 | `QMC8100`-`QMC8103` | Network settings |
 | `QMC8200`-`QMC8201` | Date and time |

@@ -438,3 +438,65 @@ keep the last line it had (`192.168.250.1/24 on eth1`) until the next
 IPL. The change, for QS/VS: a note for each role a change removes
 (`none`, or the reason). QS/MC's `web-network` suite reads the kernel's
 addresses instead.
+
+## 29. Power on and a machine's BMC
+
+Found in Phase 4. A powered-off machine does not answer QSI, and the
+design has no page that gives the console a machine's BMC (its address,
+its protocol, its credentials). In V1 Power on answers `QMC2201`; its
+confirmation page is drawn as the prototype has it. The outbound rule
+already names the BMC of a machine the console is asked to power on.
+What is needed: where an operator gives a managed system's BMC, which
+protocol the console speaks to it, and where its credentials are kept.
+
+## 30. A host's power-on parameters
+
+Found in Phase 4. Power-on parameters shows what a QS/VS host reports
+(its slot from base `State`, its keylock). QSI cannot set any of the
+page's fields on a host: the IPL side (the host's slots are its A/B
+record, changed by an update's activation), the keylock, the boot mode,
+which partitions start (each partition's auto start is the partition
+family's `Change`, a partition's page in Phase 5), the default power
+off. Apply and OK answer `QMC2220`. A later QSI version could carry the
+host's own boot settings, or the page could lose the fields.
+
+## 31. The service password age
+
+Decided in Phase 4: the design's "service password age" is the time
+since the system was paired, and past 90 days the page shows its warning
+(`(rotate)`); Reset connection pairs again, which is what Change
+password leads to. QSI pairs once with a one-time password and keeps no
+password, so nothing ages but the pin. Whether a pin should expire, and
+whether the console should say so on Welcome, is open.
+
+## 32. What the prototype offers that V1 answers with a message (Phase 4)
+
+As item 19, for this phase's pages: a host's name (`QMC1008`: it is the
+system's), its power-on parameters (item 30), Power on (item 29),
+Servers' actions that later phases bring (Schedule operations, Create
+partition, Manage partition profiles, Manage system profiles, Virtual
+resources, Manage dumps: `QMC9030`), a standalone system's console
+(`QMC3004`: QS/400 has no QSI listener yet), and the terminal toolbar's
+Copy, Paste, Keypad and Keyboard Map (`QMC8700`; the script has the
+keyboard and keypad). The screen size and code page of Open terminal
+window are the system's, not chosen by the console.
+
+## 33. The control panel's list is the design's, not a host's
+
+Found in Phase 4. The design lists functions 01 to 70 with their texts;
+a QS/VS host carries out 01 to 03, 08, 11 to 22 and 34
+(`docs/PANEL.md` in QS/VS), and refuses the others with its own
+message (`QVS2306`). The page sends what is chosen and shows the
+refusal, as the handoff asks. Whether the list should show only what the
+system says it has (a capability of the panel family) is for the
+design and QSI.
+
+## 34. A real host's partition needs a real machine
+
+Found in Phase 4. Suite 10's partition steps (codes as they happen, the
+console at QS/400's sign-on, function 21) need a QS/400 partition in a
+QS/VS host that runs in a second QEMU beside the console's: a third
+level of virtualization, and a QS/400 LIC image built for it. The build
+machine (WSL 2, 12 processors, 11 GiB) runs the host and the console;
+the partition steps are listed for a real machine (`NEEDS-CODY`, the
+Dell).
