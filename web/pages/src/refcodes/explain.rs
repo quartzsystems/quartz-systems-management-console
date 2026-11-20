@@ -33,6 +33,8 @@ pub struct Explained {
     pub code: String,
     /// Its family in words: `attention`, `progress`, ...
     pub family: String,
+    /// Its title: the text it is posted with, before any detail.
+    pub title: String,
     /// What it means.
     pub meaning: String,
     /// Why it is posted; empty where the data has none.
@@ -112,6 +114,7 @@ impl Catalogue {
                     Explained {
                         code: c.code,
                         family: c.family,
+                        title: c.meaning.clone(),
                         meaning: c.meaning,
                         cause: c.cause,
                         recovery,
@@ -179,6 +182,7 @@ pub fn explain(cat: &Catalogue, code: &str) -> Option<Explained> {
         Whose::None => Some(Explained {
             code: NONE.into(),
             family: String::new(),
+            title: "Operating".into(),
             meaning: "Operating; no attention required.".into(),
             cause: "The system has posted no code since it began running, or its last code was cleared.".into(),
             recovery: "None.".into(),
@@ -188,6 +192,7 @@ pub fn explain(cat: &Catalogue, code: &str) -> Option<Explained> {
         Whose::Console => refcode::find(code).map(|c| Explained {
             code: c.code.into(),
             family: family_of(c.code).into(),
+            title: c.text.into(),
             meaning: c.text.into(),
             cause: String::new(),
             recovery: c.action.into(),
@@ -196,6 +201,7 @@ pub fn explain(cat: &Catalogue, code: &str) -> Option<Explained> {
         Whose::System => srcdata::lookup(code).map(|s| Explained {
             code: s.code.into(),
             family: family_of(s.code).into(),
+            title: s.text.into(),
             meaning: s.meaning.into(),
             cause: s.cause.unwrap_or_default().into(),
             recovery: s.recovery.unwrap_or_default().into(),

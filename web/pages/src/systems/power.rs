@@ -185,7 +185,10 @@ fn state_word(s: PartitionState) -> &'static str {
 }
 
 /// `GET`, `POST /server/<name>/confirm?op=poweron|poweroff|restart`.
-#[allow(clippy::too_many_lines, reason = "the confirmation and its POST, top to bottom")]
+#[allow(
+    clippy::too_many_lines,
+    reason = "the confirmation and its POST, top to bottom"
+)]
 pub fn route(rq: &Rq<'_>, name: &str) -> Response {
     let Some(k) = system(rq, name) else {
         return crate::app::routes::error(rq, 404, &qmcmsg::NO_SUCH_SYSTEM, &[name]);

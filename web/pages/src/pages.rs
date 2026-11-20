@@ -199,6 +199,10 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         "/console/version" => crate::version_routes::version(rq),
         "/connectivity" => crate::systems::connectivity::route(rq),
         "/servers" => crate::systems::servers::route(rq),
+        "/refcodes" => crate::refcodes::history::route(rq),
+        r if r.starts_with("/refcode/") => {
+            crate::refcodes::page::route(rq, r.trim_start_matches("/refcode/"))
+        }
         r if r.starts_with("/server/") => return server(rq, r),
         "/servers/add" => crate::systems::add::add(rq),
         "/servers/add/result" => crate::systems::add::result(rq),

@@ -1106,3 +1106,96 @@ fn confirm_poweron() {
         ],
     );
 }
+
+#[test]
+fn refcode_history() {
+    use webpages::refcodes::history::{History, Row, page};
+    let rows: Vec<Row> = [
+        ("10/30/26 06:02:14", "00000000", "00000000", "", "QSDEV01"),
+        ("10/30/26 06:01:40", "C6004031", "00000003", "", "QSDEV01"),
+        ("10/30/26 06:01:12", "C6004025", "00000003", "", "QSDEV01"),
+        ("10/30/26 06:00:58", "C6004010", "00000003", "", "QSDEV01"),
+        ("10/30/26 06:00:31", "C2002100", "00000001", "", "QSDEV01"),
+        ("10/30/26 06:00:02", "C1001008", "00000000", "", "QSDEV01"),
+        ("10/29/26 23:30:44", "A6005008", "00000002", "", "QSTEST01"),
+        ("10/29/26 23:30:10", "C6004031", "00000002", "", "QSTEST01"),
+        (
+            "10/29/26 22:14:05",
+            "B6000100",
+            "00000002",
+            "4B4F4E53",
+            "QSTEST01",
+        ),
+        ("10/29/26 22:13:52", "A6001000", "00000002", "", "QSTEST01"),
+        ("10/29/26 14:20:00", "00000000", "00000000", "", "QSPROD01"),
+        ("10/18/26 08:04:50", "00000000", "00000000", "", "(host)"),
+        ("09/18/26 08:02:11", "C1001000", "00000000", "", "(host)"),
+    ]
+    .iter()
+    .map(|(when, code, w2, w3, p)| {
+        let mut words = vec![(*w2).to_string()];
+        if !w3.is_empty() {
+            words.push((*w3).to_string());
+        }
+        Row {
+            when: (*when).into(),
+            code: (*code).into(),
+            words,
+            partition: (*p).into(),
+            link: format!("/refcode/{code}?ms=QSHQVS1"),
+        }
+    })
+    .collect();
+    let v = History {
+        system: "QSHQVS1".into(),
+        systems: vec!["QSHQVS1".into(), "QSHQ400".into()],
+        partition: "All".into(),
+        partitions: ["All", "(host)", "QSDEV01", "QSTEST01", "QSPROD01"]
+            .iter()
+            .map(|s| (*s).to_string())
+            .collect(),
+        from: "10/29/26".into(),
+        to: "10/30/26".into(),
+        rows,
+        paging: qsweb::partials::Paging {
+            page: 1,
+            rows: 25,
+            total: 88,
+            keep: Vec::new(),
+        },
+        messages: Vec::new(),
+    };
+    assert_golden(
+        &render("/qsmc/refcodes", &page(&ctx("/qsmc/refcodes"), &v)),
+        "refcode-history.html",
+        &[],
+    );
+}
+
+#[test]
+fn refcode() {
+    use webpages::refcodes::page::{Explanation, Reporter, page};
+    let v = Explanation {
+        code: "A6005008".into(),
+        family: "A6xx - partition attention, operating system waiting".into(),
+        words: "00000002 00000000 00000000 00000000 00000000 00000000 00000000 00000000".into(),
+        by: Some(Reporter {
+            system: "QSHQVS1".into(),
+            partition: Some(("QSTEST01".into(), 2)),
+            when: "10/29/26 23:30:44".into(),
+        }),
+        severity: "Attention - IPL is waiting, no hardware fault".into(),
+        meaning: "The partition reached the point in a manual (keylock Manual, attended) IPL where it presents the dedicated service tools or the sign-on display on its console, and no console device is connected. Word 2 is the partition ID.".into(),
+        cause: "The console is a terminal window through the virtual serial adapter and no QS/MC session has opened one, or the previous session disconnected (QMC4001). This also appears when the console device in the partition settings does not match the adapter the operating system found.".into(),
+        recovery: "Open a terminal window on the partition (Operations > Open terminal window). The IPL continues as soon as the console connects. If the code remains after the console is connected, select control panel function 21 to force DST to the console, then check the console device setting under Settings.".into(),
+        messages: Vec::new(),
+    };
+    assert_golden(
+        &render(
+            "/qsmc/refcode/A6005008",
+            &page(&ctx("/qsmc/refcode/A6005008"), &v),
+        ),
+        "refcode.html",
+        &[],
+    );
+}

@@ -25,6 +25,8 @@ request refused.
 
 | Message | Severity | Text | Cause | Recovery |
 | --- | --- | --- | --- | --- |
+| `QMC1201` | 10 | This release has no explanation for reference code &1. Its text is shown as the system posted it. | The code is in neither the QS/VS catalogue nor the QS/400 table this console was built with: a system of a later release may post codes this console does not know. | See the system's own documentation for the code, or update the console. |
+| `QMC1202` | 30 | &1 is not a date in this console's format. | A date filter was typed in another format than the one on Language, locale and session. | Type the date as the console shows dates, or leave the field empty. |
 | `QMC2201` | 20 | Power on of &1 is not in this release: a powered-off machine does not answer QSI, and this console has no way to its BMC. | A managed system answers QSI only while it runs; powering one on takes its BMC, which this console is not given. | Power the machine on at its BMC or at the machine. The console reconnects when it answers. |
 | `QMC2202` | 0 | Power off of &1 started. Its partitions are shut down first unless Immediate was chosen. | The managed system accepted the power off; its state and codes follow on its pages. | None. |
 | `QMC2203` | 0 | Restart of &1 started. The console reconnects when it answers again. | The managed system accepted the restart; it is shown as not connected until it answers. | None. |

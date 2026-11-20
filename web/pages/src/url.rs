@@ -36,6 +36,27 @@ pub fn proto(url: &str) -> Option<String> {
     if route.starts_with("/refcode/") {
         return Some("refcode.html".into());
     }
+    // A partition's pages: `/partition/<host>/<id>/<page>` is
+    // `partition-<page>.html`, its control panel `control-panel.html`.
+    if let Some(rest) = route.strip_prefix("/partition/") {
+        let page = rest.split('/').nth(2).unwrap_or("general");
+        return Some(if page == "panel" {
+            "control-panel.html".into()
+        } else {
+            format!("partition-{page}.html")
+        });
+    }
+    // The terminal: its configuration, the window, its picture, the
+    // page a window shows when its console went.
+    if let Some(rest) = route.strip_prefix("/terminal") {
+        let parts: Vec<&str> = rest.split('/').filter(|p| !p.is_empty()).collect();
+        return Some(match parts.get(2).copied() {
+            _ if parts.len() < 2 => "terminal-config.html".into(),
+            Some("screen.png") => "../shared/img/5250-24x80.png".into(),
+            Some("disconnected") => "terminal-disconnected.html".into(),
+            _ => "terminal.html".into(),
+        });
+    }
     // A managed system's pages: `/server/<name>/<tab>` is
     // `system-<tab>.html`; its power confirmation by the operation.
     if let Some(rest) = route.strip_prefix("/server/") {

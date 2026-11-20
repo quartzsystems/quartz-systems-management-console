@@ -97,7 +97,6 @@ pub const LATER: &[(&str, u8)] = &[
     ("/partitions", 5),
     ("/groups", 5),
     ("/events", 6),
-    ("/refcodes", 6),
     ("/dumps", 6),
     ("/updates/code", 6),
     ("/updates", 6),

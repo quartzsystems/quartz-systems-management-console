@@ -6,3 +6,5 @@
 //! page.
 
 pub mod explain;
+pub mod history;
+pub mod page;

@@ -335,6 +335,7 @@ pub fn task_of(route: &str) -> Option<Task> {
         "/welcome" | "/servers" | "/partitions" | "/groups" => Some(Task::View),
         "/plans" => Some(Task::Plans),
         "/events" | "/refcodes" | "/dumps" | "/connectivity" => Some(Task::Events),
+        r if r.starts_with("/refcode/") => Some(Task::Events),
         "/updates" | "/updates/code" => Some(Task::CodeUpdates),
         r if r.starts_with("/dev/") => Some(Task::View),
         _ => None,
@@ -403,7 +404,19 @@ pub fn route(app: &App, req: &Request, peer: &Peer) -> Response {
         return refuse(&rq, task);
     }
     if let Some(id) = route.strip_prefix("/msg/") {
-        return match qmcmsg::Catalogue.lookup(id, &[]) {
+        // The console's own, else a QS/VS host's from its catalogue.
+        let host = || {
+            app.catalogue()
+                .message(id)
+                .map(|(text, help)| qsweb::msg::SecondLevel {
+                    id: id.into(),
+                    text: text.clone(),
+                    cause: "A QS/VS host issued this message.".into(),
+                    recovery: help.clone(),
+                    severity: 30,
+                })
+        };
+        return match qmcmsg::Catalogue.lookup(id, &[]).or_else(host) {
             Some(sl) => {
                 let mut page = second_level(&rq.ctx, &sl, None, "Message");
                 page.generic = false;
