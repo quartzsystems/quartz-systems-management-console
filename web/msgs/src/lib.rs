@@ -42,6 +42,10 @@ macro_rules! catalogue {
 }
 
 catalogue! {
+    SELECT_SYSTEM = "QMC1006", 30, "Select a managed system for &1.",
+        "The action acts on the systems selected in the list, and none was.",
+        "Select the system's box in the list, then choose the action again.";
+
     SYSTEM_ADDED = "QMC1005", 0, "Managed system &1 added. The console keeps its session open and shows its state.",
         "The managed system was paired and is in the Servers list.",
         "None.";

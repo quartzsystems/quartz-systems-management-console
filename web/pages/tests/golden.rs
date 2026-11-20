@@ -734,3 +734,137 @@ fn add_system_result() {
         ],
     );
 }
+
+/// The prototype's two headquarters systems as Servers lists them.
+fn servers_hq() -> Vec<webpages::systems::servers::Row> {
+    use webpages::systems::servers::Row;
+    vec![
+        Row {
+            name: "QSHQ400".into(),
+            kind: "Standalone QS/400".into(),
+            status: "Operating".into(),
+            processors: "0".into(),
+            memory: "0".into(),
+            model: "9Q04-M2".into(),
+            serial: "10-7A2B9C".into(),
+            code: "00000000".into(),
+            partitions: 1,
+        },
+        Row {
+            name: "QSHQVS1".into(),
+            kind: "QS/VS host".into(),
+            status: "Operating".into(),
+            processors: "3.50".into(),
+            memory: "40.0".into(),
+            model: "9Q10-V1".into(),
+            serial: "10-9F11A2".into(),
+            code: "00000000".into(),
+            partitions: 3,
+        },
+    ]
+}
+
+fn servers_view(
+    rows: Vec<webpages::systems::servers::Row>,
+    total: usize,
+    messages: Vec<qsweb::msg::Message>,
+) -> webpages::systems::servers::Servers {
+    webpages::systems::servers::Servers {
+        rows,
+        kind: "All".into(),
+        status: "All".into(),
+        paging: qsweb::partials::Paging {
+            page: 1,
+            rows: 25,
+            total,
+            keep: Vec::new(),
+        },
+        first: 1,
+        messages,
+    }
+}
+
+/// The prototype's Servers states other than the first draw Systems
+/// Management closed; the console opens it on every state of the page.
+const SERVERS_NAV: (&str, &str) = (
+    "<a class=\"glyph\" href=\"servers.html\">[+]</a> <b>Systems Management</b></div>",
+    "<a class=\"glyph\" href=\"servers.html\">[-]</a> <b>Systems Management</b></div>\n<div class=\"navitem\"><a href=\"servers.html\" class=\"navcur\">Servers</a></div>\n<div class=\"navitem\"><a href=\"partitions.html\">Partitions</a></div>\n<div class=\"navitem\"><a href=\"groups.html\">Custom groups</a></div>",
+);
+
+fn servers_render(v: &webpages::systems::servers::Servers) -> String {
+    render(
+        "/qsmc/servers",
+        &webpages::systems::servers::page(&ctx("/qsmc/servers"), v),
+    )
+}
+
+#[test]
+fn servers() {
+    let m = qmcmsg::message(
+        qsweb::msg::Kind::Done,
+        &qmcmsg::SYSTEM_CONNECTED,
+        &["QSHQVS1", "1.0.4"],
+    );
+    let v = servers_view(servers_hq(), 2, vec![m]);
+    assert_golden(&servers_render(&v), "servers.html", &[]);
+}
+
+#[test]
+fn servers_empty() {
+    let v = servers_view(Vec::new(), 0, Vec::new());
+    assert_golden(&servers_render(&v), "servers-empty.html", &[SERVERS_NAV]);
+}
+
+#[test]
+fn servers_error() {
+    let m = qsweb::msg::Message::new(
+        qsweb::msg::Kind::Error,
+        "QMC2210",
+        "Power off request for QSHQVS1 not performed. 2 partitions are running; shut them down first or choose Power off with partitions.",
+    );
+    let v = servers_view(servers_hq(), 2, vec![m]);
+    assert_golden(&servers_render(&v), "servers-error.html", &[SERVERS_NAV]);
+}
+
+#[test]
+fn servers_paged() {
+    use webpages::systems::servers::Row;
+    // The 25 branch hosts of the prototype's first page.
+    let rows: Vec<Row> = (1..=25u32)
+        .map(|n| {
+            let i = n - 1;
+            let status = match n % 7 {
+                4 => "Standby",
+                6 => "No connection",
+                _ => "Operating",
+            };
+            let units = 100 + 50 * (i % 4);
+            Row {
+                name: format!("QSBR{n:02}VS1"),
+                kind: "QS/VS host".into(),
+                status: status.into(),
+                processors: format!("{}.{:02}", units / 100, units % 100),
+                memory: format!("{}.0", 16 + 8 * (i % 3)),
+                model: "9Q10-V1".into(),
+                serial: format!("10-9F{i:02X}{i:02X}"),
+                code: if n % 7 == 6 { "B6000100" } else { "00000000" }.into(),
+                partitions: (i % 4 + 1) as usize,
+            }
+        })
+        .collect();
+    let v = servers_view(rows, 27, Vec::new());
+    // The prototype's paged list numbers its boxes from 0, its others
+    // from 1: the console numbers each from 1.
+    let renames: Vec<(String, String)> = (0..25)
+        .rev()
+        .map(|i| (format!("name=\"s{i}\""), format!("name=\"s{}\"", i + 1)))
+        .collect();
+    let mut fix: Vec<(&str, &str)> = renames
+        .iter()
+        .map(|(a, b)| (a.as_str(), b.as_str()))
+        .collect();
+    fix.push(SERVERS_NAV);
+    // 27 entries at 25 a page are two pages.
+    fix.push(("Page 1 of 3", "Page 1 of 2"));
+    assert_golden(&servers_render(&v), "servers-paged.html", &fix);
+}

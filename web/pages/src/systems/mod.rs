@@ -10,6 +10,7 @@
 
 pub mod add;
 pub mod connectivity;
+pub mod servers;
 
 use mgmtproto::{Kept, Refusal};
 use qsweb::msg::{Kind, Message};

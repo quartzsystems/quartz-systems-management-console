@@ -94,7 +94,6 @@ pub static PRODUCT: Product = Product {
 /// The routes of the tree that later phases bring, and the phase.
 /// Each answers with a page saying the function arrives later.
 pub const LATER: &[(&str, u8)] = &[
-    ("/servers", 4),
     ("/partitions", 5),
     ("/groups", 5),
     ("/events", 6),

@@ -25,6 +25,7 @@ request refused.
 
 | Message | Severity | Text | Cause | Recovery |
 | --- | --- | --- | --- | --- |
+| `QMC1006` | 30 | Select a managed system for &1. | The action acts on the systems selected in the list, and none was. | Select the system's box in the list, then choose the action again. |
 | `QMC1005` | 0 | Managed system &1 added. The console keeps its session open and shows its state. | The managed system was paired and is in the Servers list. | None. |
 | `QMC1120` | 30 | The managed-systems service did not answer: &1. | The console's service that keeps the managed systems' sessions is not running, or is starting. | Wait a moment and show the page again. If it goes on, see the reference code history of the console. |
 | `QMC3003` | 30 | &1 terminal windows are open, the most at once. | The console shares each partition's console among the windows that have it open, up to a limit across every system. | Close a terminal window that is no longer needed, then open this one again. |

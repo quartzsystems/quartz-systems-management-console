@@ -175,6 +175,7 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         "/console/locale" => crate::locale_routes::locale(rq),
         "/console/version" => crate::version_routes::version(rq),
         "/connectivity" => crate::systems::connectivity::route(rq),
+        "/servers" => crate::systems::servers::route(rq),
         "/servers/add" => crate::systems::add::add(rq),
         "/servers/add/result" => crate::systems::add::result(rq),
         "/servers/reset" => crate::systems::add::reset(rq),

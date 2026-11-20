@@ -36,6 +36,21 @@ pub fn proto(url: &str) -> Option<String> {
     if route.starts_with("/refcode/") {
         return Some("refcode.html".into());
     }
+    // A managed system's pages: `/server/<name>/<tab>` is
+    // `system-<tab>.html`; its power confirmation by the operation.
+    if let Some(rest) = route.strip_prefix("/server/") {
+        let tab = rest.split('/').nth(1).unwrap_or("general");
+        if tab == "confirm" {
+            let op = url.split("op=").nth(1).unwrap_or("poweroff");
+            let file = if op.starts_with("poweron") {
+                "poweron"
+            } else {
+                "poweroff"
+            };
+            return Some(format!("confirm-{file}.html"));
+        }
+        return Some(format!("system-{tab}.html"));
+    }
     if route.starts_with("/help/") || route.starts_with("/msg/") || route == "/help" {
         return Some("../shared/help.html".into());
     }
