@@ -128,17 +128,52 @@ address, so the browser cannot follow an address that moves.
 `web-listeners` moves it to `10.0.2.16` and watches the listeners from
 inside.
 
-## Evidence so far
+## Evidence
 
-- Section 1 (`be7ab6f`), built from empty targets: every suite of
-  Phases 0 to 2 passed, 32 steps on the disk and the ISO step, with
-  `sockets` and `no-secrets` showing TCP listening only on 443 and 80
-  of the `open` address (`10.0.2.15:443`, `10.0.2.15:80`) and
-  `slot-confirm` confirming on the web server's first answer.
-- The QS/VS pin at `3de567e` (`49b2fdf`), built from empty targets:
-  the same 32 disk steps and the ISO step passed, `mirror` among them;
-  `sockets` and `no-secrets` again listed only `10.0.2.15:443` and
-  `10.0.2.15:80`.
+The acceptance run is a fresh clone at `f724d6d`, built twice from
+empty targets (`~/evidence3.sh`): the two builds, `doctor`, `deny`,
+`notices --check`, `fmt --check`, the three clippy runs, `cargo test
+--workspace -- --include-ignored` (158 tests) and with the test hooks,
+then `build test`, `build test --media iso` and `build fuzz`. Every
+suite of Phases 0 to 2 passed there. The web suites' first request
+then raced the certificate's renewal in the harness (below); with the
+harness alone changed, the clone moved to `29fc849` and the fourteen
+web suites passed on images built there.
+
+| # | Check | Evidence |
+| --- | --- | --- |
+| 1 | Step 0 is committed on its own and every Phase 0 to 2 suite passes on the new pins | `6498c90` and `49b2fdf`, each its own commit; at `f724d6d` all 32 disk steps and the ISO step passed (`ipl-slot-a` 13.3 s ... `no-secrets` 60.1 s, `ipl-media` 2.4 s) |
+| 2 | Suites 2 to 15 pass | at `29fc849`: `web-pages` (54 pages and files, the stylesheet's 8770 bytes `qsweb`'s), `web-first`, `web-roles` (88 route and role pairs), `web-signon`, `web-users`, `web-network`, `web-certs`, `web-backup`, `web-slot`, `web-listeners`, `web-option4`, `web-hostile` (431, 400, 413, a silent connection closed at 30 s, 80 at once), `web-secrets` (11295 bytes of logs, none of the secrets, eight kinds of audit), `web-processor`; suite 13's fuzz targets 60 s each with no finding: `backup-file` 17.8 million runs, `backup-payload` 13.7 million, `cert-import` 14.3 million |
+| 3 | Every Console Management, shared, Welcome and sign-on page of the prototype is live and equal to its golden file; the count is recorded | 17 of the prototype's 90 files, each a test of `web/pages/tests/golden.rs`, with the corrections of `docs/WEB.md` (The pages, above) |
+| 4 | Two clean builds are byte-identical; `build deny` and `build doctor` pass | the UKIs, the disk image, the ISO, both initramfs images and the seven binaries have the same SHA-256 in both builds (below); what differs is the kernel's `.config` (`CONFIG_INITRAMFS_SOURCE` names the target directory) and so `manifest.json` and `manifest.sig`, as in Phases 0 to 2. `deny`: 228 crates on each target, no `links`, no C build helper; `doctor`: every row `ok`, no shared crate twice |
+| 5 | The HTTP server, the frame and certificate handling are QS/400's crates; nothing of them is written or copied here | `qsweb` (HTTP, sessions, CSRF, frame, partials, shared pages, golden comparison), `x509kit` (certificates, PEM, PKCS #12), QS/400's fuzzer; `webd` is the listeners, TLS's configuration and the limits around them |
+| 6 | The console listens on 443 and 80 on `open` and nowhere else, and serves no script | `sockets`, `no-secrets` and `web-listeners`: TCP only on `10.0.2.15:443` and `:80`, nothing on `private` or IPv6, following the address; `web-pages`: no page carries a script (the help window's inline handler is `qsweb`'s and blocked, item 22) |
+
+The release initramfs names no hook (`qsmchook`, `TEST IMAGE`,
+`qsmc.hook`, `webd-fails` each 0) and no pattern reference.
+
+Hashes at `f724d6d`, both builds:
+
+| SHA-256 | File |
+| --- | --- |
+| `040fee8b6488208475072bd94d28ed203cc8f676f3e16c24d5669219264e9b4c` | `images/initramfs.cpio` |
+| `2215c435040b3b9ab654eb4d3adeeaab22a100b17f66d1aad4be0295b443de85` | `images/initramfs-media.cpio` |
+| `5edcf0f09cb1b0192826218fb6e86290fd3ada38a41fdcab3facd4b36e162d8c` | `images/qsmc-V1R0M0-a-5edcf0f09cb1.efi` |
+| `4eaa315ef492594e1655545e2dedb7cc14b7798054ae38c9e530f9e776d9a936` | `images/qsmc-V1R0M0-b-4eaa315ef492.efi` |
+| `5ceaa17c54e5ffbd629005d380b9b3e2a9624460e469fe210af15d01bb9f1a5f` | `images/qsmc-V1R0M0-d-5ceaa17c54e5.efi` |
+| `f2f815b99f703c71f9da8d51cd97d869d2173d49f7274b90769519533f336119` | `images/qsmc-V1R0M0-5edcf0f09cb1.img` |
+| `2d876b390a31734da9b4b4229785e109e6823e59351db799dfe2e91c135865bc` | `images/QSMC-V1R0M0-5ceaa17c54e5.iso` |
+| `519a7c6420c9cf7aa4b693623cbcf3ba20dd2d7a40fd57fb4c343d17d7b9088e` | `qsmcinit` |
+| `8be3fcd236b4bac4de42bd1d41e855b9953c287b37b1759ab5caf85575b48dfd` | `qsmcstgd` |
+| `427e10405e1fea1d3b696eee3f1e07d1f081077e8e436860914f9554414afa54` | `qsmclogd` |
+| `2295cb27bf4a48763c46ec579cba676c3f31bc93591565dbd201a0f0ef15ad3c` | `qsmcnetd` |
+| `fb98febe514e26939f756567c28ca5067db334b7064c071ae2f717145e2676d1` | `qsmccons` |
+| `2cb795a0e5ee7793e8334456531e30132bed8e42d02c9efc7161ca6697930624` | `qsmcinstall` |
+| `783dc0fae6104f91dd094e76c5d806422062951e9729d1336c1772b5fcc5cbf2` | `qsmcwebd` |
+
+Earlier, Section 1 (`be7ab6f`) and the QS/VS pin at `3de567e`
+(`49b2fdf`) each passed every suite of Phases 0 to 2 from empty
+targets.
 
 ## Found while testing
 
@@ -188,6 +223,14 @@ inside.
   `ipl-slot-a`) saw its first heartbeat only at the 60 s limit, with the
   storage service still finding the disks; run again on the same
   images it passed in 12 s, twice. Not seen since.
+- PID 1 binds 443 before the web server has the set, and the web
+  server may make its certificate again for the address first: the
+  harness read the file before that and pinned the old certificate.
+  The harness now takes the certificate as the one served once a
+  request is answered with it.
+- A silent connection was closed at 60 s, not 30: after its read
+  timed out, the TLS close waited again on the client. The close now
+  only writes its alert (`web/webd/src/listen.rs`).
 - The harness's TLS client resumed its sessions, and a resumed session
   skips the certificate check: a browser pinned to the certificate
   replaced went on. It resumes none now (`tools/conformance/src/web`).
@@ -217,8 +260,6 @@ own (item 23).
 - The web interface does not listen on `private` when `web.toml` says
   it may (`listen_private`): no page sets it, and PID 1 hands over the
   `open` address's listeners only (item 25).
-- A silent connection closes at 60 s through QEMU's user network
-  against the 30 s read timeout; why is not yet known (`docs/WEB.md`).
 - What QS/400 and QS/VS would change: `qsweb`'s help window's inline
   handler (item 22), `httpc`'s pinning (item 26), PKCS #12's iteration
   counts (item 27), `netd`'s line for a removed role (item 28).
