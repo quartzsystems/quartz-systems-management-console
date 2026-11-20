@@ -1316,6 +1316,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
+name = "mgmtd"
+version = "0.1.0"
+dependencies = [
+ "ipc",
+ "mgmtproto",
+ "qmcmsg",
+ "qsi",
+ "qsipart",
+ "qsisess",
+ "qsitrust",
+ "rustls",
+ "serde",
+ "sim",
+ "state",
+]
+
+[[package]]
+name = "mgmtproto"
+version = "0.1.0"
+dependencies = [
+ "ipc",
+ "qsi",
+ "qsipart",
+]
+
+[[package]]
 name = "mio"
 version = "1.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1639,6 +1665,18 @@ dependencies = [
  "logd",
  "refcode",
  "release",
+]
+
+[[package]]
+name = "qsmcmgmtd"
+version = "0.1.0"
+dependencies = [
+ "libc",
+ "mgmtd",
+ "mgmtproto",
+ "qsitrust",
+ "release",
+ "supervise",
 ]
 
 [[package]]
