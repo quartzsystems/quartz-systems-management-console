@@ -43,6 +43,91 @@ the new pins. Built from empty targets (release and test images), every
 suite of Phases 0 to 2 passed, 32 steps on the disk and the ISO step,
 with `mirror` fixed (`474cc38`, below).
 
+## What exists
+
+| Where | What |
+| --- | --- |
+| `web/webd` | the server: PID 1's listeners received over `/run/qsmcweb.sock` and followed, rustls with graviola (TLS 1.2 and 1.3), the certificate made, renewed and imported and served to the next handshake, `qsweb`'s limits, connection limits, the headers, the stylesheet, the redirect on 80, the self-test that makes it ready (`docs/WEB.md`) |
+| `lic/qsmcwebd` | the binary: `webd` with the pages, and the socket `/run/qsmcwebd.sock` the local console asks |
+| `web/users` | web users, the four roles and the matrix, sign-on's lock-out and address limit, `web.toml`, the socket's protocol (`docs/WEBUSERS.md`) |
+| `web/msgs` | the `QMC` catalogue, first- and second-level (`docs/MESSAGES.md`) |
+| `web/pages` | every page from a view, its routes, the App (sessions, the task of each route, audit), the help topics |
+| `web/backup` | the backup file: the payload, sealed under a passphrase (`docs/BACKUP.md`) |
+| `lic/qsmcinit` | the listeners bound and handed over and following the `open` address; the slot rule on the web server's answer; the restore step at the IPL and its confirmation; option 4's requests while the web server is down; the `webd-fails` hook |
+| `svc/console` | option 4, Work with the web interface (`docs/LOCALCONSOLE.md`) |
+| `tools/conformance` | the browser (`src/web`), pinned to the certificate it expects, and the fourteen web suites (`src/suite/web`) |
+| `tools/fuzz` | `qsmcfuzz` over QS/400's fuzzer, a workspace of its own: `backup-file`, `backup-payload`, `cert-import`; `build fuzz` |
+
+Sessions and CSRF are `qsweb`'s (`Sessions`, `csrf_ok`); the
+handoff's `web/session` is not a crate here, as nothing of it is
+QS/MC's own.
+
+## How to run
+
+```
+cargo run -p build -- all && cargo run -p build -- --test-image all
+cargo run -p build -- test                  every suite of Phases 0 to 3
+cargo run -p build -- test --suite web-backup
+cargo run -p build -- fuzz                  each target 60 s with coverage
+cargo test -p webpages --test golden        every live page against its prototype file
+```
+
+A browser reaches a console booted with a NIC at `https://<open
+address>/qsmc/`; the first Administrator is the installation's user,
+its ID in lower case.
+
+## The pages
+
+17 of the prototype's 90 files are live, each equal to its file under
+`qsweb`'s comparison with the corrections in `docs/WEB.md`:
+
+| Prototype | Route |
+| --- | --- |
+| `qsmc/signon.html` | `/qsmc/signon`, `/qsmc/signoff` |
+| `qsmc/welcome.html` | `/qsmc/welcome` |
+| `qsmc/console.html` | `/qsmc/console` |
+| `qsmc/console-users.html`, `console-roles.html` | `/qsmc/console/users`, `/qsmc/console/roles`, `/qsmc/confirm/user-delete` |
+| `qsmc/console-network.html` | `/qsmc/console/network` |
+| `qsmc/console-datetime.html` | `/qsmc/console/datetime` |
+| `qsmc/console-certs.html` | `/qsmc/console/certs`, `/qsmc/confirm/cert-new`, `/qsmc/confirm/ca-remove` |
+| `qsmc/console-backup.html` | `/qsmc/console/backup` (Backup, Restore, History), `/qsmc/confirm/restore` |
+| `qsmc/console-shutdown.html` | `/qsmc/console/shutdown` |
+| `qsmc/console-locale.html` | `/qsmc/console/locale` |
+| `qsmc/console-version.html` | `/qsmc/console/version` |
+| `shared/error.html`, `notauth.html`, `confirm.html`, `help.html` | a page not found or refused, Not authorized, every confirmation, `/qsmc/help/` and `/qsmc/msg/` |
+| `shared/components.html` | `/qsmc/dev/components`, a test image only |
+
+The other 69 files of `qsmc/` are the pages of later phases' functions
+(systems, partitions, plans, service management, updates, the
+terminal); the tree's ten routes to them answer that the function
+arrives later (`QMC9030`). `nav/`'s four are QS/400's samples.
+
+## The suites
+
+| Suite | Handoff | What it shows |
+| --- | --- | --- |
+| `web-pages` | 2 | the stylesheet byte for byte; every link from Welcome answers; no page with a script; 80 only redirects |
+| `web-first` | 3 | the installation's user signs on as the first Administrator; the certificate names the host and its address |
+| `web-roles` | 4 | 22 routes for each of the four roles, page or Not authorized as the matrix says; no route without a task |
+| `web-signon` | 5 | the cookie's attributes; a form without its token; the lock-out; the address limit; the idle timeout; sign off |
+| `web-users` | 6 | the last enabled Administrator kept; a disabled user's session ends |
+| `web-network` | 7 | a change of the browser's interface kept when reached again and taken back when not; `private` added and removed |
+| `web-certs` | 8 | a new self-signed certificate to the next connection; a PEM chain and key imported; a wrong key refused |
+| `web-backup` | 9 | a backup restored on a second installation: users, network, time, the QSI identity and the web certificate; the refusals |
+| `web-slot` | 10 | a slot on trial whose web server fails is not confirmed; the next IPL is on the old slot |
+| `web-listeners` | 11 | 443 and 80 on `open` only, nothing on `private`; following a change of the address and its taking back |
+| `web-option4` | 12 | the local console's reset; the web interface signs on with it (the golden screens are `console-panels`') |
+| `web-hostile` | 13 | not TLS, an oversized head, a malformed request, a body past the limit, a silent connection, too many connections; the session goes on |
+| `web-secrets` | 14 | no password, passphrase or key in any log; each kind of change audited |
+| `web-processor` | 15 | no web server on a processor without what the cryptography needs; `A3001015`; the local console works |
+
+Suite 1 is Phases 0 to 2's, and 13's fuzz targets are `build fuzz`'s.
+`web-network` changes the browser's interface from DHCP to the same
+address static and back: QEMU's user network forwards to one guest
+address, so the browser cannot follow an address that moves.
+`web-listeners` moves it to `10.0.2.16` and watches the listeners from
+inside.
+
 ## Evidence so far
 
 - Section 1 (`be7ab6f`), built from empty targets: every suite of
@@ -94,6 +179,15 @@ with `mirror` fixed (`474cc38`, below).
   address: it answers its own first request over a socket pair, and
   listens once the address comes. The suites wait for 443 to listen
   before the browser's first request.
+- The certificate the first start made named only the host when DHCP
+  came after it, as `web-first` found on its second run: the `open`
+  address was missing. A certificate the console made is now made
+  again with the addresses of a set of listeners that it does not name,
+  before that set listens (`docs/WEB.md`).
+- Once, the evidence run's first boot of the release image (Phase 0's
+  `ipl-slot-a`) saw its first heartbeat only at the 60 s limit, with the
+  storage service still finding the disks; run again on the same
+  images it passed in 12 s, twice. Not seen since.
 - The harness's TLS client resumed its sessions, and a resumed session
   skips the certificate check: a browser pinned to the certificate
   replaced went on. It resumes none now (`tools/conformance/src/web`).
@@ -108,13 +202,23 @@ with `mirror` fixed (`474cc38`, below).
 
 Where a prototype page offers what V1 does not do, the page is drawn
 as the prototype has it and the choice answers with a `QMC` message:
-remote-host backup, the NTP server, the DHCP server and SSH on the
-private network, languages other than English, and keeping terminal
-windows open (`docs/OPEN_QUESTIONS.md`, item 19).
+remote-host backup, scheduled backups, the reference code history and
+the media library in a backup, the NTP server, the DHCP server and SSH
+on the private network, a DNS domain, languages other than English, and
+keeping terminal windows open (`docs/OPEN_QUESTIONS.md`, item 19). What
+the prototype links and does not draw (the users' forms, the Restore
+tab, a certificate's View) is `qsweb`'s properties under the page's
+own (item 23).
 
 ## Not done
 
-- Section 5: the suites that reach the web interface from outside.
-- The documents `docs/WEBUSERS.md` and `docs/MESSAGES.md`.
 - `NEEDS-CODY`: every page looked at in a browser beside the
   prototype.
+- The web interface does not listen on `private` when `web.toml` says
+  it may (`listen_private`): no page sets it, and PID 1 hands over the
+  `open` address's listeners only (item 25).
+- A silent connection closes at 60 s through QEMU's user network
+  against the 30 s read timeout; why is not yet known (`docs/WEB.md`).
+- What QS/400 and QS/VS would change: `qsweb`'s help window's inline
+  handler (item 22), `httpc`'s pinning (item 26), PKCS #12's iteration
+  counts (item 27), `netd`'s line for a removed role (item 28).

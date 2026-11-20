@@ -134,6 +134,21 @@ pub fn run(pages: Arc<dyn Pages>) -> Result<(), String> {
         // PID 1 sends a set as soon as it is connected, then one at
         // each change of the `open` address.
         let set = listen::receive(&pid1).map_err(|e| format!("PID 1's listeners: {e}"))?;
+        // A certificate the console made names the addresses it is
+        // reached at, which the first start may not have had yet: made
+        // again before the new set listens.
+        let mut at: Vec<String> = set.iter().map(|(l, _)| l.address.to_string()).collect();
+        at.dedup();
+        let (host, _) = host_and_addresses();
+        match certs.follow(&host, &at, now()) {
+            Ok(Some(s)) => say(&format!(
+                "the self-signed certificate was made again for {}: SHA-256 {}",
+                s.info.san.join(", "),
+                s.sha256
+            )),
+            Ok(None) => {}
+            Err(e) => say(&format!("the certificate was not made again: {e}")),
+        }
         running.replace(&serving, set);
         say(&format!(
             "listening: {}",

@@ -59,6 +59,14 @@ a PEM chain and key or a PKCS #12 file) is served to the next
 handshake; sessions already open keep theirs. A key that does not
 belong to the certificate is refused and the certificate in use stays.
 
+The first start can come before DHCP has given the console its
+address. A certificate the console made itself (marked by
+`/data/web/made-here`) that does not name each address of a set of
+listeners is made again with them before that set listens, and said in
+the log. An imported certificate is the operator's and is never made
+again; importing one removes the mark, and a new self-signed one sets
+it.
+
 The web certificate is not the console's QSI identity
 (`/data/state/identity.crt`), which is unchanged.
 

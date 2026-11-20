@@ -199,6 +199,7 @@ impl Certs {
             x509kit::server::self_signed(host, &names, now.saturating_sub(60), SELF_SIGNED_DAYS)
                 .map_err(|e| format!("the certificate was not made: {e}"))?;
         Self::write(dir, std::slice::from_ref(&id.cert), &id.key)?;
+        mark(dir, true)?;
         Ok((vec![id.cert], id.key))
     }
 
@@ -255,6 +256,7 @@ impl Certs {
             x509kit::server::self_signed(host, &names, now.saturating_sub(60), SELF_SIGNED_DAYS)
                 .map_err(|e| format!("the certificate was not made: {e}"))?;
         self.take(&[id.cert], &id.key)?;
+        mark(&self.dir, true)?;
         Ok(self.shown())
     }
 
@@ -263,8 +265,43 @@ impl Certs {
     pub fn import(&self, bundle: Bundle) -> Result<Shown, String> {
         let (chain, key) = checked(bundle)?;
         self.take(&chain, &key)?;
+        mark(&self.dir, false)?;
         Ok(self.shown())
     }
+
+    /// The listeners' addresses are `addresses`: a certificate the
+    /// console made that does not name each of them is made again with
+    /// them, and said; an imported one is left as it is. The first
+    /// start can come before DHCP has given the console its address.
+    pub fn follow(
+        &self,
+        host: &str,
+        addresses: &[String],
+        now: u64,
+    ) -> Result<Option<Shown>, String> {
+        let san = self.shown().info.san;
+        let named = addresses.iter().all(|a| san.iter().any(|s| s == a));
+        if named || !self.dir.join(MADE_FILE).exists() {
+            return Ok(None);
+        }
+        self.renew(host, addresses, now).map(Some)
+    }
+}
+
+/// The mark of a certificate the console made itself, beside it.
+pub const MADE_FILE: &str = "made-here";
+
+fn mark(dir: &Path, made: bool) -> Result<(), String> {
+    let path = dir.join(MADE_FILE);
+    let done = if made {
+        std::fs::write(&path, "the console made this certificate\n")
+    } else {
+        match std::fs::remove_file(&path) {
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            other => other,
+        }
+    };
+    done.map_err(|e| format!("{}: {e}", path.display()))
 }
 
 /// The server's TLS configuration over `certs`.
@@ -313,6 +350,32 @@ mod tests {
         let renewed = again.renew("QSMC0A1B2C", &addresses, now).unwrap();
         assert_ne!(renewed.sha256, first.sha256);
         assert!(server_config(Arc::new(again)).is_ok());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_certificate_made_here_follows_the_address_and_an_imported_one_does_not() {
+        let dir = scratch("follow");
+        let now = 1_790_000_000;
+        // The first start, before DHCP: the host name alone.
+        let (certs, _) = Certs::load_or_make(&dir, "QSMC0A1B2C", &[], now).unwrap();
+        let at = vec!["192.0.2.7".to_string()];
+        let renewed = certs.follow("QSMC0A1B2C", &at, now).unwrap().unwrap();
+        assert!(renewed.info.san.contains(&"192.0.2.7".to_string()));
+        assert!(certs.follow("QSMC0A1B2C", &at, now).unwrap().is_none());
+        // Imported, it is the operator's: never made again here.
+        let other =
+            x509kit::server::self_signed("mine.example", &["mine.example"], now, 30).unwrap();
+        let pem = format!(
+            "{}{}",
+            x509kit::pem::encode("CERTIFICATE", &other.cert),
+            x509kit::pem::encode("PRIVATE KEY", &other.key.to_pkcs8_der().unwrap())
+        );
+        certs
+            .import(read_bundle(pem.as_bytes(), "").unwrap())
+            .unwrap();
+        assert!(certs.follow("QSMC0A1B2C", &at, now).unwrap().is_none());
+        assert!(!dir.join(MADE_FILE).exists());
         let _ = std::fs::remove_dir_all(&dir);
     }
 
