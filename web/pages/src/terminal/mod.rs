@@ -245,6 +245,14 @@ fn window_route(rq: &Rq<'_>, host: &str, id: u32) -> Response {
             _ => {}
         }
     }
+    let connect = rq.post() && rq.req.form().str("tb") == "Connect";
+    if !connect && let Some(why) = rq.app.windows.ended(&rq.session.id, &k.name, id) {
+        let name = partition(&k, id)
+            .map(|p| p.name.clone())
+            .unwrap_or_default();
+        let m = qmcmsg::message(Kind::Error, &qmcmsg::CONSOLE_CLOSED, &[&name, &why]);
+        return show(rq, &k, id, &o, vec![m]);
+    }
     if rq.app.windows.find(&rq.session.id, &k.name, id).is_none() {
         let what = format!("open console of {} partition {id}", k.name);
         match attach(rq, &k.name, id, o.take_over) {

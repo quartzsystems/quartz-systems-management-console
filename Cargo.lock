@@ -404,6 +404,8 @@ dependencies = [
  "release",
  "rustls",
  "seed",
+ "sim",
+ "srcdata",
  "state",
  "stgd",
  "supervise",

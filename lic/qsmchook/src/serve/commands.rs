@@ -117,6 +117,13 @@ fn stat(path: &str) -> Vec<String> {
     }
 }
 
+fn readlink(path: &str) -> Vec<String> {
+    match fs::read_link(path) {
+        Ok(t) => vec![format!("{} {}", word::OK, t.display())],
+        Err(e) => error(format!("{path}: {e}")),
+    }
+}
+
 /// The kernel log's lines that contain `text`, read from its start.
 fn kmsg(text: &str) -> Vec<String> {
     let flags = i32::try_from(OFlags::NONBLOCK.bits()).unwrap_or(0);
@@ -270,6 +277,7 @@ pub fn answer(line: &str) -> Vec<String> {
         command::RM => done(fs::remove_file(rest)),
         command::LS => ls(rest),
         command::STAT => stat(rest),
+        command::READLINK => readlink(rest),
         command::KMSG => kmsg(rest),
         command::POWER_OFF => done(control().power_off()),
         command::RESTART => done(control().restart()),

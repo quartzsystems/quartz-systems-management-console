@@ -185,6 +185,16 @@ impl Channel {
         }
     }
 
+    /// Where a link points.
+    pub fn readlink(&mut self, path: &str) -> Result<String, String> {
+        let lines = self.ask(&format!("{} {path}", command::READLINK))?;
+        lines
+            .first()
+            .and_then(|l| l.strip_prefix(word::OK))
+            .map(|t| t.trim().to_string())
+            .ok_or_else(|| format!("`readlink {path}` answered {lines:?}"))
+    }
+
     /// A file's length and the sum of its bytes.
     pub fn sum(&mut self, path: &str) -> Result<(u64, u64), String> {
         let lines = self.ask(&format!("{} {path}", command::SUM))?;

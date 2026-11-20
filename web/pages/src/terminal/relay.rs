@@ -190,9 +190,21 @@ impl Windows {
             let _ = writer.shutdown(std::net::Shutdown::Both);
         });
         let mut all = lock(&self.held);
-        all.retain(|h| h.open());
+        all.retain(|h| h.open() || h.session == session);
         all.push(Arc::clone(&held));
         Ok(held)
+    }
+
+    /// Why the window `session` held on `host`'s partition `id` ended,
+    /// once: the window is forgotten.
+    pub fn ended(&self, session: &str, host: &str, id: u32) -> Option<String> {
+        let mut all = lock(&self.held);
+        let i = all
+            .iter()
+            .position(|h| h.session == session && h.host == host && h.id == id && !h.open())?;
+        let h = all.remove(i);
+        let why = lock(&h.shown).ended.clone();
+        Some(why.unwrap_or_else(|| "the window was disconnected".into()))
     }
 
     /// Close the window `session` holds on `host`'s partition `id`.

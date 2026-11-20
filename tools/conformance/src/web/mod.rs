@@ -9,6 +9,8 @@
 //! its shipped roots or anything (`docs/OPEN_QUESTIONS.md`), so the
 //! request is written here, one a connection.
 
+pub mod ws;
+
 use std::fmt::Write as _;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};

@@ -36,6 +36,9 @@ pub mod command {
     pub const LS: &str = "ls";
     /// `stat <path>`: `ok <mode in octal> <uid> <gid> <bytes>`.
     pub const STAT: &str = "stat";
+    /// `readlink <path>`: `ok <target>`: a process's open file, as
+    /// `/proc/<pid>/fd/<n>` names it (`socket:[inode]`).
+    pub const READLINK: &str = "readlink";
     /// `kmsg <text>`: the kernel log's lines that contain the text.
     pub const KMSG: &str = "kmsg";
     /// `poweroff`: the control socket's power off.
