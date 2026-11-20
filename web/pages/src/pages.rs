@@ -118,6 +118,13 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         "/console/shutdown" => crate::shutdown_routes::shutdown(rq),
         "/console/locale" => crate::locale_routes::locale(rq),
         "/console/version" => crate::version_routes::version(rq),
+        // The pattern reference and its error page: a test image's.
+        #[cfg(test_hooks)]
+        crate::components::ROUTE => rq.page(crate::components::page(&rq.ctx)),
+        #[cfg(test_hooks)]
+        crate::components::ERROR_ROUTE => {
+            crate::app::routes::error(rq, 404, &qmcmsg::NOT_FOUND, &["/qsmc/dev/example"])
+        }
         "/confirm/cert-new" => crate::certs_routes::renew(rq),
         "/confirm/ca-remove" => crate::certs_routes::remove(rq),
         "/confirm/user-delete" => crate::user_routes::delete(rq),

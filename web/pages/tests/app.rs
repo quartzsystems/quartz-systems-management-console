@@ -988,3 +988,23 @@ fn console_version_shows_the_release_and_the_machine() {
     }
     let _ = std::fs::remove_dir_all(dir);
 }
+
+#[test]
+fn the_pattern_reference_is_a_test_image_s() {
+    let (app, _, dir) = app("components");
+    let mut b = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.26",
+        host: None,
+    };
+    b.sign_on("qsadmin", PASSWORD);
+    let r = b.send("GET", "/qsmc/dev/components", &[]);
+    if cfg!(test_hooks) {
+        assert!(r.status == 200 && r.text().contains("Pattern reference"));
+        assert_eq!(b.send("GET", "/qsmc/dev/error", &[]).status, 404);
+    } else {
+        assert_eq!(r.status, 404);
+    }
+    let _ = std::fs::remove_dir_all(dir);
+}

@@ -14,6 +14,9 @@ const RENAMED: &[(&str, &str)] = &[
     ("/signoff", "signon.html"),
     ("/refcodes", "refcode-history.html"),
     ("/updates/code", "code-updates.html"),
+    // A test image's pattern reference, and the error page it shows.
+    ("/dev/components", "../shared/components.html"),
+    ("/dev/error", "../shared/error.html"),
 ];
 
 /// The prototype's file (relative to `qsmc/`) for served `url`; `None`

@@ -131,11 +131,12 @@ fn assert_shared(served: &str, file: &str, fix: &[(&str, &str)]) {
 }
 
 /// The corrections every shared page needs: the prototype's shared
-/// pages carry QS/400's frame (`docs/WEB.md`, golden corrections).
+/// pages carry QS/400's frame, and QS/MC serves them in its own, as
+/// its other pages (`docs/WEB.md`, golden corrections).
 const QS400_FRAME: [(&str, &str); 4] = [
     (
         "<td class=\"wordmark\">QS/400</td>",
-        "<td class=\"wordmark\">QS/MC</td>",
+        "<td class=\"wordmark\">QS/MC Management Console</td>",
     ),
     (
         "System: <b>QSHQ400</b> &nbsp;&nbsp; User: <b>QSECOFR</b>",
@@ -145,11 +146,12 @@ const QS400_FRAME: [(&str, &str); 4] = [
         "QS/400 V1R0M0 &middot; Quartz Systems</td>",
         "QS/MC V1R0M0 &middot; Quartz Systems</td>",
     ),
-    (" - QS/400</title>", " - QS/MC</title>"),
+    (" - QS/400</title>", " - QS/MC Management Console</title>"),
 ];
 
+/// A shared page as the server renders it: in the product's frame.
 fn shared_render(page: &mut qsweb::frame::Page) -> String {
-    page.generic = true;
+    page.generic = false;
     render("/qsmc/error", page)
 }
 
@@ -606,5 +608,26 @@ fn console_version() {
         &render("/qsmc/console/version", &page(&c, &v)),
         "console-version.html",
         &[],
+    );
+}
+
+#[test]
+fn shared_components() {
+    let c = ctx("/qsmc/dev/components");
+    let mut fix = QS400_FRAME.to_vec();
+    fix.extend([
+        (
+            "QS/400 &gt; Shared &gt; Pattern reference",
+            "QS/MC &gt; Shared &gt; Pattern reference",
+        ),
+        // QS/MC has no job pages: the job actions lead to the page itself.
+        ("../nav/active-jobs.html", "components.html"),
+        ("../nav/end-job-confirm.html", "components.html"),
+        ("../nav/job-props-general.html", "components.html"),
+    ]);
+    assert_shared(
+        &render("/qsmc/dev/components", &webpages::components::page(&c)),
+        "components.html",
+        &fix,
     );
 }
