@@ -407,3 +407,35 @@ local console. The page also offers a domain, which `network.toml`
 does not keep, a DHCP server and SSH: each answers `QMC8700`. To
 decide: the fields in the design, and whether the domain joins
 `base/state`.
+
+## 26. `httpc` has no pinned mode (QS/400)
+
+Found in Phase 3. The harness's browser must trust only the certificate
+it was told to expect. QS/400's `httpc` trusts its shipped roots or,
+tolerating, anything; it cannot be told one certificate. The harness
+therefore writes its requests itself over rustls with `webd`'s pinned
+verifier (`tools/conformance/src/web`). The change, for QS/400: a
+pinned SHA-256 on `httpc::Request`; then the harness's requests are
+`httpc`'s.
+
+## 27. PKCS #12 iteration counts are not bounded (QS/400)
+
+Found in Phase 3. `x509kit`'s PKCS #12 reader takes the MAC's and the
+key's iteration counts from the file, at least 1 and with no upper
+bound. A file asking for four billion holds the web server thread that
+reads it for a very long time. Only a signed-on Administrator can
+upload one, and the other sessions go on, so it is not a hole; but the
+reader should refuse a count past what any exporter uses (a few
+hundred thousand), as `qmcbackup` refuses an Argon2 cost past its own.
+The change belongs in `x509kit`. The fuzz target `cert-import` does
+not seed a PKCS #12 file, so it does not stop at this.
+
+## 28. No line for a role the network service no longer has (QS/VS)
+
+Found in Phase 3. When `private` is removed from `network.toml`,
+`base/netd` stops configuring it but notes no line for the role, so
+PID 1's `private` fact, the status screen's row and Console settings
+keep the last line it had (`192.168.250.1/24 on eth1`) until the next
+IPL. The change, for QS/VS: a note for each role a change removes
+(`none`, or the reason). QS/MC's `web-network` suite reads the kernel's
+addresses instead.

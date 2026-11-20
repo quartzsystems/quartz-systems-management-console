@@ -30,6 +30,7 @@ recorded here.
 | Network roles | Two, as `network.toml` names them: `open`, first, the network operators reach the console on, with the default route, the name servers and the time; `private`, optional, toward the systems it manages, with no default route. Decided in Phase 2. |
 | Installation | The ISO's media UKI runs the installer (`qsmcinstall`, over `base/install`) in place of the services. It installs from the payload beside it, both slots and a manifest signed by the build's key, checked before any write. The smallest load-source disk is 16 GiB; none or mirrored protection. The user it makes is the first service tools user. Decided in Phase 2. |
 | Local console | `qsmccons` over `base/panels`, on the display and the serial port, a session each, idle sign-off after ten minutes. It changes nothing itself: `netd`, PID 1 and the storage service do. It manages nothing but the console. Decided in Phase 2. |
+| Web interface | `webd` (`qsmcwebd`): QS/400's `qsweb` under rustls with graviola, TLS 1.2 and 1.3, handed 443 and 80 on `open` by PID 1; no script. Its own users in four roles with a role matrix, the first Administrator from the installation's user. An ECDSA P-256 self-signed certificate made at first start, not the QSI identity. Backups always under a passphrase, through the browser only, restored by PID 1 at an IPL. English only. Every message a `QMC` one. Decided in Phase 3. |
 
 A sentence on each:
 
@@ -150,11 +151,15 @@ only `BootNext`: the next IPL is on the old default, which clears the
 pending slot and posts `A3001035`; PID 1 also restarts into the other
 slot if the trial has not confirmed in 15 minutes.
 
-The rule is one constant, `RULE` in `lic/qsmcinit/src/slot/mod.rs`. In
-Phase 1 it is `Rule::BaseReady`: confirmed when every base service has
-said it is ready. From Phase 3 it is `Rule::ServiceReady` of the web
-server: confirmed when the web server answers. Nothing writes the other
-slot or sets a pending slot yet; that is the update phase.
+The rule is `slot::rule` in `lic/qsmcinit/src/slot/mod.rs`, of the
+service table in use. In Phase 1 it was `Rule::BaseReady`: confirmed
+when every base service has said it is ready. From Phase 3 it is
+`Rule::ServiceReady` of the web server, which is ready only once it has
+answered a request over TLS; on a processor without what the
+cryptography needs there is no web server and the rule is
+`Rule::BaseReady` again. A restore on trial (`docs/BACKUP.md`) is kept
+by the same rule. Nothing writes the other slot or sets a pending slot
+yet; that is the update phase.
 
 ## The IPL
 
@@ -173,6 +178,9 @@ PID 1 (`lic/qsmcinit/src/ipl/mod.rs`), each step posting its code:
 4. `QSMCDATA` at `/data`, from the device the storage service names:
    `C3001040`. When it cannot be mounted, `A3001040`, the state is in
    memory only and the IPL goes on. Nothing is ever reformatted.
+   A restore the web server left is put in place now, before anything
+   reads state: `C3001045`; one not confirmed at the IPL before is
+   taken back: `A3001045` (`docs/BACKUP.md`).
 5. The clock from the RTC: `C3001050`.
 6. The seed: `C3001060` or `C3001061` (`docs/SEED.md`).
 7. The state: `host.toml`, `network.toml`, `identity.toml`, with the
@@ -192,9 +200,11 @@ and the clock, in place of everything else, and restarts the machine
 when it ends.
 
 The service table is fixed: the storage service (5), the log service
-(10), the network service (20), the local console (25); the web server
-(30), the managed-systems service (40) and the scheduler (50) take their
-places in later phases. The orderly shutdown (the control socket, `SIGTERM`,
+(10), the network service (20), the local console (25), the web server
+(30, from Phase 3, absent on a processor without what the cryptography
+needs); the managed-systems service (40) and the scheduler (50) take
+their places in later phases. PID 1 binds the web server's 443 and 80
+on the `open` address and hands them over (`docs/WEB.md`). The orderly shutdown (the control socket, `SIGTERM`,
 the power button) ends them in reverse, unmounts `/data`, ends the
 storage service last and posts `D3001090` or `D3001091`.
 

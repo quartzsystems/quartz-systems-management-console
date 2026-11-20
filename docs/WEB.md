@@ -66,7 +66,7 @@ The web certificate is not the console's QSI identity
 
 | What | Limit |
 | --- | --- |
-| A request's head | 16 KiB (`qsweb`; 431) |
+| A request's head | 16 KiB (`qsweb`; 431), checked while its end has not come: a head that arrives whole within one read may pass it by up to that read |
 | A body read whole | 8 MiB (`qsweb`; 413) |
 | Requests a connection | 200 (`qsweb`) |
 | A connection silent | 30 s, then closed |

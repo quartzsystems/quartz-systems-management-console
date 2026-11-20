@@ -160,17 +160,19 @@ tools/          host tools
   build/          the orchestrator, a thin binary over buildkit: cargo run -p build -- <cmd>
     src/product/    QS/MC as buildkit's Product, release or test image: names, kernel, initramfs, media
     src/image/      the userland and its hook check, the disk's record, the manifest, the load-source writer
-    src/host/       doctor rows, the license header check, the two pins, `test`
+    src/host/       doctor rows, the license header check, the two pins, `test`, `fuzz`
   conformance/    the QEMU harness
-    src/qemu/       base/qemu (as `driver`) with QS/MC's variables; a suite's machine and its session's cursor; the test hooks' channel; golden screens
+    src/qemu/       base/qemu (as `driver`) with QS/MC's variables; a suite's machine, its forwards and its session's cursor; the test hooks' channel; golden screens
     src/image/      a load source on image files (base/loadsource's writer) and what the suites read of a disk
-    src/suite/      Phase 0's steps; base/: Phase 1's suites; install/: Phase 2's, the installer and the local console
+    src/web/        a browser of the web interface, pinned to the certificate it expects
+    src/suite/      Phase 0's steps; base/: Phase 1's suites; install/: Phase 2's, the installer and the local console; web/: Phase 3's
     golden/         every installer and local console screen, as text
+  fuzz/           qsmcfuzz over QS/400's fuzzer: a backup's reader, the certificate import
 lic/            PID 1, release, the product's binaries
   qsmcinit/       PID 1
-    src/ipl/        the IPL in order: mounts, the record, storage and /data (the panel for the unit to keep), clock, seed, state and inventory, identity; the media's hand-off to the installer
-    src/host/       the running console: the loop, the table, the control socket, shutdown, the load source's line, the serial port lent to a session
-    src/slot/       the slot rule (RULE: when a slot on trial confirms)
+    src/ipl/        the IPL in order: mounts, the record, storage and /data (the panel for the unit to keep), a restore, clock, seed, state and inventory, identity; the media's hand-off to the installer
+    src/host/       the running console: the loop, the table, the control socket, the web server's listeners, option 4's requests while it is down, shutdown, the load source's line, the serial port lent to a session
+    src/slot/       the slot rule: a slot on trial, and a restore, confirm when the web server answers
     src/console/    /dev/console and /dev/ttyS0, the status screen
     src/sys/        the panic path, reaping, the power button
     src/hooks.rs    a test image's hooks (cfg(test_hooks) only)
@@ -178,12 +180,19 @@ lic/            PID 1, release, the product's binaries
   qsmcstgd/       base/stgd run as QS/MC
   qsmclogd/       base/logd run as QS/MC
   qsmcnetd/       base/netd run as QS/MC
-  qsmchook/       the test hooks: the channel, flaky, the churn (test image only)
+  qsmchook/       the test hooks: the channel, flaky, the churn, a failing web server (test image only)
+  qsmcwebd/       the web server's binary: web/webd with web/pages, and its socket for the local console
   release/        V1R0M0 over QS/400's vrm, the banner, the prefixes, the Appliance and its interface roles, LOAD_SOURCE, status facts and screen, the processor's words
   refcode/        the console's reference codes (docs/REFCODES.md), each base event's, the poster
+web/            the web interface (docs/WEB.md)
+  webd/           qsweb under rustls: the listeners PID 1 hands over, TLS and the certificate, the limits and headers, the self-test
+  users/          web users, roles and the matrix, sign-on rules, web.toml, the web server's socket protocol (docs/WEBUSERS.md)
+  msgs/           the QMC message catalogue (docs/MESSAGES.md)
+  pages/          every page from its view, a module and its routes each; the App: sessions, the task of each route, audit
+  backup/         the backup file: the payload PID 1 restores, sealed under a passphrase (docs/BACKUP.md)
 svc/            the local console
-  console/        qsmccons over base/panels: the sessions, the main menu, status, network, disk units, the one panel for the unit to keep
-docs/           ARCHITECTURE, PHASE0, PHASE1, PHASE2, PHASE3, INSTALL, LOCALCONSOLE, REFCODES, SEED, OPEN_QUESTIONS
+  console/        qsmccons over base/panels: the sessions, the main menu, status, network, disk units, the web interface (option 4), the one panel for the unit to keep
+docs/           ARCHITECTURE, PHASE0-3, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, OPEN_QUESTIONS
 design/         qsmc-prototype/: the web UI's approved design, every page a golden rendering (its README is the handoff)
 ```
 
@@ -192,7 +201,7 @@ Category folders are made as phases need them. The full set: `tools/`
 (the server, sessions, templates, the terminal relay, static files),
 `mgmt/` (managed systems: the QSI client's use, pairing, events, what
 is kept about each system), `svc/` (the local console). Phases 0 and 1
-made `tools/` and `lic/`, Phase 2 `svc/`.
+made `tools/` and `lic/`, Phase 2 `svc/`, Phase 3 `web/`.
 
 ## Commands
 
@@ -203,7 +212,8 @@ with `QSMC_TARGET_DIR`.
 cargo run -p build -- doctor          host prerequisites, the license headers, the two pins, no shared crate twice
 cargo run -p build -- all             fetch, kernel, userland, initramfs, uki, disk, iso, manifest
 cargo run -p build -- --test-image all   the same with the test hooks, under test-image/ in the target
-cargo run -p build -- test            Phase 0's steps on the release image, then Phase 1's suites on the test image
+cargo run -p build -- test            Phase 0's steps on the release image, then Phases 1 to 3's suites on the test image
+cargo run -p build -- fuzz            the fuzzer with coverage counters, every target 60 s (--target NAME, --secs N)
 cargo run -p build -- test --suite <name>   one step or suite; `list` lists them
 cargo run -p build -- test --media iso   the installation ISO
 cargo run -p build -- loadsource a.img [b.img]   a load source (two files: mirrored) from the built UKIs
@@ -211,8 +221,8 @@ cargo run -p build -- deny            cargo-deny and the C-linkage check
 cargo run -p build -- notices         rewrite lic/release/NOTICES.txt (--check in CI)
 cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
-cargo clippy -p qsmcinit -p qsmcstgd -p qsmclogd -p qsmcnetd -p qsmccons -p qsmcinstall --all-targets --target x86_64-unknown-linux-musl -- -D warnings
-QSMC_TEST_HOOKS=1 cargo clippy -p qsmcinit -p qsmchook -p qsmccons --all-targets --target x86_64-unknown-linux-musl -- -D warnings
+cargo clippy -p qsmcinit -p qsmcstgd -p qsmclogd -p qsmcnetd -p qsmccons -p qsmcinstall -p qsmcwebd --all-targets --target x86_64-unknown-linux-musl -- -D warnings
+QSMC_TEST_HOOKS=1 cargo clippy -p qsmcinit -p qsmchook -p qsmccons -p webpages --all-targets --target x86_64-unknown-linux-musl -- -D warnings
 cargo test --workspace
 cargo test -p build -- --ignored host::pins   the pin checks against cargo's checkout of QS/VS
 ```
@@ -230,7 +240,8 @@ screens instead of comparing (`docs/PHASE2.md`).
 
 A test image's hooks are switched on for one boot by an SMBIOS OEM
 string `qsmc.hook=<name>` (`churn`, `flaky-fails`, `refuse-confirm`,
-`short-idle`);
+`short-idle`, `webd-fails`); a test image also serves the pattern
+reference under `/qsmc/dev/`;
 the harness reaches the control socket through the channel on the
 guest's second serial port.
 
@@ -252,6 +263,14 @@ guest's second serial port.
 - `docs/PHASE3.md`: the web server and Console Management pages: the
   new pins and what they changed, the acceptance table with evidence,
   what is not done.
+- `docs/WEB.md`: the web server: its listeners, TLS, limits and
+  headers, static files, how a page is added against its golden file
+  and every golden correction, time, Certificates.
+- `docs/WEBUSERS.md`: web users, roles, the matrix, sign-on rules, audit.
+- `docs/BACKUP.md`: what a backup holds, its format and encryption, and
+  how a restore is applied and taken back.
+- `docs/MESSAGES.md`: every `QMC` message (a test holds it to the
+  catalogue).
 - `design/qsmc-prototype/`: the web UI's design. `README.md` is the
   handoff (build order, routes, fixture data), `STYLE.md` the style
   rules; each page is the golden its served page must match.

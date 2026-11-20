@@ -79,6 +79,30 @@ with `mirror` fixed (`474cc38`, below).
   not to the network service, which reads it only on a reload; the
   web server now asks for one after each host change, as the local
   console does.
+- The web interface stopped answering after a change of the `open`
+  interface that kept its address (a name server, DHCP to static): the
+  interface went down and up, PID 1 handed the web server an empty set
+  of listeners when the address went, and when it came back could not
+  bind 443 again while the web server's last listeners were closing;
+  it recorded the set as sent and never tried again. PID 1 now keeps
+  the listeners while the address is gone (a socket bound to it answers
+  again when it is back), sends an empty set only as the first, and
+  sends no set it could not bind whole, trying again at the next
+  heartbeat (`lic/qsmcinit/src/host/web.rs`). Found by `web-network`
+  and `web-backup`.
+- The web server is ready before DHCP has given the console its
+  address: it answers its own first request over a socket pair, and
+  listens once the address comes. The suites wait for 443 to listen
+  before the browser's first request.
+- The harness's TLS client resumed its sessions, and a resumed session
+  skips the certificate check: a browser pinned to the certificate
+  replaced went on. It resumes none now (`tools/conformance/src/web`).
+- `qsweb` checks a request head's length while it waits for the head's
+  end: a head that arrives whole within one read may pass 16 KiB by up
+  to that read (`docs/WEB.md`). Bounded, so not a hole; `web-hostile`
+  sends four times the limit.
+- QS/400's `httpc` cannot be pinned to one certificate (item 26), and
+  `x509kit`'s PKCS #12 reader takes any iteration count (item 27).
 
 ## Prototype choices answered with a message
 
