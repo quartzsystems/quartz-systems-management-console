@@ -581,3 +581,30 @@ fn console_locale() {
         &[],
     );
 }
+
+#[test]
+fn console_version() {
+    use webpages::version::{Version, page};
+    let v = Version {
+        release: "V1R0M0".into(),
+        build: "26290".into(),
+        built: "10/17/26".into(),
+        fixes: "QMC10102, QMC10115".into(),
+        kernel: "qsmc-kernel 1.0.4".into(),
+        web: "qsmc-web 1.0.4".into(),
+        uptime: "41 days 3:12 (since 09/19/26 04:02)".into(),
+        platform: "Virtual machine (KVM on PVE-01)".into(),
+        processors: "2 vCPU".into(),
+        memory: "4,096 MB".into(),
+        disk: "40 GB (18% used)".into(),
+        interfaces: "eth0 (public), eth1 (private management)".into(),
+        serial: "<span class=\"mono\">ttyS0</span>, 115200, login enabled".into(),
+        messages: Vec::new(),
+    };
+    let c = ctx("/qsmc/console/version");
+    assert_golden(
+        &render("/qsmc/console/version", &page(&c, &v)),
+        "console-version.html",
+        &[],
+    );
+}

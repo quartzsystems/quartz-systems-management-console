@@ -117,6 +117,7 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         "/console/certs" => crate::certs_routes::certs(rq),
         "/console/shutdown" => crate::shutdown_routes::shutdown(rq),
         "/console/locale" => crate::locale_routes::locale(rq),
+        "/console/version" => crate::version_routes::version(rq),
         "/confirm/cert-new" => crate::certs_routes::renew(rq),
         "/confirm/ca-remove" => crate::certs_routes::remove(rq),
         "/confirm/user-delete" => crate::user_routes::delete(rq),

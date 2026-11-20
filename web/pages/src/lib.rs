@@ -34,6 +34,8 @@ pub mod signon;
 pub mod url;
 pub mod user_routes;
 pub mod users;
+pub mod version;
+pub mod version_routes;
 pub mod welcome;
 
 pub use app::App;

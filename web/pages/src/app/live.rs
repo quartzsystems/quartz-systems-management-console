@@ -87,4 +87,16 @@ impl super::Console for Live {
             .power_down(restart, false, 0, by.into())
             .map_err(|e| e.to_string())?
     }
+
+    fn kernel(&self) -> String {
+        std::fs::read_to_string("/proc/sys/kernel/osrelease")
+            .map(|k| k.trim().to_string())
+            .unwrap_or_default()
+    }
+
+    fn data_space(&self) -> Option<(u64, u64)> {
+        let s = rustix::fs::statvfs(release::DATA_DIR).ok()?;
+        let all = s.f_blocks * s.f_frsize;
+        Some((all, all.saturating_sub(s.f_bfree * s.f_frsize)))
+    }
 }

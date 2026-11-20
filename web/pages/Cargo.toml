@@ -23,6 +23,10 @@ x509kit.workspace = true
 zeroize.workspace = true
 qmcbackup = { path = "../backup", version = "0.1.0" }
 
+# The data file system's space, for Console version.
+[target.'cfg(target_os = "linux")'.dependencies]
+rustix.workspace = true
+
 [dev-dependencies]
 qmcbackup = { path = "../backup", version = "0.1.0" }
 

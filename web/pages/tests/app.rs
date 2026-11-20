@@ -956,3 +956,35 @@ fn language_and_locale_keep_the_formats_and_the_timeouts() {
     assert!(t.contains("2026-09-21"), "{t}");
     let _ = std::fs::remove_dir_all(dir);
 }
+
+#[test]
+fn console_version_shows_the_release_and_the_machine() {
+    use state::Document as _;
+    let (app, _, dir) = app("version");
+    let mut inv = state::Inventory::default();
+    inv.system.manufacturer = "QEMU".into();
+    inv.system.product = "Standard PC (Q35 + ICH9, 2009)".into();
+    inv.processors.threads = 2;
+    inv.memory.total_bytes = 4096 * 1024 * 1024;
+    inv.validate().unwrap();
+    app.store().save(&inv).unwrap();
+    let mut b = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.25",
+        host: None,
+    };
+    b.sign_on("qsadmin", PASSWORD);
+    let t = b.send("GET", "/qsmc/console/version", &[]).text();
+    for want in [
+        release::RELEASE.to_string().as_str(),
+        release::BUILD_ID,
+        "Virtual machine (QEMU Standard PC (Q35 + ICH9, 2009))",
+        "2 vCPU",
+        "4,096 MB",
+        "1:00 (since",
+    ] {
+        assert!(t.contains(want), "{want}: {t}");
+    }
+    let _ = std::fs::remove_dir_all(dir);
+}

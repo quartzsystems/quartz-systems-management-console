@@ -2622,6 +2622,7 @@ dependencies = [
  "qmcmsg",
  "qsweb",
  "release",
+ "rustix",
  "serde",
  "state",
  "supervise",

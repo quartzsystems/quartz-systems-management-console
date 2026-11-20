@@ -71,6 +71,16 @@ pub trait Console: Send + Sync {
     fn power_down(&self, _restart: bool, _by: &str) -> Result<(), String> {
         Err("PID 1 did not answer.".into())
     }
+
+    /// The kernel's release, empty when not known.
+    fn kernel(&self) -> String {
+        String::new()
+    }
+
+    /// The data file system: bytes in all and bytes used.
+    fn data_space(&self) -> Option<(u64, u64)> {
+        None
+    }
 }
 
 /// The web server's pages and what they keep.
