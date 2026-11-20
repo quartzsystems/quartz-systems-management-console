@@ -23,6 +23,7 @@ members = [
     "web/users",
     "web/msgs",
     "web/pages",
+    "web/backup",
     "lic/qsmcwebd",
 ]
 
@@ -85,6 +86,9 @@ uuid = "1.28.0"
 # TLS for the web server, as QS/VS declares it, with TLS 1.2 besides.
 rustls = { version = "0.23.46", default-features = false, features = ["std", "tls12"] }
 rustls-graviola = "0.4.0"
+# A backup's encryption (`web/backup`): as QS/400 and QS/VS have them.
+graviola = "0.4.1"
+argon2 = "0.5.3"
 zeroize = "1.9.1"
 
 [workspace.lints.rust]

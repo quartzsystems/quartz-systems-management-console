@@ -1,0 +1,21 @@
+[package]
+name = "qmcbackup"
+description = "QS/MC's backup file: the console's state and web certificate, encrypted under a passphrase"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[features]
+default = ["seal"]
+# The encryption: the web server's. PID 1 reads only the payload.
+seal = ["dep:argon2", "dep:graviola", "dep:zeroize"]
+
+[dependencies]
+argon2 = { workspace = true, optional = true }
+graviola = { workspace = true, optional = true }
+zeroize = { workspace = true, optional = true }
+
+[lints]
+workspace = true
