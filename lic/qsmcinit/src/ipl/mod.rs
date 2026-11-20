@@ -4,8 +4,8 @@
 
 //! The console's IPL, in order. Each step posts its reference code:
 //! the kernel's file systems and cgroup2, the load-source disks and the
-//! A/B record, the storage service and `QSMCDATA` at `/data`, the clock
-//! from the RTC, the seed, the state, the identity, the services. "Base
+//! A/B record, the storage service and `QSMCDATA` at `/data`, a restore
+//! waiting for this IPL, the clock from the RTC, the seed, the state, the identity, the services. "Base
 //! ready" is posted by the loop when every service has said so, and the
 //! slot confirmed by the rule (`crate::slot::rule`). On installation
 //! media the installer runs after the clock, in place of the rest.
@@ -19,6 +19,7 @@ pub mod cmdline;
 mod install;
 #[cfg(target_os = "linux")]
 pub mod mounts;
+pub mod restore;
 pub mod state;
 
 #[cfg(target_os = "linux")]
@@ -40,7 +41,7 @@ mod on_console {
 
     use super::choose::Chooser;
     use super::cmdline::{self, Source};
-    use super::{clock, install, mounts, state as state_step};
+    use super::{clock, install, mounts, restore, state as state_step};
     use crate::console::Console;
     use crate::host::{Host, table};
     use crate::product::QSMC;
@@ -172,6 +173,27 @@ mod on_console {
         }
     }
 
+    /// The restore step: a restore the web server left is put in place
+    /// before anything reads state (`docs/BACKUP.md`).
+    fn restore(host: &mut Host) {
+        if !host.data_mounted {
+            return;
+        }
+        match restore::at_ipl(Path::new(release::DATA_DIR), release::RELEASE) {
+            restore::Outcome::Nothing => {}
+            restore::Outcome::Applied(m) => host.post(
+                &refcode::RESTORE_APPLIED,
+                &format!(
+                    "the backup of {} made {}",
+                    m.console,
+                    Zone::UTC.display(i64::try_from(m.made).unwrap_or(0))
+                ),
+            ),
+            restore::Outcome::Refused(why) => host.post(&refcode::RESTORE_REFUSED, &why),
+            restore::Outcome::TakenBack => host.post(&refcode::RESTORE_TAKEN_BACK, ""),
+        }
+    }
+
     fn clock(host: &mut Host) {
         match clock::set_from_rtc() {
             Ok(secs) => host.post(&refcode::CLOCK_SET, &Zone::UTC.display(secs)),
@@ -281,6 +303,7 @@ mod on_console {
         record(&mut host, source, &sources);
         storage(&mut host);
         data(&mut host, &sources);
+        restore(&mut host);
         clock(&mut host);
         let store = Store::at(QSMC.state_dir());
         seed(&mut host, &store);

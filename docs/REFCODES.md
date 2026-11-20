@@ -1,3 +1,7 @@
+| `A3001045` | Restore taken back | the IPL after a restore found it not confirmed: the restored console did not start its web server, or the restore was cut short; the state before it is back | The console runs on the state it had before the restore; restore the backup again, and if it is taken back again, report this code with the system log |
+| `A3001046` | Restore refused | the restore waiting for this IPL could not be read, or is of a newer release, with why | Nothing was changed; restore a backup made by a console of this release or an earlier one |
+| `C3001096` | Restore confirmed | the web server answered on the restored state: the state before the restore is deleted |
+| `C3001045` | Restore applied | a restore made from the web interface was put in place before the state was read, with the backup's console and date; the state before it is kept until the restore is confirmed |
 # Console reference codes
 
 A QS/MC console posts reference codes the way a QS/400 system and a

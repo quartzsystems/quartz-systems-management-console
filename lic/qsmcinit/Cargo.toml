@@ -20,6 +20,7 @@ seed.workspace = true
 identity.workspace = true
 loadsource.workspace = true
 stgd.workspace = true
+qmcbackup = { path = "../../web/backup", version = "0.1.0", default-features = false }
 abrec.workspace = true
 diskimg.workspace = true
 

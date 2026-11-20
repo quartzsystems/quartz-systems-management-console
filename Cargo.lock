@@ -1511,6 +1511,7 @@ dependencies = [
  "loadsource",
  "logd",
  "processor",
+ "qmcbackup",
  "refcode",
  "release",
  "rustix",

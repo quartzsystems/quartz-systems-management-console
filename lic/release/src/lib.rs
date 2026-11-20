@@ -86,6 +86,23 @@ pub const WEBD_SOCKET: &str = "/run/qsmcwebd.sock";
 /// The web server's certificate and key, under `/data`.
 pub const WEB_DIR: &str = "/data/web";
 
+/// A restore's folder under `/data` (`docs/BACKUP.md`): the web server
+/// leaves the backup's payload there as [`restore::PENDING`]; PID 1
+/// applies it at the next IPL and keeps the state before it as
+/// [`restore::PREVIOUS`] while [`restore::TRIAL`] is there.
+pub mod restore {
+    /// The folder's name under `/data`.
+    pub const DIR: &str = "restore";
+    /// The payload waiting for the IPL.
+    pub const PENDING: &str = "pending";
+    /// A payload uploaded and not yet asked for: the confirmation's.
+    pub const UPLOADED: &str = "uploaded";
+    /// The restore is applied and not yet confirmed.
+    pub const TRIAL: &str = "trial";
+    /// The state before it.
+    pub const PREVIOUS: &str = "previous";
+}
+
 /// The local console's argument for its one panel: the unit to keep of
 /// a mirrored load source whose units ran apart.
 pub const KEEP_UNIT: &str = "keep-unit";

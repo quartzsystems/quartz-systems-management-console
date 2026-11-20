@@ -106,6 +106,8 @@ pub const MOUNTED: RefCode = progress("C3001010", "Kernel file systems mounted")
 pub const RECORD_READ: RefCode = progress("C3001030", "A/B record read");
 /// `QSMCDATA` is mounted at `/data`.
 pub const DATA_MOUNTED: RefCode = progress("C3001040", "Data file system mounted");
+/// A restore waiting for this IPL was put in place.
+pub const RESTORE_APPLIED: RefCode = progress("C3001045", "Restore applied");
 /// The system clock was set from the RTC.
 pub const CLOCK_SET: RefCode = progress("C3001050", "Clock set from the RTC");
 /// The seed step ran and applied nothing.
@@ -122,6 +124,8 @@ pub const SERVICES_STARTED: RefCode = progress("C3001080", "Services started");
 pub const BASE_READY: RefCode = progress("C3001090", "Base ready");
 /// The slot this IPL came from is confirmed as the default.
 pub const SLOT_CONFIRMED: RefCode = progress("C3001095", "Slot confirmed");
+/// A restore on trial was kept: the state before it is gone.
+pub const RESTORE_CONFIRMED: RefCode = progress("C3001096", "Restore confirmed");
 
 // C3002xxx: the management network and time.
 
@@ -206,6 +210,18 @@ pub const DATA_NOT_MOUNTED: RefCode = attention(
     "A3001040",
     "Data file system not mounted",
     "Nothing is kept across a restart: check the load-source disks and their connections; the data file system is never reformatted by the console",
+);
+/// A restore was not confirmed: the state before it is back.
+pub const RESTORE_TAKEN_BACK: RefCode = attention(
+    "A3001045",
+    "Restore taken back",
+    "The console runs on the state it had before the restore; restore the backup again, and if it is taken back again, report this code with the system log",
+);
+/// A restore waiting for this IPL could not be used.
+pub const RESTORE_REFUSED: RefCode = attention(
+    "A3001046",
+    "Restore refused",
+    "Nothing was changed; restore a backup made by a console of this release or an earlier one",
 );
 /// The RTC could not be read.
 pub const CLOCK_NOT_SET: RefCode = attention(
@@ -356,6 +372,7 @@ pub const ALL: &[&RefCode] = &[
     &MOUNTED,
     &RECORD_READ,
     &DATA_MOUNTED,
+    &RESTORE_APPLIED,
     &CLOCK_SET,
     &SEED_CHECKED,
     &SEED_APPLIED,
@@ -364,6 +381,7 @@ pub const ALL: &[&RefCode] = &[
     &SERVICES_STARTED,
     &BASE_READY,
     &SLOT_CONFIRMED,
+    &RESTORE_CONFIRMED,
     &INTERFACE_UP,
     &ADDRESS_ACQUIRED,
     &TIME_SYNCHRONIZED,
@@ -390,6 +408,8 @@ pub const ALL: &[&RefCode] = &[
     &RECORD_INVALID,
     &SLOT_FELL_BACK,
     &DATA_NOT_MOUNTED,
+    &RESTORE_TAKEN_BACK,
+    &RESTORE_REFUSED,
     &CLOCK_NOT_SET,
     &SEED_INVALID,
     &STATE_INVALID,

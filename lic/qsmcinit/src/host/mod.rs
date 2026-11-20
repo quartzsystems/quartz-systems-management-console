@@ -355,12 +355,22 @@ impl Host {
         }
     }
 
-    /// The console is up by the slot rule: a slot on trial confirms.
+    /// The console is up by the slot rule: a slot on trial confirms, and
+    /// so does a restore.
     fn confirm_slot(&mut self) {
         #[cfg(test_hooks)]
         if crate::hooks::has(crate::hooks::REFUSE_CONFIRM) {
             self.line("TEST HOOK: the slot is not confirmed");
             return;
+        }
+        // A restore on trial is kept by the same rule as a slot.
+        if self.data_mounted
+            && crate::ipl::restore::confirm(std::path::Path::new(release::DATA_DIR))
+        {
+            self.post(
+                &refcode::RESTORE_CONFIRMED,
+                "the state before it is deleted",
+            );
         }
         if let Some(mut slots) = self.slots.take() {
             let mut posted = Vec::new();
