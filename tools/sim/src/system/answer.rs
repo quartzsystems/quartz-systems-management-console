@@ -9,7 +9,7 @@
 use qsi::any::{AnyReply, AnyRequest};
 use qsi::base::{self, Keylock, PowerAction, PowerState};
 use qsi::host::model::{IplSource, IplType, PartitionState};
-use qsi::host::{console, host, panel, partitions, refcodes};
+use qsi::host::{console, host, panel, partitions, profiles, refcodes};
 use qsi::{Empty, PeerKind};
 
 use super::{System, codes};
@@ -126,6 +126,20 @@ pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
                 partitions::Reply::Adapters(Vec::new()),
             )),
         },
+        AnyRequest::Profiles(profiles::Request::Get(g)) if host => {
+            let Some(p) = s.part(g.id) else {
+                return no_partition(g.id);
+            };
+            match p.profile.clone().filter(|pr| pr.name == g.name) {
+                Some(profile) => Answer::Reply(AnyReply::Profiles(profiles::Reply::Get(
+                    profiles::Revised {
+                        profile,
+                        revision: 1,
+                    },
+                ))),
+                None => refuse("QVS2011", &format!("Profile {} does not exist.", g.name)),
+            }
+        }
         AnyRequest::Refcodes(refcodes::Request::History(q)) if host => {
             let Some(p) = s.part(q.id) else {
                 return no_partition(q.id);

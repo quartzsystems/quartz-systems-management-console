@@ -107,6 +107,9 @@ pub fn hostile(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             .map(|x| x.failures)
             .sum())
     };
+    super::until("QSBR01VS1 connected", Duration::from_secs(30), || {
+        Ok(connected(&page(&mut c.browser, "/qsmc/connectivity")?))
+    })?;
     let before = restarts(&mut c)?;
     fleet.tell(1, "nonsense");
     fleet.tell(2, "oversize");
@@ -123,14 +126,13 @@ pub fn hostile(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         let t = Instant::now();
         let conn = page(&mut c.browser, "/qsmc/connectivity")?;
         slowest = slowest.max(t.elapsed());
-        let first = conn.split("QSBR01VS1").nth(1).unwrap_or("");
-        if !first
-            .split("</tr>")
-            .next()
-            .unwrap_or("")
-            .contains(">Connected<")
-        {
-            return Err("the good system's session went".into());
+        if !connected(&conn) {
+            let l = super::logs(&mut c.guest, &["QSBR0", "mgmtd", "panicked"]);
+            return Err(format!(
+                "the good system's session went after {} s: {}\n{l}",
+                t0.elapsed().as_secs(),
+                row(&conn)
+            ));
         }
         std::thread::sleep(Duration::from_secs(3));
     }
@@ -145,6 +147,20 @@ pub fn hostile(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
          pages answered within {} ms, mgmtd and webd never failed",
         slowest.as_millis()
     ))
+}
+
+/// Connectivity's row of `QSBR01VS1`, the good system.
+fn row(conn: &str) -> &str {
+    let Some(at) = conn.find(">QSBR01VS1<") else {
+        return "";
+    };
+    let start = conn[..at].rfind("<tr").unwrap_or(at);
+    let end = conn[at..].find("</tr>").map_or(conn.len(), |e| at + e);
+    &conn[start..end]
+}
+
+fn connected(conn: &str) -> bool {
+    row(conn).contains(">Connected<")
 }
 
 /// The socket inodes `pid` holds.
