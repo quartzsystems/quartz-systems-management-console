@@ -318,6 +318,11 @@ page is drawn as the prototype has it, and the choice answers with a
   console's identity and users, it leaves only through the browser of
   a signed-on Administrator, and SFTP is outbound traffic the outbound
   rule (item 7) does not list.
+- Backup and restore: "Schedule...", which needs a destination other
+  than the browser; "Reference code and event history", which is the
+  log service's and is not restored over a running one; and "Virtual
+  optical media library index", which Phase 5 brings. A backup always
+  holds the console data: unchecking it answers that it does.
 - Date and time: "Act as NTP server on the private management
   network". The console is an NTP client only: a server would listen,
   and only the web server listens.
@@ -365,6 +370,12 @@ the prototype has no form for any of them. QS/MC shows each under the
 list as `qsweb`'s properties pattern (`?edit=`, `?password=`, after
 Create user...), with the password rules stated; the list is the
 golden. To decide: designed pages for the three.
+
+The same holds for the Restore tab of `console-backup.html`, which the
+prototype links and does not draw, and for View on
+`console-certs.html`, which leads to the page itself: the upload with
+what the backup holds, and the certificate's every field, are
+`qsweb`'s properties under the page's own.
 
 ## 24. A network change kept only when confirmed (closed)
 

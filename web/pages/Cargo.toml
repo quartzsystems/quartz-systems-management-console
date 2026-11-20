@@ -21,8 +21,10 @@ supervise.workspace = true
 netd.workspace = true
 x509kit.workspace = true
 zeroize.workspace = true
+qmcbackup = { path = "../backup", version = "0.1.0" }
 
 [dev-dependencies]
+qmcbackup = { path = "../backup", version = "0.1.0" }
 
 [lints]
 workspace = true

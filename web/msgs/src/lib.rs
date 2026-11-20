@@ -152,8 +152,9 @@ catalogue! {
     REMOTE_NOT_IN_V1 = "QMC8405", 20, "Copying a backup to a remote host is not in this release. Download the backup instead.",
         "A backup holds the console's identity and users; in this release it leaves the console only through the browser.",
         "Choose Download as file.";
-    PASSPHRASE_RULES = "QMC8406", 30, "The passphrase must be 12 to 128 characters, and both entries must match.",
-        "The passphrase does not follow the rules.", "Type a longer passphrase twice.";
+    PASSPHRASE_RULES = "QMC8406", 30, "The passphrase must be 12 to 128 characters.",
+        "The passphrase does not follow the rules: a backup holds the console's identity and users.",
+        "Type a passphrase of 12 to 128 characters, and keep it apart from the file.";
 
     // Shut down or restart.
     SHUTDOWN_STARTED = "QMC8500", 0, "The console is powering off.",

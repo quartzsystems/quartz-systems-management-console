@@ -112,6 +112,8 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         "/console/roles" => crate::user_routes::roles(rq),
         "/console/network" => crate::network_routes::network(rq),
         "/console/datetime" => crate::datetime_routes::datetime(rq),
+        "/console/backup" => crate::backup_routes::backup(rq),
+        "/confirm/restore" => crate::backup_routes::confirm(rq),
         "/console/certs" => crate::certs_routes::certs(rq),
         "/confirm/cert-new" => crate::certs_routes::renew(rq),
         "/confirm/ca-remove" => crate::certs_routes::remove(rq),

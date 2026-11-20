@@ -15,6 +15,7 @@
 
 pub mod app;
 pub mod backup;
+pub mod backup_routes;
 pub mod certs;
 pub mod certs_routes;
 pub mod console;

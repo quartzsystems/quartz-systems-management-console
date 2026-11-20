@@ -78,18 +78,20 @@ thread_local! {
 fn app(name: &str) -> (App, Arc<AtomicU64>, PathBuf) {
     let dir = std::env::temp_dir().join(format!("webpages-{name}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
-    std::fs::create_dir_all(&dir).unwrap();
-    let db = dir.join("users.db");
+    // `/data` as the console has it: the state folder in it.
+    let state = dir.join("state");
+    std::fs::create_dir_all(&state).unwrap();
+    let db = state.join("users.db");
     let hash = users::hash(PASSWORD).unwrap();
     std::fs::write(&db, users::first("QSADMIN", &hash, 1).unwrap()).unwrap();
     let clock = Arc::new(AtomicU64::new(START));
     let app = App::open(
-        &dir,
+        &state,
         &db,
         Box::new(Fixed(
             clock.clone(),
             CONFIRMS.with(Clone::clone),
-            dir.clone(),
+            state.clone(),
         )),
     )
     .unwrap();
@@ -721,5 +723,123 @@ fn certificates_are_made_imported_and_trusted() {
         &[("csrf", &token), ("download_ca_certificate", "x")],
     );
     assert_eq!(d.text(), x509kit::pem::encode("CERTIFICATE", &other.cert));
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+#[test]
+#[allow(clippy::too_many_lines, reason = "one page's whole story")]
+fn a_backup_is_made_opened_and_left_for_the_restart() {
+    const PASS: &str = "a long backup passphrase";
+    let (app, _, dir) = app("backup");
+    let mut b = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.21",
+        host: None,
+    };
+    b.sign_on("qsadmin", PASSWORD);
+    let t = b.send("GET", "/qsmc/console/backup", &[]).text();
+    assert!(t.contains("No backup has been made."), "{t}");
+    let token = b.csrf("/qsmc/console/backup");
+    let post = |b: &mut Browser<'_>, f: &[(&str, &str)]| {
+        let mut all = vec![("csrf", token.as_str())];
+        all.extend_from_slice(f);
+        b.send("POST", "/qsmc/console/backup", &all)
+    };
+    // What V1 does not do, and a short passphrase, make nothing.
+    let t = post(
+        &mut b,
+        &[
+            ("d", "on"),
+            ("h", "on"),
+            ("w", "remote"),
+            ("pp", "short"),
+            ("back_up_now", "x"),
+        ],
+    )
+    .text();
+    for id in ["QMC8700", "QMC8405", "QMC8406"] {
+        assert!(t.contains(id), "{id}: {t}");
+    }
+    assert!(
+        post(&mut b, &[("schedule", "x")])
+            .text()
+            .contains("QMC8700")
+    );
+    // A backup: downloaded, recorded, and opened by its passphrase only.
+    let r = post(
+        &mut b,
+        &[
+            ("d", "on"),
+            ("w", "file"),
+            ("pp", PASS),
+            ("back_up_now", "x"),
+        ],
+    );
+    let disposition = r.header("Content-Disposition").unwrap_or("").to_string();
+    assert!(
+        disposition.contains("qshqmc1-20260921.qmcb"),
+        "{disposition}"
+    );
+    let file = r.bytes().to_vec();
+    let opened = qmcbackup::seal::open(&file, PASS).unwrap();
+    assert_eq!(opened.manifest.console, "QSHQMC1");
+    assert!(
+        opened
+            .entries
+            .iter()
+            .any(|e| e.path == "state/webusers.toml")
+    );
+    assert!(opened.entries.iter().any(|e| e.path == "state/users.db"));
+    assert!(!file.windows(7).any(|w| w == b"qsadmin"));
+    let t = b
+        .send("GET", "/qsmc/console/backup?tab=history", &[])
+        .text();
+    assert!(
+        t.contains("Download qshqmc1-20260921.qmcb") && t.contains("Complete"),
+        "{t}"
+    );
+    // Opened for a restore: a wrong passphrase, a damaged file and a newer
+    // release are refused.
+    let restore = "/qsmc/console/backup?tab=restore";
+    let open = |b: &mut Browser<'_>, file: &[u8], pp: &str| {
+        b.upload(
+            restore,
+            &[("csrf", &token), ("pp", pp), ("open", "Open")],
+            file,
+        )
+        .text()
+    };
+    assert!(open(&mut b, &file, "not the passphrase").contains("QMC8402"));
+    let mut damaged = file.clone();
+    damaged[60] ^= 1;
+    assert!(open(&mut b, &damaged, PASS).contains("QMC8402"));
+    assert!(open(&mut b, b"not a backup", PASS).contains("QMC8403"));
+    let mut newer = opened.clone();
+    newer.manifest.release = "V9R0M0".into();
+    let newer = qmcbackup::seal::seal(&newer, PASS).unwrap();
+    let t = open(&mut b, &newer, PASS);
+    assert!(t.contains("QMC8404") && t.contains("V9R0M0"), "{t}");
+    // Opened, it shows what it holds; confirmed, it waits for the IPL.
+    let t = open(&mut b, &file, PASS);
+    assert!(
+        t.contains("The backup holds") && t.contains("QSHQMC1"),
+        "{t}"
+    );
+    let staged = dir.join("restore");
+    assert!(staged.join("uploaded").exists());
+    let t = b.send("GET", "/qsmc/confirm/restore", &[]).text();
+    assert!(t.contains("Confirm Restore"), "{t}");
+    b.send(
+        "POST",
+        "/qsmc/confirm/restore",
+        &[("csrf", &token), ("ok", "OK")],
+    );
+    assert!(staged.join("pending").exists() && !staged.join("uploaded").exists());
+    let pending = std::fs::read(staged.join("pending")).unwrap();
+    assert_eq!(qmcbackup::Backup::decode(&pending).unwrap(), opened);
+    // The test console cannot restart: the page says it waits.
+    let t = b.send("GET", restore, &[]).text();
+    assert!(t.contains("QMC8401"), "{t}");
     let _ = std::fs::remove_dir_all(dir);
 }

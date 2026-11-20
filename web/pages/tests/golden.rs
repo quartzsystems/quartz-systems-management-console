@@ -497,3 +497,35 @@ fn console_certs() {
         &[],
     );
 }
+
+#[test]
+fn console_backup() {
+    use webpages::backup::{BackupTab, Row, backup_page};
+    let row = |date: &str, file: &str, size: &str| Row {
+        date: date.into(),
+        destination: format!("backup.quartz.example:/backups/qsmc/{file}"),
+        size: size.into(),
+        status: ("Complete".into(), Some(true)),
+    };
+    let v = BackupTab {
+        data: true,
+        history: true,
+        media: false,
+        download: false,
+        host: "backup.quartz.example".into(),
+        path: "/backups/qsmc/".into(),
+        user: "qsmcbackup".into(),
+        last: vec![
+            row("10/26/26 02:00", "qshqmc1-20261026.qmcb", "3.1 MB"),
+            row("10/19/26 02:00", "qshqmc1-20261019.qmcb", "3.0 MB"),
+            row("10/12/26 02:00", "qshqmc1-20261012.qmcb", "3.0 MB"),
+        ],
+        messages: Vec::new(),
+    };
+    let c = ctx("/qsmc/console/backup");
+    assert_golden(
+        &render("/qsmc/console/backup", &backup_page(&c, &v)),
+        "console-backup.html",
+        &[],
+    );
+}

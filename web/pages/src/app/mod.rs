@@ -181,6 +181,14 @@ impl App {
         &self.store
     }
 
+    /// The data folder the state folder is in: `/data`.
+    pub fn data_dir(&self) -> std::path::PathBuf {
+        let state = self.store.dir();
+        state
+            .parent()
+            .map_or_else(|| state.to_path_buf(), Path::to_path_buf)
+    }
+
     /// The settings.
     pub fn settings(&self) -> WebSettings {
         lock(&self.settings).clone()
