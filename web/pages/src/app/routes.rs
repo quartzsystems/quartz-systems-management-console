@@ -278,9 +278,26 @@ pub fn task_of(route: &str) -> Option<Task> {
     if route.starts_with("/console") || route.starts_with("/confirm/") {
         return Some(Task::Settings);
     }
+    // The later phases' routes need the task their pages will.
     match route {
-        "/welcome" => Some(Task::View),
+        "/welcome" | "/servers" | "/partitions" | "/groups" => Some(Task::View),
+        "/plans" => Some(Task::Plans),
+        "/events" | "/refcodes" | "/dumps" | "/connectivity" => Some(Task::Events),
+        "/updates" | "/updates/code" => Some(Task::CodeUpdates),
+        r if r.starts_with("/dev/") => Some(Task::View),
         _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn every_route_of_the_tree_names_its_task() {
+        for g in webd::product::NAV {
+            for (_, route) in g.items {
+                assert!(super::task_of(route).is_some(), "{route} has no task");
+            }
+        }
     }
 }
 
