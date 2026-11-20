@@ -55,7 +55,7 @@ request refused.
 | `QMC9011` | 30 | The form has expired. Nothing was changed. | The form was not sent with the current session's token: it was opened in an earlier session, or did not come from this console. | Open the page again and send the form from it. |
 | `QMC9020` | 20 | There is no page &1. | The address does not name a page of this console. | Go to the page from the navigation tree. |
 | `QMC9030` | 0 | &1 arrives in a later release of this console. | This function of the console is not available yet. | Use the functions under Console Management. |
-| `QMC9031` | 0 | No managed system has been added to this console. | Managed systems are added and reached over QSI, which arrives in a later release. | Use the functions under Console Management. |
+| `QMC9031` | 0 | No managed system has been added to this console. | A managed system is added with the pairing password its operator makes on it. | Choose Add managed system on the Servers or Connectivity page. |
 | `QMC8001` | 0 | User &1 created with role &2. | An Administrator created the user. | None. |
 | `QMC8002` | 0 | User &1 changed. | An Administrator changed the user's properties. | None. |
 | `QMC8003` | 0 | Password of user &1 changed. | The user's password was set. | None. |

@@ -141,8 +141,8 @@ catalogue! {
         "This function of the console is not available yet.",
         "Use the functions under Console Management.";
     NO_SYSTEMS = "QMC9031", 0, "No managed system has been added to this console.",
-        "Managed systems are added and reached over QSI, which arrives in a later release.",
-        "Use the functions under Console Management.";
+        "A managed system is added with the pairing password its operator makes on it.",
+        "Choose Add managed system on the Servers or Connectivity page.";
 
     // Users and roles.
     USER_CREATED = "QMC8001", 0, "User &1 created with role &2.",

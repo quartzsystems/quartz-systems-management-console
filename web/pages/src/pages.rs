@@ -17,26 +17,82 @@ pub fn uptime(secs: u64) -> String {
     format!("{days} {d} {h}:{m:02}")
 }
 
+/// Managed systems by state: total, operating, power off, standby,
+/// error, no connection; and partitions by state: total, running, not
+/// activated, shutting down, error, starting (the strip's open
+/// firmware). A standalone system is one partition, as on the
+/// Partitions list.
+pub fn counts(kept: &[mgmtproto::Kept]) -> ([u32; 6], [u32; 6]) {
+    use qsi::host::model::PartitionState as P;
+    let mut s = [0u32; 6];
+    let mut p = [0u32; 6];
+    for k in kept {
+        s[0] += 1;
+        let i = match k.status() {
+            "Operating" => 1,
+            "Power off" => 2,
+            "Standby" => 3,
+            "Error" => 4,
+            _ => 5,
+        };
+        s[i] += 1;
+        if k.kind == mgmtproto::kept::Kind::Standalone {
+            p[0] += 1;
+            match i {
+                1 => p[1] += 1,
+                4 => p[4] += 1,
+                _ => p[2] += 1,
+            }
+            continue;
+        }
+        for part in &k.partitions {
+            p[0] += 1;
+            let j = match part.state {
+                P::Running => 1,
+                P::ShuttingDown => 3,
+                P::Error => 4,
+                P::Starting => 5,
+                _ => 2,
+            };
+            p[j] += 1;
+        }
+    }
+    (s, p)
+}
+
 fn welcome(rq: &Rq<'_>) -> Response {
+    let mut messages = Vec::new();
+    let kept = crate::systems::systems(rq).unwrap_or_else(|m| {
+        messages.push(m);
+        Vec::new()
+    });
+    let (systems, partitions) = counts(&kept);
+    if kept.is_empty() && messages.is_empty() {
+        messages.push(qmcmsg::message(
+            qsweb::msg::Kind::Info,
+            &qmcmsg::NO_SYSTEMS,
+            &[],
+        ));
+    }
     let v = crate::welcome::Welcome {
         console: rq.app.console.name(),
         user: rq.user().into(),
         role: rq.role.label().into(),
         from: rq.from(),
-        systems: [0; 6],
-        partitions: [0; 6],
+        systems,
+        partitions,
         events: 0,
         dumps: 0,
         updates: "0".into(),
         version: release::RELEASE.to_string(),
         build: release::BUILD_ID.into(),
         uptime: uptime(rq.app.console.uptime()),
-        connected: "0 of 0".into(),
-        messages: vec![qmcmsg::message(
-            qsweb::msg::Kind::Info,
-            &qmcmsg::NO_SYSTEMS,
-            &[],
-        )],
+        connected: format!(
+            "{} of {}",
+            systems[1] + systems[2] + systems[3] + systems[4],
+            systems[0]
+        ),
+        messages,
     };
     rq.page(crate::welcome::page(&rq.ctx, &v))
 }
@@ -139,6 +195,53 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn welcome_counts_systems_and_partitions_by_state() {
+        use mgmtproto::Kept;
+        use mgmtproto::kept::{Kind, Link};
+        use qsi::base::{PowerState, State};
+        use qsi::host::model::PartitionState as P;
+        use qsi::host::partitions::Status;
+        let state = |power| {
+            Some(State {
+                power,
+                refcode: None,
+                release: String::new(),
+                slot: String::new(),
+                keylock: None,
+            })
+        };
+        let part = |state| Status {
+            id: 1,
+            name: "P".into(),
+            state,
+            code: String::new(),
+            text: String::new(),
+            current: None,
+            profile: String::new(),
+            last_end: String::new(),
+            message: None,
+            ethernet: Vec::new(),
+            channel: qsi::host::model::Channel::default(),
+        };
+        let host = Kept {
+            link: Link::Connected,
+            state: state(PowerState::Running),
+            partitions: vec![part(P::Running), part(P::NotActivated), part(P::Starting)],
+            ..Kept::default()
+        };
+        let standalone = Kept {
+            link: Link::Connected,
+            kind: Kind::Standalone,
+            state: state(PowerState::Running),
+            ..Kept::default()
+        };
+        let away = Kept::default();
+        let (s, p) = super::counts(&[host, standalone, away]);
+        assert_eq!(s, [3, 2, 0, 0, 0, 1]);
+        assert_eq!(p, [4, 2, 1, 0, 0, 1]);
+    }
+
     #[test]
     fn uptime_reads_as_the_prototype_s() {
         assert_eq!(
