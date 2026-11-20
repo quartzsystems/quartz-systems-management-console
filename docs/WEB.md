@@ -69,7 +69,7 @@ The web certificate is not the console's QSI identity
 | A request's head | 16 KiB (`qsweb`; 431), checked while its end has not come: a head that arrives whole within one read may pass it by up to that read |
 | A body read whole | 8 MiB (`qsweb`; 413) |
 | Requests a connection | 200 (`qsweb`) |
-| A connection silent | 30 s, then closed |
+| A connection silent | 30 s read timeout, then closed; `web-hostile` measures the close at 60 s through QEMU's user network, which is not yet explained |
 | Connections at once | 64, of them 16 from one address; one more is closed at once |
 
 Every answer on 443 carries `Content-Security-Policy: default-src
