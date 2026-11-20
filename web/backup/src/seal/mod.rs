@@ -78,8 +78,26 @@ pub fn seal(backup: &Backup, passphrase: &str) -> Result<Vec<u8>, Error> {
     Ok(out)
 }
 
-/// Read the file `bytes` with `passphrase`.
-pub fn open(bytes: &[u8], passphrase: &str) -> Result<Backup, Error> {
+/// A file's header, read and checked before any work is done for it.
+#[derive(Debug, PartialEq, Eq)]
+pub struct Header<'a> {
+    /// Argon2id's memory (KiB), passes and lanes.
+    pub cost: (u32, u32, u32),
+    /// The salt.
+    pub salt: &'a [u8],
+    /// The nonce.
+    pub nonce: [u8; 12],
+    /// The header's bytes: the cipher's additional data.
+    pub bytes: &'a [u8],
+    /// The ciphertext.
+    pub body: &'a [u8],
+    /// The tag.
+    pub tag: &'a [u8],
+}
+
+/// The header of the file `bytes`: refused when the file is short, is
+/// not one, or asks for more work than a backup takes.
+pub fn header(bytes: &[u8]) -> Result<Header<'_>, Error> {
     let not = |why: &str| Error::NotBackup(why.to_string());
     if bytes.len() < HEADER + TAG || !bytes.starts_with(MAGIC) {
         return Err(not("it does not begin as one"));
@@ -93,13 +111,25 @@ pub fn open(bytes: &[u8], passphrase: &str) -> Result<Backup, Error> {
     if cost.0 > MOST.0 || cost.1 > MOST.1 || cost.2 > MOST.2 {
         return Err(not("it asks for more work than a backup takes"));
     }
-    let salt = &header[20..36];
     let nonce: [u8; 12] = header[36..48].try_into().map_err(|_| not("its nonce"))?;
     let (body, tag) = rest.split_at(rest.len() - TAG);
-    let key = key(passphrase, salt, cost)?;
-    let mut plain = Zeroizing::new(body.to_vec());
+    Ok(Header {
+        cost,
+        salt: &header[20..36],
+        nonce,
+        bytes: header,
+        body,
+        tag,
+    })
+}
+
+/// Read the file `bytes` with `passphrase`.
+pub fn open(bytes: &[u8], passphrase: &str) -> Result<Backup, Error> {
+    let h = header(bytes)?;
+    let key = key(passphrase, h.salt, h.cost)?;
+    let mut plain = Zeroizing::new(h.body.to_vec());
     AesGcm::new(key.as_ref())
-        .decrypt(&nonce, header, &mut plain, tag)
+        .decrypt(&h.nonce, h.bytes, &mut plain, h.tag)
         .map_err(|_| Error::Passphrase)?;
     Backup::decode(&plain)
 }

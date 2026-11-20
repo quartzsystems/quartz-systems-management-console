@@ -289,18 +289,6 @@ pub fn task_of(route: &str) -> Option<Task> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn every_route_of_the_tree_names_its_task() {
-        for g in webd::product::NAV {
-            for (_, route) in g.items {
-                assert!(super::task_of(route).is_some(), "{route} has no task");
-            }
-        }
-    }
-}
-
 /// Answer `req`.
 pub fn route(app: &App, req: &Request, peer: &Peer) -> Response {
     let Some(route) = req.path.strip_prefix(PREFIX) else {
@@ -385,4 +373,16 @@ pub fn route(app: &App, req: &Request, peer: &Peer) -> Response {
     }
     crate::pages::serve(&rq, route)
         .unwrap_or_else(|| error(&rq, 404, &qmcmsg::NOT_FOUND, &[&req.path]))
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn every_route_of_the_tree_names_its_task() {
+        for g in webd::product::NAV {
+            for (_, route) in g.items {
+                assert!(super::task_of(route).is_some(), "{route} has no task");
+            }
+        }
+    }
 }

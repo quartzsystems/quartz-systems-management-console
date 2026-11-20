@@ -12,7 +12,7 @@ use qsweb::frame::Page;
 use qsweb::http::Response;
 use qsweb::msg::{Kind, Message};
 use serde::{Deserialize, Serialize};
-use x509kit::bundle::{Bundle, read_pem, read_pkcs12};
+use x509kit::bundle::{Bundle, read_pem};
 use x509kit::crypto::keys::KeyAlgorithm;
 use x509kit::x509::CertInfo;
 
@@ -221,19 +221,6 @@ fn addresses(rq: &Rq<'_>) -> Vec<String> {
         .unwrap_or_default()
 }
 
-/// The bundle an upload holds: PEM text, or PKCS #12 with its password.
-fn bundle_of(data: &[u8], password: &str) -> Result<Bundle, String> {
-    if data.is_empty() {
-        return Err("no file was chosen".into());
-    }
-    match std::str::from_utf8(data) {
-        Ok(text) if text.contains("-----BEGIN") => {
-            read_pem(text, Some(password).filter(|p| !p.is_empty())).map_err(|e| e.to_string())
-        }
-        _ => read_pkcs12(data, password).map_err(|e| e.to_string()),
-    }
-}
-
 fn import(rq: &Rq<'_>) -> Response {
     let parts = rq.req.multipart().unwrap_or_default();
     let field = |n: &str| parts.iter().find(|p| p.name == n);
@@ -243,7 +230,7 @@ fn import(rq: &Rq<'_>) -> Response {
             .map(|p| String::from_utf8_lossy(&p.data).into_owned())
             .unwrap_or_default(),
     );
-    let bundle = match bundle_of(data, &password) {
+    let bundle = match webd::tls::read_bundle(data, &password) {
         Ok(b) => b,
         Err(e) => {
             rq.audit("import a certificate", &e);

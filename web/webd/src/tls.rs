@@ -125,8 +125,23 @@ fn write_file(path: &Path, text: &str, secret: bool) -> Result<(), String> {
     std::fs::rename(&fresh, path).map_err(|e| format!("{}: {e}", path.display()))
 }
 
+/// The bundle an upload holds: PEM text (its key opened with
+/// `password` when it is encrypted), or PKCS #12 with its password.
+pub fn read_bundle(data: &[u8], password: &str) -> Result<Bundle, String> {
+    if data.is_empty() {
+        return Err("no file was chosen".into());
+    }
+    match std::str::from_utf8(data) {
+        Ok(text) if text.contains("-----BEGIN") => {
+            bundle::read_pem(text, Some(password).filter(|p| !p.is_empty()))
+                .map_err(|e| e.to_string())
+        }
+        _ => bundle::read_pkcs12(data, password).map_err(|e| e.to_string()),
+    }
+}
+
 /// A bundle's chain and key, both there and matching.
-fn checked(bundle: Bundle) -> Result<(Vec<Vec<u8>>, PrivateKey), String> {
+pub fn checked(bundle: Bundle) -> Result<(Vec<Vec<u8>>, PrivateKey), String> {
     let key = bundle.key.ok_or("there is no private key")?;
     if bundle.key_matches != Some(true) {
         return Err("the private key does not belong to the certificate".into());
