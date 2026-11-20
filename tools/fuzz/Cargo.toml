@@ -19,7 +19,7 @@ path = "src/main.rs"
 
 [dependencies]
 # QS/400's fuzzer: its coverage counters, mutator and loop.
-fuzz = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
+fuzz = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
 qmcbackup = { path = "../../web/backup", version = "0.1.0" }
 webd = { path = "../../web/webd", version = "0.1.0" }
 

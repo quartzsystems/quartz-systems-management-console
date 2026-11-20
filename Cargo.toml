@@ -43,35 +43,35 @@ publish = false
 # pins, so the tree holds one copy of every shared crate. Moving either
 # is its own commit, and they move together. Never path dependencies,
 # never copies.
-appliance = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-supervise = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-loadsource = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-state = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-logd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-netd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-seed = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-identity = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-stgd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-processor = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-users = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-panels = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-install = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-inventory = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-fdpass = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
+appliance = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+supervise = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+loadsource = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+state = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+logd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+netd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+seed = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+identity = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+stgd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+processor = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+users = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+panels = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+install = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+inventory = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+fdpass = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
 # base/qemu, the harness's QEMU driver, named as QS/VS's harness names it.
-driver = { package = "qemu", git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "3de567ea27d350ebe8897530cfd03da84c005440" }
-buildkit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
-vrm = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
-diskimg = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
-abrec = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
-ipc = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
-ntp = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
-netlink = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
-console = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525", default-features = false }
-scrkit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
-svcusers = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
-qsweb = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
-x509kit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "155aba213638b178cb730cff4a4113ef1d8fb525" }
+driver = { package = "qemu", git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "fd245e6593d61906191e183d43c0724bdb9cb5e5" }
+buildkit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+vrm = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+diskimg = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+abrec = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+ipc = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+ntp = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+netlink = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+console = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7", default-features = false }
+scrkit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+svcusers = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+qsweb = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
+x509kit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cb58b010a8b96ac48a66e06079e1ff4e4af371c7" }
 
 anyhow = "1.0.104"
 ed25519-dalek = "3.0.0"
