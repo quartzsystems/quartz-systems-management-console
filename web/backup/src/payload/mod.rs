@@ -130,8 +130,13 @@ impl Backup {
             .ok_or_else(|| damaged("no end to the manifest"))?;
         let head = std::str::from_utf8(&rest[..end]).map_err(|_| damaged("manifest not text"))?;
         let mut manifest = Manifest::default();
-        for line in head.lines() {
+        // Lines end at `\n` alone, and no value is one the writer
+        // refuses: what reads, writes again the same.
+        for line in head.split('\n') {
             let (k, v) = line.split_once(' ').unwrap_or((line, ""));
+            if !line_ok(v) {
+                return Err(damaged("a manifest value the writer refuses"));
+            }
             match k {
                 "console" => manifest.console = v.into(),
                 "release" => manifest.release = v.into(),
@@ -245,5 +250,17 @@ mod tests {
                 assert!(b.entries.len() < 2, "{n}");
             }
         }
+    }
+
+    /// The fuzzer's finding: a carriage return in the manifest was read
+    /// and could not be written again.
+    #[test]
+    fn what_reads_writes_again() {
+        assert!(Backup::decode(b"QSMCPAY1release \r\n\n").is_err());
+        let long = format!("QSMCPAY1release {}\n\n", "V".repeat(300));
+        assert!(Backup::decode(long.as_bytes()).is_err());
+        let b = sample();
+        let again = Backup::decode(&b.encode().unwrap()).unwrap();
+        assert_eq!(again.encode().unwrap(), b.encode().unwrap());
     }
 }
