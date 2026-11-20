@@ -66,17 +66,50 @@ fn fresh() -> BackupTab {
     }
 }
 
+/// `entries` with the managed-systems service's files in place of any
+/// of the same path: its state and the console's QSI identity.
+fn with_mgmt(rq: &Rq<'_>, mut entries: Vec<Entry>) -> Result<Vec<Entry>, String> {
+    let files = rq
+        .app
+        .console
+        .mgmt()
+        .backup_files()
+        .map_err(|e| format!("the managed-systems service did not answer: {e}"))?;
+    for f in files {
+        if !valid_path(&f.path) {
+            continue;
+        }
+        entries.retain(|e| e.path != f.path);
+        entries.push(Entry {
+            path: f.path,
+            mode: f.mode,
+            data: f.bytes,
+        });
+    }
+    entries.sort_by(|a, b| a.path.cmp(&b.path));
+    Ok(entries)
+}
+
 fn error(def: &qmcmsg::Def, data: &[&str]) -> Message {
     qmcmsg::message(Kind::Error, def, data)
 }
 
-/// Every file under `data`'s [`TOPS`], as a backup holds them.
+/// Every file under `data`'s [`TOPS`] the web server may read, as a
+/// backup holds them. The managed-systems service's files and the
+/// console's QSI key are its user's alone: [`with_mgmt`] adds them.
 pub fn collect(data: &Path) -> Result<Vec<Entry>, String> {
     fn walk(data: &Path, rel: &str, out: &mut Vec<Entry>) -> Result<(), String> {
         let dir = data.join(rel);
         let mut names: Vec<_> = match fs::read_dir(&dir) {
             Ok(d) => d.filter_map(Result::ok).collect(),
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(e)
+                if matches!(
+                    e.kind(),
+                    std::io::ErrorKind::NotFound | std::io::ErrorKind::PermissionDenied
+                ) =>
+            {
+                return Ok(());
+            }
             Err(e) => return Err(format!("{}: {e}", dir.display())),
         };
         names.sort_by_key(fs::DirEntry::file_name);
@@ -98,11 +131,12 @@ pub fn collect(data: &Path) -> Result<Vec<Entry>, String> {
                 let mode = std::os::unix::fs::PermissionsExt::mode(&meta.permissions());
                 #[cfg(not(unix))]
                 let mode = 0o600;
-                out.push(Entry {
-                    data: fs::read(e.path()).map_err(|e| format!("{path}: {e}"))?,
-                    path,
-                    mode,
-                });
+                let data = match fs::read(e.path()) {
+                    Ok(d) => d,
+                    Err(e) if e.kind() == std::io::ErrorKind::PermissionDenied => continue,
+                    Err(e) => return Err(format!("{path}: {e}")),
+                };
+                out.push(Entry { data, path, mode });
             }
         }
         Ok(())
@@ -157,18 +191,20 @@ fn make(rq: &Rq<'_>, f: &qsweb::http::Form) -> Response {
     }
     let now = app.console.now();
     let name = app.console.name();
-    let made = collect(&app.data_dir()).and_then(|entries| {
-        let b = Backup {
-            manifest: Manifest {
-                console: name.clone(),
-                release: release::RELEASE.to_string(),
-                build: release::BUILD_ID.to_string(),
-                made: now,
-            },
-            entries,
-        };
-        qmcbackup::seal::seal(&b, &passphrase).map_err(|e| e.to_string())
-    });
+    let made = collect(&app.data_dir())
+        .and_then(|entries| with_mgmt(rq, entries))
+        .and_then(|entries| {
+            let b = Backup {
+                manifest: Manifest {
+                    console: name.clone(),
+                    release: release::RELEASE.to_string(),
+                    build: release::BUILD_ID.to_string(),
+                    made: now,
+                },
+                entries,
+            };
+            qmcbackup::seal::seal(&b, &passphrase).map_err(|e| e.to_string())
+        });
     let at = i64::try_from(now).unwrap_or(0);
     let file = format!(
         "{}-{}.{}",

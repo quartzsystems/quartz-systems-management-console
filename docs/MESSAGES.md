@@ -25,6 +25,8 @@ request refused.
 
 | Message | Severity | Text | Cause | Recovery |
 | --- | --- | --- | --- | --- |
+| `QMC1005` | 0 | Managed system &1 added. The console keeps its session open and shows its state. | The managed system was paired and is in the Servers list. | None. |
+| `QMC1120` | 30 | The managed-systems service did not answer: &1. | The console's service that keeps the managed systems' sessions is not running, or is starting. | Wait a moment and show the page again. If it goes on, see the reference code history of the console. |
 | `QMC3003` | 30 | &1 terminal windows are open, the most at once. | The console shares each partition's console among the windows that have it open, up to a limit across every system. | Close a terminal window that is no longer needed, then open this one again. |
 | `QMC1001` | 0 | Connection to managed system &1 established. Service processor version &2. | The console paired with the managed system and opened its session; the version is the release the system says it runs. | None. |
 | `QMC1002` | 0 | Managed system &1 removed. | The console forgot the system and its pinned certificate, and closed its session. | To manage it again, add it with a new pairing password from the system. |

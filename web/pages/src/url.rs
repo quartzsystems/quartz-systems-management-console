@@ -13,6 +13,9 @@ const RENAMED: &[(&str, &str)] = &[
     ("/signon", "signon.html"),
     ("/signoff", "signon.html"),
     ("/refcodes", "refcode-history.html"),
+    ("/servers/add", "add-system.html"),
+    ("/servers/add/result", "add-system-result.html"),
+    ("/servers/reset", "add-system.html"),
     ("/updates/code", "code-updates.html"),
     // A test image's pattern reference, and the error page it shows.
     ("/dev/components", "../shared/components.html"),
@@ -29,6 +32,9 @@ pub fn proto(url: &str) -> Option<String> {
     let route = path.strip_prefix(PREFIX)?;
     if route.starts_with("/confirm/") {
         return Some("../shared/confirm.html".into());
+    }
+    if route.starts_with("/refcode/") {
+        return Some("refcode.html".into());
     }
     if route.starts_with("/help/") || route.starts_with("/msg/") || route == "/help" {
         return Some("../shared/help.html".into());

@@ -42,6 +42,14 @@ impl super::Console for Live {
             .map_or(0, |d| d.as_secs())
     }
 
+    fn mgmt(&self) -> Box<dyn mgmtproto::Calls + Send> {
+        Box::new(mgmtproto::calls::Client::new(release::MGMTD_SOCKET))
+    }
+
+    fn consoles(&self) -> Option<std::path::PathBuf> {
+        Some(release::MGMTD_CONSOLES.into())
+    }
+
     fn fact(&self, key: &str) -> String {
         pid1()
             .status()

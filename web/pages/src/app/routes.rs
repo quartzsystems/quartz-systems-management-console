@@ -45,6 +45,11 @@ impl Rq<'_> {
         &self.session.user
     }
 
+    /// A value of the query string, empty when absent.
+    pub fn q(&self, name: &str) -> String {
+        self.req.query().get(name).unwrap_or("").to_string()
+    }
+
     /// Whether this is a POST.
     pub fn post(&self) -> bool {
         self.req.method == "POST"
@@ -274,6 +279,11 @@ pub fn task_of(route: &str) -> Option<Task> {
     }
     if route == "/console/version" {
         return Some(Task::View);
+    }
+    // Adding, pairing again and removing a managed system change the
+    // console's configuration.
+    if route.starts_with("/servers/add") || route == "/servers/reset" {
+        return Some(Task::Settings);
     }
     if route.starts_with("/console") || route.starts_with("/confirm/") {
         return Some(Task::Settings);

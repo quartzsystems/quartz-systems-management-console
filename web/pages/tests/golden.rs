@@ -631,3 +631,106 @@ fn shared_components() {
         &fix,
     );
 }
+
+#[test]
+fn connectivity() {
+    use webpages::systems::connectivity::{Connectivity, Row, page};
+    let row = |name: &str, address: &str, last: &str, age: u64, sp: &str| Row {
+        name: name.into(),
+        address: address.into(),
+        state: "Connected".into(),
+        good: true,
+        last: last.into(),
+        age,
+        release: sp.into(),
+        protocol: "QSMP/2 over TLS 1.3".into(),
+    };
+    let v = Connectivity {
+        rows: vec![
+            row("QSHQVS1", "192.168.250.101:30000 (private)", "10/30/26 07:14:00", 42, "1.0.4"),
+            row("QSHQ400", "10.0.10.20:30000 (public)", "10/30/26 07:13:58", 121, "1.0.2"),
+        ],
+        tests: vec![
+            "10/30/26 07:10:02  QSHQVS1  192.168.250.101:30000  TCP connect 1 ms, TLS handshake 9 ms, auth OK, heartbeat 12 ms  -  OK".into(),
+            "10/30/26 07:10:03  QSHQ400  10.0.10.20:30000        TCP connect 1 ms, TLS handshake 11 ms, auth OK, heartbeat 14 ms  -  OK (password older than 90 days)".into(),
+        ],
+        messages: Vec::new(),
+    };
+    // Reset connection, and Change password with it, pair again on the
+    // add form.
+    assert_golden(
+        &render("/qsmc/connectivity", &page(&ctx("/qsmc/connectivity"), &v)),
+        "connectivity.html",
+        &[(
+            "<a href=\"connectivity.html\">Reset connection</a> | <a href=\"connectivity.html\">Change password</a>",
+            "<a href=\"add-system.html\">Reset connection</a> | <a href=\"add-system.html\">Change password</a>",
+        )],
+    );
+}
+
+#[test]
+fn add_system() {
+    use webpages::systems::add::{AddForm, form_page};
+    let v = AddForm {
+        host: "10.0.10.30".into(),
+        port: "30000".into(),
+        ..AddForm::default()
+    };
+    // QSI trusts a system by the certificate pinned when it paired, not
+    // by an authority.
+    assert_golden(
+        &render(
+            "/qsmc/servers/add",
+            &form_page(&ctx("/qsmc/servers/add"), &v),
+        ),
+        "add-system.html",
+        &[(
+            "<input type=\"checkbox\" name=\"tls\" checked> Require a certificate signed by the Quartz Internal CA",
+            "<span class=\"grey\">The system's own certificate, pinned when paired: compare its fingerprint with the one the system shows</span>",
+        )],
+    );
+}
+
+#[test]
+fn add_system_result() {
+    use webpages::systems::add::{Found, result_page};
+    let v = Found {
+        name: "QSHQVS2".into(),
+        kind: "QS/VS host".into(),
+        model: "9Q10-V1".into(),
+        serial: "10-9F11B7".into(),
+        version_label: "QS/VS version".into(),
+        release: "V1R0M0".into(),
+        build: "26280".into(),
+        state: "Operating".into(),
+        processors: "8 installed, 8 configurable".into(),
+        memory: "131,072 MB installed".into(),
+        partitions: "0 defined".into(),
+        code: "00000000".into(),
+        fingerprint: "a1b2c3".into(),
+        messages: vec![qmcmsg::message(
+            qsweb::msg::Kind::Done,
+            &qmcmsg::SYSTEM_CONNECTED,
+            &["QSHQVS2", "1.0.4"],
+        )],
+    };
+    // The system's name goes with Add and Cancel; the certificate's
+    // fingerprint is shown to compare with the system's own.
+    assert_golden(
+        &render(
+            "/qsmc/servers/add",
+            &result_page(&ctx("/qsmc/servers/add"), &v),
+        ),
+        "add-system-result.html",
+        &[
+            (
+                "<h2>Found</h2><form method=\"post\"><table",
+                "<h2>Found</h2><form method=\"post\"><input type=\"hidden\" name=\"ms\" value=\"QSHQVS2\"><table",
+            ),
+            (
+                "00000000</a></td></tr>\n</table>",
+                "00000000</a></td></tr>\n<tr><th>Certificate SHA-256</th><td><span class=\"mono\">A1:B2:C3</span></td></tr>\n</table>",
+            ),
+        ],
+    );
+}

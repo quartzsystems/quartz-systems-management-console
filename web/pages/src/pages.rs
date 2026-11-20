@@ -118,6 +118,11 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         "/console/shutdown" => crate::shutdown_routes::shutdown(rq),
         "/console/locale" => crate::locale_routes::locale(rq),
         "/console/version" => crate::version_routes::version(rq),
+        "/connectivity" => crate::systems::connectivity::route(rq),
+        "/servers/add" => crate::systems::add::add(rq),
+        "/servers/add/result" => crate::systems::add::result(rq),
+        "/servers/reset" => crate::systems::add::reset(rq),
+        "/confirm/system-remove" => crate::systems::add::remove(rq),
         // The pattern reference and its error page: a test image's.
         #[cfg(test_hooks)]
         crate::components::ROUTE => rq.page(crate::components::page(&rq.ctx)),

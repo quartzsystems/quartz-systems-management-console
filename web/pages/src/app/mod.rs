@@ -9,6 +9,7 @@
 pub mod control;
 #[cfg(target_os = "linux")]
 pub mod live;
+pub mod mgmt;
 pub mod routes;
 pub mod settings;
 
@@ -82,6 +83,16 @@ pub trait Console: Send + Sync {
     fn data_space(&self) -> Option<(u64, u64)> {
         None
     }
+
+    /// A client of the managed-systems service.
+    fn mgmt(&self) -> Box<dyn mgmtproto::Calls + Send> {
+        Box::new(mgmt::Nothing)
+    }
+
+    /// The managed-systems service's console socket, where there is one.
+    fn consoles(&self) -> Option<std::path::PathBuf> {
+        None
+    }
 }
 
 /// The web server's pages and what they keep.
@@ -101,6 +112,8 @@ pub struct App {
     pub certs: std::sync::OnceLock<std::sync::Arc<webd::tls::Certs>>,
     /// A message for every session: the console is going down.
     pub announced: Mutex<Option<qsweb::msg::Message>>,
+    /// Connectivity's last tests, a line a system.
+    pub tested: Mutex<Vec<String>>,
 }
 
 fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
@@ -160,6 +173,7 @@ impl App {
             certs: std::sync::OnceLock::new(),
             pending: Mutex::new(None),
             announced: Mutex::new(None),
+            tested: Mutex::new(Vec::new()),
         })
     }
 

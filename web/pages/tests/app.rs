@@ -68,6 +68,21 @@ impl Console for Fixed {
             _ => String::new(),
         }
     }
+    fn mgmt(&self) -> Box<dyn mgmtproto::Calls + Send> {
+        // The managed-systems service, with no systems, its files beside
+        // the state directory.
+        let svc = mgmtd::Service::start(mgmtd::Config {
+            identity: qsitrust::Identity::make("QSHQMC1", "", 1_790_000_000).unwrap(),
+            name: "QSHQMC1".into(),
+            release: "V1R0M0".into(),
+            state_dir: Some(self.2.with_file_name("mgmt")),
+            identity_dir: Some(self.2.clone()),
+            history_dir: None,
+            log: Box::new(|_| {}),
+            post: Box::new(|_, _| {}),
+        });
+        Box::new(webpages::app::mgmt::Local(svc))
+    }
 }
 
 const PASSWORD: &str = "Install-pass-7";
@@ -737,6 +752,9 @@ fn certificates_are_made_imported_and_trusted() {
 fn a_backup_is_made_opened_and_left_for_the_restart() {
     const PASS: &str = "a long backup passphrase";
     let (app, _, dir) = app("backup");
+    // The identity PID 1 made, which the managed-systems service reads.
+    std::fs::write(dir.join("state/identity.crt"), "certificate").unwrap();
+    std::fs::write(dir.join("state/identity.key"), "key").unwrap();
     let mut b = Browser {
         app: &app,
         cookie: None,
@@ -797,6 +815,14 @@ fn a_backup_is_made_opened_and_left_for_the_restart() {
             .any(|e| e.path == "state/webusers.toml")
     );
     assert!(opened.entries.iter().any(|e| e.path == "state/users.db"));
+    // The console's QSI identity comes from the managed-systems service,
+    // whose user alone reads its key on a console.
+    assert!(
+        opened
+            .entries
+            .iter()
+            .any(|e| e.path == "state/identity.key" && e.mode == 0o600)
+    );
     assert!(!file.windows(7).any(|w| w == b"qsadmin"));
     let t = b
         .send("GET", "/qsmc/console/backup?tab=history", &[])

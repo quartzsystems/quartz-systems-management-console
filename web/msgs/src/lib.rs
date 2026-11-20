@@ -42,6 +42,15 @@ macro_rules! catalogue {
 }
 
 catalogue! {
+    SYSTEM_ADDED = "QMC1005", 0, "Managed system &1 added. The console keeps its session open and shows its state.",
+        "The managed system was paired and is in the Servers list.",
+        "None.";
+
+    // The managed-systems service itself.
+    MGMT_DOWN = "QMC1120", 30, "The managed-systems service did not answer: &1.",
+        "The console's service that keeps the managed systems' sessions is not running, or is starting.",
+        "Wait a moment and show the page again. If it goes on, see the reference code history of the console.";
+
     // Terminal windows.
     TOO_MANY_WINDOWS = "QMC3003", 30, "&1 terminal windows are open, the most at once.",
         "The console shares each partition's console among the windows that have it open, up to a limit across every system.",

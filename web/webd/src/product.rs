@@ -95,7 +95,6 @@ pub static PRODUCT: Product = Product {
 /// Each answers with a page saying the function arrives later.
 pub const LATER: &[(&str, u8)] = &[
     ("/servers", 4),
-    ("/connectivity", 4),
     ("/partitions", 5),
     ("/groups", 5),
     ("/events", 6),
