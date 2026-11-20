@@ -148,6 +148,36 @@ impl Browser<'_> {
         resp
     }
 
+    /// A `multipart/form-data` POST: text fields, then the file `f`.
+    fn upload(&mut self, path: &str, fields: &[(&str, &str)], file: &[u8]) -> Response {
+        const B: &str = "qsmc-test-boundary";
+        let mut body = Vec::new();
+        for (k, v) in fields {
+            body.extend_from_slice(
+                format!("--{B}\r\nContent-Disposition: form-data; name=\"{k}\"\r\n\r\n{v}\r\n")
+                    .as_bytes(),
+            );
+        }
+        body.extend_from_slice(
+            format!(
+                "--{B}\r\nContent-Disposition: form-data; name=\"f\"; filename=\"c.pem\"\r\nContent-Type: application/octet-stream\r\n\r\n"
+            )
+            .as_bytes(),
+        );
+        body.extend_from_slice(file);
+        body.extend_from_slice(format!("\r\n--{B}--\r\n").as_bytes());
+        let mut r = Request::new("POST", path);
+        if let Some(c) = &self.cookie {
+            r.headers.push(("cookie".into(), format!("QSMCSID={c}")));
+        }
+        r.headers.push((
+            "content-type".into(),
+            format!("multipart/form-data; boundary={B}"),
+        ));
+        r.body = body;
+        self.app.page(&r, &peer(self.ip))
+    }
+
     fn sign_on(&mut self, id: &str, password: &str) -> Response {
         self.send(
             "POST",
@@ -565,5 +595,131 @@ fn date_and_time_sets_the_servers_the_offset_and_the_clock() {
         &[("s", "manual"), ("md", "02/30/26"), ("mt", "07:14")],
     );
     assert!(t.contains("is not a date"), "{t}");
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+#[test]
+#[allow(clippy::too_many_lines, reason = "one page's whole story")]
+fn certificates_are_made_imported_and_trusted() {
+    let (app, clock, dir) = app("certs");
+    let now = clock.load(Ordering::Relaxed);
+    let names = ["192.0.2.10".to_string()];
+    let (certs, made) =
+        webd::tls::Certs::load_or_make(&dir.join("web"), "QSHQMC1", &names, now).unwrap();
+    assert!(made);
+    let certs = Arc::new(certs);
+    app.started(certs.clone());
+    let mut b = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.20",
+        host: None,
+    };
+    b.sign_on("qsadmin", PASSWORD);
+    let t = b.send("GET", "/qsmc/console/certs", &[]).text();
+    assert!(
+        t.contains("expires in 364 days") && t.contains("self-signed"),
+        "{t}"
+    );
+    assert!(t.contains("No certificate authority is trusted."));
+    let token = b.csrf("/qsmc/console/certs");
+    // View: every field, the names among them.
+    let t = b
+        .send(
+            "POST",
+            "/qsmc/console/certs",
+            &[("csrf", &token), ("view", "View")],
+        )
+        .text();
+    assert!(
+        t.contains("Fingerprint (SHA-1)") && t.contains("QSHQMC1, 192.0.2.10"),
+        "{t}"
+    );
+    // A new self-signed certificate, after the confirmation.
+    let first = certs.shown().sha256;
+    let r = b.send(
+        "POST",
+        "/qsmc/console/certs",
+        &[("csrf", &token), ("generate_self-signed...", "x")],
+    );
+    assert_eq!(r.header("Location"), Some("/qsmc/confirm/cert-new"));
+    assert!(
+        b.send("GET", "/qsmc/confirm/cert-new", &[])
+            .text()
+            .contains("ECDSA P-256")
+    );
+    b.send(
+        "POST",
+        "/qsmc/confirm/cert-new",
+        &[("csrf", &token), ("ok", "OK")],
+    );
+    assert_ne!(certs.shown().sha256, first);
+    let t = b.send("GET", "/qsmc/console/certs", &[]).text();
+    assert!(t.contains("QMC8300"), "{t}");
+    // A PEM chain and its key, imported and in use.
+    let other = x509kit::server::self_signed("other.example", &["other.example"], now, 90).unwrap();
+    let key = x509kit::pem::encode("PRIVATE KEY", &other.key.to_pkcs8_der().unwrap());
+    let pem = format!("{}{key}", x509kit::pem::encode("CERTIFICATE", &other.cert));
+    b.upload(
+        "/qsmc/console/certs",
+        &[("csrf", &token), ("pw", "")],
+        pem.as_bytes(),
+    );
+    assert_eq!(
+        certs.shown().info.common_name.as_deref(),
+        Some("other.example")
+    );
+    assert!(
+        b.send("GET", "/qsmc/console/certs", &[])
+            .text()
+            .contains("QMC8301")
+    );
+    // A key that is not the certificate's is refused; nothing changes.
+    let third = x509kit::server::self_signed("third.example", &["third.example"], now, 90).unwrap();
+    let wrong = format!("{}{key}", x509kit::pem::encode("CERTIFICATE", &third.cert));
+    let t = b
+        .upload(
+            "/qsmc/console/certs",
+            &[("csrf", &token), ("pw", "")],
+            wrong.as_bytes(),
+        )
+        .text();
+    assert!(t.contains("QMC8302"), "{t}");
+    assert_eq!(
+        certs.shown().info.common_name.as_deref(),
+        Some("other.example")
+    );
+    // No token, no import.
+    let r = b.upload("/qsmc/console/certs", &[("pw", "")], pem.as_bytes());
+    assert_eq!(r.status, 403);
+    // An authority's certificate alone is trusted, viewed and removed.
+    let ca = include_bytes!("data/ca.pem");
+    b.upload("/qsmc/console/certs", &[("csrf", &token), ("pw", "")], ca);
+    let t = b.send("GET", "/qsmc/console/certs", &[]).text();
+    assert!(
+        t.contains("QMC8303") && t.contains("CN=Test Authority"),
+        "{t}"
+    );
+    let t = b
+        .send("GET", "/qsmc/console/certs?ca=Test%20Authority", &[])
+        .text();
+    assert!(t.contains("Certificate authority Test Authority"), "{t}");
+    b.send(
+        "POST",
+        "/qsmc/confirm/ca-remove",
+        &[("csrf", &token), ("l", "Test Authority"), ("ok", "OK")],
+    );
+    let t = b.send("GET", "/qsmc/console/certs", &[]).text();
+    assert!(
+        t.contains("QMC8304") && t.contains("No certificate authority is trusted."),
+        "{t}"
+    );
+    // The download is the certificate in use.
+    let d = b.send(
+        "POST",
+        "/qsmc/console/certs",
+        &[("csrf", &token), ("download_ca_certificate", "x")],
+    );
+    assert_eq!(d.text(), x509kit::pem::encode("CERTIFICATE", &other.cert));
     let _ = std::fs::remove_dir_all(dir);
 }

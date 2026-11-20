@@ -266,7 +266,7 @@ pub fn task_of(route: &str) -> Option<Task> {
     if route == "/console/version" {
         return Some(Task::View);
     }
-    if route.starts_with("/console") {
+    if route.starts_with("/console") || route.starts_with("/confirm/") {
         return Some(Task::Settings);
     }
     match route {

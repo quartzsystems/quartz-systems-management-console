@@ -19,6 +19,8 @@ serde.workspace = true
 appliance.workspace = true
 supervise.workspace = true
 netd.workspace = true
+x509kit.workspace = true
+zeroize.workspace = true
 
 [dev-dependencies]
 

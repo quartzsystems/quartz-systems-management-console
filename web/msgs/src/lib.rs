@@ -126,9 +126,14 @@ catalogue! {
     CERT_REFUSED = "QMC8302", 30, "The certificate was not imported: &1",
         "The file is not a certificate with its key, or the key does not belong to it.",
         "Import the certificate chain and its private key together, as PEM or as PKCS #12 with its password.";
-    CERT_REQUEST = "QMC8303", 0, "Certificate request made for the key in use.",
-        "A request for a certificate authority to sign was made for the key the console uses.",
-        "Have it signed, then import the signed certificate.";
+    CA_ADDED = "QMC8303", 0, "Certificate authority &1 is trusted.",
+        "An Administrator imported a certificate authority's certificate without a key: it is added to the trusted authorities.",
+        "None.";
+    CA_REMOVED = "QMC8304", 0, "Certificate authority &1 is no longer trusted.",
+        "An Administrator removed a certificate authority from the trusted authorities.", "None.";
+    CERT_CHOOSE = "QMC8305", 0, "Choose the file to import under Import certificate.",
+        "Import... asks for a file: the form under the trusted authorities takes it.",
+        "Choose a PEM file with the chain and its key, or a PKCS #12 file with its password. A certificate authority's certificate alone is added to the trusted authorities.";
 
     // Backup and restore.
     BACKUP_MADE = "QMC8400", 0, "Backup made: &1.",

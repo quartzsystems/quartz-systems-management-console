@@ -211,6 +211,17 @@ impl Certs {
         self.in_use().shown.clone()
     }
 
+    /// The PEM of the chain's last certificate: the authority a browser
+    /// is told to trust (the certificate itself when self-signed).
+    pub fn authority_pem(&self) -> String {
+        self.in_use()
+            .key
+            .cert
+            .last()
+            .map(|c| x509kit::pem::encode("CERTIFICATE", c))
+            .unwrap_or_default()
+    }
+
     fn take(&self, chain: &[Vec<u8>], key: &PrivateKey) -> Result<(), String> {
         let in_use = InUse {
             key: Arc::new(certified(&self.provider, chain, key)?),

@@ -2617,6 +2617,8 @@ dependencies = [
  "users",
  "webd",
  "webusers",
+ "x509kit",
+ "zeroize",
 ]
 
 [[package]]

@@ -463,3 +463,37 @@ fn console_datetime() {
         &[],
     );
 }
+
+#[test]
+fn console_certs() {
+    use webpages::certs::{Ca, Certs, page};
+    let v = Certs {
+        subject: "CN=qshqmc1.quartz.example, O=Quartz Systems, C=US".into(),
+        issuer: "Quartz Internal CA".into(),
+        valid: "03/14/26 to 03/14/27".into(),
+        sha256: "7A:11:C0:3F:...:B2:90".into(),
+        key: "RSA 2048".into(),
+        status: ("Active".into(), Some(true)),
+        note: " (expires in 135 days)".into(),
+        cas: vec![
+            Ca {
+                label: "Quartz Internal CA".into(),
+                subject: "CN=Quartz Internal Certificate Authority, O=Quartz Systems, C=US".into(),
+                expires: "01/01/36".into(),
+            },
+            Ca {
+                label: "Quartz Update Server CA".into(),
+                subject: "CN=Quartz Update Services CA, O=Quartz Systems, C=US".into(),
+                expires: "01/01/34".into(),
+            },
+        ],
+        details: None,
+        messages: Vec::new(),
+    };
+    let c = ctx("/qsmc/console/certs");
+    assert_golden(
+        &render("/qsmc/console/certs", &page(&c, &v)),
+        "console-certs.html",
+        &[],
+    );
+}

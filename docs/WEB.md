@@ -122,3 +122,20 @@ offset `host.toml` keeps (`UTC`, `UTC+hh:mm`): the page offers each
 half hour from UTC-12:00 to UTC+14:00 and the three quarter-hour
 offsets, with no summer time. Its NTP status is PID 1's `synced` fact:
 when and with which server the network service last posted `C3002030`.
+
+## Certificates
+
+The page shows the web certificate in use; View adds its every field
+(names, serial, dates, both fingerprints) under the buttons. Generate
+self-signed... goes through the confirmation page and makes a new
+ECDSA P-256 certificate for the host name and the `open` address,
+served to the next connection. The import form takes a PEM file with
+the chain and its key, or PKCS #12 with its password (`x509kit`); a key
+that is not the certificate's is refused (`QMC8302`) and nothing
+changes. A certificate imported without a key that is an authority's is
+added to the trusted authorities, `trusted.toml` (32 at most), which
+nothing uses before the update server's connection in Phase 6: managed
+systems are trusted by their pinned QSI certificates. Download CA
+certificate gives the chain's last certificate, which is the
+certificate itself while it is self-signed. The prototype has no
+certificate request, and there is none.

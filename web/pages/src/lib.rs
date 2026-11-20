@@ -15,6 +15,8 @@
 
 pub mod app;
 pub mod backup;
+pub mod certs;
+pub mod certs_routes;
 pub mod console;
 pub mod datetime;
 pub mod datetime_routes;

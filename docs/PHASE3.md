@@ -90,7 +90,7 @@ windows open (`docs/OPEN_QUESTIONS.md`, item 19).
 
 ## Not done
 
-- Section 3, pages 7 to 12: Certificates, Backup and
+- Section 3, pages 8 to 12: Backup and
   restore, Shut down or restart, Language and locale, Console version,
   the components page under `/dev/`.
 - Section 4: the local console's option 4.
