@@ -50,6 +50,10 @@ with `mirror` fixed (`474cc38`, below).
   `sockets` and `no-secrets` showing TCP listening only on 443 and 80
   of the `open` address (`10.0.2.15:443`, `10.0.2.15:80`) and
   `slot-confirm` confirming on the web server's first answer.
+- The QS/VS pin at `3de567e` (`49b2fdf`), built from empty targets:
+  the same 32 disk steps and the ISO step passed, `mirror` among them;
+  `sockets` and `no-secrets` again listed only `10.0.2.15:443` and
+  `10.0.2.15:80`.
 
 ## Found while testing
 
