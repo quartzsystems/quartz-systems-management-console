@@ -40,6 +40,13 @@ pub fn unreached(e: &ipc::WireError) -> Message {
     qmcmsg::message(Kind::Error, &qmcmsg::MGMT_DOWN, &[&e.to_string()])
 }
 
+/// The console's message `def` as a refusal, for what the web server
+/// refuses on a managed system's behalf.
+pub fn own(def: &qmcmsg::Def, data: &[&str]) -> Refusal {
+    let m = qmcmsg::message(Kind::Error, def, data);
+    Refusal::new(def.id, &m.text)
+}
+
 /// A refusal's messages, the managed system's as it sent them.
 pub fn refused(r: &Refusal) -> Vec<Message> {
     r.notes()

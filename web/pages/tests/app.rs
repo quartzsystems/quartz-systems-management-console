@@ -961,13 +961,15 @@ fn language_and_locale_keep_the_formats_and_the_timeouts() {
         t.contains("The language German is not in this release."),
         "{t}"
     );
-    assert!(t.contains("Keeping terminal window sessions open is not in this release."));
+    // Keeping terminal windows open works from this release on.
+    assert!(!t.contains("Keeping terminal window sessions open is not in this release."));
     assert_eq!(app.settings().idle_minutes, 30);
     let t = post(&mut b, &[("l", "English (US)"), ("to", "0")]);
     assert!(t.contains("1 to 480 minutes"), "{t}");
-    let t = post(&mut b, &[("l", "English (US)")]);
+    let t = post(&mut b, &[("l", "English (US)"), ("tw", "on")]);
     assert!(t.contains("QMC8600"), "{t}");
     let s = app.settings();
+    assert!(s.keep_terminals);
     assert_eq!(
         (
             s.date_format.as_str(),

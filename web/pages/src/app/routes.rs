@@ -319,6 +319,14 @@ pub fn task_of(route: &str) -> Option<Task> {
     if route.starts_with("/servers/add") || route == "/servers/reset" {
         return Some(Task::Settings);
     }
+    // Functions 08 and 22 need the task of the window that types; the
+    // page checks the function's own.
+    if route == "/confirm/panel" {
+        return Some(Task::Terminal);
+    }
+    if route.starts_with("/terminal") || route.starts_with("/partition/") {
+        return Some(Task::View);
+    }
     if route.starts_with("/console") || route.starts_with("/confirm/") {
         return Some(Task::Settings);
     }
@@ -360,6 +368,7 @@ pub fn route(app: &App, req: &Request, peer: &Peer) -> Response {
                     );
                 }
                 app.sessions.remove(id);
+                app.windows.session_ended(id, app.settings().keep_terminals);
             }
             let m = qmcmsg::message(Kind::Info, &qmcmsg::SIGNED_OFF, &[]);
             return signon_page(app, "", vec![m]).with("Set-Cookie", &PRODUCT.clear_cookie());
@@ -370,6 +379,9 @@ pub fn route(app: &App, req: &Request, peer: &Peer) -> Response {
     let (session, role) = match live(app, req) {
         Ok(s) => s,
         Err(ended) => {
+            if let Some(id) = PRODUCT.session_id(req) {
+                app.windows.session_ended(id, app.settings().keep_terminals);
+            }
             if req.method == "GET" && !ended {
                 return Response::redirect(&PRODUCT.url("/signon"));
             }

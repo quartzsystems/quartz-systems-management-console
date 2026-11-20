@@ -56,6 +56,10 @@ pub struct WebSettings {
     /// empty.
     #[serde(default)]
     pub allow: Vec<String>,
+    /// Whether a terminal window outlives the web session it was opened
+    /// in.
+    #[serde(default)]
+    pub keep_terminals: bool,
 }
 
 impl Default for WebSettings {
@@ -69,6 +73,7 @@ impl Default for WebSettings {
             number_format: number(),
             listen_private: false,
             allow: Vec::new(),
+            keep_terminals: false,
         }
     }
 }

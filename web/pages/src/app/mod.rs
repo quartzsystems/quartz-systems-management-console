@@ -119,6 +119,9 @@ pub struct App {
     pub announced: Mutex<Option<qsweb::msg::Message>>,
     /// Connectivity's last tests, a line a system.
     pub tested: Mutex<Vec<String>>,
+    /// The terminal windows held for browsers without script, and the
+    /// sockets' flags.
+    pub windows: crate::terminal::relay::Windows,
     /// Messages after the flash for a session's next page: a managed
     /// system's refusal gives every message that applies.
     pub more: Mutex<std::collections::HashMap<String, Vec<qsweb::msg::Message>>>,
@@ -183,6 +186,7 @@ impl App {
             pending: Mutex::new(None),
             announced: Mutex::new(None),
             tested: Mutex::new(Vec::new()),
+            windows: crate::terminal::relay::Windows::default(),
             more: Mutex::new(std::collections::HashMap::new()),
             catalogue: std::sync::OnceLock::new(),
         })

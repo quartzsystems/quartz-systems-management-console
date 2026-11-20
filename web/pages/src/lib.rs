@@ -34,6 +34,7 @@ pub mod shutdown;
 pub mod shutdown_routes;
 pub mod signon;
 pub mod systems;
+pub mod terminal;
 pub mod url;
 pub mod user_routes;
 pub mod users;

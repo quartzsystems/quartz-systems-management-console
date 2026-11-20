@@ -25,6 +25,11 @@ request refused.
 
 | Message | Severity | Text | Cause | Recovery |
 | --- | --- | --- | --- | --- |
+| `QMC4001` | 30 | Console connection to partition &1 closed: &2. | The console went: the managed system closed it, another console took it over, the partition ended, or the session to the system was lost. | Choose Connect to open it again; with Take over on Open terminal window to take it from another console. |
+| `QMC4002` | 0 | Terminal window to &1 disconnected. | You disconnected the window; the console stays with the managed system and any other window that has it open. | Choose Connect to open it again. |
+| `QMC3004` | 20 | The console of standalone system &1 is not in this release: a standalone QS/400 system has no QSI listener yet. | A partition's console comes from its QS/VS host over QSI; a standalone system will answer when QS/400 has its listener. | Use the system's own console. |
+| `QMC5003` | 0 | Function &1 selected for partition &2; the managed system accepted the request. | The host carried out the control panel function; the result shows what it displays and the code before and after. | None. |
+| `QMC5010` | 30 | Function &1 for partition &2 not performed. The managed system's own messages follow. | The host refused the control panel function: it does not have it, or its keylock or the partition's state does not allow it. | Act on the system's messages below this one and try again. |
 | `QMC1201` | 10 | This release has no explanation for reference code &1. Its text is shown as the system posted it. | The code is in neither the QS/VS catalogue nor the QS/400 table this console was built with: a system of a later release may post codes this console does not know. | See the system's own documentation for the code, or update the console. |
 | `QMC1202` | 30 | &1 is not a date in this console's format. | A date filter was typed in another format than the one on Language, locale and session. | Type the date as the console shows dates, or leave the field empty. |
 | `QMC2201` | 20 | Power on of &1 is not in this release: a powered-off machine does not answer QSI, and this console has no way to its BMC. | A managed system answers QSI only while it runs; powering one on takes its BMC, which this console is not given. | Power the machine on at its BMC or at the machine. The console reconnects when it answers. |

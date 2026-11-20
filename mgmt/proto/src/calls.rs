@@ -158,6 +158,8 @@ ipc::rpc! {
     11 => fn backup_files / BackupFiles () -> Vec<File>;
     /// Keep the console's own note about a system.
     12 => fn describe / Describe (name: String, description: String, user: String) -> Result<(), Refusal>;
+    /// One partition read now: its definition and status.
+    13 => fn partition / Partition (name: String, id: u32, user: String) -> Result<qsi::host::partitions::Partition, Refusal>;
 }
 
 /// The largest request or answer on the socket.

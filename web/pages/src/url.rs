@@ -53,6 +53,7 @@ pub fn proto(url: &str) -> Option<String> {
         return Some(match parts.get(2).copied() {
             _ if parts.len() < 2 => "terminal-config.html".into(),
             Some("screen.png") => "../shared/img/5250-24x80.png".into(),
+            Some("screen-off.png") => "../shared/img/5250-24x80-off.png".into(),
             Some("disconnected") => "terminal-disconnected.html".into(),
             _ => "terminal.html".into(),
         });

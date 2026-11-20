@@ -184,6 +184,12 @@ fn server(rq: &Rq<'_>, route: &str) -> Option<Response> {
 
 /// The page for `route`, `None` when there is none.
 pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
+    if route.starts_with("/terminal")
+        || route.starts_with("/partition/")
+        || route == "/confirm/panel"
+    {
+        return crate::terminal::serve(rq, route);
+    }
     Some(match route {
         "/welcome" => welcome(rq),
         "/console" => console(rq),

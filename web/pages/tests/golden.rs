@@ -20,6 +20,11 @@ fn prototype(file: &str) -> String {
 
 /// `served` against `file` after the `fix` edits of the golden text.
 fn assert_golden(served: &str, file: &str, fix: &[(&str, &str)]) {
+    assert_golden_script(served, file, fix, None);
+}
+
+/// The same, the server's `script` element (by its source) dropped.
+fn assert_golden_script(served: &str, file: &str, fix: &[(&str, &str)], script: Option<&str>) {
     let mut g = prototype(file);
     for (from, to) in fix {
         assert!(
@@ -29,14 +34,7 @@ fn assert_golden(served: &str, file: &str, fix: &[(&str, &str)]) {
         g = g.replace(from, to);
     }
     let map = |u: &str| proto(u);
-    if let Some(d) = diff(
-        served,
-        &g,
-        &Normalize {
-            url: &map,
-            script: None,
-        },
-    ) {
+    if let Some(d) = diff(served, &g, &Normalize { url: &map, script }) {
         panic!("{file} differs from the served page at {d}");
     }
 }
@@ -1196,6 +1194,150 @@ fn refcode() {
             &page(&ctx("/qsmc/refcode/A6005008"), &v),
         ),
         "refcode.html",
+        &[],
+    );
+}
+
+fn terminal_window(connected: bool) -> webpages::terminal::window::Window {
+    use webpages::terminal::window::Window;
+    Window {
+        host: "QSHQVS1".into(),
+        id: if connected { 1 } else { 2 },
+        partition: if connected { "QSDEV01" } else { "QSTEST01" }.into(),
+        connected,
+        code: if connected { "00000000" } else { "A6005008" }.into(),
+        meaning: if connected {
+            "Operating"
+        } else {
+            "Waiting for console device; no console session is connected."
+        }
+        .into(),
+        strip: true,
+        scale: 1,
+        size: (720, 400),
+        cursor: (24, 6),
+        may_type: true,
+        keep: String::new(),
+        script: true,
+        bw: false,
+        messages: if connected {
+            Vec::new()
+        } else {
+            vec![qsweb::msg::Message::new(
+                qsweb::msg::Kind::Error,
+                "QMC4001",
+                "Console connection to partition QSTEST01 closed by the managed system.",
+            )]
+        },
+    }
+}
+
+fn terminal_render(v: &webpages::terminal::window::Window) -> String {
+    use webpages::terminal::window::{page, without_nav};
+    let here = "/qsmc/terminal/QSHQVS1/1";
+    without_nav(&render(here, &page(&ctx(here), v)))
+}
+
+/// The picture is the script's to replace, so it has its name.
+const TERM_ID: (&str, &str) = ("<img src=", "<img id=\"term\" src=");
+
+#[test]
+fn terminal() {
+    assert_golden_script(
+        &terminal_render(&terminal_window(true)),
+        "terminal.html",
+        &[TERM_ID],
+        Some("/qsmc/terminal/script.js"),
+    );
+}
+
+#[test]
+fn terminal_disconnected() {
+    // The window's status line names the partition the window is of.
+    assert_golden(
+        &terminal_render(&terminal_window(false)),
+        "terminal-disconnected.html",
+        &[
+            TERM_ID,
+            (
+                "QSDEV01 on QSHQVS1: Not connected",
+                "QSTEST01 on QSHQVS1: Not connected",
+            ),
+        ],
+    );
+}
+
+#[test]
+fn terminal_config() {
+    use webpages::terminal::config::{Choice, Config, page};
+    let choice = |label: &str| Choice {
+        label: label.into(),
+        host: "QSHQVS1".into(),
+        id: 1,
+    };
+    let v = Config {
+        choices: vec![
+            choice("QSTEST01 (ID 2) on QSHQVS1 - A6005008 waiting for console"),
+            choice("QSDEV01 (ID 1) on QSHQVS1"),
+            choice("QSPROD01 (ID 3) on QSHQVS1"),
+            choice("QSHQ400 (standalone)"),
+        ],
+        chosen: "QSTEST01 (ID 2) on QSHQVS1 - A6005008 waiting for console".into(),
+        wide: true,
+        bw: false,
+        strip: true,
+        take_over: false,
+        messages: Vec::new(),
+    };
+    // One form, not one in another; the strip's box named apart from
+    // the code page; the buttons named.
+    assert_golden(
+        &render("/qsmc/terminal", &page(&ctx("/qsmc/terminal"), &v)),
+        "terminal-config.html",
+        &[
+            (
+                "<form method=\"post\" action=\"terminal.html\"><form method=\"post\"><table",
+                "<form method=\"post\"><table",
+            ),
+            (
+                "</table></form><div class=\"buttons\"><input type=\"submit\" value=\"Open\"><input type=\"submit\" value=\"Cancel\"></div></form>",
+                "</table>\n<div class=\"buttons\"><input type=\"submit\" name=\"open\" value=\"Open\"><input type=\"submit\" name=\"cancel\" value=\"Cancel\"></div></form>",
+            ),
+            (
+                "<input type=\"checkbox\" name=\"cp\" checked> Show above",
+                "<input type=\"checkbox\" name=\"strip\" checked> Show above",
+            ),
+        ],
+    );
+}
+
+#[test]
+fn control_panel() {
+    use webpages::terminal::panel::{Panel, page};
+    let v = Panel {
+        host: "QSHQVS1".into(),
+        id: 2,
+        partition: "QSTEST01".into(),
+        state: "Not activated".into(),
+        keylock: "Manual".into(),
+        code: "A6005008".into(),
+        meaning: "Waiting for console device; no console session is connected.".into(),
+        chosen: 21,
+        result: vec![
+            "Function 21 - Force DST".into(),
+            "Reference code before: A6005008  Words 2-9: 00000002 00000000 00000000 00000000 00000000 00000000 00000000 00000000".into(),
+            "Reference code after:  A6005008  (DST will be presented when a console connects)".into(),
+        ],
+        messages: vec![qmcmsg::message(
+            qsweb::msg::Kind::Done,
+            &qmcmsg::FUNCTION_ACCEPTED,
+            &["21", "QSTEST01"],
+        )],
+    };
+    let here = "/qsmc/partition/QSHQVS1/2/panel";
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "control-panel.html",
         &[],
     );
 }

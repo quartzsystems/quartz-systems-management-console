@@ -22,7 +22,7 @@ fn view(rq: &Rq<'_>, messages: Vec<Message>) -> Locale {
         number: s.number_format,
         idle: s.idle_minutes.to_string(),
         max: s.max_hours.to_string(),
-        terminals: false,
+        terminals: s.keep_terminals,
         messages,
     }
 }
@@ -55,13 +55,8 @@ pub fn locale(rq: &Rq<'_>) -> Response {
         let what = format!("The language {}", asked.language);
         asked.messages.push(error(&qmcmsg::NOT_IN_V1, &[&what]));
     }
-    if asked.terminals {
-        asked.messages.push(error(
-            &qmcmsg::NOT_IN_V1,
-            &["Keeping terminal window sessions open"],
-        ));
-    }
     let mut next = rq.app.settings();
+    next.keep_terminals = asked.terminals;
     next.date_format.clone_from(&asked.date);
     next.time_format.clone_from(&asked.time);
     next.number_format.clone_from(&asked.number);

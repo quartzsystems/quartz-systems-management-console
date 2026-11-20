@@ -393,6 +393,20 @@ impl Mgmt for Service {
         Ok(())
     }
 
+    fn partition(
+        &mut self,
+        name: String,
+        id: u32,
+        user: String,
+    ) -> Result<partitions::Partition, Refusal> {
+        let get = AnyRequest::Partitions(partitions::Request::Get(partitions::Get { id }));
+        let r = self.0.ask(&name, get, &user)?;
+        match reply_of(&r) {
+            Some(AnyReply::Partitions(partitions::Reply::Get(p))) => Ok(p),
+            _ => Err(qmc(&qmcmsg::NO_REPLY, &[&name])),
+        }
+    }
+
     fn backup_files(&mut self) -> Vec<File> {
         let read = |dir: &std::path::Path, f: &str, top: &str, mode: u32| {
             std::fs::read(dir.join(f)).ok().map(|bytes| File {

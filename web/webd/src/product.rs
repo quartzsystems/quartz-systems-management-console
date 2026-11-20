@@ -108,7 +108,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn every_route_of_the_tree_is_this_phase_s_or_a_later_one() {
+    fn every_route_of_the_tree_is_live_or_a_later_phase_s() {
         let now = [
             "/welcome",
             "/console",
@@ -119,6 +119,9 @@ mod tests {
             "/console/certs",
             "/console/shutdown",
             "/console/version",
+            "/servers",
+            "/refcodes",
+            "/connectivity",
         ];
         for g in NAV {
             for (_, route) in g.items {

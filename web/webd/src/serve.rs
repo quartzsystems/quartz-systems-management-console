@@ -29,10 +29,16 @@ pub fn css_etag() -> String {
     tag
 }
 
-/// `r` with the security headers every answer on 443 carries.
+/// `r` with the security headers every answer on 443 carries. A page
+/// that set its own policy keeps it: the terminal window alone does,
+/// for its script.
 pub fn secured(r: Response) -> Response {
+    let r = if r.header("Content-Security-Policy").is_some() {
+        r
+    } else {
+        r.with("Content-Security-Policy", CSP)
+    };
     let r = r
-        .with("Content-Security-Policy", CSP)
         .with("X-Frame-Options", "DENY")
         .with("X-Content-Type-Options", "nosniff")
         .with("Referrer-Policy", "no-referrer");
