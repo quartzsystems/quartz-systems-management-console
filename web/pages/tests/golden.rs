@@ -868,3 +868,173 @@ fn servers_paged() {
     fix.push(("Page 1 of 3", "Page 1 of 2"));
     assert_golden(&servers_render(&v), "servers-paged.html", &fix);
 }
+
+fn system_tab(tab: webpages::systems::props::Tab, file: &str, fix: &[(&str, &str)]) {
+    use webpages::systems::props::{Props, page};
+    let v = Props {
+        name: "QSHQVS1".into(),
+        tab,
+        messages: Vec::new(),
+    };
+    assert_golden(
+        &render(
+            "/qsmc/server/QSHQVS1/general",
+            &page(&ctx("/qsmc/server/QSHQVS1/general"), &v),
+        ),
+        file,
+        fix,
+    );
+}
+
+#[test]
+fn system_general() {
+    use webpages::systems::props::{General, Tab};
+    let g = General {
+        name: "QSHQVS1".into(),
+        kind: "QS/VS host".into(),
+        model: "9Q10-V1".into(),
+        serial: "10-9F11A2".into(),
+        description: "Lab virtual server, rack R2".into(),
+        state: "Operating".into(),
+        code: "00000000".into(),
+        service: "1.0.4".into(),
+        version_label: "QS/VS version".into(),
+        release: "V1R0M0".into(),
+        build: "26280".into(),
+        update: true,
+        since: "09/18/26 08:02:11".into(),
+        address: "10.0.10.30:30000".into(),
+        defined: 3,
+        running: 2,
+    };
+    system_tab(Tab::General(g), "system-general.html", &[]);
+}
+
+#[test]
+fn system_processors() {
+    use webpages::systems::props::{Processors, Tab};
+    let row = |a: &str, b: &str, c: &str, d: &str| [a.into(), b.into(), c.into(), d.into()];
+    let p = Processors {
+        amounts: ["8".into(), "8".into(), "3.50".into(), "0".into()],
+        pool: "6.00 (DefaultPool)".into(),
+        dedicated: "2 (QSPROD01)".into(),
+        rows: vec![
+            row("QSPROD01", "Dedicated", "2.00", "2"),
+            row("QSDEV01", "Shared, uncapped", "1.00", "2"),
+            row("QSTEST01", "Shared, capped", "1.50", "2"),
+        ],
+    };
+    system_tab(Tab::Processors(p), "system-processors.html", &[]);
+}
+
+#[test]
+fn system_memory() {
+    use webpages::systems::props::{Memory, Tab};
+    let row = |a: &str, b: &str, c: &str, d: &str, e: &str| {
+        [a.into(), b.into(), c.into(), d.into(), e.into()]
+    };
+    let m = Memory {
+        amounts: [
+            "131,072 MB".into(),
+            "131,072 MB".into(),
+            "40,960 MB".into(),
+            "2,048 MB".into(),
+            "256 MB".into(),
+            "88,064 MB".into(),
+        ],
+        rows: vec![
+            row("QSPROD01", "65,536", "32,768", "65,536", "98,304"),
+            row("QSDEV01", "16,384", "8,192", "16,384", "32,768"),
+            row("QSTEST01", "0 (not activated)", "4,096", "8,192", "16,384"),
+        ],
+    };
+    system_tab(Tab::Memory(m), "system-memory.html", &[]);
+}
+
+#[test]
+fn system_io() {
+    use webpages::systems::props::Tab;
+    let row = |slot: &str, d: &str, o: &str, b: &str| {
+        [
+            format!("U9Q10.V1.9F11A2-P1-{slot}"),
+            slot.into(),
+            d.into(),
+            o.into(),
+            b.into(),
+        ]
+    };
+    let rows = vec![
+        row(
+            "C1",
+            "10 GbE SFP+ 2-port adapter",
+            "QS/VS host (shared through virtual Ethernet)",
+            "PCIe3 x8",
+        ),
+        row(
+            "C2",
+            "SAS RAID controller (6 x 1.9 TB SSD)",
+            "QS/VS host (storage pool POOL1)",
+            "PCIe3 x8",
+        ),
+        row(
+            "C3",
+            "Fibre Channel 8 Gb 2-port (QLE2562)",
+            "QSPROD01 (physical assignment)",
+            "PCIe2 x8",
+        ),
+        row(
+            "C4",
+            "1 GbE 4-port adapter",
+            "QS/VS host (management)",
+            "PCIe2 x4",
+        ),
+        row("C5", "Empty", "", "PCIe3 x16"),
+        row("T1", "USB 3.0 controller", "QS/VS host", "Planar"),
+    ];
+    system_tab(Tab::Io(rows), "system-io.html", &[]);
+}
+
+#[test]
+fn system_power() {
+    use webpages::systems::props::{Power, Tab};
+    let p = Power {
+        side: "A".into(),
+        keylock: "Normal".into(),
+    };
+    system_tab(Tab::Power(p), "system-power.html", &[]);
+}
+
+#[test]
+fn system_capabilities() {
+    use webpages::systems::props::Tab;
+    let rows = [
+        ("Partitioning", "Yes (QS/VS)"),
+        ("Maximum partitions", "64"),
+        ("Shared processor pools", "Yes, 4 pools"),
+        ("Dedicated processors", "Yes"),
+        ("Virtual Ethernet", "Yes, 802.1Q VLAN aware"),
+        ("Virtual storage (SCSI client)", "Yes"),
+        ("Virtual optical", "Yes"),
+        ("Virtual tape", "Yes, including FC pass-through"),
+        ("Live partition migration", "No"),
+        ("Service processor redundancy", "No"),
+        ("Remote console (terminal window)", "Yes"),
+        ("Control panel functions", "Yes, 01-70"),
+    ]
+    .iter()
+    .map(|(a, b)| ((*a).to_string(), (*b).to_string()))
+    .collect();
+    system_tab(Tab::Capabilities(rows), "system-capabilities.html", &[]);
+}
+
+#[test]
+fn system_refcode() {
+    use webpages::systems::props::{Current, Tab};
+    let c = Current {
+        code: "00000000".into(),
+        meaning: "Operating; no attention required.".into(),
+        since: "09/18/26 08:04:50".into(),
+        words: ["00000000"; 8].join(" "),
+    };
+    system_tab(Tab::Refcode(c), "system-refcode.html", &[]);
+}

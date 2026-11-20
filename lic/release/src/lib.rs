@@ -83,6 +83,10 @@ pub const WEB_SOCKET: &str = "/run/qsmcweb.sock";
 /// The web server's own socket: the local console's requests.
 pub const WEBD_SOCKET: &str = "/run/qsmcwebd.sock";
 
+/// The catalogue of the QS/VS release this console is built with, in a
+/// slot's initramfs: a host's codes and messages explained.
+pub const CATALOGUE: &str = "/qsmc/catalogue.json";
+
 /// The managed-systems service's binary, in a slot's initramfs.
 pub const MGMTD: &str = "/qsmc/bin/qsmcmgmtd";
 

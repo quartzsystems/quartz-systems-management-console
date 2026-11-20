@@ -25,6 +25,9 @@ request refused.
 
 | Message | Severity | Text | Cause | Recovery |
 | --- | --- | --- | --- | --- |
+| `QMC1007` | 0 | Description of managed system &1 changed. | The console keeps its own note about the system; nothing on the system is changed. | None. |
+| `QMC1008` | 30 | The name of managed system &1 is the system's own and is changed at the system. | QSI does not change a managed system's name; the console shows the name the system gives. | Change the name at the managed system; the console shows the new name once it is paired again with Reset connection. |
+| `QMC2220` | 20 | The power-on parameters of &1 are set at the system: the IPL side, keylock, boot mode, partitions to start and the default power off. | A QS/VS host reports its slot and keylock over QSI but takes no change of them, of its boot mode or of its auto start; those are set at the host's Service Tools. | Set them at the managed system's Service Tools. |
 | `QMC1006` | 30 | Select a managed system for &1. | The action acts on the systems selected in the list, and none was. | Select the system's box in the list, then choose the action again. |
 | `QMC1005` | 0 | Managed system &1 added. The console keeps its session open and shows its state. | The managed system was paired and is in the Servers list. | None. |
 | `QMC1120` | 30 | The managed-systems service did not answer: &1. | The console's service that keeps the managed systems' sessions is not running, or is starting. | Wait a moment and show the page again. If it goes on, see the reference code history of the console. |

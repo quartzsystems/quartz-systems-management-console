@@ -93,6 +93,11 @@ pub trait Console: Send + Sync {
     fn consoles(&self) -> Option<std::path::PathBuf> {
         None
     }
+
+    /// The QS/VS catalogue the image carries, as JSON; empty when none.
+    fn catalogue(&self) -> String {
+        String::new()
+    }
 }
 
 /// The web server's pages and what they keep.
@@ -114,6 +119,7 @@ pub struct App {
     pub announced: Mutex<Option<qsweb::msg::Message>>,
     /// Connectivity's last tests, a line a system.
     pub tested: Mutex<Vec<String>>,
+    catalogue: std::sync::OnceLock<crate::refcodes::explain::Catalogue>,
 }
 
 fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
@@ -174,6 +180,7 @@ impl App {
             pending: Mutex::new(None),
             announced: Mutex::new(None),
             tested: Mutex::new(Vec::new()),
+            catalogue: std::sync::OnceLock::new(),
         })
     }
 
@@ -202,6 +209,20 @@ impl App {
             .ok()
             .flatten()
             .unwrap_or_default()
+    }
+
+    /// The QS/VS catalogue, read once; empty when the image has none.
+    pub fn catalogue(&self) -> &crate::refcodes::explain::Catalogue {
+        self.catalogue.get_or_init(|| {
+            let text = self.console.catalogue();
+            if text.is_empty() {
+                return crate::refcodes::explain::Catalogue::default();
+            }
+            crate::refcodes::explain::Catalogue::from_json(&text).unwrap_or_else(|e| {
+                eprintln!("the catalogue does not read: {e}");
+                crate::refcodes::explain::Catalogue::default()
+            })
+        })
     }
 
     /// The state directory's store.

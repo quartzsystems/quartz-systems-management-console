@@ -28,6 +28,8 @@ qsi.workspace = true
 qsipart.workspace = true
 termlook.workspace = true
 srcdata.workspace = true
+serde_json.workspace = true
+refcode = { path = "../../lic/refcode", version = "0.1.0" }
 
 # The data file system's space, for Console version.
 [target.'cfg(target_os = "linux")'.dependencies]

@@ -39,7 +39,11 @@ pub fn proto(url: &str) -> Option<String> {
     // A managed system's pages: `/server/<name>/<tab>` is
     // `system-<tab>.html`; its power confirmation by the operation.
     if let Some(rest) = route.strip_prefix("/server/") {
-        let tab = rest.split('/').nth(1).unwrap_or("general");
+        let mut parts = rest.split('/').skip(1);
+        let tab = parts.next().unwrap_or("general");
+        if tab == "virtual" {
+            return Some(format!("vr-{}.html", parts.next().unwrap_or("ethernet")));
+        }
         if tab == "confirm" {
             let op = url.split("op=").nth(1).unwrap_or("poweroff");
             let file = if op.starts_with("poweron") {

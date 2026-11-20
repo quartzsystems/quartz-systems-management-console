@@ -156,6 +156,8 @@ ipc::rpc! {
     10 => fn status / Status () -> Status;
     /// The managed systems' files for a backup.
     11 => fn backup_files / BackupFiles () -> Vec<File>;
+    /// Keep the console's own note about a system.
+    12 => fn describe / Describe (name: String, description: String, user: String) -> Result<(), Refusal>;
 }
 
 /// The largest request or answer on the socket.

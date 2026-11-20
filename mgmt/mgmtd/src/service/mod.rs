@@ -177,6 +177,7 @@ fn kept_of(p: &Paired) -> Kept {
         serial: p.serial.clone(),
         link: Link::Never,
         last_seq: p.last_seq,
+        description: p.description.clone(),
         ..Kept::default()
     }
 }

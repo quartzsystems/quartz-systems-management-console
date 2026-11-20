@@ -42,6 +42,10 @@ impl super::Console for Live {
             .map_or(0, |d| d.as_secs())
     }
 
+    fn catalogue(&self) -> String {
+        std::fs::read_to_string(release::CATALOGUE).unwrap_or_default()
+    }
+
     fn mgmt(&self) -> Box<dyn mgmtproto::Calls + Send> {
         Box::new(mgmtproto::calls::Client::new(release::MGMTD_SOCKET))
     }

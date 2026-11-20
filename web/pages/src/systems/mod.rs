@@ -10,6 +10,7 @@
 
 pub mod add;
 pub mod connectivity;
+pub mod props;
 pub mod servers;
 
 use mgmtproto::{Kept, Refusal};

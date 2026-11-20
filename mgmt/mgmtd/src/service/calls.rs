@@ -126,6 +126,7 @@ impl Inner {
             paired: now_s(),
             serial: h.serial,
             last_seq: 0,
+            description: String::new(),
         })
     }
 }
@@ -237,6 +238,7 @@ impl Mgmt for Service {
             .ok_or_else(|| qmc(&qmcmsg::NO_SUCH_SYSTEM, &[&name]))?;
         let mut p = inner.pair_with(&k.address, k.port, &password, &user)?;
         p.name.clone_from(&k.name);
+        p.description.clone_from(&k.description);
         inner.forget(&k.name);
         let next = {
             let mut paired = lock(&inner.paired);
@@ -370,6 +372,25 @@ impl Mgmt for Service {
             max_consoles: inner.limits.max_consoles,
             fingerprint: inner.identity.fingerprint().hex(),
         }
+    }
+
+    fn describe(&mut self, name: String, description: String, user: String) -> Result<(), Refusal> {
+        let inner = self.0.clone();
+        let e = inner
+            .entry(&name)
+            .ok_or_else(|| qmc(&qmcmsg::NO_SUCH_SYSTEM, &[&name]))?;
+        let description: String = description.chars().take(256).collect();
+        let next = {
+            let mut paired = lock(&inner.paired);
+            if let Some(p) = paired.systems.iter_mut().find(|p| p.name == e.name) {
+                p.description.clone_from(&description);
+            }
+            paired.clone()
+        };
+        inner.save(&next);
+        e.kept().description = description;
+        inner.log(&format!("{} described by user {user}", e.name));
+        Ok(())
     }
 
     fn backup_files(&mut self) -> Vec<File> {

@@ -136,6 +136,8 @@ pub struct Kept {
     pub said_serial: String,
     /// The last event seen.
     pub last_seq: u64,
+    /// The console's own note about it.
+    pub description: String,
 }
 wire_struct!(Kept {
     name,
@@ -157,7 +159,8 @@ wire_struct!(Kept {
     profiles,
     caps,
     said_serial,
-    last_seq
+    last_seq,
+    description
 });
 
 /// What a managed system is.

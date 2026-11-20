@@ -159,6 +159,26 @@ fn console(rq: &Rq<'_>) -> Response {
     rq.page(crate::console::page(&rq.ctx, &v))
 }
 
+/// `/server/<name>/<tab>`: a managed system's pages; its virtual
+/// resources are a later phase's.
+fn server(rq: &Rq<'_>, route: &str) -> Option<Response> {
+    let mut parts = route.trim_start_matches("/server/").split('/');
+    let name = parts.next().filter(|n| !n.is_empty())?;
+    let tab = parts.next().unwrap_or("general");
+    if tab == "virtual" {
+        let m = qmcmsg::message(
+            qsweb::msg::Kind::Info,
+            &qmcmsg::LATER_RELEASE,
+            &["Virtual resources"],
+        );
+        return Some(rq.done("/servers", m));
+    }
+    if crate::systems::props::TABS.iter().any(|(r, _)| *r == tab) {
+        return Some(crate::systems::props::route(rq, name, tab));
+    }
+    None
+}
+
 /// The page for `route`, `None` when there is none.
 pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
     Some(match route {
@@ -176,6 +196,7 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         "/console/version" => crate::version_routes::version(rq),
         "/connectivity" => crate::systems::connectivity::route(rq),
         "/servers" => crate::systems::servers::route(rq),
+        r if r.starts_with("/server/") => return server(rq, r),
         "/servers/add" => crate::systems::add::add(rq),
         "/servers/add/result" => crate::systems::add::result(rq),
         "/servers/reset" => crate::systems::add::reset(rq),

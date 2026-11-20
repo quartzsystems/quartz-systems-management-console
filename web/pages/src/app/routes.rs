@@ -238,6 +238,13 @@ pub fn error(rq: &Rq<'_>, status: u16, def: &qmcmsg::Def, data: &[&str]) -> Resp
     r
 }
 
+/// Not authorized when the user's role lacks `task`: for a page whose
+/// changes need more than seeing it.
+pub fn lacks(rq: &Rq<'_>, task: Task) -> Option<Response> {
+    let matrix = rq.app.users().matrix.clone();
+    (!matrix.allows(rq.role, task)).then(|| refuse(rq, task))
+}
+
 fn refuse(rq: &Rq<'_>, task: Task) -> Response {
     let user = rq.user().to_string();
     rq.audit(
@@ -289,6 +296,9 @@ pub fn task_of(route: &str) -> Option<Task> {
         return Some(Task::Settings);
     }
     // The later phases' routes need the task their pages will.
+    if route.starts_with("/server/") {
+        return Some(Task::View);
+    }
     match route {
         "/welcome" | "/servers" | "/partitions" | "/groups" => Some(Task::View),
         "/plans" => Some(Task::Plans),

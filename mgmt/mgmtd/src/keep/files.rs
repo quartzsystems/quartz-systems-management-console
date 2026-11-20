@@ -29,6 +29,9 @@ pub struct Paired {
     /// The last event seen, so a session resumes from it.
     #[serde(default)]
     pub last_seq: u64,
+    /// The console's own note about it, from its General page.
+    #[serde(default)]
+    pub description: String,
 }
 
 /// `systems.toml`.
