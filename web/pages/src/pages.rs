@@ -165,6 +165,9 @@ fn server(rq: &Rq<'_>, route: &str) -> Option<Response> {
     let mut parts = route.trim_start_matches("/server/").split('/');
     let name = parts.next().filter(|n| !n.is_empty())?;
     let tab = parts.next().unwrap_or("general");
+    if tab == "confirm" {
+        return Some(crate::systems::power::route(rq, name));
+    }
     if tab == "virtual" {
         let m = qmcmsg::message(
             qsweb::msg::Kind::Info,

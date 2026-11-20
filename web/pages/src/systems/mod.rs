@@ -10,6 +10,7 @@
 
 pub mod add;
 pub mod connectivity;
+pub mod power;
 pub mod props;
 pub mod servers;
 

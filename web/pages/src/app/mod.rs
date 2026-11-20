@@ -119,6 +119,9 @@ pub struct App {
     pub announced: Mutex<Option<qsweb::msg::Message>>,
     /// Connectivity's last tests, a line a system.
     pub tested: Mutex<Vec<String>>,
+    /// Messages after the flash for a session's next page: a managed
+    /// system's refusal gives every message that applies.
+    pub more: Mutex<std::collections::HashMap<String, Vec<qsweb::msg::Message>>>,
     catalogue: std::sync::OnceLock<crate::refcodes::explain::Catalogue>,
 }
 
@@ -180,6 +183,7 @@ impl App {
             pending: Mutex::new(None),
             announced: Mutex::new(None),
             tested: Mutex::new(Vec::new()),
+            more: Mutex::new(std::collections::HashMap::new()),
             catalogue: std::sync::OnceLock::new(),
         })
     }

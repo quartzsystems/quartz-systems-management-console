@@ -58,6 +58,16 @@ impl Rq<'_> {
     /// A page in the frame, the waiting message first.
     pub fn page(&self, mut page: Page) -> Response {
         page.generic = false;
+        let more = self
+            .app
+            .more
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .remove(&self.session.id)
+            .unwrap_or_default();
+        for m in more.into_iter().rev() {
+            page.messages.insert(0, m);
+        }
         if let Some(m) = self.app.sessions.take_flash(&self.session.id) {
             page.messages.insert(0, m);
         }
@@ -76,6 +86,23 @@ impl Rq<'_> {
     /// `303` to `route` with `m` waiting there.
     pub fn done(&self, route: &str, m: Message) -> Response {
         self.app.sessions.flash(&self.session.id, m);
+        Response::redirect(&PRODUCT.url(route))
+    }
+
+    /// `303` to `route` with every one of `ms` waiting there, in order.
+    pub fn done_all(&self, route: &str, ms: Vec<Message>) -> Response {
+        let mut ms = ms.into_iter();
+        if let Some(first) = ms.next() {
+            self.app.sessions.flash(&self.session.id, first);
+        }
+        let rest: Vec<Message> = ms.collect();
+        if !rest.is_empty() {
+            self.app
+                .more
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .insert(self.session.id.clone(), rest);
+        }
         Response::redirect(&PRODUCT.url(route))
     }
 
@@ -297,6 +324,11 @@ pub fn task_of(route: &str) -> Option<Task> {
     }
     // The later phases' routes need the task their pages will.
     if route.starts_with("/server/") {
+        // Power off, Restart and Power on need the task; a system's
+        // other pages, View.
+        if route.ends_with("/confirm") {
+            return Some(Task::Power);
+        }
         return Some(Task::View);
     }
     match route {

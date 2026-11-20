@@ -1038,3 +1038,71 @@ fn system_refcode() {
     };
     system_tab(Tab::Refcode(c), "system-refcode.html", &[]);
 }
+
+#[test]
+fn confirm_poweroff() {
+    use webpages::systems::power::{Ended, Off, off_page};
+    let p = |name: &str, id: u32, state: &str, action: &str| Ended {
+        name: name.into(),
+        id,
+        state: state.into(),
+        code: "00000000".into(),
+        action: action.into(),
+    };
+    let then = "Shut down (delayed, 300 s) then power off";
+    let v = Off {
+        name: "QSHQVS1".into(),
+        restart: false,
+        partitions: vec![
+            p("QSPROD01", 3, "Running", then),
+            p("QSDEV01", 1, "Running", then),
+            p("QSTEST01", 2, "Not activated", "None"),
+        ],
+    };
+    // The choice is in the form, so it is sent with OK.
+    assert_golden(
+        &render(
+            "/qsmc/server/QSHQVS1/confirm",
+            &off_page(&ctx("/qsmc/server/QSHQVS1/confirm"), &v),
+        ),
+        "confirm-poweroff.html",
+        &[
+            (
+                "</table><p class=\"small grey\">Power off:",
+                "</table><form method=\"post\"><input type=\"hidden\" name=\"ms\" value=\"QSHQVS1\"><p class=\"small grey\">Power off:",
+            ),
+            (
+                "without shutdown</p><form method=\"post\"><div class=\"buttons\">",
+                "without shutdown</p><div class=\"buttons\">",
+            ),
+        ],
+    );
+}
+
+#[test]
+fn confirm_poweron() {
+    use webpages::systems::power::{On, on_page};
+    let v = On {
+        name: "QSHQVS1".into(),
+        kind: "QS/VS host".into(),
+        state: "Power off".into(),
+        auto: "QSPROD01, QSDEV01".into(),
+    };
+    assert_golden(
+        &render(
+            "/qsmc/server/QSHQVS1/confirm",
+            &on_page(&ctx("/qsmc/server/QSHQVS1/confirm"), &v),
+        ),
+        "confirm-poweron.html",
+        &[
+            (
+                "</table><p class=\"small grey\">IPL side:",
+                "</table><form method=\"post\"><input type=\"hidden\" name=\"ms\" value=\"QSHQVS1\"><p class=\"small grey\">IPL side:",
+            ),
+            (
+                "partition standby</option></select></p><form method=\"post\"><div class=\"buttons\">",
+                "partition standby</option></select></p><div class=\"buttons\">",
+            ),
+        ],
+    );
+}

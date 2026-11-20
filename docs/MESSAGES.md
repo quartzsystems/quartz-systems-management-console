@@ -25,6 +25,10 @@ request refused.
 
 | Message | Severity | Text | Cause | Recovery |
 | --- | --- | --- | --- | --- |
+| `QMC2201` | 20 | Power on of &1 is not in this release: a powered-off machine does not answer QSI, and this console has no way to its BMC. | A managed system answers QSI only while it runs; powering one on takes its BMC, which this console is not given. | Power the machine on at its BMC or at the machine. The console reconnects when it answers. |
+| `QMC2202` | 0 | Power off of &1 started. Its partitions are shut down first unless Immediate was chosen. | The managed system accepted the power off; its state and codes follow on its pages. | None. |
+| `QMC2203` | 0 | Restart of &1 started. The console reconnects when it answers again. | The managed system accepted the restart; it is shown as not connected until it answers. | None. |
+| `QMC2210` | 30 | &1 request for &2 not performed. The managed system's own messages follow. | The managed system refused the request. | See the system's messages below this one, act on them, and try again. |
 | `QMC1007` | 0 | Description of managed system &1 changed. | The console keeps its own note about the system; nothing on the system is changed. | None. |
 | `QMC1008` | 30 | The name of managed system &1 is the system's own and is changed at the system. | QSI does not change a managed system's name; the console shows the name the system gives. | Change the name at the managed system; the console shows the new name once it is paired again with Reset connection. |
 | `QMC2220` | 20 | The power-on parameters of &1 are set at the system: the IPL side, keylock, boot mode, partitions to start and the default power off. | A QS/VS host reports its slot and keylock over QSI but takes no change of them, of its boot mode or of its auto start; those are set at the host's Service Tools. | Set them at the managed system's Service Tools. |
