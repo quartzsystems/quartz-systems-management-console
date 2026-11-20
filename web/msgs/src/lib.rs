@@ -217,4 +217,26 @@ mod tests {
         assert_eq!(sl.severity, 30);
         assert!(Catalogue.lookup("CPF0001", &[]).is_none());
     }
+
+    /// docs/MESSAGES.md lists every message with its severity and its
+    /// three texts, and no other.
+    #[test]
+    fn the_document_lists_the_catalogue() {
+        let doc = include_str!("../../../docs/MESSAGES.md");
+        for d in ALL {
+            let row = format!(
+                "| `{}` | {} | {} | {} | {} |",
+                d.id, d.severity, d.text, d.cause, d.recovery
+            );
+            assert!(
+                doc.lines().any(|l| l == row),
+                "docs/MESSAGES.md lacks: {row}"
+            );
+        }
+        let rows = doc
+            .lines()
+            .filter(|l| l.starts_with("| `QMC") && l.matches(" | ").count() == 4)
+            .count();
+        assert_eq!(rows, ALL.len());
+    }
 }
