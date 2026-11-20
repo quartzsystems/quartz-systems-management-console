@@ -216,6 +216,7 @@ impl Link {
             }
         };
         if let AnyRequest::Pair(p) = &req {
+            lock(&self.sys).note(format!("pairing from user {}", r.user));
             self.pair(sess, r.id, p);
             return;
         }

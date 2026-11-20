@@ -1,0 +1,19 @@
+[package]
+name = "qsmcmgmtd"
+description = "QS/MC's managed-systems service: mgmt/mgmtd run as a service, unprivileged"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+mgmtd = { path = "../../mgmt/mgmtd", version = "0.1.0" }
+mgmtproto = { path = "../../mgmt/proto", version = "0.1.0" }
+release = { path = "../release", version = "0.1.0" }
+qsitrust.workspace = true
+supervise.workspace = true
+libc.workspace = true
+
+[lints]
+workspace = true

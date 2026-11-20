@@ -42,6 +42,64 @@ macro_rules! catalogue {
 }
 
 catalogue! {
+    // Terminal windows.
+    TOO_MANY_WINDOWS = "QMC3003", 30, "&1 terminal windows are open, the most at once.",
+        "The console shares each partition's console among the windows that have it open, up to a limit across every system.",
+        "Close a terminal window that is no longer needed, then open this one again.";
+
+    // Managed systems and their connections.
+    SYSTEM_CONNECTED = "QMC1001", 0, "Connection to managed system &1 established. Service processor version &2.",
+        "The console paired with the managed system and opened its session; the version is the release the system says it runs.",
+        "None.";
+    SYSTEM_REMOVED = "QMC1002", 0, "Managed system &1 removed.",
+        "The console forgot the system and its pinned certificate, and closed its session.",
+        "To manage it again, add it with a new pairing password from the system.";
+    SYSTEM_PAIRED_AGAIN = "QMC1003", 0, "Managed system &1 paired again.",
+        "The console paired with the system with a new password and pinned the certificate it showed.",
+        "None.";
+    SYSTEM_TESTED = "QMC1004", 0, "Connection to managed system &1 tested: &2.",
+        "Each step of a new connection to the system was timed.",
+        "None.";
+    NO_ANSWER = "QMC1101", 30, "Managed system at &1 did not answer: &2.",
+        "The console could not open a connection to the address and port, or the connection was closed before QSI began.",
+        "Check the address and the port, that the system is powered on and has its QSI service, and that the console's network reaches it.";
+    TURNED_AWAY = "QMC1102", 30, "Managed system at &1 turned the console away: no pairing password is out there, or it expired, or its attempts were spent.",
+        "A managed system lets a console it has not paired in only while a pairing password made there is out.",
+        "At the managed system, make a new pairing password and type it here within its time.";
+    NOT_PAIRED_HERE = "QMC1103", 30, "Managed system &1 is already managed by this console.",
+        "A system of that name or address is in the list.",
+        "Use Reset connection to pair it again.";
+    NOT_QSI = "QMC1104", 30, "Managed system at &1 does not answer QSI: &2.",
+        "A standalone QS/400 system has no QSI listener in this release, and a system that does not answer QSI cannot be managed.",
+        "Add a QS/VS host, or a system that answers QSI.";
+    CERTIFICATE_CHANGED = "QMC1105", 30, "Managed system &1 answered with a certificate other than the one pinned when it was paired. It is not trusted.",
+        "The system's certificate is not the one the console pinned: it was installed again, or something else answers at its address.",
+        "Find out why at the system. When it is the system, use Reset connection with a new pairing password.";
+    NOT_CONNECTED = "QMC1106", 30, "Managed system &1 is not connected: &2.",
+        "The console has no session with the system now; it tries again by itself.",
+        "See the reason, and Connectivity for when it last answered.";
+    TOO_MANY_SYSTEMS = "QMC1107", 30, "This console manages &1 systems, the most it may.",
+        "The limit of managed systems was reached.",
+        "Remove a system it no longer needs to manage.";
+    NO_SUCH_SYSTEM = "QMC1108", 30, "No managed system &1.",
+        "The system is not in the list, or was removed.",
+        "Choose a system from the Servers list.";
+    SERIAL_CHANGED = "QMC1109", 20, "Managed system &1 says it is serial number &2, not &3 as when it was paired.",
+        "The system answers with the pinned certificate but another serial number.",
+        "Find out at the system why its serial number changed; use Reset connection when it is right.";
+    NO_REPLY = "QMC1110", 30, "Managed system &1 did not answer in time.",
+        "The system took longer than the console waits.",
+        "Try again; see Connectivity for the system's connection.";
+    NOT_CONFIRMED = "QMC1111", 30, "Pairing with the managed system at &1 did not confirm: the password is not the one it showed.",
+        "The system's confirmation did not hold for the password typed; the system counted the attempt.",
+        "Type the password the system shows again, or make a new one there.";
+    SETUPS_BUSY = "QMC1112", 30, "The console is setting up as many connections as it may at once. Try again shortly.",
+        "Too many connections were being set up at the same time.",
+        "Wait a moment and try again.";
+    PASSWORD_NEEDED = "QMC1113", 30, "The system's pairing password is required.",
+        "The form was sent without the pairing password shown at the managed system.",
+        "Type the password the managed system shows.";
+
     // Sign-on and sessions.
     SIGNON_NOT_CORRECT = "QMC9001", 30, "User ID or password not correct.",
         "The user ID is not a user of this console, or the password is not its password.",

@@ -1,0 +1,16 @@
+[package]
+name = "mgmtproto"
+description = "What the web server asks QS/MC's managed-systems service on its local sockets, and what it is answered"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+ipc.workspace = true
+qsi.workspace = true
+qsipart.workspace = true
+
+[lints]
+workspace = true

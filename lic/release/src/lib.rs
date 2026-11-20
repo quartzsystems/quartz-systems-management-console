@@ -83,6 +83,24 @@ pub const WEB_SOCKET: &str = "/run/qsmcweb.sock";
 /// The web server's own socket: the local console's requests.
 pub const WEBD_SOCKET: &str = "/run/qsmcwebd.sock";
 
+/// The managed-systems service's binary, in a slot's initramfs.
+pub const MGMTD: &str = "/qsmc/bin/qsmcmgmtd";
+
+/// The managed-systems service's socket: the web server's requests.
+pub const MGMTD_SOCKET: &str = "/run/qsmcmgmtd.sock";
+
+/// The managed-systems service's socket for consoles: one connection a
+/// browser's terminal window.
+pub const MGMTD_CONSOLES: &str = "/run/qsmcmgmtd-consoles.sock";
+
+/// What the managed-systems service keeps beside the state files: the
+/// reference code history of each system.
+pub const MGMT_DIR: &str = "/data/mgmt";
+
+/// The user and group the managed-systems service runs as: it alone
+/// reads the console's QSI key.
+pub const MGMT_ID: u32 = 23_990;
+
 /// The web server's certificate and key, under `/data`.
 pub const WEB_DIR: &str = "/data/web";
 

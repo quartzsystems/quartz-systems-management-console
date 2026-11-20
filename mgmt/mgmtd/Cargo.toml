@@ -1,0 +1,26 @@
+[package]
+name = "mgmtd"
+description = "QS/MC's managed-systems service: the console's QSI identity, a session with every managed system, what is kept about each, and the local sockets the web server asks"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+mgmtproto = { path = "../proto", version = "0.1.0" }
+qmcmsg = { path = "../../web/msgs", version = "0.1.0" }
+ipc.workspace = true
+qsi.workspace = true
+qsisess.workspace = true
+qsitrust.workspace = true
+qsipart.workspace = true
+rustls.workspace = true
+serde.workspace = true
+state.workspace = true
+
+[dev-dependencies]
+sim = { path = "../../tools/sim", version = "0.1.0" }
+
+[lints]
+workspace = true

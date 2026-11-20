@@ -30,6 +30,10 @@ members = [
     "web/pages",
     "web/backup",
     "lic/qsmcwebd",
+    # The managed-systems service: its sockets, the service and its binary.
+    "mgmt/proto",
+    "mgmt/mgmtd",
+    "lic/qsmcmgmtd",
 ]
 
 [workspace.package]
