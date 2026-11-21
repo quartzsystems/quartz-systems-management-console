@@ -125,6 +125,7 @@ pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
             partitions::Request::Adapters(_) => Answer::Reply(AnyReply::Partitions(
                 partitions::Reply::Adapters(Vec::new()),
             )),
+            partitions::Request::Activations(_) => Answer::Unknown,
         },
         AnyRequest::Profiles(profiles::Request::Get(g)) if host => {
             let Some(p) = s.part(g.id) else {

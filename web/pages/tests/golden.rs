@@ -293,11 +293,11 @@ fn shared_help() {
                 "<a href=\"help.html\" >Contents</a>",
             ),
             ("<a href=\"#\">Index</a>", "<a href=\"help.html\">Index</a>"),
-            // qsweb's window closes by an inline handler, which QS/MC's
-            // content security policy blocks (`docs/OPEN_QUESTIONS.md`).
+            // A product with no script closes the window by a plain
+            // link to its start (`qsweb`, item 22).
             (
                 "<a href=\"#\">Close window</a>",
-                "<a href=\"#\" onclick=\"if (history.length > 1) { history.back(); } else { window.close(); } return false;\">Close window</a>",
+                "<a href=\"/qsmc/\">Close window</a>",
             ),
         ],
     );
