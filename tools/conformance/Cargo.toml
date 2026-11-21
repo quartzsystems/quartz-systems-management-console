@@ -32,6 +32,9 @@ webusers = { path = "../../web/users", version = "0.1.0" }
 qmcbackup = { path = "../../web/backup", version = "0.1.0" }
 qsweb.workspace = true
 sim = { path = "../sim", version = "0.1.0" }
+mgmtd = { path = "../../mgmt/mgmtd", version = "0.1.0" }
+qsi.workspace = true
+qsitrust.workspace = true
 srcdata.workspace = true
 rustls.workspace = true
 x509kit.workspace = true

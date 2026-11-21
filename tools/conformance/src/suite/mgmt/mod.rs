@@ -8,6 +8,7 @@
 //! browser does; and a real QS/VS host ([`host`]).
 
 mod act;
+mod beside;
 mod guard;
 pub mod host;
 mod pair;

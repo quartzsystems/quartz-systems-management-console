@@ -81,8 +81,9 @@ fn qsvs_disk(ctx: &Ctx) -> Row {
                 &name,
                 false,
                 format!(
-                    "for `build test --suite mgmt-host` only: in {checkout}, `cargo run -p build -- --test-image all`, \
-                     then install a disk with its `install-serial` suite and name it"
+                    "for `build test --suite mgmt-host` only: in {checkout}, `cargo run -p build -- --test-image all` \
+                     and `cargo run -p build -- test --suite qsi-pairing`, which keeps the installed disk as \
+                     `conformance/installed-single-0.img` in its target; name it"
                 ),
             )
         }
@@ -91,7 +92,31 @@ fn qsvs_disk(ctx: &Ctx) -> Row {
     r
 }
 
+/// QS/400's disk image, for suite 10's partition.
+fn qs400_image() -> Row {
+    let name = format!("QS/400 image ({})", conformance::suite::mgmt::host::QS400);
+    let mut r = match std::env::var(conformance::suite::mgmt::host::QS400) {
+        Ok(p) if std::path::Path::new(&p).is_file() => row(&name, true, p),
+        _ => row(
+            &name,
+            false,
+            "for `build test --suite mgmt-host` only: QS/400's `cargo run -p build -- all` at the commit \
+             QS/VS pins writes `images/qs400-*.img`; name it"
+                .into(),
+        ),
+    };
+    r.required = false;
+    r
+}
+
 /// QS/MC's rows.
 pub fn rows(ctx: &Ctx) -> Vec<Row> {
-    vec![ovmf(), headers(ctx), pins(ctx), once(ctx), qsvs_disk(ctx)]
+    vec![
+        ovmf(),
+        headers(ctx),
+        pins(ctx),
+        once(ctx),
+        qsvs_disk(ctx),
+        qs400_image(),
+    ]
 }
