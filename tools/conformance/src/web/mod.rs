@@ -6,8 +6,9 @@
 //! 443 and 80, through QEMU's forwarded ports. TLS is pinned to the
 //! certificate the harness was told to expect: a connection to any
 //! other fails. A request to 443 is QS/400's `httpc`'s, pinned; what
-//! `httpc` does not do is written here: a request to 80 that names the
-//! guest as a browser would, bytes of a hostile client, the WebSocket.
+//! `httpc` does not do is written here: a sign-on and a request to 80
+//! that name the guest as a browser would, bytes of a hostile client,
+//! the WebSocket.
 
 pub mod ws;
 
@@ -220,6 +221,12 @@ impl Browser {
                 .collect(),
             body: r.body,
         };
+        self.keep(&a);
+        Ok(a)
+    }
+
+    /// The cookie an answer sets, kept.
+    fn keep(&mut self, a: &Answer) {
         if let Some(c) = a.header("set-cookie") {
             let v = c
                 .split(';')
@@ -228,16 +235,9 @@ impl Browser {
                 .map(|(_, v)| v.to_string());
             self.cookie = v.filter(|v| !v.is_empty());
         }
-        Ok(a)
     }
 
-    /// A GET.
-    pub fn get(&mut self, path: &str) -> Result<Answer, String> {
-        self.send("GET", path, &[], &[])
-    }
-
-    /// A form's POST.
-    pub fn post(&mut self, path: &str, fields: &[(&str, &str)]) -> Result<Answer, String> {
+    fn encoded(fields: &[(&str, &str)]) -> String {
         let body: Vec<String> = fields
             .iter()
             .map(|(k, v)| {
@@ -248,6 +248,16 @@ impl Browser {
                 )
             })
             .collect();
+        body.join("&")
+    }
+
+    /// A GET.
+    pub fn get(&mut self, path: &str) -> Result<Answer, String> {
+        self.send("GET", path, &[], &[])
+    }
+
+    /// A form's POST.
+    pub fn post(&mut self, path: &str, fields: &[(&str, &str)]) -> Result<Answer, String> {
         self.send(
             "POST",
             path,
@@ -255,7 +265,7 @@ impl Browser {
                 "Content-Type".into(),
                 "application/x-www-form-urlencoded".into(),
             )],
-            body.join("&").as_bytes(),
+            Self::encoded(fields).as_bytes(),
         )
     }
 
@@ -294,8 +304,21 @@ impl Browser {
     }
 
     /// Sign on: the answer, a redirect to Welcome when it worked.
+    /// It names [`Self::host`] as a browser of that address would: the
+    /// console keeps an `open` change on trial when a sign-on names the
+    /// new address, and `httpc` names the forward's 127.0.0.1
+    /// (`docs/OPEN_QUESTIONS.md`, item 39).
     pub fn sign_on(&mut self, user: &str, password: &str) -> Result<Answer, String> {
-        self.post("/qsmc/signon", &[("user", user), ("password", password)])
+        let body = Self::encoded(&[("user", user), ("password", password)]);
+        let ct = [(
+            "Content-Type".to_string(),
+            "application/x-www-form-urlencoded".to_string(),
+        )];
+        let mut bytes = self.head("POST", "/qsmc/signon", &ct, body.len()).into_bytes();
+        bytes.extend_from_slice(body.as_bytes());
+        let a = parse(&self.raw(&bytes)?)?;
+        self.keep(&a);
+        Ok(a)
     }
 
     /// The form token of `path`'s page.

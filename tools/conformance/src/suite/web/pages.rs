@@ -56,30 +56,32 @@ pub fn pages(run: &super::Run<'_>) -> Result<String, String> {
     let mut seen = BTreeSet::new();
     let mut queue = VecDeque::from(["/qsmc/welcome".to_string()]);
     let mut pages = 0;
-    let mut handlers = 0;
+    let mut redirects = 0;
     while let Some(path) = queue.pop_front() {
         // Signing off would end the crawl's session.
         if !seen.insert(path.clone()) || path.starts_with("/qsmc/signoff") {
             continue;
         }
         let a = b.get(&path)?;
+        // `/qsmc/` (the help window's Close window) leads to Welcome.
+        if a.status == 303 {
+            match a.header("location") {
+                Some(l) if l.starts_with("/qsmc/") => {
+                    redirects += 1;
+                    queue.push_back(l.to_string());
+                    continue;
+                }
+                l => return Err(format!("{path} answered 303 to {l:?}")),
+            }
+        }
         if a.status != 200 {
             return Err(format!("{path} answered {}", a.status));
         }
         pages += 1;
-        // No page carries a script. The help window's Close window has
-        // qsweb's inline handler, which the CSP blocks
-        // (`docs/OPEN_QUESTIONS.md`, item 22); no other page has one.
+        // No page carries a script or an inline handler.
         let text = a.text().to_ascii_lowercase();
-        let help = path.starts_with("/qsmc/help") || path.starts_with("/qsmc/msg/");
-        if text.contains("<script")
-            || text.contains("javascript:")
-            || (text.contains(" onclick=") && !help)
-        {
+        if text.contains("<script") || text.contains("javascript:") || text.contains(" onclick=") {
             return Err(format!("{path} carries a script"));
-        }
-        if text.contains(" onclick=") {
-            handlers += 1;
         }
         if a.header("content-type")
             .is_some_and(|t| t.starts_with("text/html"))
@@ -97,9 +99,8 @@ pub fn pages(run: &super::Run<'_>) -> Result<String, String> {
     c.guest.kill();
     Ok(format!(
         "the stylesheet is qsweb's, {} bytes; {pages} pages and files reached from Welcome \
-         each answered 200, none with a script ({handlers} help windows with qsweb's Close \
-         window handler, which the CSP blocks); port 80 answers 301 to \
-         https://10.0.2.15/qsmc/welcome",
+         each answered 200 ({redirects} redirect(s) to a page of the console), none with a \
+         script or an inline handler; port 80 answers 301 to https://10.0.2.15/qsmc/welcome",
         qsweb::CSS.len()
     ))
 }

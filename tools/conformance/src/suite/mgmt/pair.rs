@@ -106,6 +106,16 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             continue;
         }
         let a = b.get(&path)?;
+        // `/qsmc/` (the help window's Close window) leads to Welcome.
+        if a.status == 303 {
+            match a.header("location") {
+                Some(l) if l.starts_with("/qsmc/") => {
+                    queue.push_back(l.to_string());
+                    continue;
+                }
+                l => return Err(format!("{path} answered 303 to {l:?}")),
+            }
+        }
         if a.status != 200 {
             return Err(format!("{path} answered {}", a.status));
         }

@@ -644,3 +644,15 @@ or derived and said so in `docs/VRES.md` and `docs/PARTITIONS.md`: an
 image's upload date and read-only flag, a switch's mode, a pool's type
 and backing devices' words, the confirmation's active jobs and users
 signed on, the SCSI client's server adapter number.
+
+## 39. `httpc` names only its URL's host (QS/400)
+
+`httpc` writes `Host` from the request's URL and adds a caller's
+`Host` beside it. The harness reaches a guest through a forward on
+127.0.0.1, and the console keeps an `open` change on trial only when a
+sign-on names the address it moved to, as a browser of that address
+does (`web/pages/src/app/routes.rs`, `reached`). So the harness's
+sign-on is still its own request over the pinned TLS
+(`tools/conformance/src/web/mod.rs`), and every other request to 443 is
+`httpc`'s. For QS/400: a request's `Host` header, when given, in place
+of the URL's, or an address to connect to beside the URL.
