@@ -212,6 +212,69 @@ fn screen_of(b: &Browser, window: &str, wanted: &str, within: Duration) -> Resul
     Err(format!("no {wanted:?} on the screen:\n{last}"))
 }
 
+/// A JSON string's text from just after its opening quote: the text
+/// and what follows the closing quote.
+fn json_string(s: &str) -> Option<(String, &str)> {
+    let mut out = String::new();
+    let mut it = s.char_indices();
+    while let Some((i, c)) = it.next() {
+        match c {
+            '"' => return Some((out, &s[i + 1..])),
+            '\\' => match it.next()?.1 {
+                'n' => out.push('\n'),
+                't' => out.push('\t'),
+                'u' => {
+                    let hex: String = (0..4).filter_map(|_| it.next().map(|(_, h)| h)).collect();
+                    out.push(char::from_u32(u32::from_str_radix(&hex, 16).ok()?)?);
+                }
+                other => out.push(other),
+            },
+            c => out.push(c),
+        }
+    }
+    None
+}
+
+/// A `screen` message's rows, as text without trailing spaces.
+fn window_rows(message: &str) -> Vec<String> {
+    let Some((_, mut rest)) = message.split_once("\"cells\":[") else {
+        return Vec::new();
+    };
+    let mut rows = Vec::new();
+    while let Some(at) = rest.find(",\"") {
+        let Some((text, after)) = json_string(&rest[at + 2..]) else {
+            break;
+        };
+        rows.push(text.trim_end().to_string());
+        // Past the row's styles.
+        rest = after
+            .strip_prefix(",\"")
+            .and_then(json_string)
+            .map_or("", |(_, r)| r);
+    }
+    rows
+}
+
+/// Whether `display`'s lines hold `rows` in order, one a line,
+/// trailing spaces aside.
+fn same_rows(display: &str, rows: &[String]) -> bool {
+    let lines: Vec<&str> = display.lines().map(str::trim_end).collect();
+    !rows.is_empty()
+        && lines
+            .windows(rows.len())
+            .any(|w| w.iter().zip(rows).all(|(l, r)| *l == r))
+}
+
+/// Whether Connectivity's row of `name` says Connected.
+fn connected(conn: &str, name: &str) -> bool {
+    let Some(at) = conn.find(&format!(">{name}<")) else {
+        return false;
+    };
+    let start = conn[..at].rfind("<tr").unwrap_or(at);
+    let end = conn[at..].find("</tr>").map_or(conn.len(), |e| at + e);
+    conn[start..end].contains(">Connected<")
+}
+
 /// The codes on the first page of the history.
 fn codes(page: &str) -> Vec<String> {
     page.split("/qsmc/refcode/")
@@ -332,6 +395,27 @@ pub fn standalone(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     let window = format!("/qsmc/terminal/{name}/{SYSTEM_ID}");
     page(b, &window)?;
     screen_of(b, &window, "Sign On", Duration::from_mins(3))?;
+    // The same rows as its own display.
+    let mut last = (Vec::new(), String::new());
+    let mut alike = false;
+    for _ in 0..5 {
+        let rows = window_rows(&screen_of(b, &window, "Sign On", Duration::from_mins(1))?);
+        let own = cmd(&mut sys, "screen")?;
+        alike = same_rows(&own, &rows);
+        last = (rows, own);
+        if alike {
+            break;
+        }
+        std::thread::sleep(Duration::from_secs(2));
+    }
+    if !alike {
+        return Err(format!(
+            "the window's rows differ from the display's:\nwindow:\n{}\ndisplay:\n{}",
+            last.0.join("\n"),
+            last.1
+        ));
+    }
+    let rows = last.0.len();
     // The control panel: the system's own list.
     let panel = format!("/qsmc/partition/{name}/{SYSTEM_ID}/panel");
     let listed = options(&page(b, &panel)?);
@@ -374,15 +458,29 @@ pub fn standalone(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     if !shows(&t, "QMC5010") || !t.contains("QSI0452") {
         return Err(format!("21 at a normal keylock: {}", message_of(&t)));
     }
+    // A controlled power down from its confirmation page.
+    let off = format!("/qsmc/server/{name}/confirm?op=poweroff");
+    page(b, &off)?;
+    let r = submit(b, &off, &[("ms", &name), ("how", "delayed"), ("ok", "OK")])?;
+    let t = follow(b, &r)?.text();
+    if !shows(&t, "QMC2202") {
+        return Err(format!("the power down: {}", message_of(&t)));
+    }
+    // The delay is `power::DELAY`, 300 s, then the system ends.
+    let took = sys.wait_exit(Instant::now() + Duration::from_mins(15))?;
+    until("the system away", Duration::from_mins(3), || {
+        Ok(!connected(&page(b, "/qsmc/connectivity")?, &name))
+    })?;
     c.guest.kill();
-    sys.kill();
     Ok(format!(
         "standalone QS/400 {name} paired from the Add page with STRQSIPAIR's password; shown \
          on Servers as a standalone QS/400 with its properties; {} codes in the history to \
-         {IPL_COMPLETE}; its console (ID {SYSTEM_ID}) in the terminal window at Sign On; the \
-         control panel lists its {} functions; 21 at a normal keylock refused, QMC5010 with \
-         QSI0452",
+         {IPL_COMPLETE}; its console (ID {SYSTEM_ID}) in the terminal window at Sign On, its \
+         {rows} rows its own display's; the control panel lists its {} functions; 21 at a \
+         normal keylock refused, QMC5010 with QSI0452; a controlled power down from its \
+         confirmation page (QMC2202), the system off in {} s and away on Connectivity",
         seen.len(),
-        listed.len()
+        listed.len(),
+        took.as_secs()
     ))
 }
