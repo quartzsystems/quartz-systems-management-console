@@ -12,6 +12,7 @@ mod beside;
 mod guard;
 pub mod host;
 mod pair;
+mod standalone;
 mod terminal;
 
 use std::time::{Duration, Instant};
@@ -38,7 +39,10 @@ pub const SUITES: &[(&str, SuiteFn)] = &[
 ];
 
 /// The suites run by name only: suite 10 needs a QS/VS test disk.
-pub const NAMED: &[(&str, SuiteFn)] = &[("mgmt-host", host::host)];
+pub const NAMED: &[(&str, SuiteFn)] = &[
+    ("mgmt-host", host::host),
+    ("mgmt-standalone", standalone::standalone),
+];
 
 /// The build machine as the guest reaches it on QEMU's user network.
 pub const HOST: &str = "10.0.2.2";
