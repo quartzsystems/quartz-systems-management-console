@@ -250,6 +250,8 @@ pub fn sockets(run: &Run<'_>) -> Result<String, String> {
     let mut machine = Machine {
         nic: Some(MAC.to_string()),
         dump: Some(dump.clone()),
+        // A short path: the target directory's can pass SUN_LEN.
+        monitor: Some(run.socket("monitor.sock")),
         ..run.machine()?
     };
     machine.disks.push(seed_disk(run, &seed_toml(&host, ""))?);
