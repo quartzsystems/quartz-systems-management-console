@@ -73,11 +73,17 @@ fn env(name: &str, how: &str) -> Result<PathBuf, String> {
 /// The screen a new window's socket is sent first: its rows' text.
 fn shown(b: &Browser, window: &str) -> Result<String, String> {
     let mut ws = b.websocket(&format!("{window}/ws"))?;
-    let got = ws.recv(Duration::from_secs(5));
-    Ok(got
-        .into_iter()
-        .find(|m| m.contains("\"t\":\"screen\""))
-        .unwrap_or_default())
+    let end = Instant::now() + Duration::from_secs(15);
+    while Instant::now() < end && !ws.closed {
+        if let Some(s) = ws
+            .recv(Duration::from_secs(1))
+            .into_iter()
+            .find(|m| m.contains("\"t\":\"screen\""))
+        {
+            return Ok(s);
+        }
+    }
+    Ok(String::new())
 }
 
 /// Wait for one of `wanted` on the partition's screen: its index.
@@ -418,7 +424,8 @@ pub fn host(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     }
     // The harness's machine ends at a restart: the host goes, and is
     // started again on its disks, as its firmware would.
-    host.wait_exit(Instant::now() + Duration::from_mins(5))?;
+    // A delayed restart waits its delay (`power::DELAY`, 300 s) first.
+    host.wait_exit(Instant::now() + Duration::from_mins(15))?;
     until("the host away", Duration::from_mins(2), || {
         Ok(!connected(&page(b, "/qsmc/connectivity")?, &name))
     })?;

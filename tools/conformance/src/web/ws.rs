@@ -101,8 +101,50 @@ impl Ws {
                 Err(_) => self.closed = true,
             }
         }
-        let texts = qsweb::ws::server_texts(&self.buf);
-        self.buf.clear();
+        let mut texts = Vec::new();
+        while let Some((op, body, used)) = frame(&self.buf) {
+            self.buf.drain(..used);
+            match op {
+                1 => texts.push(String::from_utf8_lossy(&body).into_owned()),
+                8 => self.closed = true,
+                _ => {}
+            }
+        }
         texts
+    }
+}
+
+/// The first whole frame of `buf` from the server (unmasked): its
+/// opcode, its payload and the bytes it took. A frame not all here
+/// yet waits for the next read.
+fn frame(buf: &[u8]) -> Option<(u8, Vec<u8>, usize)> {
+    let op = buf.first()? & 0x0f;
+    let short = buf.get(1)? & 0x7f;
+    let (len, at) = match short {
+        126 => (
+            usize::from(u16::from_be_bytes([*buf.get(2)?, *buf.get(3)?])),
+            4,
+        ),
+        127 => {
+            let b: [u8; 8] = buf.get(2..10)?.try_into().ok()?;
+            (usize::try_from(u64::from_be_bytes(b)).ok()?, 10)
+        }
+        n => (usize::from(n), 2),
+    };
+    let body = buf.get(at..at + len)?;
+    Some((op, body.to_vec(), at + len))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::frame;
+
+    #[test]
+    fn a_frame_cut_short_waits() {
+        let mut f = vec![0x81, 126, 0x01, 0x00];
+        f.extend(std::iter::repeat_n(b'x', 256));
+        assert!(frame(&f[..100]).is_none());
+        let (op, body, used) = frame(&f).unwrap();
+        assert_eq!((op, body.len(), used), (1, 256, 260));
     }
 }
