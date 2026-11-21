@@ -500,3 +500,9 @@ level of virtualization, and a QS/400 LIC image built for it. The build
 machine (WSL 2, 12 processors, 11 GiB) runs the host and the console;
 the partition steps are listed for a real machine (`NEEDS-CODY`, the
 Dell).
+
+**Phase 4:** answered: the build machine runs them. The host's QEMU
+is given 5 GiB and six processors, the partition runs under it, and
+suite 10's partition steps passed there against a host at QS/VS
+`8c54d47` and QS/400 at `cb58b01` (`docs/PHASE4.md`, Evidence). The
+Dell remains for a host on real hardware.
