@@ -38,6 +38,12 @@ fn cert_import(data: &[u8]) {
     }
 }
 
+/// A host's replies to the managed-systems service's reads and its
+/// events, of every family, picked and broken by the input.
+fn mgmt_host(data: &[u8]) {
+    mgmtd::system::fuzzing::host_family(data);
+}
+
 /// A managed system's bytes after the handshake, as the managed-systems
 /// service takes them.
 fn mgmt_peer(data: &[u8]) {
@@ -93,6 +99,14 @@ pub static TARGETS: &[Target] = &[
             b"\x04\x01",
         ],
         max_len: 64 * 1024,
+    },
+    Target {
+        name: "mgmt-host",
+        what: "a host's replies to every read and its events, each family's, as the managed-systems service keeps them",
+        run: mgmt_host,
+        seeds: &[&[2; 64], &[3, 0, 2, 7, 2, 9, 3, 1, 2, 4, 2, 2, 2, 5]],
+        dict: &[b"\x00\x01", b"\x00\x18", b"\x00\x13"],
+        max_len: 16 * 1024,
     },
     Target {
         name: "cert-import",

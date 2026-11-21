@@ -76,10 +76,126 @@ pub fn peer(data: &[u8]) {
     }
 }
 
+/// The host family's replies and events, for the fuzzer (target
+/// `mgmt-host`): a host's session in memory answers each read the
+/// system's thread asks with the sample reply of its kind, refuses it,
+/// or answers with bytes of `data`, as `data` says; and pushes the
+/// sample events `data` picks. So every list this thread keeps of a
+/// host (resources, profiles, activations, functions) is read and kept
+/// by its events, with what the fuzzer makes of them.
+pub fn host_family(data: &[u8]) {
+    use qsi::any::AnyReply;
+    use qsisess::{EventLog, Incoming};
+    static SAMPLES: OnceLock<Vec<(u16, u16, AnyReply)>> = OnceLock::new();
+    let samples = SAMPLES.get_or_init(|| {
+        qsi::samples::exchanges()
+            .into_iter()
+            .map(|(q, r)| (q.family(), q.op(), r))
+            .collect()
+    });
+    let events = qsi::samples::events();
+    let hello = Hello {
+        version: qsi::VERSION,
+        caps: mgmtproto::ask::CONSOLE_CAPS,
+        kind: PeerKind::Host,
+        name: "FUZZVS".into(),
+        release: "V1R0M0".into(),
+        serial: "F0000001".into(),
+    };
+    let Ok(mut m) = Session::new(Role::Managed, hello, true, Limits::default(), 0) else {
+        return;
+    };
+    let me = crate::peer::link::hello("FUZZMC", "V1R0M0");
+    let Ok(mut c) = Session::new(Role::Console, me, true, Limits::default(), 0) else {
+        return;
+    };
+    let (tx, rx) = channel();
+    let entry = Entry {
+        name: "FUZZVS".into(),
+        kept: Arc::new(std::sync::Mutex::new(mgmtproto::Kept::default())),
+        tx,
+        stop: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+    };
+    let mut w = Worker::new(Arc::clone(inner()), entry, rx);
+    c.feed(&m.take_output(), 1);
+    while c.poll().is_some() {}
+    m.feed(&c.take_output(), 1);
+    while m.poll().is_some() {}
+    w.mine(
+        &mut c,
+        super::worker::Mine::Subscribe,
+        &qsi::any::AnyRequest::Base(qsi::base::Request::Subscribe(qsi::base::Subscribe {
+            since: None,
+        })),
+    );
+    let mut log = EventLog::new(&Limits::default());
+    let mut at = 0usize;
+    let take = |at: &mut usize| {
+        let b = data.get(*at).copied();
+        *at += 1;
+        b
+    };
+    for _ in 0..64 {
+        m.feed(&c.take_output(), 2);
+        let mut asked = Vec::new();
+        while let Some(i) = m.poll() {
+            if let Incoming::Request(r) = i {
+                asked.push(r);
+            }
+        }
+        if asked.is_empty() {
+            break;
+        }
+        for r in asked {
+            let Some(choice) = take(&mut at) else {
+                return;
+            };
+            let sample = samples
+                .iter()
+                .find(|(f, o, _)| *f == r.family && *o == r.op);
+            let _ = match (choice % 4, sample) {
+                (0, _) => m.refuse(r.id, "QSI0301", "refused"),
+                (1, _) => {
+                    let n = usize::from(take(&mut at).unwrap_or(0));
+                    let end = (at + n).min(data.len());
+                    let body = data.get(at..end).unwrap_or_default().to_vec();
+                    at = end;
+                    m.reply(r.id, body)
+                }
+                // The subscription: the events follow it.
+                (_, Some(_)) if r.family == 0x0001 && r.op == 0x0005 => {
+                    m.subscribe(r.id, &log, None)
+                }
+                (_, Some((_, _, reply))) => m.reply_any(r.id, reply),
+                (_, None) => m.refuse_unknown(r.id),
+            };
+            if let Some(e) =
+                take(&mut at).and_then(|b| events.get(usize::from(b) % events.len().max(1)))
+            {
+                let _ = log.push_any(e);
+                let _ = m.publish(&log);
+            }
+        }
+        c.feed(&m.take_output(), 3);
+        while let Some(i) = c.poll() {
+            if w.incoming(&mut c, i).is_some() {
+                return;
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use qsi::any::AnyRequest;
     use qsisess::{EventLog, Incoming, Limits, Role, Session};
+
+    #[test]
+    fn the_host_family_is_answered_and_kept() {
+        super::host_family(b"");
+        super::host_family(&[2u8; 512]);
+        super::host_family(&(0u8..=255).cycle().take(4096).collect::<Vec<_>>());
+    }
 
     #[test]
     fn junk_and_nothing_are_taken() {
