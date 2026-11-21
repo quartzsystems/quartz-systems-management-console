@@ -11,7 +11,7 @@
 use std::sync::mpsc::channel;
 use std::sync::{Arc, OnceLock};
 
-use qsi::{Hello, PeerKind, caps};
+use qsi::{Hello, PeerKind};
 use qsisess::{Limits, Role, Session};
 
 use super::Entry;
@@ -24,7 +24,7 @@ fn host_hello() -> &'static [u8] {
     BYTES.get_or_init(|| {
         let hello = Hello {
             version: qsi::VERSION,
-            caps: caps::HOST_V1 | caps::SERVICING | caps::PHYSICAL_IO | caps::PARTITION_V2,
+            caps: mgmtproto::ask::CONSOLE_CAPS,
             kind: PeerKind::Host,
             name: "FUZZVS".into(),
             release: "V1R0M0".into(),
@@ -99,10 +99,7 @@ mod tests {
         }
         let host = qsi::Hello {
             version: qsi::VERSION,
-            caps: qsi::caps::HOST_V1
-                | qsi::caps::SERVICING
-                | qsi::caps::PHYSICAL_IO
-                | qsi::caps::PARTITION_V2,
+            caps: mgmtproto::ask::CONSOLE_CAPS,
             kind: qsi::PeerKind::Host,
             name: "FUZZVS".into(),
             release: "V1R0M0".into(),

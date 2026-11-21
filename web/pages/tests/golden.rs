@@ -995,9 +995,14 @@ fn system_io() {
 #[test]
 fn system_power() {
     use webpages::systems::props::{Power, Tab};
+    // The fixture's host starts its partitions marked for auto start
+    // and shuts them down first, waiting 300 s.
     let p = Power {
         side: "A".into(),
         keylock: "Normal".into(),
+        start_partitions: true,
+        immediate: false,
+        delay: 300,
     };
     system_tab(Tab::Power(p), "system-power.html", &[]);
 }
@@ -1333,6 +1338,8 @@ fn control_panel() {
             &qmcmsg::FUNCTION_ACCEPTED,
             &["21", "QSTEST01"],
         )],
+        // The fixture's list is the design's thirty.
+        functions: webpages::terminal::panel::design(),
     };
     let here = "/qsmc/partition/QSHQVS1/2/panel";
     assert_golden(

@@ -47,6 +47,42 @@ pub fn own(def: &qmcmsg::Def, data: &[&str]) -> Refusal {
     Refusal::new(def.id, &m.text)
 }
 
+/// Send `req` to `name` for the signed-on user through `mgmtd`: its
+/// reply, or the messages to show (the console's first, `action`
+/// naming what was asked, then the system's own).
+pub fn ask(
+    rq: &Rq<'_>,
+    name: &str,
+    action: &str,
+    req: &qsi::any::AnyRequest,
+) -> Result<qsi::any::AnyReply, Vec<Message>> {
+    let asked = mgmtproto::Asked::of(req);
+    match rq
+        .app
+        .console
+        .mgmt()
+        .ask(name.to_string(), asked, rq.user().into())
+    {
+        Ok(Ok(a)) => a
+            .reply()
+            .ok_or_else(|| vec![qmcmsg::message(Kind::Error, &qmcmsg::NO_REPLY, &[name])]),
+        Ok(Err(no)) => {
+            let mut ms = Vec::new();
+            // A refusal of the console's own is shown alone.
+            if !no.main.msgid.starts_with("QMC") {
+                ms.push(qmcmsg::message(
+                    Kind::Error,
+                    &qmcmsg::POWER_REFUSED,
+                    &[action, name],
+                ));
+            }
+            ms.extend(refused(&no));
+            Err(ms)
+        }
+        Err(e) => Err(vec![unreached(&e)]),
+    }
+}
+
 /// A refusal's messages, the managed system's as it sent them.
 pub fn refused(r: &Refusal) -> Vec<Message> {
     r.notes()

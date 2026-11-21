@@ -3,11 +3,13 @@
 // root directory of this project.
 
 //! Control panel functions (`control-panel.html`): the list with its
-//! texts as the design has them; the function chosen is sent to the
-//! host, which carries out what it has and refuses the rest with its own
-//! message; the result shows what it displays and the code before and
-//! after. Functions 08 and 22 go through the confirmation page; 50 to
-//! 70 need the task of their own.
+//! texts as the system lists them (a system whose hello does not offer
+//! the list is shown the design's); the function chosen is sent to the
+//! system, which carries out what it has and refuses the rest with its
+//! own message; the result shows what it displays and the code before
+//! and after. Functions the system says need confirmation (08 and 22 in
+//! the design's list) go through the confirmation page; 50 to 70 need
+//! the task of their own.
 
 use std::fmt::Write as _;
 
@@ -15,7 +17,8 @@ use qsweb::frame::{Ctx, Page};
 use qsweb::html::esc;
 use qsweb::msg::Message;
 
-/// The functions, as the design lists them.
+/// The functions, as the design lists them: what a system that does
+/// not list its own is shown.
 pub const FUNCTIONS: [(u8, &str); 30] = [
     (1, "Display selected IPL type, side and keylock"),
     (2, "Select IPL type, side and keylock"),
@@ -49,9 +52,47 @@ pub const FUNCTIONS: [(u8, &str); 30] = [
     (70, "Dump service processor control storage"),
 ];
 
-/// Functions that end or interrupt the system: through the confirmation
-/// page only.
+/// Functions that end or interrupt the system, by the design's list:
+/// through the confirmation page only.
 pub const CONFIRMED: [u8; 2] = [8, 22];
+
+/// One function as the page lists it.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Function {
+    /// Its number.
+    pub number: u8,
+    /// What it does.
+    pub text: String,
+    /// It needs the keylock in manual.
+    pub manual: bool,
+    /// It goes through the confirmation page.
+    pub confirm: bool,
+}
+
+/// The design's list.
+pub fn design() -> Vec<Function> {
+    FUNCTIONS
+        .iter()
+        .map(|(n, t)| Function {
+            number: *n,
+            text: (*t).to_string(),
+            manual: false,
+            confirm: CONFIRMED.contains(n),
+        })
+        .collect()
+}
+
+/// A system's own list.
+pub fn listed(list: &[qsi::host::panel::FunctionInfo]) -> Vec<Function> {
+    list.iter()
+        .map(|f| Function {
+            number: f.function,
+            text: f.text.clone(),
+            manual: f.manual,
+            confirm: f.confirm,
+        })
+        .collect()
+}
 
 /// What the page shows.
 #[derive(Clone, Debug, Default)]
@@ -76,14 +117,25 @@ pub struct Panel {
     pub result: Vec<String>,
     /// The messages under the strip.
     pub messages: Vec<Message>,
+    /// The functions.
+    pub functions: Vec<Function>,
 }
 
 /// The page.
 pub fn page(ctx: &Ctx, v: &Panel) -> Page {
     let mut list = String::from("<select name=\"func\" size=\"12\">");
-    for (n, text) in FUNCTIONS {
-        let sel = if n == v.chosen { " selected" } else { "" };
-        let _ = write!(list, "<option{sel}>{n:02} - {}</option>", esc(text));
+    for f in &v.functions {
+        let sel = if f.number == v.chosen {
+            " selected"
+        } else {
+            ""
+        };
+        let _ = write!(
+            list,
+            "<option{sel}>{:02} - {}</option>",
+            f.number,
+            esc(&f.text)
+        );
     }
     list.push_str("</select>");
     let state_good = v.state == "Running";
@@ -144,16 +196,16 @@ pub fn chosen(f: &qsweb::http::Form) -> Option<u8> {
 }
 
 /// The function's short name, for the result: `21 - Force DST`.
-pub fn label(n: u8) -> String {
+pub fn label(n: u8, functions: &[Function]) -> String {
     let strip = super::window::STRIP
         .iter()
         .find(|(s, _)| s.parse::<u8>().ok() == Some(n))
         .map(|(_, l)| (*l).to_string());
     let text = strip.unwrap_or_else(|| {
-        FUNCTIONS.iter().find(|(f, _)| *f == n).map_or_else(
-            || "not a function of the list".into(),
-            |(_, t)| (*t).to_string(),
-        )
+        functions
+            .iter()
+            .find(|f| f.number == n)
+            .map_or_else(|| "not a function of the list".into(), |f| f.text.clone())
     });
     format!("Function {n:02} - {text}")
 }

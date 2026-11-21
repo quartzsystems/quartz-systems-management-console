@@ -9,9 +9,12 @@
 use ipc::{wire_enum, wire_struct};
 use qsi::PeerKind;
 use qsi::base::{Identity, PowerState, Refcode, State};
-use qsi::host::host::{Hardware, Host};
+use qsi::host::host::{Device, Hardware, Host, PowerOn};
 use qsi::host::model::Profile;
-use qsi::host::partitions::Status;
+use qsi::host::panel::FunctionInfo;
+use qsi::host::partitions::{Activation, Status};
+use qsi::host::profiles::Entry;
+use qsi::host::vres::{Drive, Image, Port, StoragePool, Switch, TapeDrive, Vdisk, Volume};
 
 /// The connection to a managed system.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -89,6 +92,71 @@ pub struct PartProfile {
 }
 wire_struct!(PartProfile { id, profile });
 
+/// A partition's profiles by name, as its host lists them.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct PartProfiles {
+    /// The partition.
+    pub id: u32,
+    /// Its profiles: name, revision, whether the default.
+    pub entries: Vec<Entry>,
+}
+wire_struct!(PartProfiles { id, entries });
+
+/// A running partition's optical and tape devices, and what is loaded.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct PartDrives {
+    /// The partition.
+    pub id: u32,
+    /// Its devices.
+    pub drives: Vec<Drive>,
+}
+wire_struct!(PartDrives { id, drives });
+
+/// The control panel functions a system carries out for a partition
+/// (ID 0: the system itself), as it lists them.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct PartFunctions {
+    /// The partition; 0 for the system.
+    pub id: u32,
+    /// Its functions by number.
+    pub functions: Vec<FunctionInfo>,
+}
+wire_struct!(PartFunctions { id, functions });
+
+/// A host's virtual resources, as its events keep them.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Resources {
+    /// Storage pools.
+    pub pools: Vec<StoragePool>,
+    /// Virtual disks, of every pool.
+    pub vdisks: Vec<Vdisk>,
+    /// The media library's images.
+    pub images: Vec<Image>,
+    /// Tape volumes.
+    pub volumes: Vec<Volume>,
+    /// Virtual switches.
+    pub switches: Vec<Switch>,
+    /// Partitions' ports on them.
+    pub ports: Vec<Port>,
+    /// The host's own tape drives (physical I/O).
+    pub tape_drives: Vec<TapeDrive>,
+    /// The host's PCI devices for partitions (physical I/O).
+    pub devices: Vec<Device>,
+    /// Running partitions' drives.
+    pub drives: Vec<PartDrives>,
+}
+wire_struct!(Resources {
+    pools,
+    vdisks,
+    images,
+    volumes,
+    switches,
+    ports,
+    tape_drives,
+    devices,
+    drives
+});
+
 /// What `mgmtd` keeps about one managed system.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Kept {
@@ -138,6 +206,16 @@ pub struct Kept {
     pub last_seq: u64,
     /// The console's own note about it.
     pub description: String,
+    /// A host's virtual resources.
+    pub resources: Resources,
+    /// Each partition's profiles by name.
+    pub profile_lists: Vec<PartProfiles>,
+    /// When each partition's activation began (activation times).
+    pub activations: Vec<Activation>,
+    /// A host's power-on settings.
+    pub power_on: Option<PowerOn>,
+    /// The control panel functions, by partition (0: the system).
+    pub functions: Vec<PartFunctions>,
 }
 wire_struct!(Kept {
     name,
@@ -160,7 +238,12 @@ wire_struct!(Kept {
     caps,
     said_serial,
     last_seq,
-    description
+    description,
+    resources,
+    profile_lists,
+    activations,
+    power_on,
+    functions
 });
 
 /// What a managed system is.
@@ -254,6 +337,68 @@ impl Kept {
             .iter()
             .filter(|p| p.state == qsi::host::model::PartitionState::Running)
             .count()
+    }
+
+    /// Partition `id` as the pages show it: a host's, or a standalone
+    /// system itself at ID 0, whose panel and console are there.
+    pub fn part(&self, id: u32) -> Option<Status> {
+        if self.kind == Kind::Standalone {
+            return (id == qsi::host::model::SYSTEM_ID).then(|| self.itself());
+        }
+        self.partitions.iter().find(|p| p.id == id).cloned()
+    }
+
+    /// A standalone system as one partition's row: its name, its state
+    /// as a partition's, its current code and its release.
+    pub fn itself(&self) -> Status {
+        use qsi::host::model::PartitionState as S;
+        let state = match self.state.as_ref().map(|s| s.power) {
+            Some(PowerState::Running) => S::Running,
+            Some(PowerState::Starting) => S::Starting,
+            Some(PowerState::Ending) => S::ShuttingDown,
+            Some(PowerState::Halted) => S::Error,
+            _ => S::NotActivated,
+        };
+        Status {
+            id: qsi::host::model::SYSTEM_ID,
+            name: self.name.clone(),
+            state,
+            code: self.code(),
+            text: self.refcode().map(|r| r.text.clone()).unwrap_or_default(),
+            current: None,
+            profile: String::new(),
+            last_end: String::new(),
+            message: None,
+            ethernet: Vec::new(),
+            channel: qsi::host::model::Channel {
+                up: self.link == Link::Connected,
+                system: self.name.clone(),
+                release: self.release().into(),
+                ..Default::default()
+            },
+        }
+    }
+
+    /// The control panel functions it lists for partition `id` (0 for
+    /// a standalone system); empty when its hello does not offer them.
+    pub fn functions(&self, id: u32) -> &[FunctionInfo] {
+        self.functions
+            .iter()
+            .find(|f| f.id == id)
+            .map_or(&[], |f| f.functions.as_slice())
+    }
+
+    /// A partition's profiles by name, as kept.
+    pub fn profile_list(&self, id: u32) -> &[Entry] {
+        self.profile_lists
+            .iter()
+            .find(|p| p.id == id)
+            .map_or(&[], |p| p.entries.as_slice())
+    }
+
+    /// Whether its hello agreed every bit of `bits`.
+    pub fn offers(&self, bits: u64) -> bool {
+        self.caps & bits == bits
     }
 
     /// A partition's last activated profile.

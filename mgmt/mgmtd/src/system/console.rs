@@ -101,7 +101,7 @@ impl Consoles {
             c.windows.push(w);
             return false;
         }
-        let p = kept.partitions.iter().find(|p| p.id == id);
+        let p = kept.part(id);
         let system = p
             .map(|p| {
                 if p.channel.system.is_empty() {

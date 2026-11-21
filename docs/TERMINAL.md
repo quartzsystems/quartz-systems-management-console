@@ -106,9 +106,17 @@ prototype's picture byte for byte: `sim`'s
 `mgmt-terminal` suite, through a running console, both compare the
 bytes.
 
+## A standalone system
+
+From Phase 5 a standalone QS/400 answers QSI itself, and its console is
+at ID 0 (`/qsmc/terminal/<name>/0`): Open terminal window lists it as
+`<name> (standalone)`, its window and control panel are a partition's,
+the system's own code on the strip and its keylock from its state. Its
+local display shows the same screen and takes keys too. A system whose
+hello does not offer the console family is refused with `QMC1114`.
+
 ## Not in this release
 
-The terminal of a standalone QS/400 system (`QMC3004`: it has no QSI
-listener yet); Copy, Paste, Keypad and Keyboard Map of the toolbar (the
+Copy, Paste, Keypad and Keyboard Map of the toolbar (the
 script has the keyboard and the keypad); a 27 x 132 screen chosen from
 the console (the size is the system's).

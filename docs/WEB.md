@@ -190,12 +190,12 @@ what is kept; its serviceable events, dumps and updates stay as Phase 3
 left them until Phase 6.
 
 What a page offers and QSI v1 or this release does not do answers with
-a message: a host's name (`QMC1008`) and power-on parameters
-(`QMC2220`), Power on (`QMC2201`), Servers' actions of later phases
-(Schedule operations, Create partition, Manage partition profiles,
-Manage system profiles, Virtual resources, Manage dumps: `QMC9030`), a
-standalone system's console (`QMC3004`), and the terminal toolbar's
-Copy, Paste, Keypad and Keyboard Map (`QMC8700`).
+a message: a host's name (`QMC1008`), its IPL side, keylock and boot
+mode (`QMC2220`), Power on (`QMC2201`), Servers' actions of later phases
+(Manage system profiles, Manage dumps: `QMC9030`), and the terminal
+toolbar's Copy, Paste, Keypad and Keyboard Map (`QMC8700`). A function
+a managed system's hello does not offer answers `QMC1114`, naming what
+it lacks (`mgmtproto::ask::lacks`).
 
 A host's code is explained from the catalogue its QS/VS release writes,
 built into the image at `/qsmc/catalogue.json`; a partition's QS/400

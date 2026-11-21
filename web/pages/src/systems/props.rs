@@ -4,8 +4,9 @@
 
 //! A managed system's properties (`system-general.html` and its six
 //! tabs): from what the managed-systems service keeps of it, which is
-//! what the system says of itself. What QSI cannot change on a host
-//! (its name, its power-on parameters) answers with a message.
+//! what the system says of itself. A host's two power-on settings are
+//! set over QSI where its hello offers it; what QSI cannot change (its
+//! name, its IPL side, keylock and boot mode) answers with a message.
 
 use std::fmt::Write as _;
 
@@ -19,6 +20,9 @@ use qsweb::partials::{
 
 use mgmtproto::Kept;
 use mgmtproto::kept::Kind as SystemKind;
+use qsi::any::AnyRequest;
+use qsi::caps;
+use qsi::host::host::{self, PowerOff, PowerOn};
 use qsi::host::model::{PartitionState, ProcessorMode};
 
 use super::{system, when};
@@ -97,12 +101,31 @@ pub struct Memory {
 }
 
 /// Power-on parameters.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct Power {
     /// `A` or `B`.
     pub side: String,
     /// `Normal`, `Manual`.
     pub keylock: String,
+    /// The partitions marked for auto start are started with the host.
+    pub start_partitions: bool,
+    /// The default power off is immediate, not delayed.
+    pub immediate: bool,
+    /// A delayed power off's wait, seconds.
+    pub delay: u32,
+}
+
+impl Default for Power {
+    /// A host that does not say: the design's (auto start, delayed 300 s).
+    fn default() -> Self {
+        Self {
+            side: String::new(),
+            keylock: String::new(),
+            start_partitions: true,
+            immediate: false,
+            delay: 300,
+        }
+    }
 }
 
 /// The current reference code.
@@ -414,6 +437,11 @@ fn io(rows: &[[String; 5]]) -> String {
     )
 }
 
+/// The delayed power off's option.
+fn delayed(secs: u32) -> String {
+    format!("Shut down partitions first (delayed, {secs} s)")
+}
+
 fn power(ctx: &Ctx, p: &Power) -> String {
     let radio = |name: &str, value: &str, on: bool| {
         let checked = if on { " checked" } else { "" };
@@ -464,8 +492,8 @@ fn power(ctx: &Ctx, p: &Power) -> String {
                     "Power on partitions",
                     format!(
                         "{} Auto-start partitions flagged for auto start<br>{} None - leave all partitions Not activated",
-                        radio("auto", "auto", true),
-                        radio("auto", "none", false)
+                        radio("auto", "auto", p.start_partitions),
+                        radio("auto", "none", !p.start_partitions)
                     ),
                 ),
             ],
@@ -476,8 +504,8 @@ fn power(ctx: &Ctx, p: &Power) -> String {
                 "Default power off",
                 select(
                     "off",
-                    &["Shut down partitions first (delayed, 300 s)", "Immediate"],
-                    "",
+                    &[&delayed(p.delay), "Immediate"],
+                    if p.immediate { "Immediate" } else { "" },
                 ),
             )],
         },
@@ -870,6 +898,98 @@ fn current_of(rq: &Rq<'_>, k: &Kept) -> Current {
     }
 }
 
+/// The Power-on parameters tab of `k`: its slot and keylock as its
+/// state says, its power-on settings as kept.
+fn power_of(k: &Kept) -> Power {
+    let mut p = Power {
+        side: k.state.as_ref().map(|s| s.slot.clone()).unwrap_or_default(),
+        keylock: match k.state.as_ref().and_then(|s| s.keylock) {
+            Some(qsi::base::Keylock::Manual) => "Manual".into(),
+            _ => "Normal".into(),
+        },
+        ..Power::default()
+    };
+    if let Some(on) = k.power_on {
+        p.start_partitions = on.start_partitions;
+        p.immediate = on.power_off == PowerOff::Immediate;
+        p.delay = on.delay;
+    }
+    p
+}
+
+/// A post of the Power-on parameters tab: the two power-on settings set
+/// when they changed and the host offers it; the IPL side, keylock and
+/// boot mode answered with their message when they were changed.
+/// Whether the settings were set, and the messages.
+fn set_power_on(rq: &Rq<'_>, k: &Kept, f: &qsweb::http::Form) -> (bool, Vec<Message>) {
+    let shown = power_of(k);
+    let mut messages = Vec::new();
+    let side = if shown.side == "B" { "B" } else { "A" };
+    let fixed_changed = (f.has("side") && f.str("side") != side)
+        || (f.has("key") && f.str("key") != shown.keylock)
+        || (f.has("boot") && f.str("boot") != "Normal");
+    if fixed_changed {
+        rq.audit(
+            &format!("IPL side, keylock or boot mode of {}", k.name),
+            "refused: set at the system",
+        );
+        messages.push(qmcmsg::message(
+            Kind::Error,
+            &qmcmsg::POWER_ON_PARAMETERS,
+            &[&k.name],
+        ));
+    }
+    let want = PowerOn {
+        start_partitions: f.str("auto") != "none",
+        power_off: if f.str("off") == "Immediate" {
+            PowerOff::Immediate
+        } else {
+            PowerOff::Delayed
+        },
+        delay: shown.delay,
+    };
+    let now = PowerOn {
+        start_partitions: shown.start_partitions,
+        power_off: if shown.immediate {
+            PowerOff::Immediate
+        } else {
+            PowerOff::Delayed
+        },
+        delay: shown.delay,
+    };
+    if !f.has("auto") || want == now {
+        return (false, messages);
+    }
+    let what = format!("power-on settings of {}", k.name);
+    if let Some(lacking) = mgmtproto::ask::lacks(k.caps, caps::HOST | caps::POWER_ON) {
+        rq.audit(&what, &format!("refused: {lacking}"));
+        messages.push(qmcmsg::message(
+            Kind::Error,
+            &qmcmsg::LACKS,
+            &[&k.name, lacking],
+        ));
+        return (false, messages);
+    }
+    let req = AnyRequest::Host(host::Request::SetPowerOn(want));
+    match super::ask(rq, &k.name, "Power-on settings", &req) {
+        Ok(_) => {
+            rq.audit(
+                &what,
+                &format!(
+                    "set: start partitions {}, power off {:?}",
+                    want.start_partitions, want.power_off
+                ),
+            );
+            (true, messages)
+        }
+        Err(ms) => {
+            rq.audit(&what, "refused");
+            messages.extend(ms);
+            (false, messages)
+        }
+    }
+}
+
 /// `GET`, `POST /server/<name>/<tab>`.
 pub fn route(rq: &Rq<'_>, name: &str, tab: &str) -> Response {
     let Some(k) = system(rq, name) else {
@@ -924,15 +1044,19 @@ pub fn route(rq: &Rq<'_>, name: &str, tab: &str) -> Response {
                 return Response::redirect(&rq.ctx.url("/servers"));
             }
         } else {
-            rq.audit(
-                &format!("power-on parameters of {}", k.name),
-                "refused: not settable over QSI",
-            );
-            messages.push(qmcmsg::message(
-                Kind::Error,
-                &qmcmsg::POWER_ON_PARAMETERS,
-                &[&k.name],
-            ));
+            let (done, ms) = set_power_on(rq, &k, &f);
+            if done && ms.is_empty() && f.has("ok") {
+                let m = qmcmsg::message(Kind::Done, &qmcmsg::POWER_ON_SET, &[&k.name]);
+                return rq.done("/servers", m);
+            }
+            if done {
+                messages.push(qmcmsg::message(
+                    Kind::Done,
+                    &qmcmsg::POWER_ON_SET,
+                    &[&k.name],
+                ));
+            }
+            messages.extend(ms);
         }
     }
     let k = system(rq, name).unwrap_or(k);
@@ -941,13 +1065,7 @@ pub fn route(rq: &Rq<'_>, name: &str, tab: &str) -> Response {
         "processors" => Tab::Processors(processors_of(&k)),
         "memory" => Tab::Memory(memory_of(rq, &k)),
         "io" => Tab::Io(io_of(&k)),
-        "power" => Tab::Power(Power {
-            side: k.state.as_ref().map(|s| s.slot.clone()).unwrap_or_default(),
-            keylock: match k.state.as_ref().and_then(|s| s.keylock) {
-                Some(qsi::base::Keylock::Manual) => "Manual".into(),
-                _ => "Normal".into(),
-            },
-        }),
+        "power" => Tab::Power(power_of(&k)),
         "capabilities" => Tab::Capabilities(capabilities_of(&k)),
         "refcode" => Tab::Refcode(current_of(rq, &k)),
         _ => return crate::app::routes::error(rq, 404, &qmcmsg::NOT_FOUND, &[&rq.req.path]),

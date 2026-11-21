@@ -38,7 +38,7 @@ const SAVE: Duration = Duration::from_secs(2);
 const ASK: Duration = Duration::from_secs(60);
 
 /// A request this thread made, by what it was for.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub(super) enum Mine {
     Subscribe,
     Identify,
@@ -50,6 +50,19 @@ pub(super) enum Mine {
     BaseCodes,
     PartCodes(u32),
     Attach(u32),
+    Pools,
+    Vdisks,
+    Images,
+    Volumes,
+    Switches,
+    Ports,
+    TapeDrives,
+    Devices,
+    Drives(u32),
+    PowerOn,
+    Activations,
+    ProfileList(u32),
+    Functions(u32),
 }
 
 /// A request outstanding.
@@ -292,6 +305,13 @@ impl Worker {
             Pending::Mine(m) => std::mem::discriminant(m) == std::mem::discriminant(what),
             Pending::Theirs(..) => false,
         })
+    }
+
+    /// Whether this thread's read of exactly `what` is outstanding.
+    pub(super) fn asking_this(&self, what: &Mine) -> bool {
+        self.pending
+            .values()
+            .any(|p| matches!(p, Pending::Mine(m) if m == what))
     }
 
     fn command(&mut self, link: &mut Link, cmd: Cmd) {

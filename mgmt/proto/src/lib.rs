@@ -8,6 +8,8 @@
 //! or does comes through here.
 //!
 //! - [`kept`]: what `mgmtd` keeps about each system.
+//! - [`ask`]: a managed system's request carried as QSI encodes it,
+//!   and what a system lacks for it.
 //! - [`calls`]: the requests, one a connection, on
 //!   `release::MGMTD_SOCKET`.
 //! - [`console`]: a terminal window's connection, on
@@ -15,9 +17,11 @@
 
 #![forbid(unsafe_code)]
 
+pub mod ask;
 pub mod calls;
 pub mod console;
 pub mod kept;
 
+pub use ask::{Answered, Asked};
 pub use calls::{Calls, Mgmt, Request, dispatch};
 pub use kept::{Kept, Link, Note, Refusal};

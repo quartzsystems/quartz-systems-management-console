@@ -59,6 +59,7 @@ impl Worker {
                 &AnyRequest::Partitions(partitions::Request::List(Empty)),
             );
         }
+        self.read_resources(s);
     }
 
     fn read_list(&mut self, s: &mut Session) {
@@ -178,6 +179,7 @@ impl Worker {
                         );
                     }
                 }
+                self.read_parts(s, &list);
                 let mut k = self.entry.kept();
                 k.profiles.retain(|pp| list.iter().any(|p| p.id == pp.id));
                 k.partitions = list;
@@ -240,7 +242,9 @@ impl Worker {
                     self.part_codes(s, id);
                 }
             }
-            _ => {}
+            (what, any) => {
+                self.resources_reply(&what, any);
+            }
         }
     }
 
@@ -249,6 +253,9 @@ impl Worker {
         let Ok(Some(any)) = e.decode() else {
             return;
         };
+        if self.resources_event(s, &any) {
+            return;
+        }
         match any {
             AnyEvent::Base(base::Event::State(s)) => self.entry.kept().state = Some(s),
             AnyEvent::Base(base::Event::Identity(i)) => self.entry.kept().identity = Some(i),

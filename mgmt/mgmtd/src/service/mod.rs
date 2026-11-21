@@ -7,6 +7,7 @@
 //! (`mgmtproto::Mgmt`). A list is answered from what is kept and never
 //! waits on a managed system; an action is a live request.
 
+mod ask;
 mod calls;
 #[cfg(unix)]
 pub mod consoles;

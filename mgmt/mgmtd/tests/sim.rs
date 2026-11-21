@@ -326,3 +326,126 @@ fn codes_posted_in_a_burst_are_kept() {
             .collect::<Vec<_>>()
     );
 }
+
+/// Pair `sys` (listening at `at`) with `svc`, and wait for what it says
+/// of itself.
+fn paired(svc: &mut Service, sys: &sim::Shared, at: std::net::SocketAddr, name: &str) {
+    let pw = sim(sys, &format!("pair {name}"));
+    svc.add(at.ip().to_string(), at.port(), pw, "qsadmin".into())
+        .unwrap();
+}
+
+#[test]
+fn a_standalone_system_answers_its_own_panel_and_console_at_id_0() {
+    let sys = sim::fixture::qshq400();
+    let at = sim::net::listen(sys.clone(), "127.0.0.1:0").unwrap();
+    let (mut svc, _d) = service("standalone");
+    paired(&mut svc, &sys, at, "QSHQ400");
+    until("its functions read", 10, || {
+        svc.system("QSHQ400".into())
+            .is_some_and(|k| !k.functions(0).is_empty())
+    });
+    let k = svc.system("QSHQ400".into()).unwrap();
+    assert_eq!(k.kind, mgmtproto::kept::Kind::Standalone);
+    assert!(k.offers(qsi::caps::PANEL_FUNCTIONS | qsi::caps::CONSOLE));
+    assert!(!k.offers(qsi::caps::PARTITIONS));
+    let own = k.part(0).unwrap();
+    assert_eq!(
+        (own.name.as_str(), own.code.as_str()),
+        ("QSHQ400", "00000000")
+    );
+    assert!(k.part(1).is_none());
+    let f = k.functions(0);
+    assert!(f.iter().any(|f| f.function == 21 && f.manual));
+    assert!(f.iter().any(|f| f.function == 8 && f.confirm));
+    // Function 01 at any time; 21 needs the keylock in manual.
+    let shown = svc.panel("QSHQ400".into(), 0, 1, "qsadmin".into()).unwrap();
+    assert!(shown.text.starts_with("01"), "{shown:?}");
+    assert_eq!(shown.after, "00000000");
+    let r = svc
+        .panel("QSHQ400".into(), 0, 21, "qsadmin".into())
+        .unwrap_err();
+    assert_eq!(r.main.msgid, "QSI0452");
+    // Its screen at ID 0; partition 1 is no partition of it.
+    assert!(
+        svc.screen("QSHQ400".into(), 0, "qsadmin".into())
+            .unwrap()
+            .is_some()
+    );
+    let r = svc
+        .screen("QSHQ400".into(), 1, "qsadmin".into())
+        .unwrap_err();
+    assert_eq!(r.main.msgid, "QSI0331");
+    // A host's family it does not offer is named.
+    let pools = mgmtproto::Asked::of(&qsi::any::AnyRequest::Vres(
+        qsi::host::vres::Request::Pools(qsi::Empty),
+    ));
+    let r = svc
+        .ask("QSHQ400".into(), pools, "qsadmin".into())
+        .unwrap_err();
+    assert_eq!(r.main.msgid, "QMC1114");
+    assert!(r.main.text.contains("virtual resources"), "{r:?}");
+}
+
+#[test]
+fn a_host_s_function_list_and_power_on_settings_are_its_own() {
+    use qsi::any::{AnyReply, AnyRequest};
+    use qsi::host::host;
+    let sys = sim::fixture::qshqvs1();
+    let at = sim::net::listen(sys.clone(), "127.0.0.1:0").unwrap();
+    let (mut svc, _d) = service("poweron");
+    paired(&mut svc, &sys, at, "QSHQVS1");
+    until("the functions and the settings read", 10, || {
+        svc.system("QSHQVS1".into())
+            .is_some_and(|k| k.power_on.is_some() && (1..=3).all(|id| k.functions(id).len() == 30))
+    });
+    let k = svc.system("QSHQVS1".into()).unwrap();
+    let on = k.power_on.unwrap();
+    assert!(on.start_partitions && on.delay == 300);
+    // Set through `ask`; the host's event keeps the new settings.
+    let set = AnyRequest::Host(host::Request::SetPowerOn(host::PowerOn {
+        start_partitions: false,
+        power_off: host::PowerOff::Immediate,
+        delay: 300,
+    }));
+    let a = svc
+        .ask(
+            "QSHQVS1".into(),
+            mgmtproto::Asked::of(&set),
+            "qsadmin".into(),
+        )
+        .unwrap();
+    assert!(matches!(
+        a.reply(),
+        Some(AnyReply::Host(host::Reply::SetPowerOn(_)))
+    ));
+    until("the event kept", 10, || {
+        svc.system("QSHQVS1".into())
+            .and_then(|k| k.power_on)
+            .is_some_and(|p| !p.start_partitions)
+    });
+    assert!(sim(&sys, "lines QSHQVS1").contains("0010/0021 from user qsadmin"));
+    // A request the pages do not send is not carried.
+    let time = mgmtproto::Asked::of(&AnyRequest::Base(qsi::base::Request::Time(qsi::Empty)));
+    let r = svc
+        .ask("QSHQVS1".into(), time, "qsadmin".into())
+        .unwrap_err();
+    assert_eq!(r.main.msgid, "QMC1115");
+
+    // A host without the new bits: the settings are refused by name.
+    sim(&sys, "withhold QSHQVS1 new");
+    until("the session back without them", 15, || {
+        svc.system("QSHQVS1".into()).is_some_and(|k| {
+            k.link == Link::Connected && k.caps != 0 && !k.offers(qsi::caps::POWER_ON)
+        })
+    });
+    let r = svc
+        .ask(
+            "QSHQVS1".into(),
+            mgmtproto::Asked::of(&set),
+            "qsadmin".into(),
+        )
+        .unwrap_err();
+    assert_eq!(r.main.msgid, "QMC1114");
+    assert!(r.main.text.contains("power-on settings"), "{r:?}");
+}

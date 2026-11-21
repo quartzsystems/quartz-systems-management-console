@@ -16,7 +16,7 @@ use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 use qsi::any::AnyEvent;
 use qsi::base::{self, Keylock, PowerState, Refcode};
-use qsi::host::host::{Hardware, Host};
+use qsi::host::host::{Hardware, Host, PowerOff, PowerOn};
 use qsi::host::model::{Definition, PartitionState, Profile};
 use qsi::host::partitions::{self, Status};
 use qsi::host::refcodes::Posted;
@@ -93,6 +93,27 @@ pub struct Part {
     pub taken_by: Option<u64>,
 }
 
+/// What a simulated host says it answers: every host family and each
+/// later bit this phase's pages use.
+pub const HOST_CAPS: u64 = qsi::caps::HOST_V1
+    | qsi::caps::PHYSICAL_IO
+    | qsi::caps::PARTITION_V2
+    | qsi::caps::SWITCHES
+    | qsi::caps::POOLS
+    | qsi::caps::PARTITION_V3
+    | qsi::caps::ACTIVATIONS
+    | qsi::caps::POWER_ON
+    | qsi::caps::PANEL_FUNCTIONS;
+
+/// The bits a host of QS/VS before handoff 24 lacks: what `withhold
+/// QSHQVS1 new` takes away.
+pub const NEW_BITS: u64 = qsi::caps::SWITCHES
+    | qsi::caps::POOLS
+    | qsi::caps::PARTITION_V3
+    | qsi::caps::ACTIVATIONS
+    | qsi::caps::POWER_ON
+    | qsi::caps::PANEL_FUNCTIONS;
+
 /// A managed system.
 pub struct System {
     /// What its hello says.
@@ -139,14 +160,16 @@ pub struct System {
     pub since: Instant,
     /// The number the next connection takes.
     pub next_conn: u64,
+    /// A host's power-on settings.
+    pub power_on: PowerOn,
 }
 
 impl System {
     /// A system of `kind` named `name`, with nothing on it yet.
     pub fn new(kind: PeerKind, name: &str, serial: &str, model: &str, identity: Identity) -> Self {
         let caps = match kind {
-            PeerKind::Host => qsi::caps::HOST_V1,
-            _ => qsi::caps::MANAGED,
+            PeerKind::Host => HOST_CAPS,
+            _ => qsi::caps::STANDALONE,
         };
         Self {
             hello: Hello {
@@ -177,6 +200,11 @@ impl System {
             lines: Vec::new(),
             since: Instant::now(),
             next_conn: 1,
+            power_on: PowerOn {
+                start_partitions: true,
+                power_off: PowerOff::Delayed,
+                delay: 300,
+            },
         }
     }
 
@@ -213,7 +241,13 @@ impl System {
         }
     }
 
-    /// A partition by ID.
+    /// Whether it is a host.
+    pub fn is_host(&self) -> bool {
+        self.hello.kind == PeerKind::Host
+    }
+
+    /// A partition by ID; a standalone system's own console and panel
+    /// are its part at ID 0.
     pub fn part(&mut self, id: u32) -> Option<&mut Part> {
         self.parts.iter_mut().find(|p| p.definition.id == id)
     }

@@ -49,9 +49,6 @@ catalogue! {
     CONSOLE_DISCONNECTED = "QMC4002", 0, "Terminal window to &1 disconnected.",
         "You disconnected the window; the console stays with the managed system and any other window that has it open.",
         "Choose Connect to open it again.";
-    STANDALONE_CONSOLE = "QMC3004", 20, "The console of standalone system &1 is not in this release: a standalone QS/400 system has no QSI listener yet.",
-        "A partition's console comes from its QS/VS host over QSI; a standalone system will answer when QS/400 has its listener.",
-        "Use the system's own console.";
     FUNCTION_ACCEPTED = "QMC5003", 0, "Function &1 selected for partition &2; the managed system accepted the request.",
         "The host carried out the control panel function; the result shows what it displays and the code before and after.",
         "None.";
@@ -87,9 +84,12 @@ catalogue! {
     NAME_IS_THE_SYSTEMS = "QMC1008", 30, "The name of managed system &1 is the system's own and is changed at the system.",
         "QSI does not change a managed system's name; the console shows the name the system gives.",
         "Change the name at the managed system; the console shows the new name once it is paired again with Reset connection.";
-    POWER_ON_PARAMETERS = "QMC2220", 20, "The power-on parameters of &1 are set at the system: the IPL side, keylock, boot mode, partitions to start and the default power off.",
-        "A QS/VS host reports its slot and keylock over QSI but takes no change of them, of its boot mode or of its auto start; those are set at the host's Service Tools.",
+    POWER_ON_PARAMETERS = "QMC2220", 20, "The IPL side, keylock and boot mode of &1 are set at the system.",
+        "A managed system reports its slot and keylock over QSI and takes no change of them: its IPL side moves only when a code update is activated, its keylock and boot mode at its Service Tools.",
         "Set them at the managed system's Service Tools.";
+    POWER_ON_SET = "QMC2221", 0, "Power-on settings of &1 changed: the partitions to start and the default power off.",
+        "The managed system took the settings; they apply at its next power on and power off.",
+        "None.";
 
     SELECT_SYSTEM = "QMC1006", 30, "Select a managed system for &1.",
         "The action acts on the systems selected in the list, and none was.",
@@ -132,8 +132,8 @@ catalogue! {
         "A system of that name or address is in the list.",
         "Use Reset connection to pair it again.";
     NOT_QSI = "QMC1104", 30, "Managed system at &1 does not answer QSI: &2.",
-        "A standalone QS/400 system has no QSI listener in this release, and a system that does not answer QSI cannot be managed.",
-        "Add a QS/VS host, or a system that answers QSI.";
+        "Only a system that answers QSI can be managed: a QS/VS host, or a standalone QS/400 with its QSI server started.",
+        "Check the address and port, and that the system's QSI server is started (on a standalone QS/400, the *QSI server).";
     CERTIFICATE_CHANGED = "QMC1105", 30, "Managed system &1 answered with a certificate other than the one pinned when it was paired. It is not trusted.",
         "The system's certificate is not the one the console pinned: it was installed again, or something else answers at its address.",
         "Find out why at the system. When it is the system, use Reset connection with a new pairing password.";
@@ -161,6 +161,12 @@ catalogue! {
     PASSWORD_NEEDED = "QMC1113", 30, "The system's pairing password is required.",
         "The form was sent without the pairing password shown at the managed system.",
         "Type the password the managed system shows.";
+    LACKS = "QMC1114", 30, "Managed system &1 does not offer &2.",
+        "The system's QSI service, by what its hello said, does not answer this request: it is of an older release, or of a kind that has no such function.",
+        "Do it at the managed system, or update it to a release that offers it.";
+    NOT_CARRIED = "QMC1115", 30, "The console does not send this request to managed system &1.",
+        "The managed-systems service carries only the requests the console's pages send.",
+        "Use the page that does it.";
 
     // Sign-on and sessions.
     SIGNON_NOT_CORRECT = "QMC9001", 30, "User ID or password not correct.",

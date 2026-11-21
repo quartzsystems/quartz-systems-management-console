@@ -11,6 +11,7 @@ use ipc::wire_struct;
 use qsi::host::refcodes::Posted;
 use qsipart::console::Frame;
 
+use crate::ask::{Answered, Asked};
 use crate::kept::{Kept, Refusal};
 
 /// A reference code of the history, with what it is about.
@@ -160,6 +161,10 @@ ipc::rpc! {
     12 => fn describe / Describe (name: String, description: String, user: String) -> Result<(), Refusal>;
     /// One partition read now: its definition and status.
     13 => fn partition / Partition (name: String, id: u32, user: String) -> Result<qsi::host::partitions::Partition, Refusal>;
+    /// Any request the pages send a system, carried as QSI encodes it
+    /// (`ask`): refused when the pages may not send it or the system's
+    /// hello does not offer it, else its reply or the system's refusal.
+    14 => fn ask / Ask (name: String, req: Asked, user: String) -> Result<Answered, Refusal>;
 }
 
 /// The largest request or answer on the socket.

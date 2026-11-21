@@ -16,7 +16,7 @@ use crate::system::{Shared, codes, lock};
 pub const HELP: &str = "pair S | expire S | drop S | stall S on|off | refuse S on|off | down S | up S \
 | refuse-power S ID TEXT... | refuse-panel S ID TEXT... | allow S | nonsense S | oversize S | flood S on|off \
 | no-credit S on|off | renew S | activate S P | shutdown S P | code S CODE TEXT... | pcode S P CODE TEXT... \
-| keylock S P normal|manual | keys S P | lines S | pins S";
+| keylock S P normal|manual | keys S P | lines S | pins S | withhold S BIT...|new";
 
 fn on(w: Option<&&str>) -> bool {
     w.is_some_and(|w| *w == "on")
@@ -61,6 +61,20 @@ pub fn command(systems: &[Shared], line: &str) -> String {
         "drop" => {
             s.generation += 1;
             "dropped".into()
+        }
+        "withhold" => {
+            // The bits named (19 to 24, or `new` for all of them) taken
+            // from the hello; the session drops and comes back without.
+            let bits: u64 = words[2..]
+                .iter()
+                .map(|w| match *w {
+                    "new" => crate::system::NEW_BITS,
+                    w => w.parse::<u32>().ok().map_or(0, |b| 1u64 << b.min(63)),
+                })
+                .fold(0, |a, b| a | b);
+            s.hello.caps &= !bits;
+            s.generation += 1;
+            format!("caps {:#x}", s.hello.caps)
         }
         "stall" => {
             s.faults.stall = on(words.get(2));

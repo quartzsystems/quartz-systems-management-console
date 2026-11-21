@@ -77,8 +77,28 @@ fn may_type(rq: &Rq<'_>) -> bool {
     rq.app.users().matrix.allows(rq.role, Task::Terminal)
 }
 
-fn partition(k: &Kept, id: u32) -> Option<&qsi::host::partitions::Status> {
-    k.partitions.iter().find(|p| p.id == id)
+fn partition(k: &Kept, id: u32) -> Option<qsi::host::partitions::Status> {
+    k.part(id)
+}
+
+/// The control panel functions of `k`'s partition `id`: as the system
+/// lists them, else the design's.
+fn functions(k: &Kept, id: u32) -> Vec<panel::Function> {
+    let listed = k.functions(id);
+    if k.offers(qsi::caps::PANEL_FUNCTIONS) && !listed.is_empty() {
+        panel::listed(listed)
+    } else {
+        panel::design()
+    }
+}
+
+/// Whether function `n` goes through the confirmation page: as the
+/// system says, and 08 and 22 when it does not list it.
+fn confirmed(k: &Kept, id: u32, n: u8) -> bool {
+    functions(k, id)
+        .iter()
+        .find(|f| f.number == n)
+        .map_or(panel::CONFIRMED.contains(&n), |f| f.confirm)
 }
 
 fn meaning(rq: &Rq<'_>, code: &str, text: &str) -> String {
@@ -297,7 +317,7 @@ fn function(rq: &Rq<'_>, k: &Kept, id: u32, f: &qsweb::http::Form, back: &str) -
     if let Some(no) = lacks(rq, task) {
         return no;
     }
-    if panel::CONFIRMED.contains(&n) {
+    if confirmed(k, id, n) {
         return Response::redirect(
             &rq.ctx
                 .url(&format!("/confirm/panel?ms={}&p={id}&f={n:02}", k.name)),
@@ -340,7 +360,7 @@ fn carry_out(rq: &Rq<'_>, k: &Kept, id: u32, n: u8) -> (Vec<Message>, Vec<String
         Ok(Ok(p)) => {
             rq.audit(&what, &format!("done: {}", p.text));
             let lines = vec![
-                panel::label(n),
+                panel::label(n, &functions(k, id)),
                 format!(
                     "Reference code before: {}  Words 2-9: {}",
                     p.before,
@@ -377,7 +397,7 @@ fn panel_route(rq: &Rq<'_>, host: &str, id: u32) -> Response {
     let Some(k) = system(rq, host) else {
         return crate::app::routes::error(rq, 404, &qmcmsg::NO_SUCH_SYSTEM, &[host]);
     };
-    let Some(p) = partition(&k, id).cloned() else {
+    let Some(p) = partition(&k, id) else {
         return crate::app::routes::error(rq, 404, &qmcmsg::NOT_FOUND, &[&rq.req.path]);
     };
     let f = rq.req.form();
@@ -396,7 +416,7 @@ fn panel_route(rq: &Rq<'_>, host: &str, id: u32) -> Response {
         if let Some(no) = lacks(rq, task) {
             return no;
         }
-        if panel::CONFIRMED.contains(&n) {
+        if confirmed(&k, id, n) {
             return Response::redirect(
                 &rq.ctx
                     .url(&format!("/confirm/panel?ms={}&p={id}&f={n:02}", k.name)),
@@ -405,18 +425,25 @@ fn panel_route(rq: &Rq<'_>, host: &str, id: u32) -> Response {
         (messages, result) = carry_out(rq, &k, id, n);
     }
     let k = system(rq, host).unwrap_or(k);
-    let p = partition(&k, id).cloned().unwrap_or(p);
-    let keylock = rq
-        .app
-        .console
-        .mgmt()
-        .partition(k.name.clone(), id, rq.user().into())
-        .ok()
-        .and_then(Result::ok)
-        .map_or_else(
-            || "not reported".to_string(),
-            |d| format!("{:?}", d.definition.keylock),
-        );
+    let p = partition(&k, id).unwrap_or(p);
+    let keylock = if id == qsi::host::model::SYSTEM_ID {
+        // A standalone system's keylock is in its state.
+        k.state
+            .as_ref()
+            .and_then(|s| s.keylock)
+            .map_or_else(|| "not reported".to_string(), |l| format!("{l:?}"))
+    } else {
+        rq.app
+            .console
+            .mgmt()
+            .partition(k.name.clone(), id, rq.user().into())
+            .ok()
+            .and_then(Result::ok)
+            .map_or_else(
+                || "not reported".to_string(),
+                |d| format!("{:?}", d.definition.keylock),
+            )
+    };
     let code = if p.code.is_empty() {
         explain::NONE.to_string()
     } else {
@@ -433,6 +460,7 @@ fn panel_route(rq: &Rq<'_>, host: &str, id: u32) -> Response {
         chosen,
         result,
         messages,
+        functions: functions(&k, id),
     };
     rq.page(panel::page(&rq.ctx, &v))
 }
@@ -466,7 +494,7 @@ fn confirm(rq: &Rq<'_>) -> Response {
     let Some(k) = system(rq, &host) else {
         return crate::app::routes::error(rq, 404, &qmcmsg::NO_SUCH_SYSTEM, &[&host]);
     };
-    if !panel::CONFIRMED.contains(&n) {
+    if !confirmed(&k, id, n) {
         return crate::app::routes::error(rq, 404, &qmcmsg::NOT_FOUND, &[&rq.req.path]);
     }
     if let Some(no) = lacks(rq, Task::Terminal) {
@@ -483,16 +511,24 @@ fn confirm(rq: &Rq<'_>) -> Response {
     let name = partition(&k, id)
         .map(|p| p.name.clone())
         .unwrap_or_default();
-    let what = if n == 8 {
-        "Function 08 powers the partition off at once: its system ends without shutting down."
+    let label = panel::label(n, &functions(&k, id));
+    let whose = if id == qsi::host::model::SYSTEM_ID {
+        "system"
     } else {
-        "Function 22 dumps the partition's memory, then restarts its IPL."
+        "partition"
+    };
+    let what = match n {
+        8 => format!(
+            "Function 08 powers the {whose} off at once: its system ends without shutting down."
+        ),
+        22 => format!("Function 22 dumps the {whose}'s memory, then restarts its IPL."),
+        _ => format!("{label} is a function the system asks to have confirmed."),
     };
     let table = format!(
         "<table class=\"props\" cellspacing=\"0\"><tr><th>Partition</th><td><span class=\"mono\">{}</span> (ID {id}) on <span class=\"mono\">{}</span></td></tr><tr><th>Function</th><td>{}</td></tr></table>",
         esc(&name),
         esc(&k.name),
-        esc(&panel::label(n))
+        esc(&label)
     );
     let options = format!(
         "<input type=\"hidden\" name=\"ms\" value=\"{}\"><input type=\"hidden\" name=\"p\" value=\"{id}\"><input type=\"hidden\" name=\"f\" value=\"{n:02}\">",
@@ -686,8 +722,12 @@ fn config_route(rq: &Rq<'_>) -> Response {
             let m = qmcmsg::message(Kind::Error, &qmcmsg::NOT_VALID, &["Choose a partition."]);
             return rq.done("/terminal", m);
         };
-        if c.id == 0 {
-            let m = qmcmsg::message(Kind::Error, &qmcmsg::STANDALONE_CONSOLE, &[&c.host]);
+        if let Some(what) = kept
+            .iter()
+            .find(|k| k.name == c.host)
+            .and_then(|k| mgmtproto::ask::lacks(k.caps, qsi::caps::CONSOLE))
+        {
+            let m = qmcmsg::message(Kind::Error, &qmcmsg::LACKS, &[&c.host, what]);
             return rq.done("/terminal", m);
         }
         let mut q = format!("/terminal/{}/{}?x=1", c.host, c.id);

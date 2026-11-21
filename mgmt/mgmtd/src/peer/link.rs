@@ -12,7 +12,7 @@ use std::net::{IpAddr, SocketAddr, TcpStream, ToSocketAddrs};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use qsi::{Hello, PeerKind, caps};
+use qsi::{Hello, PeerKind};
 use qsisess::{Incoming, Limits, Role, Session};
 use qsitrust::{Fingerprint, Identity, Pins, tls};
 use rustls::{ClientConnection, StreamOwned};
@@ -107,7 +107,7 @@ fn ms(since: Instant) -> u64 {
 pub fn hello(name: &str, release: &str) -> Hello {
     Hello {
         version: qsi::VERSION,
-        caps: caps::HOST_V1 | caps::SERVICING | caps::PHYSICAL_IO | caps::PARTITION_V2,
+        caps: mgmtproto::ask::CONSOLE_CAPS,
         kind: PeerKind::Console,
         name: name.into(),
         release: release.into(),

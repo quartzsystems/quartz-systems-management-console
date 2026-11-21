@@ -9,6 +9,7 @@
 mod apply;
 pub mod console;
 pub mod fuzzing;
+mod resources;
 mod worker;
 
 use std::sync::atomic::AtomicBool;

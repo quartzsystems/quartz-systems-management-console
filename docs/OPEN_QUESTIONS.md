@@ -505,7 +505,7 @@ already names the BMC of a machine the console is asked to power on.
 What is needed: where an operator gives a managed system's BMC, which
 protocol the console speaks to it, and where its credentials are kept.
 
-## 30. A host's power-on parameters
+## 30. A host's power-on parameters (closed as far as QSI goes)
 
 Found in Phase 4. Power-on parameters shows what a QS/VS host reports
 (its slot from base `State`, its keylock). QSI cannot set any of the
@@ -515,6 +515,16 @@ which partitions start (each partition's auto start is the partition
 family's `Change`, a partition's page in Phase 5), the default power
 off. Apply and OK answer `QMC2220`. A later QSI version could carry the
 host's own boot settings, or the page could lose the fields.
+
+**Phase 5:** QSI's bit 23 (`caps::POWER_ON`, QS/VS `49b117c`'s A7) reads
+and sets the two a host keeps: the partitions marked for auto start
+started with it ("Power on partitions") and how its partitions end
+when it powers off ("Default power off", delayed with its wait or
+immediate). The page shows them as the host says and sets them with
+`QMC2221`; a host without the bit answers `QMC1114`. The IPL side,
+keylock and boot mode are shown and answer `QMC2220` when changed: a
+host's slot moves only by an update's activation, and QSI sets neither
+its keylock nor its boot mode.
 
 ## 31. The service password age
 
@@ -532,12 +542,12 @@ system's), its power-on parameters (item 30), Power on (item 29),
 Servers' actions that later phases bring (Schedule operations, Create
 partition, Manage partition profiles, Manage system profiles, Virtual
 resources, Manage dumps: `QMC9030`), a standalone system's console
-(`QMC3004`: QS/400 has no QSI listener yet), and the terminal toolbar's
+(`QMC3004`, until Phase 5: QS/400 had no QSI listener), and the terminal toolbar's
 Copy, Paste, Keypad and Keyboard Map (`QMC8700`; the script has the
 keyboard and keypad). The screen size and code page of Open terminal
 window are the system's, not chosen by the console.
 
-## 33. The control panel's list is the design's, not a host's
+## 33. The control panel's list is the design's, not a host's (closed)
 
 Found in Phase 4. The design lists functions 01 to 70 with their texts;
 a QS/VS host carries out 01 to 03, 08, 11 to 22 and 34
@@ -546,6 +556,14 @@ message (`QVS2306`). The page sends what is chosen and shows the
 refusal, as the handoff asks. Whether the list should show only what the
 system says it has (a capability of the panel family) is for the
 design and QSI.
+
+**Closed in Phase 5:** QSI's bit 24 (`caps::PANEL_FUNCTIONS`, QS/VS
+`49b117c`'s A8) lists a system's functions with their texts, which need
+the keylock in manual and which need confirmation. The page lists them
+as the system does, and a function it marks for confirmation goes
+through the confirmation page; a system without the bit is shown the
+design's list, with 08 and 22 confirmed. The golden is the prototype's
+page with the fixture's list, which is the design's.
 
 ## 34. A real host's partition needs a real machine
 

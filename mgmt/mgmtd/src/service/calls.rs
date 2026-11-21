@@ -10,7 +10,7 @@ use std::time::{Duration, Instant};
 
 use mgmtproto::calls::{File, Filter, Page, Panelled, Status, Tested};
 use mgmtproto::kept::Link;
-use mgmtproto::{Kept, Mgmt, Refusal};
+use mgmtproto::{Answered, Asked, Kept, Mgmt, Refusal};
 use qsi::Empty;
 use qsi::any::{AnyReply, AnyRequest};
 use qsi::host::{console, panel, partitions};
@@ -304,13 +304,7 @@ impl Mgmt for Service {
         user: String,
     ) -> Result<Panelled, Refusal> {
         let inner = self.0.clone();
-        let code_of = |k: &Kept| {
-            k.partitions
-                .iter()
-                .find(|p| p.id == id)
-                .map(|p| p.code.clone())
-                .unwrap_or_default()
-        };
+        let code_of = |k: &Kept| k.part(id).map(|p| p.code).unwrap_or_default();
         let before = self
             .system(name.clone())
             .map(|k| code_of(&k))
@@ -325,7 +319,13 @@ impl Mgmt for Service {
             Some(AnyReply::Panel(panel::Reply::Function(s))) => s.text,
             _ => String::new(),
         };
-        let get = AnyRequest::Partitions(partitions::Request::Get(partitions::Get { id }));
+        // A standalone system's code is its own state's; a partition's
+        // is its host's to say.
+        let get = if id == qsi::host::model::SYSTEM_ID {
+            AnyRequest::Base(base::Request::State(Empty))
+        } else {
+            AnyRequest::Partitions(partitions::Request::Get(partitions::Get { id }))
+        };
         let after = match inner
             .ask(&name, get, &user)
             .ok()
@@ -333,6 +333,9 @@ impl Mgmt for Service {
             .and_then(reply_of)
         {
             Some(AnyReply::Partitions(partitions::Reply::Get(p))) => p.status.code,
+            Some(AnyReply::Base(base::Reply::State(st))) => st
+                .refcode
+                .map_or_else(|| mgmtproto::kept::NO_CODE.into(), |r| r.code),
             _ => self.system(name).map(|k| code_of(&k)).unwrap_or_default(),
         };
         Ok(Panelled {
@@ -405,6 +408,10 @@ impl Mgmt for Service {
             Some(AnyReply::Partitions(partitions::Reply::Get(p))) => Ok(p),
             _ => Err(qmc(&qmcmsg::NO_REPLY, &[&name])),
         }
+    }
+
+    fn ask(&mut self, name: String, req: Asked, user: String) -> Result<Answered, Refusal> {
+        self.0.ask_carried(&name, &req, &user)
     }
 
     fn backup_files(&mut self) -> Vec<File> {

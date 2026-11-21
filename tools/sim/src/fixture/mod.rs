@@ -293,8 +293,75 @@ pub fn qshq400() -> Shared {
     );
     s.hello.release = "V1R2M0".into();
     s.build = "26270".into();
+    // Its own console and panel, at ID 0.
+    let mut own = part(
+        0,
+        "QSHQ400",
+        "10-7A2B9C",
+        status(0, "QSHQ400", PartitionState::Running, "00000000", None),
+        profile(ProcessorMode::Dedicated, 0, false, (0, 0, 0)),
+    );
+    own.profile = None;
+    if let Ok(r) = screen::read(screen::WRKACTJOB) {
+        own.screen = Some(r);
+    }
+    s.parts = vec![own];
     shared(s)
 }
+
+/// The control panel functions the fixture's host lists: the design's.
+pub const FUNCTIONS: [(u8, &str); 30] = [
+    (1, "Display selected IPL type, side and keylock"),
+    (2, "Select IPL type, side and keylock"),
+    (3, "Start IPL (restart partition)"),
+    (4, "Lamp test"),
+    (5, "Display reference code (SRC) words 1-9"),
+    (7, "Display SPCN status"),
+    (8, "Fast power off"),
+    (11, "Display SRC word 1"),
+    (12, "Display SRC words 2-5"),
+    (13, "Display SRC words 6-9"),
+    (20, "Display system type, model, feature and serial"),
+    (21, "Force dedicated service tools (DST) on the console"),
+    (22, "Force main storage dump"),
+    (25, "Service switch 1 (enable 50-70)"),
+    (26, "Service switch 2"),
+    (33, "Reorder SPCN addressing"),
+    (34, "Retry main storage dump IPL"),
+    (50, "Service processor stop"),
+    (51, "Service processor status"),
+    (52, "Service processor start"),
+    (53, "Path switch"),
+    (55, "Display service processor log"),
+    (63, "Display system status SRC trace"),
+    (64, "Display service processor diagnostic SRC trace"),
+    (65, "Deactivate remote service"),
+    (66, "Activate remote service"),
+    (67, "Disk unit IOP reset"),
+    (68, "Concurrent maintenance power domain power off"),
+    (69, "Concurrent maintenance power domain power on"),
+    (70, "Dump service processor control storage"),
+];
+
+/// The functions a standalone QS/400 carries out at ID 0, as its
+/// listener lists them (QS/400's `docs/QSI.md`, section 11).
+pub const STANDALONE_FUNCTIONS: [(u8, &str); 15] = [
+    (1, "Display selected IPL type, side and keylock"),
+    (3, "Start IPL"),
+    (8, "Fast power off"),
+    (11, "Display SRC word 1"),
+    (12, "Display SRC word 2"),
+    (13, "Display SRC word 3"),
+    (14, "Display SRC word 4"),
+    (15, "Display SRC word 5"),
+    (16, "Display SRC word 6"),
+    (17, "Display SRC word 7"),
+    (18, "Display SRC word 8"),
+    (19, "Display SRC word 9"),
+    (20, "Display system type, model and serial"),
+    (21, "Force dedicated service tools (DST) on the console"),
+    (22, "Force main storage dump"),
+];
 
 /// Branch host `n` (1 to 25) of the paged lists.
 pub fn branch(n: u32) -> Shared {

@@ -6,7 +6,7 @@
 //! the words a QS/VS host uses. Pairing and the console's stream are the
 //! connection's (`net`); this is everything else.
 
-use qsi::any::{AnyReply, AnyRequest};
+use qsi::any::{AnyEvent, AnyReply, AnyRequest};
 use qsi::base::{self, Keylock, PowerAction, PowerState};
 use qsi::host::model::{IplSource, IplType, PartitionState};
 use qsi::host::{console, host, panel, partitions, profiles, refcodes};
@@ -107,6 +107,26 @@ pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
                 Some(x) => Answer::Reply(AnyReply::Host(host::Reply::Hardware(x.clone()))),
                 None => refuse("QSI0301", "The partition manager did not answer."),
             },
+            host::Request::PowerOn(_) => {
+                Answer::Reply(AnyReply::Host(host::Reply::PowerOn(s.power_on)))
+            }
+            host::Request::SetPowerOn(p) => {
+                if p.delay > host::MAX_DELAY {
+                    return refuse(
+                        "QVS1022",
+                        "The delay of a power off is 99999 seconds at most.",
+                    );
+                }
+                s.power_on = *p;
+                s.push(&AnyEvent::Host(host::Event::PowerOn(
+                    host::PowerOnChanged {
+                        power_on: *p,
+                        by: user.into(),
+                        time: super::now_s(),
+                    },
+                )));
+                Answer::Reply(AnyReply::Host(host::Reply::SetPowerOn(Empty)))
+            }
             _ => Answer::Unknown,
         },
         AnyRequest::Partitions(p) if host => match p {
@@ -161,7 +181,12 @@ pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
             )))
         }
         AnyRequest::Panel(panel::Request::Function(f)) if host => function(s, f),
-        AnyRequest::Console(cq) if host => match cq {
+        AnyRequest::Panel(panel::Request::Function(f)) => own_function(s, f),
+        AnyRequest::Panel(panel::Request::Functions(q)) => functions(s, q.id),
+        AnyRequest::Console(cq) if elsewhere(host, cq).is_some() => {
+            elsewhere(host, cq).unwrap_or(Answer::Unknown)
+        }
+        AnyRequest::Console(cq) => match cq {
             console::Request::Attach(at) => match s.part(at.id) {
                 None => no_partition(at.id),
                 Some(p) if p.status.state == PartitionState::NotActivated => refuse(
@@ -193,6 +218,97 @@ pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
         },
         _ => Answer::Unknown,
     }
+}
+
+/// The refusal of a console request whose ID this system does not
+/// answer: a host answers its partitions, a standalone system its own
+/// console at ID 0.
+fn elsewhere(host: bool, cq: &console::Request) -> Option<Answer> {
+    let id = match cq {
+        console::Request::Attach(a) => a.id,
+        console::Request::Screen(q) => q.id,
+    };
+    match (host, id) {
+        (true, 0) => Some(no_partition(0)),
+        (false, n) if n != 0 => Some(refuse(
+            "QSI0331",
+            &format!("No partition {n}: this system answers its own console at ID 0."),
+        )),
+        _ => None,
+    }
+}
+
+/// The functions the system lists for partition `id`: a host's are the
+/// fixture's, a standalone system's its own at ID 0.
+fn functions(s: &mut System, id: u32) -> Answer {
+    use crate::fixture::{FUNCTIONS, STANDALONE_FUNCTIONS};
+    let (list, manual, confirm): (&[(u8, &str)], &[u8], &[u8]) = if s.is_host() {
+        if id == 0 || s.part(id).is_none() {
+            return no_partition(id);
+        }
+        (&FUNCTIONS, &[3, 8, 21, 22, 34], &[8, 22])
+    } else {
+        if id != 0 {
+            return refuse("QSI0331", &format!("No partition {id}."));
+        }
+        (&STANDALONE_FUNCTIONS, &[3, 8, 21, 22], &[3, 8, 22])
+    };
+    let list = list
+        .iter()
+        .map(|(n, text)| panel::FunctionInfo {
+            function: *n,
+            text: (*text).into(),
+            manual: manual.contains(n),
+            confirm: confirm.contains(n),
+        })
+        .collect();
+    Answer::Reply(AnyReply::Panel(panel::Reply::Functions(list)))
+}
+
+/// A standalone system's own function at ID 0, with QSI's refusals.
+fn own_function(s: &mut System, f: &panel::Function) -> Answer {
+    if let Some((id, text)) = s.faults.refuse_panel.clone() {
+        return refuse(&id, &text);
+    }
+    if f.id != 0 {
+        return refuse("QSI0331", &format!("No partition {}.", f.id));
+    }
+    let n = f.function;
+    if !matches!(n, 1 | 3 | 8 | 11..=22) {
+        return refuse("QSI0451", &format!("This system has no function {n:02}."));
+    }
+    if matches!(n, 3 | 8 | 21 | 22) {
+        if s.keylock != Some(Keylock::Manual) {
+            return refuse(
+                "QSI0452",
+                &format!("Function {n:02} needs the keylock in manual."),
+            );
+        }
+        if s.power != PowerState::Running {
+            return refuse(
+                "QSI0453",
+                &format!("Function {n:02} waits for the IPL to complete."),
+            );
+        }
+    }
+    let code = s.current().map_or_else(|| "00000000".into(), |r| r.code);
+    let text = match n {
+        1 => format!(
+            "01  IPL source {}, keylock {}",
+            s.slot,
+            format!("{:?}", s.keylock.unwrap_or(Keylock::Normal)).to_lowercase()
+        ),
+        11 => format!("11  {code}"),
+        12..=19 => format!("{n:02}  00000000"),
+        20 => format!("20  type {}, serial number {}", s.model, s.hello.serial),
+        3 => "03  IPL started".into(),
+        8 => "08  system powered off".into(),
+        21 => "21  dedicated service tools shown on the console".into(),
+        _ => "22  dump begun".into(),
+    };
+    Answer::Reply(AnyReply::Panel(panel::Reply::Function(panel::Shown {
+        text,
+    })))
 }
 
 /// A control panel function, as `docs/PANEL.md` of QS/VS has them.
