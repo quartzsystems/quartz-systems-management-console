@@ -10,8 +10,8 @@
 use std::time::{Duration, Instant};
 
 use super::{
-    DISK_BYTES, HOST, Kind, PASSWORD, USER, blank_disks, boot_installed, golden, installed,
-    installed_machine, is_installed, option, said, sign_on, titled, titled_with,
+    DISK_BYTES, HOST, Kind, MAIN_MENU, PASSWORD, USER, blank_disks, boot_installed, golden,
+    installed, installed_machine, is_installed, option, sign_on, titled, titled_with,
 };
 use crate::image::disks;
 use crate::qemu::session::Disk;
@@ -122,7 +122,7 @@ pub fn replace(run: &Run<'_>) -> Result<String, String> {
     }
     golden("console-disks-missing", &units)?;
     guest.type_keys(&format!("2{}", key::ENTER))?;
-    let select = titled(&mut guest, "Select Replacement Disk", deadline)?;
+    let select = titled_with(&mut guest, DISKS, "in the place of unit 2", deadline)?;
     if !select.contains(&blank.serial) {
         return Err(format!("the blank disk is not offered:\n{select}"));
     }
@@ -131,20 +131,14 @@ pub fn replace(run: &Run<'_>) -> Result<String, String> {
     let confirm = titled(&mut guest, "Confirm Erase of Disk", deadline)?;
     golden("console-disk-confirm", &confirm)?;
     guest.type_keys(key::F10)?;
-    titled(&mut guest, "Disk Unit Rebuild", deadline)?;
+    titled_with(&mut guest, DISKS, "Enter=Continue", deadline)?;
     let storage = whole(&mut guest, REBUILD_WITHIN)?;
     // The rebuild took its time: the screens are given theirs anew.
     let deadline = run.deadline();
-    let done = titled_with(
-        &mut guest,
-        "Disk Unit Rebuild",
-        "No work is under way",
-        deadline,
-    )?;
+    let done = titled_with(&mut guest, DISKS, "Both units are in step.", deadline)?;
     golden("console-disk-rebuilt", &done)?;
     guest.type_keys(key::ENTER)?;
-    titled(&mut guest, DISKS, deadline)?;
-    guest.type_keys(key::F3)?;
+    titled(&mut guest, MAIN_MENU, deadline)?;
     power_off(&mut guest)?;
     drop(guest);
 
@@ -186,13 +180,19 @@ pub fn protect(run: &Run<'_>) -> Result<String, String> {
     }
     golden("console-disks-unprotected", &units)?;
     guest.type_keys(&format!("1{}", key::ENTER))?;
-    titled(&mut guest, "Select Disk to Mirror With", deadline)?;
+    titled_with(
+        &mut guest,
+        DISKS,
+        "to mirror the load source with",
+        deadline,
+    )?;
     guest.type_keys(&format!("1{}", key::ENTER))?;
     titled(&mut guest, "Confirm Erase of Disk", deadline)?;
     guest.type_keys(key::F10)?;
-    said(
+    titled_with(
         &mut guest,
-        "Mirrored protection starts at the next IPL.",
+        DISKS,
+        "Mirrored protection starts at the next IPL",
         deadline,
     )?;
     guest.type_keys(key::F3)?;

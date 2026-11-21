@@ -12,6 +12,7 @@ path = "src/main.rs"
 
 [dependencies]
 buildkit.workspace = true
+buildaid.workspace = true
 diskimg.workspace = true
 loadsource.workspace = true
 appliance.workspace = true

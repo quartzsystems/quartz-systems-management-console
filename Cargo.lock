@@ -234,6 +234,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "appliance",
+ "buildaid",
  "buildkit",
  "clap",
  "conformance",
@@ -247,6 +248,26 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "uuid",
+]
+
+[[package]]
+name = "buildaid"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=0488d96b067358688f35f34b86a2a4662bcfe93f#0488d96b067358688f35f34b86a2a4662bcfe93f"
+dependencies = [
+ "anyhow",
+ "buildkit",
+ "certs",
+ "ed25519-dalek",
+ "hex",
+ "msg",
+ "pesign",
+ "problem",
+ "serde_json",
+ "stream",
+ "tracing",
+ "update",
+ "vrm",
 ]
 
 [[package]]
@@ -304,6 +325,35 @@ checksum = "50a649af8a827553c29fb0cb4bd4a6f1a0dd695bd3232b9bc98bd9c8a3ffbb8b"
 dependencies = [
  "find-msvc-tools",
  "shlex",
+]
+
+[[package]]
+name = "certs"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=cf8f01453846fdf78129ca79589e18798aa03fae#cf8f01453846fdf78129ca79589e18798aa03fae"
+dependencies = [
+ "aes",
+ "argon2",
+ "cbc",
+ "cipher",
+ "der",
+ "des",
+ "graviola",
+ "hex",
+ "hmac 0.13.0",
+ "licpart",
+ "pem-rfc7468",
+ "rc2",
+ "serde",
+ "serde_json",
+ "sha1",
+ "sha2 0.11.0",
+ "signature",
+ "spki",
+ "thiserror",
+ "x509-cert",
+ "x509kit",
+ "zeroize",
 ]
 
 [[package]]
@@ -392,6 +442,7 @@ dependencies = [
  "appliance",
  "diskimg",
  "hex",
+ "httpc",
  "identity",
  "loadsource",
  "mgmtd",
@@ -686,7 +737,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -939,6 +990,17 @@ name = "httparse"
 version = "1.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6dbf3de79e51f3d586ab4cb9d5c3e2c14aa28ed23d180cf89b4df0454a69cc87"
+
+[[package]]
+name = "httpc"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=cf8f01453846fdf78129ca79589e18798aa03fae#cf8f01453846fdf78129ca79589e18798aa03fae"
+dependencies = [
+ "rustls",
+ "rustls-graviola",
+ "sha2 0.11.0",
+ "thiserror",
+]
 
 [[package]]
 name = "hybrid-array"
@@ -1267,6 +1329,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce5d3ddc6d3fa000eb1536d85e147bfe31aacaba692ed6a876f95cb7c855be78"
 
 [[package]]
+name = "licpart"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=cf8f01453846fdf78129ca79589e18798aa03fae#cf8f01453846fdf78129ca79589e18798aa03fae"
+dependencies = [
+ "abrec",
+ "diskimg",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
 name = "linux-raw-sys"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1365,6 +1438,14 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "msg"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=0488d96b067358688f35f34b86a2a4662bcfe93f#0488d96b067358688f35f34b86a2a4662bcfe93f"
+dependencies = [
+ "ipc",
 ]
 
 [[package]]
@@ -1477,6 +1558,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220"
 
 [[package]]
+name = "pesign"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=cf8f01453846fdf78129ca79589e18798aa03fae#cf8f01453846fdf78129ca79589e18798aa03fae"
+dependencies = [
+ "anyhow",
+ "certs",
+ "der",
+ "graviola",
+ "hex",
+ "sha2 0.11.0",
+ "signature",
+ "spki",
+ "thiserror",
+ "x509-cert",
+]
+
+[[package]]
 name = "pin-project-lite"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1489,6 +1587,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d83eb9bc6d8e5cf568e7a1101d60ee05e81ed50ea106026f3d18deeb046d7661"
 dependencies = [
  "zerovec",
+]
+
+[[package]]
+name = "problem"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=0488d96b067358688f35f34b86a2a4662bcfe93f#0488d96b067358688f35f34b86a2a4662bcfe93f"
+dependencies = [
+ "appliance",
+ "ipc",
+ "logd",
+ "msg",
+ "rustix",
+ "serde",
+ "serde_json",
+ "state",
+ "supervise",
 ]
 
 [[package]]
@@ -1652,12 +1766,8 @@ dependencies = [
 name = "qsmcinstall"
 version = "0.1.0"
 dependencies = [
- "abrec",
  "appliance",
  "console",
- "diskimg",
- "ed25519-dalek",
- "hex",
  "install",
  "inventory",
  "loadsource",
@@ -1668,10 +1778,7 @@ dependencies = [
  "release",
  "rustix",
  "seed",
- "sha2 0.11.0",
  "state",
- "users",
- "uuid",
 ]
 
 [[package]]
@@ -1890,7 +1997,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1955,7 +2062,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2276,6 +2383,18 @@ dependencies = [
  "supervise",
  "ublk",
  "uuid",
+]
+
+[[package]]
+name = "stream"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=0488d96b067358688f35f34b86a2a4662bcfe93f#0488d96b067358688f35f34b86a2a4662bcfe93f"
+dependencies = [
+ "ed25519-dalek",
+ "hex",
+ "serde",
+ "toml",
+ "vrm",
 ]
 
 [[package]]
@@ -2625,6 +2744,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
+name = "update"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=0488d96b067358688f35f34b86a2a4662bcfe93f#0488d96b067358688f35f34b86a2a4662bcfe93f"
+dependencies = [
+ "appliance",
+ "diskimg",
+ "ed25519-dalek",
+ "hex",
+ "ipc",
+ "loadsource",
+ "msg",
+ "rustix",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "state",
+ "supervise",
+ "vrm",
+]
+
+[[package]]
 name = "url"
 version = "2.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2862,7 +3002,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]

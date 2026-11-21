@@ -11,7 +11,6 @@
 //! the web interface answers are changed here; a network change goes
 //! to the network service on trial.
 
-use std::fmt::Write as _;
 use std::net::{IpAddr, Ipv4Addr};
 
 use qsweb::http::Response;
@@ -396,16 +395,9 @@ fn set_open(next: &mut Network, ip: &str, mask: &str, gw: &str) -> Result<(), St
 /// the form again, carried in hidden fields, with OK.
 fn confirm_own(rq: &Rq<'_>, f: &qsweb::http::Form, ip: &str) -> Response {
     use qsweb::html::esc;
+    use qsweb::partials::{carry, hidden as field};
     let fields = ["ip", "mask", "gw", "dns", "h", "d", "pip", "pmask", "allow"];
-    let mut hidden = String::new();
-    for k in fields {
-        let _ = write!(
-            hidden,
-            "<input type=\"hidden\" name=\"{k}\" value=\"{}\">",
-            esc(f.get(k).unwrap_or(""))
-        );
-    }
-    hidden.push_str("<input type=\"hidden\" name=\"confirmed\" value=\"yes\">");
+    let hidden = carry(f, &fields) + &field("confirmed", "yes");
     let at = if ip.is_empty() {
         "the address the DHCP server gives".to_string()
     } else {

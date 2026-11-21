@@ -3,17 +3,17 @@
 
  Protection . . : Mirrored; NOT protected now: a unit is not in step
 
- Unit  Location              Serial              Size  State
-    1  P0000-B00-D02-F0      QSMCHD0          17.1 GB  Active
-    2  P0000-B00-D03-F0      QSMCHD1                   Missing
+ Unit  Location                Serial                  Size  State
+    1  P0000-B00-D02-F0        QSMCHD0              17.1 GB  Active
+    2  P0000-B00-D03-F0        QSMCHD1                       Missing
+
+ Other disks: 1
 
  Select one of the following:
 
       1. Start mirrored protection
       2. Replace a failed unit
       5. Display the units again
-
-
 
 
 

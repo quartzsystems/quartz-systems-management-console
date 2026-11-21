@@ -3,16 +3,16 @@
 
  Protection . . : None: the load source is one disk
 
- Unit  Location              Serial              Size  State
-    1  P0000-B00-D02-F0      QSMCHD0          17.1 GB  Unprotected
+ Unit  Location                Serial                  Size  State
+    1  P0000-B00-D02-F0        QSMCHD0              17.1 GB  Unprotected
+
+ Other disks: 0
 
  Select one of the following:
 
       1. Start mirrored protection
       2. Replace a failed unit
       5. Display the units again
-
-
 
 
 

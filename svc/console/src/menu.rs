@@ -8,7 +8,7 @@
 //! keep the places QS/VS's Service Tools gives the same things.
 
 use console::Screen;
-use panels::tools::{Confirm, Host as _, Log, LogPanel, TimePanel, UsersPanel};
+use panels::tools::{Log, LogPanel, PowerWords, TimePanel, UsersPanel, power};
 use panels::ui;
 use panels::{Flow, Help, Named, Panel, PanelFlow, kit};
 use supervise::control::HostStatus;
@@ -58,7 +58,7 @@ impl Panel<Env, Outcome> for MainMenu {
     fn enter(&mut self, fields: &[String], env: &mut Env) -> Step {
         match kit::number(fields.first()) {
             Some(1) => Flow::Push(Box::new(crate::status::Status::default())),
-            Some(2) => Flow::Push(Box::new(crate::disks::DiskUnits)),
+            Some(2) => Flow::Push(Box::new(crate::disks::panel())),
             Some(3) => Flow::Push(Box::new(crate::network::NetworkMenu)),
             Some(4) => Flow::Push(Box::new(crate::web::WebMenu)),
             Some(5) => Flow::Push(Box::new(UsersPanel)),
@@ -163,8 +163,8 @@ impl Panel<Env, Outcome> for Choice {
         match (self.name, kit::number(fields.first())) {
             ("console-logs", Some(1)) => Flow::Push(Box::new(LogPanel::new(Log::History))),
             ("console-logs", Some(2)) => Flow::Push(Box::new(LogPanel::new(Log::System))),
-            ("console-power", Some(1)) => Flow::Push(Box::new(power(false))),
-            ("console-power", Some(2)) => Flow::Push(Box::new(power(true))),
+            ("console-power", Some(1)) => Flow::Push(Box::new(power(false, &POWER_WORDS))),
+            ("console-power", Some(2)) => Flow::Push(Box::new(power(true, &POWER_WORDS))),
             (_, Some(_)) => Flow::Error("Selection not valid.".into()),
             (_, None) => Flow::Error("Type the number of an option.".into()),
         }
@@ -230,90 +230,25 @@ impl Panel<Env, Outcome> for Later {
     }
 }
 
-/// The confirmation of a power off or a restart: `base/panels`' own
-/// confirmation with the console's words (its `power` speaks of a
-/// host's partitions).
-pub fn power(restart: bool) -> Confirm<Env, Outcome> {
-    let (name, title, first) = if restart {
-        (
-            "console-restart",
-            "Confirm Restart",
-            "The console will shut down in order and restart.",
-        )
-    } else {
-        (
-            "console-power-off",
-            "Confirm Power Off",
-            "The console will shut down in order and power off.",
-        )
-    };
-    Confirm::new(
-        name,
-        title,
-        kit::lines(&[
-            first,
+/// What ends with the console, on `base/panels`' power confirmation.
+pub const POWER_WORDS: PowerWords = PowerWords {
+    ends: &[
+        "Its services are stopped and its disks left clean. The hosts and",
+        "partitions it manages run on; they cannot be managed until the",
+        "console is back.",
+    ],
+    help: Help {
+        title: "Confirm power off or restart",
+        lines: &[
+            "F10 starts an orderly shutdown: the console's services end one",
+            "after another, its data is written and its file system",
+            "unmounted, and then the machine powers off or restarts.",
             "",
-            "Its services are stopped and its disks left clean. The hosts and",
-            "partitions it manages run on; they cannot be managed until the",
-            "console is back.",
-        ]),
-        Help {
-            title: "Confirm power off or restart",
-            lines: &[
-                "F10 starts an orderly shutdown: the console's services end one",
-                "after another, its data is written and its file system",
-                "unmounted, and then the machine powers off or restarts.",
-                "",
-                "Nothing the console manages is stopped. F12 goes back and",
-                "nothing happens.",
-            ],
-        },
-        move |env: &mut Env| match env.power(restart) {
-            Ok(()) => Flow::Reset(Box::new(Stopping { restart })),
-            Err(e) => Flow::Unwind(1, Some((e, true))),
-        },
-    )
-}
-
-/// The console is shutting down: nothing more to do here.
-struct Stopping {
-    restart: bool,
-}
-
-impl Panel<Env, Outcome> for Stopping {
-    fn name(&self) -> &'static str {
-        "console-stopping"
-    }
-
-    fn render(&self, env: &mut Env) -> Screen {
-        let what = if self.restart {
-            "The console is restarting."
-        } else {
-            "The console is powering off."
-        };
-        kit::page(
-            "Power Off or Restart",
-            &env.system(),
-            &kit::lines(&[what, "", "Its services are being stopped in order."]),
-            "",
-        )
-    }
-
-    fn enter(&mut self, _fields: &[String], _env: &mut Env) -> Step {
-        Flow::Stay
-    }
-
-    fn function(&mut self, _key: u8, _fields: &[String], _env: &mut Env) -> Step {
-        Flow::Stay
-    }
-
-    fn help(&self) -> Help {
-        Help {
-            title: "Power Off or Restart",
-            lines: &["The console is stopping. This session ends with it."],
-        }
-    }
-}
+            "Nothing the console manages is stopped. F12 goes back and",
+            "nothing happens.",
+        ],
+    },
+};
 
 /// What the idle screen asks for.
 pub const PRESS_ENTER: &str = "Press Enter to sign on.";

@@ -4,10 +4,10 @@
 
 //! The web interface from outside: a browser's requests to a guest's
 //! 443 and 80, through QEMU's forwarded ports. TLS is pinned to the
-//! certificate the harness was told to expect (`webd::selftest`'s
-//! verifier): a connection to any other fails. QS/400's `httpc` trusts
-//! its shipped roots or anything (`docs/OPEN_QUESTIONS.md`), so the
-//! request is written here, one a connection.
+//! certificate the harness was told to expect: a connection to any
+//! other fails. A request to 443 is QS/400's `httpc`'s, pinned; what
+//! `httpc` does not do is written here: a request to 80 that names the
+//! guest as a browser would, bytes of a hostile client, the WebSocket.
 
 pub mod ws;
 
@@ -122,6 +122,7 @@ pub struct Browser {
     /// The `Host` its requests name.
     pub host: String,
     tls: Arc<ClientConfig>,
+    trust: httpc::Trust,
     /// The session's cookie value.
     pub cookie: Option<String>,
 }
@@ -134,6 +135,7 @@ impl Browser {
             http,
             host: GUEST.into(),
             tls: pinned(sha256)?,
+            trust: httpc::Trust::pin(sha256).map_err(|e| e.to_string())?,
             cookie: None,
         })
     }
@@ -157,6 +159,7 @@ impl Browser {
     /// Trust another certificate from now on.
     pub fn pin(&mut self, sha256: &str) -> Result<(), String> {
         self.tls = pinned(sha256)?;
+        self.trust = httpc::Trust::pin(sha256).map_err(|e| e.to_string())?;
         Ok(())
     }
 
@@ -193,24 +196,30 @@ impl Browser {
         extra: &[(String, String)],
         body: &[u8],
     ) -> Result<Answer, String> {
-        let sock = Self::connect(self.https)?;
-        let name = ServerName::try_from(GUEST).map_err(|e| e.to_string())?;
-        let conn = ClientConnection::new(self.tls.clone(), name).map_err(|e| e.to_string())?;
-        let mut tls = StreamOwned::new(conn, sock);
-        let mut req = self.head(method, path, extra, body.len()).into_bytes();
-        req.extend_from_slice(body);
-        tls.write_all(&req)
-            .and_then(|()| tls.flush())
-            .map_err(|e| format!("{method} {path}: {e}"))?;
-        let mut raw = Vec::new();
-        // The server closes after the answer; an unclean close after a
-        // whole answer is no failure.
-        if let Err(e) = tls.read_to_end(&mut raw)
-            && raw.is_empty()
-        {
-            return Err(format!("{method} {path}: {e}"));
+        let mut headers = extra.to_vec();
+        if let Some(c) = &self.cookie {
+            headers.push(("Cookie".into(), format!("QSMCSID={c}")));
         }
-        let a = parse(&raw)?;
+        let req = httpc::Request {
+            method: method.into(),
+            url: format!("https://127.0.0.1:{}{path}", self.https),
+            headers,
+            body: body.to_vec(),
+            timeout: u32::try_from(WAIT.as_secs()).unwrap_or(30),
+            redirects: 0,
+            trust: self.trust.clone(),
+            agent: String::new(),
+        };
+        let r = httpc::send(&req).map_err(|e| format!("{method} {path}: {e}"))?;
+        let a = Answer {
+            status: r.status,
+            headers: r
+                .headers
+                .into_iter()
+                .map(|(k, v)| (k.to_ascii_lowercase(), v))
+                .collect(),
+            body: r.body,
+        };
         if let Some(c) = a.header("set-cookie") {
             let v = c
                 .split(';')

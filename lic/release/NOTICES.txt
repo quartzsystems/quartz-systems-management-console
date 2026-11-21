@@ -11,7 +11,7 @@ It contains the work of others, listed here with their licenses:
 3. The Rust standard library (core, alloc, std and their dependencies),
    under MIT OR Apache-2.0, taken under MIT; LLVM's libunwind and
    compiler-rt builtins, under Apache-2.0 WITH LLVM-exception.
-4. The 290 Rust crates below, each under the license named. The
+4. The 299 Rust crates below, each under the license named. The
    crates of QS/VS and of QS/400 (Quartz Systems, MIT) are among them:
    QS/MC takes QS/VS's base crates and QS/400's build pipeline and
    disk formats as libraries.
@@ -95,6 +95,9 @@ block-padding 0.4.2
 blockdev 0.1.0
     MIT
     taken under: MIT
+buildaid 0.1.0
+    MIT
+    taken under: MIT
 buildkit 0.1.0
     MIT
     taken under: MIT
@@ -112,6 +115,9 @@ cbc 0.2.1
     taken under: MIT
 cc 1.7.0
     MIT OR Apache-2.0
+    taken under: MIT
+certs 0.1.0
+    MIT
     taken under: MIT
 cfg-if 1.0.5
     MIT OR Apache-2.0
@@ -308,6 +314,9 @@ http-body-util 0.1.5
 httparse 1.10.1
     MIT OR Apache-2.0
     taken under: MIT
+httpc 0.1.0
+    MIT
+    taken under: MIT
 hybrid-array 0.4.15
     MIT OR Apache-2.0
     taken under: MIT
@@ -395,6 +404,9 @@ lazy_static 1.5.1
 libc 0.2.190
     MIT OR Apache-2.0
     taken under: MIT
+licpart 0.1.0
+    MIT
+    taken under: MIT
 linux-raw-sys 0.12.1
     Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
     taken under: MIT
@@ -417,6 +429,9 @@ memchr 2.8.3
     Unlicense OR MIT
     taken under: MIT
 mio 1.2.4
+    MIT
+    taken under: MIT
+msg 0.1.0
     MIT
     taken under: MIT
 netd 0.1.0
@@ -455,12 +470,18 @@ pem-rfc7468 1.0.0
 percent-encoding 2.3.2
     MIT OR Apache-2.0
     taken under: MIT
+pesign 0.1.0
+    MIT
+    taken under: MIT
 pin-project-lite 0.2.17
     Apache-2.0 OR MIT
     taken under: MIT
 potential_utf 0.1.6
     Unicode-3.0
     taken under: Unicode-3.0
+problem 0.1.0
+    MIT
+    taken under: MIT
 proc-macro2 1.0.107
     MIT OR Apache-2.0
     taken under: MIT
@@ -641,6 +662,9 @@ state 0.1.0
 stgd 0.1.0
     MIT
     taken under: MIT
+stream 0.1.0
+    MIT
+    taken under: MIT
 strsim 0.11.1
     MIT
     taken under: MIT
@@ -746,6 +770,9 @@ unicode-ident 1.0.26
 untrusted 0.9.0
     ISC
     taken under: ISC
+update 0.1.0
+    MIT
+    taken under: MIT
 url 2.5.8
     MIT OR Apache-2.0
     taken under: MIT
@@ -5799,5 +5826,5 @@ DEALINGS IN THE SOFTWARE.
 
 ---- No license file in the package (the license text above applies) ----
 
-abrec 0.1.0, appliance 0.1.0, blockdev 0.1.0, buildkit 0.1.0, console 0.1.0, crc-catalog 2.5.0, dhcp 0.1.0, diskimg 0.1.0, fdpass 0.1.0, graviola 0.4.1, identity 0.1.0, install 0.1.0, inventory 0.1.0, ipc 0.1.0, jni 0.22.4, jni-macros 0.22.4, jni-sys-macros 0.4.1, loadsource 0.1.0, logd 0.1.0, netd 0.1.0, netlink 0.1.0, ntp 0.1.0, optical 0.1.0, panels 0.1.0, processor 0.1.0, protect 0.1.0, qemu 0.1.0, qsi 0.1.0, qsipart 0.1.0, qsisess 0.1.0, qsitrust 0.1.0, qsweb 0.1.0, r-efi 5.3.0, r-efi 6.0.0, rustls-graviola 0.4.0, rustls-platform-verifier-android 0.2.0, scrkit 0.1.0, seed 0.1.0, srcdata 0.1.0, state 0.1.0, stgd 0.1.0, supervise 0.1.0, svcusers 0.1.0, termlook 0.1.0, ublk 0.1.0, users 0.1.0, valuable 0.1.1, vrm 0.1.0, x509kit 0.1.0, xfsfmt 0.1.0
+abrec 0.1.0, appliance 0.1.0, blockdev 0.1.0, buildaid 0.1.0, buildkit 0.1.0, certs 0.1.0, console 0.1.0, crc-catalog 2.5.0, dhcp 0.1.0, diskimg 0.1.0, fdpass 0.1.0, graviola 0.4.1, httpc 0.1.0, identity 0.1.0, install 0.1.0, inventory 0.1.0, ipc 0.1.0, jni 0.22.4, jni-macros 0.22.4, jni-sys-macros 0.4.1, licpart 0.1.0, loadsource 0.1.0, logd 0.1.0, msg 0.1.0, netd 0.1.0, netlink 0.1.0, ntp 0.1.0, optical 0.1.0, panels 0.1.0, pesign 0.1.0, problem 0.1.0, processor 0.1.0, protect 0.1.0, qemu 0.1.0, qsi 0.1.0, qsipart 0.1.0, qsisess 0.1.0, qsitrust 0.1.0, qsweb 0.1.0, r-efi 5.3.0, r-efi 6.0.0, rustls-graviola 0.4.0, rustls-platform-verifier-android 0.2.0, scrkit 0.1.0, seed 0.1.0, srcdata 0.1.0, state 0.1.0, stgd 0.1.0, stream 0.1.0, supervise 0.1.0, svcusers 0.1.0, termlook 0.1.0, ublk 0.1.0, update 0.1.0, users 0.1.0, valuable 0.1.1, vrm 0.1.0, x509kit 0.1.0, xfsfmt 0.1.0
 

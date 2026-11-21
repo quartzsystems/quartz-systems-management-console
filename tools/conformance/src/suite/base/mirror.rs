@@ -104,34 +104,15 @@ fn one_missing(run: &Run<'_>, pair: &[Disk; 2], keep: usize) -> Result<String, S
     Ok(missing)
 }
 
-/// Suite 7.
-pub fn mirror(run: &Run<'_>) -> Result<String, String> {
-    // Either unit absent at the IPL.
-    let said_two = one_missing(run, &run.mirrored("unit2")?, 0)?;
-    let said_one = one_missing(run, &run.mirrored("unit1")?, 1)?;
-
-    // Unit 2 lost while the console runs (every transfer to it fails
-    // from then on), written to without it, then returned. A unit absent
-    // when the set is assembled has no map of its own kept and is copied
-    // whole when it comes back (QS/400's `protect`;
-    // `docs/OPEN_QUESTIONS.md` item 13): only one that leaves while the
-    // set runs comes back by what changed.
-    let pair = run.mirrored("leave")?;
-    let leave = Machine {
-        monitor: Some(run.socket("monitor.sock")),
-        ..machine(run, &pair)?
-    };
-    let mut guest = booted(run, &leave)?;
-    guest.monitor("drive_del hd1")?;
-    let deadline = run.deadline();
-    // The set notices at the first transfer to the unit gone.
-    let written = write_for(channel(&mut guest)?, 5)?;
-    // The disk is there when it fails: the inventory names its place.
-    guest.seen(&posted(&refcode::UNIT_FAILED, "unit 2 at P"), deadline)?;
-    power_off(&mut guest)?;
-    drop(guest);
-
-    let mut guest = run.boot(&machine(run, &pair)?)?;
+/// Both units of `pair` booted after unit 2 was away while `written`
+/// were written: how much of it was already in step, of all, the
+/// storage's status once whole, and the files read back.
+fn returned(
+    run: &Run<'_>,
+    pair: &[Disk; 2],
+    written: &[u64],
+) -> Result<(u64, u64, stgd::Status, usize), String> {
+    let mut guest = run.boot(&machine(run, pair)?)?;
     let deadline = run.deadline();
     base_ready(&mut guest, deadline)?;
     // The storage service starts first: the resynchronization may be
@@ -161,15 +142,62 @@ pub fn mirror(run: &Run<'_>) -> Result<String, String> {
     guest.seen(&posted(&refcode::RESYNC_FINISHED, "unit 2, "), finish)?;
     let channel = guest.channel(deadline)?;
     let storage = channel.storage_until("both units in step", deadline, stgd::Status::whole)?;
-    let kept = read_back(channel, &written)?;
+    let kept = read_back(channel, written)?;
+    power_off(&mut guest)?;
+    Ok((done, all, storage, kept))
+}
+
+/// Unit 2 absent at the IPL, written to without it, the console stopped
+/// in order and started with it back: it comes back by the map its set
+/// began for it when assembled without it (`docs/OPEN_QUESTIONS.md`
+/// item 13), not copied whole.
+fn absent_returns(run: &Run<'_>) -> Result<String, String> {
+    let pair = run.mirrored("absent")?;
+    let mut guest = run.boot(&machine(run, &pair[..1])?)?;
+    base_ready(&mut guest, run.deadline_degraded())?;
+    let written = write_for(channel(&mut guest)?, 5)?;
     power_off(&mut guest)?;
     drop(guest);
+    let (done, all, _, kept) = returned(run, &pair, &written)?;
+    Ok(format!(
+        "unit 2 absent at the IPL and returned: {} of {all} MiB copied ({done} already in step \
+         by its map), {kept} files read back",
+        all - done
+    ))
+}
+
+/// Suite 7.
+pub fn mirror(run: &Run<'_>) -> Result<String, String> {
+    // Either unit absent at the IPL.
+    let said_two = one_missing(run, &run.mirrored("unit2")?, 0)?;
+    let said_one = one_missing(run, &run.mirrored("unit1")?, 1)?;
+
+    // Unit 2 lost while the console runs (every transfer to it fails
+    // from then on), written to without it, then returned: it comes
+    // back by what changed.
+    let pair = run.mirrored("leave")?;
+    let leave = Machine {
+        monitor: Some(run.socket("monitor.sock")),
+        ..machine(run, &pair)?
+    };
+    let mut guest = booted(run, &leave)?;
+    guest.monitor("drive_del hd1")?;
+    let deadline = run.deadline();
+    // The set notices at the first transfer to the unit gone.
+    let written = write_for(channel(&mut guest)?, 5)?;
+    // The disk is there when it fails: the inventory names its place.
+    guest.seen(&posted(&refcode::UNIT_FAILED, "unit 2 at P"), deadline)?;
+    power_off(&mut guest)?;
+    drop(guest);
+
+    let (done, all, storage, kept) = returned(run, &pair, &written)?;
+    let absent = absent_returns(run)?;
 
     let killed = storage_killed(run)?;
     Ok(format!(
         "absent at the IPL: `{said_two}`, `{said_one}`; unit 2 taken away while running and \
          returned: {} of {all} MiB copied ({done} already in step), {} units Active, {kept} \
-         files read back; {killed}",
+         files read back; {absent}; {killed}",
         all - done,
         storage.units.len()
     ))

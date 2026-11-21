@@ -5,10 +5,10 @@
 
    P0000-B00-D03-F0  virtio-blk  serial QSMCHD2  17.1 GB
 
- It takes the place of unit 2 and is rebuilt now.
+ It takes the place of unit 2 and is rebuilt from the other unit
+ while the host runs.
 
  Press F10 to confirm, or F12 to go back.
-
 
 
 

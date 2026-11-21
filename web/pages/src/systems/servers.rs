@@ -181,17 +181,8 @@ pub fn page(ctx: &Ctx, v: &Servers) -> Page {
             url("/servers/add")
         ),
     );
-    let mut actions = String::from(
-        "<select name=\"act\"><option>--Select action--</option><option>Properties</option>",
-    );
-    for (group, items) in ACTIONS {
-        let _ = write!(actions, "<optgroup label=\"{group}\">");
-        for i in *items {
-            let _ = write!(actions, "<option>{i}</option>");
-        }
-        actions.push_str("</optgroup>");
-    }
-    actions.push_str("</select>");
+    let actions =
+        qsweb::partials::action_select("act", "--Select action--", &["Properties"], ACTIONS);
     let body = format!(
         "<form method=\"post\">{}<table class=\"filter\" cellspacing=\"0\"><tr><td>Type:</td><td>{}</td><td>Status:</td><td>{}</td><td><input type=\"submit\" value=\"Go\"> <input type=\"submit\" name=\"refresh\" value=\"Refresh\"></td></tr></table>{table}<div class=\"toolbar\">Selected: {actions} <input type=\"submit\" value=\"Go\"> &nbsp; <input type=\"submit\" value=\"Add managed system...\" formaction=\"{}\"></div></form>{}",
         ctx.csrf_field(),

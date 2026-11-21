@@ -1,7 +1,7 @@
                                 Confirm Restart
                                                                  System:  mc-01
 
- The console will shut down in order and restart.
+ The host will shut down in order and restart.
 
  Its services are stopped and its disks left clean. The hosts and
  partitions it manages run on; they cannot be managed until the

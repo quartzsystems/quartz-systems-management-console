@@ -1,13 +1,13 @@
-                               Disk Unit Rebuild
+                              Work with Disk Units
                                                                  System:  mc-01
 
- Protection . . : Mirrored; both units are in step
+ Unit  Location                Serial                  Size  State
+    1  P0000-B00-D02-F0        QSMCHD0              17.1 GB  Active
+    2  P0000-B00-D03-F0        QSMCHD2              17.1 GB  Active
 
- Unit  Location              Serial              Size  State
-    1  P0000-B00-D02-F0      QSMCHD0          17.1 GB  Active
-    2  P0000-B00-D03-F0      QSMCHD2          17.1 GB  Active
+ Both units are in step. The load source is protected.
 
- No work is under way: every unit is as shown.
+
 
 
 

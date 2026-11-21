@@ -2,11 +2,11 @@
 // licensed under the terms of the MIT license which can be found in the
 // root directory of this project.
 
-//! Host-side steps that are QS/MC's own: the doctor rows, the license
-//! header check, the pins, the QEMU suite and the fuzzer.
+//! Host-side steps that are QS/MC's own: the doctor rows (the license
+//! header check is `base/buildaid`'s), the pins, the QEMU suite and the
+//! fuzzer.
 
 pub mod doctor;
 pub mod fuzz;
-pub mod header;
 pub mod pins;
 pub mod testrun;

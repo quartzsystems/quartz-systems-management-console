@@ -34,7 +34,7 @@ fn ovmf() -> Row {
 
 fn headers(ctx: &Ctx) -> Row {
     let name = "license headers";
-    match super::header::check(&ctx.paths.repo) {
+    match buildaid::header::check(&ctx.paths.repo) {
         Ok((count, bad)) if bad.is_empty() => row(
             name,
             true,

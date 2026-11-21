@@ -13,7 +13,6 @@
 #![cfg_attr(not(target_os = "linux"), allow(dead_code))]
 
 mod answers;
-mod media;
 #[cfg(target_os = "linux")]
 mod target;
 
@@ -29,11 +28,16 @@ mod on_console {
     use panels::screens::{Displays, Ended, Screens, SerialPort, run};
     use panels::{Runner, kit};
 
+    use crate::answers;
     use crate::target::Qsmc;
-    use crate::{answers, media};
 
     /// The serial port.
     const SERIAL: &str = "/dev/ttyS0";
+    /// Where the media is mounted.
+    const MEDIA: &str = "/run/media";
+    /// How long the media's device may take to appear: a USB stick is
+    /// found seconds after the kernel starts.
+    const MEDIA_WAIT: std::time::Duration = std::time::Duration::from_secs(20);
 
     /// The installer on media it refused: it has nothing to install.
     struct Refused;
@@ -131,7 +135,13 @@ mod on_console {
             "",
         ));
 
-        let outcome = match media::open() {
+        let outcome = match loadsource::payload::open(
+            &release::LOAD_SOURCE,
+            &release::RELEASE.to_string(),
+            Path::new(release::TRUSTED_KEYS),
+            MEDIA,
+            MEDIA_WAIT,
+        ) {
             Err(reason) => {
                 post(&refcode::INSTALL_MEDIA_REFUSED, &reason);
                 let mut target = Refused;
