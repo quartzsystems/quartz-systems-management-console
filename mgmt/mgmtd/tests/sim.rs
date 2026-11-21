@@ -236,7 +236,11 @@ fn a_console_shared_by_two_windows() {
             take_over: false,
             typing,
         };
-        ipc::frame::write_frame(&mut s, &ipc::encode(&w)).unwrap();
+        let first = mgmtproto::console::Open {
+            watch: Some(w),
+            upload: None,
+        };
+        ipc::frame::write_frame(&mut s, &ipc::encode(&first)).unwrap();
         let a: Result<Watching, mgmtproto::Refusal> =
             ipc::decode(&ipc::frame::read_frame(&mut s).unwrap()).unwrap();
         assert_eq!(a.unwrap().system, "QSHQ400");

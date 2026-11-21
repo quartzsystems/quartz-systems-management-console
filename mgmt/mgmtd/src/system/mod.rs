@@ -10,6 +10,7 @@ mod apply;
 pub mod console;
 pub mod fuzzing;
 mod resources;
+mod upload;
 mod worker;
 
 use std::sync::atomic::AtomicBool;
@@ -70,6 +71,23 @@ pub enum Cmd {
         wid: u64,
         /// What it sent.
         input: In,
+    },
+    /// Upload an image of `bytes` named `name` for `user`: its frames
+    /// on `chunks`, the stream opened on `started`, how it ended on
+    /// `ended`.
+    Upload {
+        /// The image's name.
+        name: String,
+        /// Its length.
+        bytes: u64,
+        /// The signed-on user.
+        user: String,
+        /// The image, a frame at a time.
+        chunks: std::sync::mpsc::Receiver<Vec<u8>>,
+        /// The host opened its stream, or refused.
+        started: Sender<Result<(), Refusal>>,
+        /// The host's word on it.
+        ended: Sender<Result<(), Refusal>>,
     },
     /// A window closed.
     Unwatch {

@@ -126,6 +126,16 @@ impl Worker {
             self.consoles.attached(id, answer);
             return;
         }
+        if let Mine::Upload(name) = &what {
+            let answer = match refusal(r) {
+                Some(no) => Err(no),
+                None => r
+                    .stream
+                    .ok_or_else(|| mgmtproto::Refusal::new("QSI0106", "no stream was opened")),
+            };
+            self.uploads.opened(name, answer);
+            return;
+        }
         if refusal(r).is_some() {
             return;
         }
@@ -243,7 +253,7 @@ impl Worker {
                 }
             }
             (what, any) => {
-                self.resources_reply(&what, any);
+                self.resources_reply(s, &what, any);
             }
         }
     }

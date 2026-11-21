@@ -64,7 +64,11 @@ pub fn connect(
     let mut s = std::os::unix::net::UnixStream::connect(socket)
         .map_err(|e| crate::systems::own(&qmcmsg::MGMT_DOWN, &[&e.to_string()]))?;
     let _ = s.set_read_timeout(Some(Duration::from_secs(40)));
-    let sent = ipc::frame::write_frame(&mut s, &ipc::encode(w));
+    let open = mgmtproto::console::Open {
+        watch: Some(w.clone()),
+        upload: None,
+    };
+    let sent = ipc::frame::write_frame(&mut s, &ipc::encode(&open));
     let answer: Result<Result<Watching, Refusal>, ipc::WireError> = sent
         .and_then(|()| ipc::frame::read_frame_max(&mut s, 64 * 1024))
         .and_then(|b| ipc::decode(&b));

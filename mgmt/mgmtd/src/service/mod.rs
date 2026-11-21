@@ -11,6 +11,7 @@ mod ask;
 mod calls;
 #[cfg(unix)]
 pub mod consoles;
+mod upload;
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};

@@ -3,8 +3,9 @@
 // root directory of this project.
 
 //! The console socket (`release::MGMTD_CONSOLES`): a terminal window's
-//! connection, as `mgmtproto::console` says. Each is two threads: one
-//! sends the console's pieces to the window, one takes the window's.
+//! connection, or an image's upload, as `mgmtproto::console` says. A
+//! window is two threads: one sends the console's pieces to the window,
+//! one takes the window's. An upload is one (`super::upload`).
 
 use std::io::{Read as _, Write as _};
 use std::os::unix::net::{UnixListener, UnixStream};
@@ -14,7 +15,7 @@ use std::thread;
 use std::time::Duration;
 
 use mgmtproto::Refusal;
-use mgmtproto::console::{Watch, Watching};
+use mgmtproto::console::{Open, Watch, Watching};
 use qsi::host::console::{In, Out, Pieces};
 
 use super::Service;
@@ -30,7 +31,7 @@ const ATTACH: Duration = Duration::from_secs(30);
 pub fn serve(listener: &UnixListener, svc: &Service) {
     for stream in listener.incoming().flatten() {
         let svc = svc.clone();
-        thread::spawn(move || window(&svc, stream));
+        thread::spawn(move || opened(&svc, stream));
     }
 }
 
@@ -38,12 +39,27 @@ fn answer(s: &mut UnixStream, a: &Result<Watching, Refusal>) -> bool {
     ipc::frame::write_frame(s, &ipc::encode(a)).is_ok()
 }
 
-fn window(svc: &Service, mut s: UnixStream) {
+/// A connection: what it opened with.
+fn opened(svc: &Service, mut s: UnixStream) {
     let _ = s.set_read_timeout(Some(ASKING));
-    let Ok(w) = ipc::frame::read_frame_max(&mut s, 4096).and_then(|b| ipc::decode::<Watch>(&b))
+    let Ok(o) = ipc::frame::read_frame_max(&mut s, 4096).and_then(|b| ipc::decode::<Open>(&b))
     else {
         return;
     };
+    match o {
+        Open {
+            watch: Some(w),
+            upload: None,
+        } => window(svc, s, &w),
+        Open {
+            watch: None,
+            upload: Some(u),
+        } => super::upload::upload(svc, s, &u),
+        _ => {}
+    }
+}
+
+fn window(svc: &Service, mut s: UnixStream, w: &Watch) {
     let inner = &svc.0;
     let Some(entry) = inner.entry(&w.system) else {
         answer(&mut s, &Err(qmc(&qmcmsg::NO_SUCH_SYSTEM, &[&w.system])));

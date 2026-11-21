@@ -13,7 +13,7 @@ use qsi::host::host::{Device, Hardware, Host, PowerOn};
 use qsi::host::model::Profile;
 use qsi::host::panel::FunctionInfo;
 use qsi::host::partitions::{Activation, Status};
-use qsi::host::profiles::Entry;
+use qsi::host::profiles::{Entry, ProfileUse};
 use qsi::host::vres::{Drive, Image, Port, StoragePool, Switch, TapeDrive, Vdisk, Volume};
 
 /// The connection to a managed system.
@@ -101,6 +101,32 @@ pub struct PartProfiles {
     pub entries: Vec<Entry>,
 }
 wire_struct!(PartProfiles { id, entries });
+
+/// A profile of a partition, whole, at its revision.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PartProfileBody {
+    /// The partition.
+    pub id: u32,
+    /// The profile's revision.
+    pub revision: u64,
+    /// The profile.
+    pub profile: Profile,
+}
+wire_struct!(PartProfileBody {
+    id,
+    revision,
+    profile
+});
+
+/// When each profile of a partition was last activated.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct PartUses {
+    /// The partition.
+    pub id: u32,
+    /// Its profiles, by name.
+    pub uses: Vec<ProfileUse>,
+}
+wire_struct!(PartUses { id, uses });
 
 /// A running partition's optical and tape devices, and what is loaded.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -216,6 +242,10 @@ pub struct Kept {
     pub power_on: Option<PowerOn>,
     /// The control panel functions, by partition (0: the system).
     pub functions: Vec<PartFunctions>,
+    /// Every profile of every partition, whole.
+    pub profile_bodies: Vec<PartProfileBody>,
+    /// When each partition's profiles were last activated.
+    pub profile_uses: Vec<PartUses>,
 }
 wire_struct!(Kept {
     name,
@@ -243,7 +273,9 @@ wire_struct!(Kept {
     profile_lists,
     activations,
     power_on,
-    functions
+    functions,
+    profile_bodies,
+    profile_uses
 });
 
 /// What a managed system is.
@@ -394,6 +426,23 @@ impl Kept {
             .iter()
             .find(|p| p.id == id)
             .map_or(&[], |p| p.entries.as_slice())
+    }
+
+    /// A partition's profile `name`, whole, as kept.
+    pub fn profile_body(&self, id: u32, name: &str) -> Option<&PartProfileBody> {
+        self.profile_bodies
+            .iter()
+            .find(|b| b.id == id && b.profile.name == name)
+    }
+
+    /// When a partition's profile `name` was last activated; `None`
+    /// for never or not said.
+    pub fn last_used(&self, id: u32, name: &str) -> Option<u64> {
+        self.profile_uses
+            .iter()
+            .find(|u| u.id == id)
+            .and_then(|u| u.uses.iter().find(|x| x.name == name))
+            .and_then(|x| x.last)
     }
 
     /// Whether its hello agreed every bit of `bits`.

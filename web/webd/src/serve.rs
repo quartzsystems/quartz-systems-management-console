@@ -79,6 +79,17 @@ pub trait Pages: Send + Sync {
     fn admits(&self, _ip: std::net::IpAddr) -> bool {
         true
     }
+
+    /// Whether `req`'s body is read by the page as it arrives
+    /// ([`Pages::page_stream`]) rather than whole first: an upload.
+    fn streams(&self, _req: &Request, _peer: &Peer) -> bool {
+        false
+    }
+
+    /// The answer to `req`, whose body is read from `body`.
+    fn page_stream(&self, req: &Request, _body: &mut dyn std::io::Read, peer: &Peer) -> Response {
+        self.page(req, peer)
+    }
 }
 
 /// No pages: the stylesheet only, every other path not found.
@@ -114,6 +125,14 @@ impl Handler for Site {
             self.pages.page(req, peer)
         };
         secured(r)
+    }
+
+    fn streams(&self, req: &Request, peer: &Peer) -> bool {
+        req.path != CSS_PATH && self.pages.streams(req, peer)
+    }
+
+    fn handle_stream(&self, req: &Request, body: &mut dyn std::io::Read, peer: &Peer) -> Response {
+        secured(self.pages.page_stream(req, body, peer))
     }
 }
 

@@ -63,6 +63,9 @@ pub(super) enum Mine {
     Activations,
     ProfileList(u32),
     Functions(u32),
+    Upload(String),
+    ProfileBody(u32, String),
+    ProfileUses(u32),
 }
 
 /// A request outstanding.
@@ -79,6 +82,7 @@ pub(super) struct Worker {
     rx: Receiver<Cmd>,
     pub(super) pending: HashMap<u32, Pending>,
     pub(super) consoles: Consoles,
+    pub(super) uploads: super::upload::Uploads,
     /// Partitions whose history gained codes while a read of it was
     /// out: read again when it ends.
     pub(super) stale: HashSet<u32>,
@@ -92,6 +96,7 @@ impl Worker {
             rx,
             pending: HashMap::new(),
             consoles: Consoles::default(),
+            uploads: super::upload::Uploads::default(),
             stale: HashSet::new(),
         }
     }
@@ -242,6 +247,7 @@ impl Worker {
                 }
             }
             self.consoles.pump(&mut link.session);
+            self.uploads.pump(&mut link.session);
             self.expire();
             if let Some(n) = link.session.last_event() {
                 self.entry.kept().last_seq = n;
@@ -270,6 +276,7 @@ impl Worker {
             }
         }
         self.consoles.lost(&name, why);
+        self.uploads.lost(&name, why);
         let mut k = self.entry.kept();
         k.link = State::Lost;
         k.reason = format!("the connection was lost: {why}");
@@ -316,6 +323,31 @@ impl Worker {
 
     fn command(&mut self, link: &mut Link, cmd: Cmd) {
         match cmd {
+            Cmd::Upload {
+                name,
+                bytes,
+                user,
+                chunks,
+                started,
+                ended,
+            } => {
+                let req = AnyRequest::Vres(qsi::host::vres::Request::ImageUpload(
+                    qsi::host::vres::ImageUpload {
+                        name: name.clone(),
+                        bytes,
+                    },
+                ));
+                match link.session.request_any(&user, &req) {
+                    Ok(id) => {
+                        self.pending
+                            .insert(id, Pending::Mine(Mine::Upload(name.clone())));
+                        self.uploads.add(name, bytes, chunks, started, ended);
+                    }
+                    Err(e) => {
+                        let _ = started.send(Err(Refusal::new(e.msgid(), &e.to_string())));
+                    }
+                }
+            }
             Cmd::Ask { req, user, tx } => match link.session.request_any(&user, &req) {
                 Ok(id) => {
                     self.pending.insert(id, Pending::Theirs(tx, Instant::now()));

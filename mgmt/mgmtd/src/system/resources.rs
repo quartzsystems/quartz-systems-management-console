@@ -8,7 +8,7 @@
 //! when the system's hello offers it. Where an event does not carry
 //! the whole of a thing, its list is read again.
 
-use mgmtproto::kept::{PartDrives, PartFunctions, PartProfiles};
+use mgmtproto::kept::{PartDrives, PartFunctions, PartProfileBody, PartProfiles, PartUses};
 use qsi::Empty;
 use qsi::any::{AnyEvent, AnyReply, AnyRequest};
 use qsi::caps;
@@ -146,6 +146,14 @@ impl Worker {
         }
     }
 
+    fn read_uses(&mut self, s: &mut Session, id: u32) {
+        if Self::has(s, caps::PROFILES | caps::ACTIVATIONS) {
+            let req =
+                AnyRequest::Profiles(profiles::Request::Activated(profiles::Activated { id }));
+            self.read(s, Mine::ProfileUses(id), &req);
+        }
+    }
+
     fn read_drives(&mut self, s: &mut Session, id: u32) {
         if Self::has(s, caps::VRES) {
             let req = AnyRequest::Vres(vres::Request::Drives(vres::Drives { id }));
@@ -168,6 +176,7 @@ impl Worker {
         for p in list {
             if !lists.contains(&p.id) {
                 self.read_profile_list(s, p.id);
+                self.read_uses(s, p.id);
             }
             if p.state == PartitionState::Running {
                 self.read_drives(s, p.id);
@@ -181,6 +190,8 @@ impl Worker {
         k.profile_lists.retain(|p| ids.contains(&p.id));
         k.functions.retain(|f| f.id == 0 || ids.contains(&f.id));
         k.activations.retain(|a| ids.contains(&a.id));
+        k.profile_bodies.retain(|b| ids.contains(&b.id));
+        k.profile_uses.retain(|u| ids.contains(&u.id));
         let running: Vec<u32> = list
             .iter()
             .filter(|p| p.state == PartitionState::Running)
@@ -190,7 +201,33 @@ impl Worker {
     }
 
     /// A reply to one of this module's reads; `false` when it is not one.
-    pub(super) fn resources_reply(&mut self, what: &Mine, any: AnyReply) -> bool {
+    pub(super) fn resources_reply(&mut self, s: &mut Session, what: &Mine, any: AnyReply) -> bool {
+        // A partition's profiles listed: each one read whose revision
+        // is not the one kept; the ones gone dropped.
+        if let (Mine::ProfileList(id), AnyReply::Profiles(profiles::Reply::List(entries))) =
+            (what, &any)
+        {
+            let stale: Vec<String> = {
+                let mut k = self.entry.kept();
+                k.profile_bodies
+                    .retain(|b| b.id != *id || entries.iter().any(|e| e.name == b.profile.name));
+                entries
+                    .iter()
+                    .filter(|e| {
+                        k.profile_body(*id, &e.name)
+                            .is_none_or(|b| b.revision != e.revision)
+                    })
+                    .map(|e| e.name.clone())
+                    .collect()
+            };
+            for name in stale {
+                let req = AnyRequest::Profiles(profiles::Request::Get(profiles::Get {
+                    id: *id,
+                    name: name.clone(),
+                }));
+                self.read(s, Mine::ProfileBody(*id, name), &req);
+            }
+        }
         let mut k = self.entry.kept();
         let r = &mut k.resources;
         match (what, any) {
@@ -205,7 +242,7 @@ impl Worker {
             (Mine::Drives(id), AnyReply::Vres(vres::Reply::Drives(drives))) => {
                 upsert(&mut r.drives, Some(PartDrives { id: *id, drives }), |d| {
                     d.id == *id
-                })
+                });
             }
             (Mine::PowerOn, AnyReply::Host(host::Reply::PowerOn(p))) => k.power_on = Some(p),
             (Mine::Activations, AnyReply::Partitions(partitions::Reply::Activations(v))) => {
@@ -217,6 +254,22 @@ impl Worker {
                     Some(PartProfiles { id: *id, entries }),
                     |p| p.id == *id,
                 );
+            }
+            (Mine::ProfileBody(id, name), AnyReply::Profiles(profiles::Reply::Get(rev))) => {
+                upsert(
+                    &mut k.profile_bodies,
+                    Some(PartProfileBody {
+                        id: *id,
+                        revision: rev.revision,
+                        profile: rev.profile,
+                    }),
+                    |b| b.id == *id && &b.profile.name == name,
+                );
+            }
+            (Mine::ProfileUses(id), AnyReply::Profiles(profiles::Reply::Activated(uses))) => {
+                upsert(&mut k.profile_uses, Some(PartUses { id: *id, uses }), |u| {
+                    u.id == *id
+                });
             }
             (Mine::Functions(id), AnyReply::Panel(panel::Reply::Functions(functions))) => {
                 upsert(
@@ -252,6 +305,7 @@ impl Worker {
                 self.read_activations(s);
                 if c.state == PartitionState::Running {
                     self.read_drives(s, c.id);
+                    self.read_uses(s, c.id);
                 }
                 return false;
             }
@@ -264,6 +318,23 @@ impl Worker {
         match event {
             vres::Event::Uplink(_) => self.read_switches(s),
             vres::Event::Port(_) => self.read_ports(s),
+            vres::Event::Upload(ch) => {
+                if ch.image.is_some() {
+                    let mut k = self.entry.kept();
+                    upsert(&mut k.resources.images, ch.image.clone(), |i| {
+                        i.name == ch.name
+                    });
+                }
+                let error = ch.error.as_ref().map(|n| mgmtproto::Refusal {
+                    main: mgmtproto::Note {
+                        msgid: n.msgid.clone(),
+                        text: n.text.clone(),
+                        help: n.help.clone(),
+                    },
+                    also: Vec::new(),
+                });
+                self.uploads.ended(&ch.name, error);
+            }
             other => {
                 let mut k = self.entry.kept();
                 let res = &mut k.resources;
@@ -276,11 +347,6 @@ impl Worker {
                     }),
                     vres::Event::Image(ch) => {
                         upsert(&mut res.images, ch.image.clone(), |i| i.name == ch.name);
-                    }
-                    vres::Event::Upload(ch) => {
-                        if ch.image.is_some() {
-                            upsert(&mut res.images, ch.image.clone(), |i| i.name == ch.name);
-                        }
                     }
                     vres::Event::Volume(ch) => {
                         upsert(&mut res.volumes, ch.volume.clone(), |v| v.name == ch.name);
