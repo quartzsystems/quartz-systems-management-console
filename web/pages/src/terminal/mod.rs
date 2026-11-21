@@ -426,6 +426,16 @@ fn panel_route(rq: &Rq<'_>, host: &str, id: u32) -> Response {
     }
     let k = system(rq, host).unwrap_or(k);
     let p = partition(&k, id).unwrap_or(p);
+    // A system that does not list its functions is shown the design's.
+    if messages.is_empty() && !k.offers(qsi::caps::PANEL_FUNCTIONS) {
+        let mut m = crate::partitions::props::lacks_message(
+            &k,
+            qsi::caps::PANEL_FUNCTIONS,
+            "its list of functions",
+        );
+        m.kind = qsweb::msg::Kind::Info;
+        messages.push(m);
+    }
     let keylock = if id == qsi::host::model::SYSTEM_ID {
         // A standalone system's keylock is in its state.
         k.state

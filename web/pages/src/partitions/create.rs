@@ -1178,8 +1178,10 @@ fn finish(rq: &Rq<'_>, k: &Kept, v: &BTreeMap<String, String>) -> Result<Message
     };
     rq.audit(&what, "created");
     let mut profile = profile_of(k, v);
+    let mut volume = None;
     if !g("tap").is_empty() {
         let vol = format!("{name}T");
+        volume = Some(vol.clone());
         let _ = crate::systems::ask(
             rq,
             &k.name,
@@ -1211,7 +1213,32 @@ fn finish(rq: &Rq<'_>, k: &Kept, v: &BTreeMap<String, String>) -> Result<Message
     );
     if let Err(mut ms) = crate::systems::ask(rq, &k.name, "Create profile", &put) {
         rq.audit(&format!("{what}: profile {pname}"), "refused");
-        ms.insert(0, made);
+        // All or nothing: the partition made for the profile goes again.
+        let undo = AnyRequest::Partition(partition::Request::Delete(partition::Delete {
+            id: def.id,
+            disks: false,
+        }));
+        if let Err(more) = crate::systems::ask(rq, &k.name, "Delete partition", &undo) {
+            rq.audit(&what, "left without a profile: its delete refused");
+            ms.insert(0, made);
+            ms.extend(more);
+            return Err(ms);
+        }
+        if let Some(vol) = volume {
+            let _ = crate::systems::ask(
+                rq,
+                &k.name,
+                "Delete tape volume",
+                &AnyRequest::Vres(qsi::host::vres::Request::VolumeDelete(
+                    qsi::host::vres::VolumeDelete { name: vol },
+                )),
+            );
+        }
+        rq.audit(&what, "deleted again: its profile was refused");
+        ms.insert(
+            0,
+            qmcmsg::message(Kind::Error, &qmcmsg::NOT_CREATED, &[&def.name]),
+        );
         return Err(ms);
     }
     rq.audit(&format!("{what}: profile {pname}"), "created");

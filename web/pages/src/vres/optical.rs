@@ -214,6 +214,9 @@ pub fn view(rq: &Rq<'_>, k: &Kept, messages: Vec<Message>) -> Optical {
 pub fn route(rq: &Rq<'_>, k: &Kept) -> Response {
     let mut messages = Vec::new();
     if rq.post() {
+        if let Some(no) = crate::app::routes::lacks(rq, webusers::Task::VirtualResources) {
+            return no;
+        }
         rq.audit(&format!("fetch an image to {}", k.name), "refused");
         messages.push(qmcmsg::message(Kind::Error, &qmcmsg::NO_FETCH, &[]));
     }

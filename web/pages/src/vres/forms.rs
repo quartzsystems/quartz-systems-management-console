@@ -315,7 +315,8 @@ pub fn pool(rq: &Rq<'_>, k: &Kept) -> Response {
     if rq.post() && f.has("cancel") {
         return Response::redirect(&rq.ctx.url(&back));
     }
-    // The candidates are read now: the form offers what is free.
+    // The candidates are read now: what is free, and what holds another
+    // system's (`foreign`), taken only after its confirmation.
     let disks = match crate::systems::ask(
         rq,
         &k.name,
@@ -326,7 +327,10 @@ pub fn pool(rq: &Rq<'_>, k: &Kept) -> Response {
         Err(ms) if rq.post() => return rq.done_all(&back, ms),
         _ => Vec::new(),
     };
-    let free: Vec<&vres::PoolDisk> = disks.iter().filter(|d| d.free).collect();
+    let free: Vec<&vres::PoolDisk> = disks
+        .iter()
+        .filter(|d| d.free || (d.foreign && d.pool.is_empty()))
+        .collect();
     let mut messages = Vec::new();
     if rq.post() {
         if let Some(no) = lacks(rq, Task::VirtualResources) {

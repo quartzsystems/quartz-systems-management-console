@@ -656,3 +656,13 @@ sign-on is still its own request over the pinned TLS
 (`tools/conformance/src/web/mod.rs`), and every other request to 443 is
 `httpc`'s. For QS/400: a request's `Host` header, when given, in place
 of the URL's, or an address to connect to beside the URL.
+
+## 40. A streamed request's answer waits for the next read (QS/400)
+
+`qsweb::http::guard::handle_stream` sends a page's answer only when its
+pump's next read of the body returns. A page that refuses from the
+parts before the file (an upload past 64 GiB, `QMC2404`) has answered,
+but a client that sends nothing more waits for the read timeout, 30 s,
+before it sees the answer. A browser goes on sending, so it is told at
+once; `parts-upload` sends only the first parts and records the time.
+For QS/400: the pump stops reading when the handler has answered.

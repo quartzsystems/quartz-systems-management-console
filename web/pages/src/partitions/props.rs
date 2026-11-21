@@ -608,6 +608,11 @@ pub struct Loaded {
 /// Read partition `id` of `k`: its definition, its default profile with
 /// its revision, and its settings.
 pub fn load(rq: &Rq<'_>, k: &Kept, id: u32) -> Result<Loaded, Vec<Message>> {
+    load_profile(rq, k, id, "")
+}
+
+/// As [`load`], with profile `name` in place of the default when given.
+pub fn load_profile(rq: &Rq<'_>, k: &Kept, id: u32, name: &str) -> Result<Loaded, Vec<Message>> {
     let ask = |what: &str, req: AnyRequest| crate::systems::ask(rq, &k.name, what, &req);
     let AnyReply::Partitions(partitions::Reply::Get(p)) = ask(
         "Read partition",
@@ -620,7 +625,11 @@ pub fn load(rq: &Rq<'_>, k: &Kept, id: u32) -> Result<Loaded, Vec<Message>> {
         "Read profile",
         AnyRequest::Profiles(profiles::Request::Get(profiles::Get {
             id,
-            name: p.definition.default_profile.clone(),
+            name: if name.is_empty() {
+                p.definition.default_profile.clone()
+            } else {
+                name.to_string()
+            },
         })),
     )?
     else {
@@ -734,6 +743,18 @@ pub fn change_definition(
     r.map(|_| ())
 }
 
+/// A message shown as information, not as a refusal.
+fn info(mut m: Message) -> Message {
+    m.kind = Kind::Info;
+    m
+}
+
+/// `QMC1114`: `k`'s hello lacks `bit`, named as QSI's words have it.
+pub fn lacks_message(k: &Kept, bit: u64, otherwise: &str) -> Message {
+    let what = mgmtproto::ask::lacks(k.caps, bit).unwrap_or(otherwise);
+    qmcmsg::message(Kind::Error, &qmcmsg::LACKS, &[&k.name, what])
+}
+
 /// The settings changed by `edit`, sent: at any time, from a host that
 /// has them.
 pub fn change_settings(
@@ -743,12 +764,7 @@ pub fn change_settings(
     edit: impl FnOnce(&mut Settings),
 ) -> Result<(), Vec<Message>> {
     let Some(before) = &l.settings else {
-        let what = mgmtproto::ask::lacks(k.caps, caps::PARTITION_V3).unwrap_or("its settings");
-        return Err(vec![qmcmsg::message(
-            Kind::Error,
-            &qmcmsg::LACKS,
-            &[&k.name, what],
-        )]);
+        return Err(vec![lacks_message(k, caps::PARTITION_V3, "its settings")]);
     };
     let mut s = before.clone();
     edit(&mut s);
@@ -1230,6 +1246,13 @@ fn settings_post(
             &[],
         )]);
     }
+    let delayed = !f.str("sd").starts_with("Immediate");
+    let panel = f.has("cp");
+    // A host without settings is shown their defaults; another choice
+    // is refused before anything is changed.
+    if l.settings.is_none() && (!delayed || !panel) {
+        return Err(vec![lacks_message(k, caps::PARTITION_V3, "its settings")]);
+    }
     let service = f.str("bm") == "Service - manual IPL";
     // Boot mode is the keylock and the IPL type together.
     let keylock = if service || f.str("key") == "Manual" {
@@ -1264,8 +1287,6 @@ fn settings_post(
             ));
         }
     }
-    let delayed = !f.str("sd").starts_with("Immediate");
-    let panel = f.has("cp");
     if l.settings.is_some() {
         change_settings(rq, k, l, |s| {
             s.panel = panel;
@@ -1344,7 +1365,18 @@ pub fn route(rq: &Rq<'_>, k: &Kept, id: u32, tab: &str) -> Response {
                 .url(&format!("/partition/{}/{id}/edit?new={kind}", k.name)),
         );
     }
-    let l = match load(rq, k, id) {
+    // Manage profiles' Edit names a profile other than the default.
+    let wanted = rq.q("profile");
+    let here = if wanted.is_empty() {
+        format!("/partition/{}/{id}/{tab}", k.name)
+    } else {
+        format!(
+            "/partition/{}/{id}/{tab}?profile={}",
+            k.name,
+            qsweb::http::form::encode(&wanted)
+        )
+    };
+    let l = match load_profile(rq, k, id, &wanted) {
         Ok(l) => l,
         Err(ms) => return rq.done_all(back, ms),
     };
@@ -1361,7 +1393,7 @@ pub fn route(rq: &Rq<'_>, k: &Kept, id: u32, tab: &str) -> Response {
                 if f.has("ok") {
                     return rq.done_all(back, all);
                 }
-                return rq.done_all(&format!("/partition/{}/{id}/{tab}", k.name), all);
+                return rq.done_all(&here, all);
             }
             Err(ms) => messages = ms,
         }
@@ -1369,11 +1401,26 @@ pub fn route(rq: &Rq<'_>, k: &Kept, id: u32, tab: &str) -> Response {
     // Read again after a refusal: a stale put shows the new revision
     // with the operator's entries.
     let l = if rq.post() {
-        load(rq, k, id).unwrap_or(l)
+        load_profile(rq, k, id, &wanted).unwrap_or(l)
     } else {
         l
     };
     keep_revision(rq, &k.name, &l);
+    if messages.is_empty() {
+        match tab {
+            "general" if !k.offers(caps::ACTIVATIONS) => {
+                messages.push(info(lacks_message(
+                    k,
+                    caps::ACTIVATIONS,
+                    "activation times",
+                )));
+            }
+            "settings" if l.settings.is_none() => {
+                messages.push(info(lacks_message(k, caps::PARTITION_V3, "its settings")));
+            }
+            _ => {}
+        }
+    }
     let mut view = tab_of(rq, k, &l, tab);
     if rq.post() {
         view = kept_entries(view, &f);

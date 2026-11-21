@@ -42,6 +42,7 @@ request refused.
 | `QMC3131` | 30 | Partition ID &1 is in use: partition &2 has it. | Each partition of a host has an ID of its own. | Choose a free ID; the step shows the next one. |
 | `QMC3132` | 30 | No managed system can have a partition made from this console. | A partition is made on a connected QS/VS host that offers it. | Add a QS/VS host, or wait until it is connected. |
 | `QMC3133` | 0 | Partition &1 deleted. | The host deleted the partition and its profiles, and its virtual disks when chosen. | None. |
+| `QMC3134` | 30 | Partition &1 was not created: the host refused its first profile. | Finish makes the partition and then its profile. The host refused the profile, so the partition made for it was deleted again, and nothing of it is left at the host. | Correct the step the host's messages name, and select Finish again. |
 | `QMC3201` | 30 | Profile &1 was changed since this page was read. | Another session changed the profile, so the change was refused. The page shows the profile as it is now, with your entries. | Check your entries against the profile and send them again. |
 | `QMC3202` | 0 | The running configuration saved as profile &1. | The host saved what the partition holds now as the profile. | None. |
 | `QMC3203` | 0 | Profile &1 is the default. | An activation uses it unless another is chosen. | None. |

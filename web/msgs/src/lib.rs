@@ -186,6 +186,9 @@ catalogue! {
     PARTITION_DELETED = "QMC3133", 0, "Partition &1 deleted.",
         "The host deleted the partition and its profiles, and its virtual disks when chosen.",
         "None.";
+    NOT_CREATED = "QMC3134", 30, "Partition &1 was not created: the host refused its first profile.",
+        "Finish makes the partition and then its profile. The host refused the profile, so the partition made for it was deleted again, and nothing of it is left at the host.",
+        "Correct the step the host's messages name, and select Finish again.";
     PROFILE_STALE = "QMC3201", 30, "Profile &1 was changed since this page was read.",
         "Another session changed the profile, so the change was refused. The page shows the profile as it is now, with your entries.",
         "Check your entries against the profile and send them again.";
