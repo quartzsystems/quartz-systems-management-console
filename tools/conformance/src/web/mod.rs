@@ -314,7 +314,9 @@ impl Browser {
             "Content-Type".to_string(),
             "application/x-www-form-urlencoded".to_string(),
         )];
-        let mut bytes = self.head("POST", "/qsmc/signon", &ct, body.len()).into_bytes();
+        let mut bytes = self
+            .head("POST", "/qsmc/signon", &ct, body.len())
+            .into_bytes();
         bytes.extend_from_slice(body.as_bytes());
         let a = parse(&self.raw(&bytes)?)?;
         self.keep(&a);
