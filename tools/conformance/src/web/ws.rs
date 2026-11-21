@@ -28,8 +28,11 @@ impl Browser {
     /// Open the WebSocket at `path` in this browser's session.
     pub fn websocket(&self, path: &str) -> Result<Ws, String> {
         let sock = TcpStream::connect(("127.0.0.1", self.https)).map_err(|e| e.to_string())?;
-        sock.set_read_timeout(Some(Duration::from_millis(200)))
+        // The handshake and the upgrade wait as a browser would; the
+        // frames after are read a short while at a time.
+        sock.set_read_timeout(Some(Duration::from_secs(30)))
             .map_err(|e| e.to_string())?;
+        let short = sock.try_clone().map_err(|e| e.to_string())?;
         let name = ServerName::try_from(GUEST).map_err(|e| e.to_string())?;
         let conn = ClientConnection::new(self.tls.clone(), name).map_err(|e| e.to_string())?;
         let mut tls = StreamOwned::new(conn, sock);
@@ -54,6 +57,9 @@ impl Browser {
                 Err(e) => return Err(format!("the upgrade: {e}")),
             }
         }
+        short
+            .set_read_timeout(Some(Duration::from_millis(200)))
+            .map_err(|e| e.to_string())?;
         let end = got.windows(4).position(|w| w == b"\r\n\r\n").unwrap_or(0) + 4;
         let head = String::from_utf8_lossy(&got[..end]).to_string();
         if !head.starts_with("HTTP/1.1 101") {

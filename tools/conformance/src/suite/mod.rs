@@ -160,8 +160,10 @@ impl Suite {
         only: Option<&str>,
         mut passed: impl FnMut(&Report),
     ) -> Result<Vec<Report>, HarnessError> {
+        let by_name = media == Media::Disk && mgmt::NAMED.iter().any(|(n, _)| only == Some(*n));
         if let Some(name) = only
             && !names(media).contains(&name)
+            && !by_name
         {
             return Err(HarnessError::NoSuchSuite(name.to_string()));
         }

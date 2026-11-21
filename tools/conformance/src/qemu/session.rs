@@ -60,6 +60,20 @@ pub struct Machine {
     /// Host ports forwarded to the guest's ports on the first NIC
     /// (`host`, `guest`): a browser's way in.
     pub forwards: Vec<(u16, u16)>,
+    /// Memory and processors other than the launch's.
+    pub size: Option<Size>,
+}
+
+/// A machine's memory and processors: a QS/VS host that runs a
+/// partition.
+#[derive(Clone, Copy, Debug)]
+pub struct Size {
+    /// Memory in MiB.
+    pub memory_mb: u32,
+    /// Processors.
+    pub cpus: u32,
+    /// The memory allocated before it runs.
+    pub prealloc: bool,
 }
 
 /// The base driver's launch of `m`. The driver makes either every disk
@@ -81,6 +95,7 @@ pub fn launch_of(l: &Launch, m: &Machine, scratch: &Path) -> Result<driver::Laun
     let first = disks.next();
     // The monitor is there for the frames' capture when nothing else
     // asked for it.
+    let base = l.base();
     let monitor = m
         .monitor
         .clone()
@@ -116,7 +131,10 @@ pub fn launch_of(l: &Launch, m: &Machine, scratch: &Path) -> Result<driver::Laun
                 mtu: None,
             })
             .collect(),
-        ..l.base()
+        memory_mb: m.size.map_or(base.memory_mb, |s| s.memory_mb),
+        cpus: m.size.map_or(base.cpus, |s| s.cpus),
+        prealloc: m.size.map_or(base.prealloc, |s| s.prealloc),
+        ..base
     })
 }
 
