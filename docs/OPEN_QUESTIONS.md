@@ -220,7 +220,7 @@ and option 3 list the disks and links from it. `qsmcstgd`'s two sysfs
 reads and the test hooks' own SMBIOS reader are gone
 (`inventory::oem_strings`).
 
-## 13. A mirrored unit absent at the IPL is copied whole when it returns (QS/400, QS/VS)
+## 13. A mirrored unit absent at the IPL is copied whole when it returns (QS/400, QS/VS) (closed)
 
 Found by Phase 1's mirror suite. A mirrored set keeps a write-intent map
 of its own for a member that leaves while it runs, so the member comes
@@ -239,7 +239,13 @@ there (the set's own map is clear after a clean stop, so the map is
 empty and correct), and `base/stgd` lets it. QS/MC's suite asserts the
 case that works and records this one; nothing is written here.
 
-## 14. A degraded IPL waits about twenty seconds for the missing disk (QS/VS)
+**Closed in Phase 5:** QS/400 `7e65f618e` starts the map of a member
+absent at a clean open; QS/VS `4053b26` takes it in `base/stgd` and its
+`mirror-degraded` suite requires the disk back by its map. QS/MC took
+both with its pins (`d2312d9`); its `mirror` suite asserts the member
+absent at the IPL comes back by its map (`docs/PHASE5.md`).
+
+## 14. A degraded IPL waits about twenty seconds for the missing disk (QS/VS) (closed)
 
 `base/stgd` waits for a missing member's disk ten seconds each time it
 looks for the load-source disks (`found_disks`, `DISK_WAIT`), and it
@@ -252,7 +258,11 @@ per start and pass what was found on. The phase's 10 s for "Base ready"
 is held for whole load sources; the harness gives a degraded IPL twice
 the boot timeout (`docs/PHASE1.md`).
 
-## 15. The installation media's check is QS/VS's own (QS/VS)
+**Closed in Phase 5:** QS/VS `ced5a19` looks for the load-source disks
+once a start and passes what it found on; QS/MC took it with its pins
+(`d2312d9`).
+
+## 15. The installation media's check is QS/VS's own (QS/VS) (closed)
 
 Found in Phase 2. The payload an installer writes from is
 `base/loadsource::payload` (its manifest, its file names, the volume
@@ -269,7 +279,14 @@ QS/MC writes the same check (`lic/qsmcinstall/src/media.rs`, marked
 `matches`, and the device's search by volume identifier; then the pins
 move and QS/MC's copy goes.
 
-## 16. The disk unit panels are QS/VS's own (QS/VS)
+**Closed in Phase 5:** QS/VS `49b117c` (its P7) gave
+`loadsource::payload` the media's search by volume identifier, its
+mount and its check (`open`, `verify`, `signed`, `matches`). QS/MC's
+`lic/qsmcinstall/src/media.rs` is deleted and the installer calls
+`payload::open` (`50e9e34`). The build's writing of the payload stays in
+`tools/build/src/product/media.rs`: `base/` has none.
+
+## 16. The disk unit panels are QS/VS's own (QS/VS) (closed)
 
 Found in Phase 2. A load source's panels, the units with their states,
 starting mirrored protection with a second disk, replacing a failed unit
@@ -283,7 +300,13 @@ into `base/panels` behind a small trait (the storage service's status,
 start protection, replace, the machine's disks), as `keep::Units` is for
 the unit to keep; QS/VS adds its own options beside them.
 
-## 17. Words of `base/panels` that are a host's (QS/VS)
+**Closed in Phase 5:** QS/VS `49b117c` (its P8) moved the panels into
+`base/panels::units` behind `LoadSource` and `Product`. QS/MC's
+`svc/console/src/disks.rs` is now its `Product` (no options of its own,
+its help) and `LoadSource` (`50e9e34`). The panels are laid out as QS/VS's
+were, so their golden screens changed (item 35, `docs/PHASE5.md`).
+
+## 17. Words of `base/panels` that are a host's (QS/VS) (closed)
 
 Found in Phase 2. `panels::tools::power` says "Every partition that runs
 on this host ends with it" and its help "Partitions that run on the host
@@ -293,7 +316,13 @@ QS/VS: `power` takes the lines about what ends with the machine from its
 caller. The rest of the base help says "the host" where it means the
 machine, which reads true of a console too, and is left.
 
-## 18. Writing a load source for an installer is QS/VS's own (QS/VS)
+**Closed in Phase 5:** QS/VS `49b117c` (its P10) gave
+`panels::tools::power` the product's `PowerWords`: what ends with the
+machine and the help. QS/MC's own confirmation is gone (`50e9e34`). The
+first line and the stopping screen still say "The host", as do two
+lines of `panels::units`' watch: item 35.
+
+## 18. Writing a load source for an installer is QS/VS's own (QS/VS) (closed)
 
 Found in Phase 2. QS/VS's installer target (`lic/qsvsinstall/src/target.rs`)
 writes a load source in eight steps that use only `base/loadsource`
@@ -305,6 +334,12 @@ text, the smallest disk and the codes. The change, for QS/VS: a
 `base/install` helper that carries out those steps for a product's
 `LoadSourceNames` and codes, so a product's `Target` is its names and
 its words.
+
+**Closed in Phase 5:** QS/VS `49b117c` (its P9) added
+`install::write`, the eight steps for a product's names and codes.
+QS/MC's `Target` is now its words, its disks and links, and the
+writer, with one step of its own after the state step: the installer's
+log copied to `/data/log/install.log` (`50e9e34`).
 
 ## 19. What the prototype offers that V1 answers with a message
 
@@ -354,13 +389,19 @@ no page of the prototype has a field for it. It is `notice` in
 `web.toml`, empty unless written there. To decide: which page sets it
 (Language, locale and session would take one row).
 
-## 22. `qsweb`'s help window closes by script (QS/400)
+## 22. `qsweb`'s help window closes by script (QS/400) (closed)
 
 Found in Phase 3. The help window's Close window link carries an
 inline `onclick` handler. QS/MC serves no script, and its content
 security policy blocks inline handlers, so the link does nothing there
 but go to `#`. The change, for QS/400: a plain link when the product
 serves no script (`Product::nav_script` false).
+
+**Closed in Phase 5:** QS/400 `8d69937bb` closes the window by a plain
+link to the product's start when it serves no script. The help page's
+golden correction is that link (`docs/WEB.md`, `d2312d9`). The same
+commit gave `qsweb` the grouped action list and carried fields, which
+the Servers list and the network confirmation now use (`50e9e34`).
 
 ## 23. The users' forms are not designed
 
@@ -407,7 +448,7 @@ does not keep, a DHCP server and SSH: each answers `QMC8700`. To
 decide: the fields in the design, and whether the domain joins
 `base/state`.
 
-## 26. `httpc` has no pinned mode (QS/400)
+## 26. `httpc` has no pinned mode (QS/400) (closed)
 
 Found in Phase 3. The harness's browser must trust only the certificate
 it was told to expect. QS/400's `httpc` trusts its shipped roots or,
@@ -417,7 +458,14 @@ verifier (`tools/conformance/src/web`). The change, for QS/400: a
 pinned SHA-256 on `httpc::Request`; then the harness's requests are
 `httpc`'s.
 
-## 27. PKCS #12 iteration counts are not bounded (QS/400)
+**Closed in Phase 5:** QS/400 `108adc963` made `httpc` neutral with the
+caller's trust, `Trust::Pinned` among it. The harness's requests to 443
+are `httpc`'s (`50e9e34`); what it does not do stays in
+`tools/conformance/src/web`: a request to 80 that names the guest as a
+browser would (`httpc` names the URL's authority), a hostile client's
+bytes, and the WebSocket.
+
+## 27. PKCS #12 iteration counts are not bounded (QS/400) (closed)
 
 Found in Phase 3. `x509kit`'s PKCS #12 reader takes the MAC's and the
 key's iteration counts from the file, at least 1 and with no upper
@@ -429,7 +477,12 @@ hundred thousand), as `qmcbackup` refuses an Argon2 cost past its own.
 The change belongs in `x509kit`. The fuzz target `cert-import` does
 not seed a PKCS #12 file, so it does not stop at this.
 
-## 28. No line for a role the network service no longer has (QS/VS)
+**Closed in Phase 5:** QS/400 `4c4f5102d` refuses a count past
+1,000,000 (`x509kit::pkcs12::pbe::MAX_ITERATIONS`) and fuzzes the
+reader with a PKCS #12 corpus (`7a7455f9a`); QS/MC took it with its
+pins (`d2312d9`).
+
+## 28. No line for a role the network service no longer has (QS/VS) (closed)
 
 Found in Phase 3. When `private` is removed from `network.toml`,
 `base/netd` stops configuring it but notes no line for the role, so
@@ -438,6 +491,9 @@ keep the last line it had (`192.168.250.1/24 on eth1`) until the next
 IPL. The change, for QS/VS: a note for each role a change removes
 (`none`, or the reason). QS/MC's `web-network` suite reads the kernel's
 addresses instead.
+
+**Closed in Phase 5:** QS/VS `b12c2b4` notes a line for each role a
+change removes; QS/MC took it with its pins (`d2312d9`).
 
 ## 29. Power on and a machine's BMC
 
@@ -506,3 +562,27 @@ is given 5 GiB and six processors, the partition runs under it, and
 suite 10's partition steps passed there against a host at QS/VS
 `8c54d47` and QS/400 at `cb58b01` (`docs/PHASE4.md`, Evidence). The
 Dell remains for a host on real hardware.
+
+## 35. Words of `base/panels` that are still a host's (QS/VS)
+
+Found in Phase 5, taking `panels::units` and `panels::tools::power`
+(items 16 and 17). `PowerWords` gives what ends with the machine and the
+help, but the confirmation's first line ("The host will shut down in
+order and restart.") and the stopping screen ("The host is
+restarting.") are the base's, and the watch of a unit's work says
+"restart the host from the main menu" and "while the host runs". On a
+console they read wrong. QS/MC takes them as they are, and their golden
+screens changed with the units' wider columns and the `Other disks`
+line (`docs/PHASE5.md`, Step 0). The change, for QS/VS: the first line
+and the stopping words in `PowerWords`, and `units::Product` naming the
+machine in its own word.
+
+## 36. `buildaid`'s fuzz runner builds only a member of the workspace (QS/VS)
+
+Found in Phase 5. `buildaid::fuzz` builds the fuzzer with `-p` from the
+repository's root and runs it as `list` and `run NAME --secs`.
+QS/MC's fuzzer is a workspace of its own (`tools/fuzz`): QS/400's
+fuzzer brings QS/400's `release` crate, which has the name of QS/MC's.
+So `tools/build/src/host/fuzz.rs` (52 lines) stays. The change, for
+QS/VS: a manifest path in `buildaid::fuzz::Fuzzer` for a fuzzer outside
+the workspace.
