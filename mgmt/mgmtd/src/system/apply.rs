@@ -16,7 +16,7 @@ use qsi::host::{host, partitions, profiles, refcodes};
 use qsi::{base::Refcode, caps};
 use qsisess::{Event, Reply, Session};
 
-use super::worker::{Mine, Worker};
+use super::worker::{Mine, Pending, Worker};
 use crate::peer::pair::refusal;
 
 /// Codes read a page at a time.
@@ -236,6 +236,8 @@ impl Worker {
                             limit: PAGE,
                         })),
                     );
+                } else if self.stale.remove(&id) {
+                    self.part_codes(s, id);
                 }
             }
             _ => {}
@@ -273,11 +275,39 @@ impl Worker {
                         p.text.clone_from(&c.posted.refcode.text);
                     }
                 }
-                let rows = self.rows(c.id, &c.name, vec![c.posted]);
-                self.keep_rows(rows);
+                if c.posted.refcode.seq > 0 {
+                    let rows = self.rows(c.id, &c.name, vec![c.posted]);
+                    self.keep_rows(rows);
+                } else {
+                    // A host numbers a partition's codes only in its
+                    // history: read its newest page.
+                    self.part_codes(s, c.id);
+                }
             }
             _ => {}
         }
+    }
+
+    /// Read the newest page of partition `id`'s history, or once more
+    /// after the read that is out.
+    fn part_codes(&mut self, s: &mut Session, id: u32) {
+        let out = self
+            .pending
+            .values()
+            .any(|p| matches!(p, Pending::Mine(Mine::PartCodes(i)) if *i == id));
+        if out {
+            self.stale.insert(id);
+            return;
+        }
+        self.mine(
+            s,
+            Mine::PartCodes(id),
+            &AnyRequest::Refcodes(refcodes::Request::History(refcodes::History {
+                id,
+                before: None,
+                limit: PAGE,
+            })),
+        );
     }
 
     fn code(&self, partition: u32, name: &str, r: Refcode, source: Source) {

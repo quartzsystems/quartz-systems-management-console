@@ -8,7 +8,7 @@
 //! until it ends; then try again after a back-off that doubles to a
 //! minute.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc::{Receiver, RecvTimeoutError, Sender};
@@ -66,6 +66,9 @@ pub(super) struct Worker {
     rx: Receiver<Cmd>,
     pub(super) pending: HashMap<u32, Pending>,
     pub(super) consoles: Consoles,
+    /// Partitions whose history gained codes while a read of it was
+    /// out: read again when it ends.
+    pub(super) stale: HashSet<u32>,
 }
 
 impl Worker {
@@ -76,6 +79,7 @@ impl Worker {
             rx,
             pending: HashMap::new(),
             consoles: Consoles::default(),
+            stale: HashSet::new(),
         }
     }
 

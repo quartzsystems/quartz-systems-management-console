@@ -63,6 +63,9 @@ pub fn post_part(s: &mut System, id: u32, code: &str, text: &str, source: Source
         p.status.text = text.into();
     }
     let name = p.status.name.clone();
+    // A QS/VS host's event has no place in the history: seq 0.
+    let mut posted = posted;
+    posted.refcode.seq = 0;
     s.push(&AnyEvent::Refcodes(refcodes::Event::Code(refcodes::Code {
         id,
         name,
