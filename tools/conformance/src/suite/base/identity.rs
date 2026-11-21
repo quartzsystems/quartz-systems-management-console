@@ -43,7 +43,8 @@ pub fn identity(run: &Run<'_>) -> Result<String, String> {
     let channel_now = guest.channel(deadline)?;
     let certificate = channel_now.cat(CERT)?;
     let (mode, owner, _) = channel_now.stat(KEY)?;
-    if (mode.as_str(), owner) != ("600", 0) {
+    // From Phase 4 the key is mgmtd's user's alone (`docs/MGMT.md`).
+    if mode != "600" || owner != release::MGMT_ID {
         return Err(format!("the key is mode {mode}, owner {owner}"));
     }
     channel_now.ask(&format!("{} mc-renamed", command::SET_HOST))?;
