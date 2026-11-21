@@ -120,7 +120,35 @@ item 38.
 
 ## The suites
 
-BLOCKED(phase5): the suites of Section 3 (`tools/conformance/src/suite/parts/`) and their evidence are recorded here when they have run.
+`tools/conformance/src/suite/parts/`, each on a console of the test
+image against the simulator's `QSHQVS1` (the whole host family) and
+`QSHQ400` (standalone), run in the harness's process so a suite reads
+what the host received:
+
+| Suite | What it shows |
+| --- | --- |
+| `parts-pages` | every page of this phase (231, and 35 they link to) answers 200; 229 forms post with their token to an action that answers, 200 of them with Cancel; no script but the terminal windows' |
+| `parts-requests` | each request kind reaches the host as QSI encodes it and the host keeps it: switch, pool (a disk with another system's label only after its confirmation), virtual disk, image load and unload, tape volume, processor pool, definition, settings, entitlement, each profile operation (Edit opening the profile chosen), activate, shut down, restart, delete, power-on settings; refusals with the host's QVS messages |
+| `parts-stale` | a profile changed in a second session: the first's apply refused `QMC3201` with `QSI0401`, its entries kept, applied again against the new revision |
+| `parts-wizard` | each step's check, `QMC3131`, Back keeps, Cancel leaves nothing at the host, Finish makes exactly the summary; a profile the host refuses leaves no partition (`QMC3134`) |
+| `parts-confirm` | 11 destructive actions: nothing by GET, nothing without the token (403 `QMC9011`) or by Cancel, done by OK |
+| `parts-upload` | 3 GiB streamed in 63 s with webd and mgmtd growing 0 MiB and nothing written to the console's disks; a cut upload leaves nothing (`QSI0702`); past 64 GiB refused before any of it is read (`QMC2404`, item 40); the host's pace is the browser's |
+| `parts-sched` | once, daily, weekly and monthly runs completed with their next times; an owner lowered refused (`QMC3406`), nothing sent; a run due while the console was down Missed; Run now |
+| `parts-groups` | a group's page is the Partitions list of its members; a partition deleted at the host leaves it |
+| `parts-roles` | 308 route, method and role pairs for the four roles as the matrix says, 131 of them 403 `QMC9010` |
+| `parts-lists` | a stalled host: every list within 203 ms, its rows No connection after 44 s |
+| `parts-older` | a host whose hello lacks bits 19 to 24: 91 pages served, `QMC1114` naming what is lacking for each, nothing sent |
+| `parts-audit` | 39 kinds of action audited with the user, a scheduled run with its owner; no password or key in the logs |
+
+The first run found seven faults in the pages, fixed in `32ae99c`:
+Manage profiles' Edit opened the default profile; the pool form left
+out a disk with another system's label, so its confirmation was never
+reached (QSI's `free` means "without a confirmation"); the Settings
+tab, activation times and the panel's list of a host without bits 21,
+22 and 24 said nothing or claimed success instead of `QMC1114`; Finish
+left a partition without a profile when the host refused it; a Viewer
+could post Virtual Optical's Fetch. The seventh, the 64 GiB refusal
+seen only after 30 s, is `qsweb`'s (item 40).
 
 ## Evidence
 
