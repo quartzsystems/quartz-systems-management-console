@@ -3,20 +3,27 @@
 // root directory of this project.
 
 //! What a harness or a person tells the simulator, a line at a time:
-//! `<command> <system> [arguments]`, answered with one line.
+//! `<command> <system> [arguments]`, answered with one line (or a line
+//! each of what is kept).
 
 use qsi::base::PowerState;
-use qsi::host::model::PartitionState;
+use qsi::host::model::{IplSource, PartitionState};
+use qsi::host::partition::{Activate, ShutdownKind};
 use qsi::host::refcodes::Source;
 
 use crate::fixture;
-use crate::system::{Shared, codes, lock};
+use crate::system::refuse::units;
+use crate::system::{FamilyRefusal, Shared, System, codes, lock};
 
 /// The commands, for `help`.
 pub const HELP: &str = "pair S | expire S | drop S | stall S on|off | refuse S on|off | down S | up S \
-| refuse-power S ID TEXT... | refuse-panel S ID TEXT... | allow S | nonsense S | oversize S | flood S on|off \
-| no-credit S on|off | renew S | activate S P | shutdown S P | code S CODE TEXT... | pcode S P CODE TEXT... \
-| keylock S P normal|manual | keys S P | lines S | pins S | withhold S BIT...|new";
+| refuse-power S ID TEXT... | refuse-panel S ID TEXT... | refuse-family S FAMILY[/OP] ID TEXT... \
+| missing S NAME|none | allow S | nonsense S | oversize S | flood S on|off \
+| no-credit S on|off | renew S | activate S P [PROFILE] [a|b|d] | shutdown S P [delayed|system|immediate] \
+| state S P not-activated|starting|running|shutting-down|error | fail S POOL UNIT \
+| upload-rate S BYTES|stall|off | uploaded S | code S CODE TEXT... | pcode S P CODE TEXT... \
+| keylock S P normal|manual | keys S P | lines S | pins S | withhold S BIT...|new \
+| kept S pools|disks|vdisks|images|volumes|switches|procpools|profiles P|drives P";
 
 fn on(w: Option<&&str>) -> bool {
     w.is_some_and(|w| *w == "on")
@@ -24,6 +31,199 @@ fn on(w: Option<&&str>) -> bool {
 
 fn rest(words: &[&str], from: usize) -> String {
     words.get(from..).map(|w| w.join(" ")).unwrap_or_default()
+}
+
+/// A refusal's messages as one line.
+fn said(notes: &[(String, String)]) -> String {
+    notes
+        .iter()
+        .map(|(id, text)| format!("{id} {text}"))
+        .collect::<Vec<_>>()
+        .join(" / ")
+}
+
+/// A family by name or number.
+fn family(w: &str) -> Option<u16> {
+    use qsi::family as f;
+    Some(match w {
+        "base" => f::BASE,
+        "host" => f::HOST,
+        "partitions" => f::PARTITIONS,
+        "partition" => f::PARTITION,
+        "profiles" => f::PROFILES,
+        "panel" => f::PANEL,
+        "refcodes" => f::REFCODES,
+        "dumps" => f::DUMPS,
+        "console" => f::CONSOLE,
+        "vres" => f::VRES,
+        w => number(w)?,
+    })
+}
+
+/// A number, decimal or `0x` hexadecimal.
+fn number(w: &str) -> Option<u16> {
+    match w.strip_prefix("0x") {
+        Some(h) => u16::from_str_radix(h, 16).ok(),
+        None => w.parse().ok(),
+    }
+}
+
+fn state(w: &str) -> Option<PartitionState> {
+    Some(match w {
+        "not-activated" => PartitionState::NotActivated,
+        "starting" => PartitionState::Starting,
+        "running" => PartitionState::Running,
+        "shutting-down" => PartitionState::ShuttingDown,
+        "error" => PartitionState::Error,
+        _ => return None,
+    })
+}
+
+/// What is kept of `what`, a line each.
+#[allow(clippy::too_many_lines, reason = "one arm a kind")]
+fn kept(s: &System, what: &str, id: u32) -> String {
+    let lines: Vec<String> = match what {
+        "pools" => s
+            .vres
+            .pools
+            .iter()
+            .map(|p| {
+                format!(
+                    "{} {} {} bytes {} allocated {} provisioned {} units {}{}",
+                    p.name,
+                    p.protection,
+                    p.state,
+                    p.bytes,
+                    p.allocated,
+                    p.provisioned,
+                    p.units.len(),
+                    if p.repository { " repository" } else { "" }
+                )
+            })
+            .collect(),
+        "disks" => s
+            .vres
+            .disks
+            .iter()
+            .map(|d| {
+                format!(
+                    "{} {} pool {} free {} foreign {}",
+                    d.name, d.what, d.pool, d.free, d.foreign
+                )
+            })
+            .collect(),
+        "vdisks" => s
+            .vres
+            .vdisks
+            .iter()
+            .map(|v| {
+                format!(
+                    "{}/{} {} bytes {} held {}/{}",
+                    v.pool,
+                    v.name,
+                    if v.thick { "thick" } else { "thin" },
+                    v.bytes,
+                    v.holder.partition,
+                    v.holder.slot
+                )
+            })
+            .collect(),
+        "images" => s
+            .vres
+            .images
+            .iter()
+            .map(|i| {
+                format!(
+                    "{} {} bytes {} held {}/{}",
+                    i.name, i.label, i.bytes, i.holder.partition, i.holder.slot
+                )
+            })
+            .collect(),
+        "volumes" => s
+            .vres
+            .volumes
+            .iter()
+            .map(|v| {
+                format!(
+                    "{} {} {} MiB protected {} held {}/{}",
+                    v.name,
+                    v.identifier,
+                    v.capacity_mib,
+                    v.protected,
+                    v.holder.partition,
+                    v.holder.slot
+                )
+            })
+            .collect(),
+        "switches" => s
+            .vres
+            .switches
+            .iter()
+            .map(|w| {
+                let vlans: Vec<String> = w.vlans.iter().map(u16::to_string).collect();
+                format!(
+                    "{} {} vlans {} mtu {} uplink {}",
+                    w.name,
+                    w.id,
+                    vlans.join(","),
+                    w.mtu,
+                    w.uplink_state
+                )
+            })
+            .collect(),
+        "procpools" => s
+            .host
+            .iter()
+            .flat_map(|h| h.pools.iter())
+            .map(|p| {
+                format!(
+                    "{} cores {:?} maximum {} entitled {} available {} partitions {}",
+                    p.name,
+                    p.cores,
+                    units(p.maximum),
+                    units(p.entitled),
+                    units(p.available),
+                    p.partitions
+                )
+            })
+            .collect(),
+        "profiles" => s
+            .part_ref(id)
+            .map(|p| {
+                p.profiles
+                    .iter()
+                    .map(|k| {
+                        format!(
+                            "{} revision {}{}",
+                            k.profile.name,
+                            k.revision,
+                            if k.profile.name == p.definition.default_profile {
+                                " default"
+                            } else {
+                                ""
+                            }
+                        )
+                    })
+                    .collect()
+            })
+            .unwrap_or_default(),
+        "drives" => s
+            .part_ref(id)
+            .map(|p| {
+                p.drives
+                    .iter()
+                    .map(|d| {
+                        format!(
+                            "{} {:?} {} prevented {}",
+                            d.slot, d.kind, d.name, d.prevented
+                        )
+                    })
+                    .collect()
+            })
+            .unwrap_or_default(),
+        _ => return format!("kept: not a kind ({HELP})"),
+    };
+    lines.join("\n")
 }
 
 /// Carry out `line` on `systems`.
@@ -109,9 +309,42 @@ pub fn command(systems: &[Shared], line: &str) -> String {
             ));
             "refusing panel functions".into()
         }
+        "refuse-family" => {
+            let what = words.get(2).copied().unwrap_or_default();
+            let (f, op) = what
+                .split_once('/')
+                .map_or((what, None), |(f, o)| (f, Some(o)));
+            let Some(f) = family(f) else {
+                return format!("refuse-family: no family {f}");
+            };
+            let op = match op.map(number) {
+                None => None,
+                Some(Some(o)) => Some(o),
+                Some(None) => return format!("refuse-family: no operation {what}"),
+            };
+            s.faults.refuse_family.push(FamilyRefusal {
+                family: f,
+                op,
+                id: (*words.get(3).unwrap_or(&"QSI0301")).into(),
+                text: rest(&words, 4),
+            });
+            format!("refusing family {f:#06x}")
+        }
+        "missing" => match words.get(2) {
+            None | Some(&"none") => {
+                s.faults.missing.clear();
+                "nothing missing".into()
+            }
+            Some(n) => {
+                s.faults.missing.push((*n).into());
+                format!("missing {n}")
+            }
+        },
         "allow" => {
             s.faults.refuse_power = None;
             s.faults.refuse_panel = None;
+            s.faults.refuse_family.clear();
+            s.faults.missing.clear();
             "allowing".into()
         }
         "nonsense" => {
@@ -137,14 +370,83 @@ pub fn command(systems: &[Shared], line: &str) -> String {
             s.identity.fingerprint().hex()
         }
         "activate" => {
-            codes::activate(&mut s, part(2));
-            "activated".into()
+            let mut profile = String::new();
+            let mut source = None;
+            for w in words.iter().skip(3) {
+                match *w {
+                    "a" => source = Some(IplSource::A),
+                    "b" => source = Some(IplSource::B),
+                    "d" => source = Some(IplSource::D),
+                    p => profile = p.into(),
+                }
+            }
+            let a = Activate {
+                id: part(2),
+                profile,
+                source,
+                keylock: None,
+            };
+            match s.activate(&a) {
+                Ok(_) => "activated".into(),
+                Err(n) => said(&n),
+            }
         }
         "shutdown" => {
-            codes::end(&mut s, part(2));
-            s.set_state(part(2), PartitionState::NotActivated);
+            let id = part(2);
+            if !s.part_ref(id).is_some_and(crate::system::Part::active) {
+                return "not activated".into();
+            }
+            match words.get(3).copied() {
+                Some("delayed") => codes::shut_down(&mut s, id, ShutdownKind::Delayed, 0),
+                Some("system") => codes::shut_down(&mut s, id, ShutdownKind::System, 0),
+                Some("immediate") => codes::shut_down(&mut s, id, ShutdownKind::Immediate, 0),
+                _ => codes::end(&mut s, id),
+            }
             "shut down".into()
         }
+        "state" => match words.get(3).and_then(|w| state(w)) {
+            Some(st) if s.part_ref(part(2)).is_some() => {
+                s.set_state(part(2), st);
+                "set".into()
+            }
+            Some(_) => "no partition".into(),
+            None => "state: not a state".into(),
+        },
+        "fail" => {
+            let pool = words.get(2).copied().unwrap_or_default();
+            let unit = part(3);
+            let Some(p) = s.vres.pools.iter_mut().find(|p| p.name == pool) else {
+                return format!("no pool {pool}");
+            };
+            let Some(u) = p.units.iter_mut().find(|u| u.number == unit) else {
+                return format!("no unit {unit}");
+            };
+            u.state = "Failed".into();
+            p.state = "Degraded".into();
+            crate::system::vres::pool_changed(&mut s, pool);
+            "failed".into()
+        }
+        "upload-rate" => {
+            match words.get(2).copied() {
+                Some("stall") => s.upload.stalled = true,
+                Some("off") | None => {
+                    s.upload.stalled = false;
+                    s.upload.rate = 0;
+                }
+                Some(n) => {
+                    s.upload.stalled = false;
+                    s.upload.rate = n.parse().unwrap_or(0);
+                }
+            }
+            format!("upload rate {} stalled {}", s.upload.rate, s.upload.stalled)
+        }
+        "uploaded" => {
+            let u = &s.upload;
+            format!("{} {} {} {}", u.name, u.arrived, u.sha256, u.end)
+                .trim_end()
+                .to_string()
+        }
+        "kept" => kept(&s, words.get(2).copied().unwrap_or_default(), part(3)),
         "code" => {
             codes::post(
                 &mut s,
@@ -173,6 +475,7 @@ pub fn command(systems: &[Shared], line: &str) -> String {
             match s.part(part(2)) {
                 Some(p) => {
                     p.definition.keylock = k;
+                    p.keylock_now = None;
                     "set".into()
                 }
                 None => "no partition".into(),

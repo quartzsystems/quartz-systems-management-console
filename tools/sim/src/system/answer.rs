@@ -3,15 +3,17 @@
 // root directory of this project.
 
 //! What the system answers to each request a pinned console sends, in
-//! the words a QS/VS host uses. Pairing and the console's stream are the
+//! the words a QS/VS host uses. Pairing and the streams are the
 //! connection's (`net`); this is everything else.
 
 use qsi::any::{AnyEvent, AnyReply, AnyRequest};
 use qsi::base::{self, Keylock, PowerAction, PowerState};
 use qsi::host::model::{IplSource, IplType, PartitionState};
-use qsi::host::{console, host, panel, partitions, profiles, refcodes};
+use qsi::host::partitions::{Activation, Adapter};
+use qsi::host::{console, host, panel, partitions, refcodes, vres};
 use qsi::{Empty, PeerKind};
 
+use super::refuse::{self, Refusal};
 use super::{System, codes};
 
 /// What a request comes to.
@@ -26,6 +28,8 @@ pub enum Answer {
     Subscribe(Option<u64>),
     /// A console to attach: the partition and whether to take it over.
     Attach(u32, bool),
+    /// An image's upload to take: its name and size.
+    Upload(String, u64),
     /// An operation this system does not answer.
     Unknown,
     /// A power down begun: the connection's controller carries it out.
@@ -36,9 +40,27 @@ fn refuse(id: &str, text: &str) -> Answer {
     Answer::Refuse(vec![(id.into(), text.into())])
 }
 
+/// A family's answer, or its refusal.
+fn of(r: Result<AnyReply, Refusal>) -> Answer {
+    match r {
+        Ok(rep) => Answer::Reply(rep),
+        Err(notes) => Answer::Refuse(notes),
+    }
+}
+
 /// A partition named by ID that is not there.
 fn no_partition(id: u32) -> Answer {
-    refuse("QVS2001", &format!("Partition {id} does not exist."))
+    Answer::Refuse(refuse::no_partition(id))
+}
+
+/// The refusal a test asked for of `req`'s family, if any.
+fn told(s: &System, req: &AnyRequest) -> Option<Answer> {
+    let (f, op) = (req.family(), req.op());
+    s.faults
+        .refuse_family
+        .iter()
+        .find(|r| r.family == f && r.op.is_none_or(|o| o == op))
+        .map(|r| refuse(&r.id, &r.text))
 }
 
 /// Answer `r`, asked by `user`.
@@ -49,6 +71,9 @@ pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
         req.family(),
         req.op()
     ));
+    if let Some(a) = told(s, req) {
+        return a;
+    }
     let host = s.hello.kind == PeerKind::Host;
     match req {
         AnyRequest::Base(b) => match b {
@@ -103,10 +128,16 @@ pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
                 Some(x) => Answer::Reply(AnyReply::Host(host::Reply::Host(x.clone()))),
                 None => refuse("QSI0301", "The partition manager did not answer."),
             },
+            host::Request::Settings(_) => {
+                Answer::Reply(AnyReply::Host(host::Reply::Settings(s.settings.clone())))
+            }
             host::Request::Hardware(_) => match &s.hardware {
                 Some(x) => Answer::Reply(AnyReply::Host(host::Reply::Hardware(x.clone()))),
                 None => refuse("QSI0301", "The partition manager did not answer."),
             },
+            host::Request::Devices(_) => {
+                Answer::Reply(AnyReply::Host(host::Reply::Devices(s.devices.clone())))
+            }
             host::Request::PowerOn(_) => {
                 Answer::Reply(AnyReply::Host(host::Reply::PowerOn(s.power_on)))
             }
@@ -116,6 +147,9 @@ pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
                         "QVS1022",
                         "The delay of a power off is 99999 seconds at most.",
                     );
+                }
+                if matches!(p.power_off, host::PowerOff::Other(_)) {
+                    return Answer::Refuse(refuse::no_such("power off"));
                 }
                 s.power_on = *p;
                 s.push(&AnyEvent::Host(host::Event::PowerOn(
@@ -127,7 +161,6 @@ pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
                 )));
                 Answer::Reply(AnyReply::Host(host::Reply::SetPowerOn(Empty)))
             }
-            _ => Answer::Unknown,
         },
         AnyRequest::Partitions(p) if host => match p {
             partitions::Request::List(_) => {
@@ -142,25 +175,40 @@ pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
                 ))),
                 None => no_partition(g.id),
             },
-            partitions::Request::Adapters(_) => Answer::Reply(AnyReply::Partitions(
-                partitions::Reply::Adapters(Vec::new()),
-            )),
-            partitions::Request::Activations(_) => Answer::Unknown,
+            partitions::Request::Adapters(a) => {
+                if a.id != 0 && s.part_ref(a.id).is_none() {
+                    return no_partition(a.id);
+                }
+                Answer::Reply(AnyReply::Partitions(partitions::Reply::Adapters(adapters(
+                    s, a.id,
+                ))))
+            }
+            partitions::Request::Activations(_) => {
+                Answer::Reply(AnyReply::Partitions(partitions::Reply::Activations(
+                    s.parts
+                        .iter()
+                        .map(|p| Activation {
+                            id: p.definition.id,
+                            since: p.since.filter(|_| p.active()),
+                            profile: p.status.profile.clone(),
+                        })
+                        .collect(),
+                )))
+            }
         },
-        AnyRequest::Profiles(profiles::Request::Get(g)) if host => {
-            let Some(p) = s.part(g.id) else {
-                return no_partition(g.id);
-            };
-            match p.profile.clone().filter(|pr| pr.name == g.name) {
-                Some(profile) => Answer::Reply(AnyReply::Profiles(profiles::Reply::Get(
-                    profiles::Revised {
-                        profile,
-                        revision: 1,
-                    },
-                ))),
-                None => refuse("QVS2011", &format!("Profile {} does not exist.", g.name)),
+        AnyRequest::Partition(r) if host => {
+            of(super::partition::answer(s, r, user).map(AnyReply::Partition))
+        }
+        AnyRequest::Profiles(r) if host => {
+            of(super::profiles::answer(s, r).map(AnyReply::Profiles))
+        }
+        AnyRequest::Vres(vres::Request::ImageUpload(u)) if host => {
+            match super::vres::media::upload_check(s, u, &s.upload.busy) {
+                Ok(()) => Answer::Upload(u.name.clone(), u.bytes),
+                Err(n) => Answer::Refuse(n),
             }
         }
+        AnyRequest::Vres(r) if host => of(super::vres::answer(s, r).map(AnyReply::Vres)),
         AnyRequest::Refcodes(refcodes::Request::History(q)) if host => {
             let Some(p) = s.part(q.id) else {
                 return no_partition(q.id);
@@ -218,6 +266,34 @@ pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
         },
         _ => Answer::Unknown,
     }
+}
+
+/// The virtual Ethernet adapters of partition `id`'s profiles, or of
+/// every partition's for 0.
+fn adapters(s: &System, id: u32) -> Vec<Adapter> {
+    let mut v = Vec::new();
+    for p in s.parts.iter().filter(|p| id == 0 || p.definition.id == id) {
+        for k in &p.profiles {
+            for e in &k.profile.ethernet {
+                v.push(Adapter {
+                    partition: p.definition.id,
+                    name: p.status.name.clone(),
+                    profile: k.profile.name.clone(),
+                    slot: e.slot,
+                    switch: e.switch.clone().unwrap_or_default(),
+                    vlan: u16::try_from(e.vlan).unwrap_or(0),
+                    tagged: e
+                        .tagged
+                        .iter()
+                        .filter_map(|t| u16::try_from(*t).ok())
+                        .collect(),
+                    mac: e.mac.clone().unwrap_or_default(),
+                    required: e.required,
+                });
+            }
+        }
+    }
+    v
 }
 
 /// The refusal of a console request whose ID this system does not
@@ -320,7 +396,15 @@ fn function(s: &mut System, f: &panel::Function) -> Answer {
         return no_partition(f.id);
     };
     let name = p.status.name.clone();
-    let keylock = p.definition.keylock;
+    if !p.settings.panel {
+        return refuse(
+            "QVS2318",
+            &format!(
+                "Partition {name} does not allow control panel functions from a management console."
+            ),
+        );
+    }
+    let keylock = p.keylock();
     let running = p.status.state != PartitionState::NotActivated;
     let manual = keylock == Keylock::Manual;
     let needs_manual = matches!(f.function, 3 | 8 | 21 | 22 | 34);

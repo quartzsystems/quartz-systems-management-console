@@ -4,10 +4,12 @@
 
 //! A system on the network: a TCP listener, each connection a thread
 //! with TLS 1.3 against the system's pins and the managed side's QSI
-//! session over it, as a QS/VS host's server runs one.
+//! session over it, as a QS/VS host's server runs one: its consoles'
+//! streams and its uploads' beside its requests.
 
 mod console;
 mod power;
+mod upload;
 
 use std::io::{self, Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
@@ -26,6 +28,7 @@ use crate::system::answer::{self, Answer};
 use crate::system::pairing::{SystemGuard, SystemPins};
 use crate::system::{Shared, lock};
 use console::Consoles;
+use upload::Uploads;
 
 /// How long a handshake may take.
 const HANDSHAKE: Duration = Duration::from_secs(10);
@@ -103,10 +106,12 @@ fn connection(sys: &Shared, sock: TcpStream) -> Result<(), String> {
         pairing: None,
         binding,
         consoles: Consoles::default(),
+        uploads: Uploads::default(),
         junk_sent: false,
     };
     let end = link.run(&mut sess, &mut io, generation);
     link.consoles.release(sys, conn);
+    link.uploads.release(sys);
     lock(sys).note(format!("session from {peer} closed: {end}"));
     Ok(())
 }
@@ -119,6 +124,7 @@ struct Link {
     pairing: Option<Managed>,
     binding: qsitrust::Binding,
     consoles: Consoles,
+    uploads: Uploads,
     junk_sent: bool,
 }
 
@@ -182,9 +188,18 @@ impl Link {
                 match i {
                     Incoming::Request(r) => self.request(sess, &r),
                     Incoming::Closed { text, .. } => return text,
+                    Incoming::Data { stream, bytes } if self.uploads.owns(stream) => {
+                        self.uploads.data(&self.sys, sess, stream, &bytes);
+                    }
                     Incoming::Data { stream, bytes } => {
                         self.consoles
                             .data(&self.sys, sess, stream, &bytes, faults.no_credit);
+                    }
+                    Incoming::StreamClosed { stream } if self.uploads.owns(stream) => {
+                        self.uploads.ended(&self.sys, stream, true);
+                    }
+                    Incoming::StreamReset { stream, .. } if self.uploads.owns(stream) => {
+                        self.uploads.ended(&self.sys, stream, false);
                     }
                     Incoming::StreamClosed { stream } | Incoming::StreamReset { stream, .. } => {
                         self.consoles.ended(&self.sys, stream);
@@ -197,6 +212,7 @@ impl Link {
                 let _ = sess.publish(&s.log);
             }
             self.consoles.pump(&self.sys, sess, self.conn);
+            self.uploads.pump(&self.sys, sess);
             if sess.is_closed() {
                 return "closed".into();
             }
@@ -236,6 +252,7 @@ impl Link {
             Answer::Attach(id, take_over) => self
                 .consoles
                 .attach(&self.sys, sess, r.id, self.conn, id, take_over),
+            Answer::Upload(name, bytes) => self.uploads.open(&self.sys, sess, r.id, &name, bytes),
             Answer::Power(action, immediate) => {
                 let done = sess.reply_any(r.id, &AnyReply::Base(qsi::base::Reply::Power(Empty)));
                 power::begin(&self.sys, action, immediate);
