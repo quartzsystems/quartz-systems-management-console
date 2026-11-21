@@ -10,6 +10,8 @@
 //! that name the guest as a browser would, bytes of a hostile client,
 //! the WebSocket.
 
+pub mod form;
+pub mod stream;
 pub mod ws;
 
 use std::fmt::Write as _;

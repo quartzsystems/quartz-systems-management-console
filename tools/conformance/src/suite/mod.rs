@@ -12,12 +12,14 @@
 //!   entry, a processor without what the cryptography needs), then the
 //!   base system's suites, then Phase 2's ([`install`]): the installer
 //!   from the test image's ISO and the local console of what it
-//!   installed.
+//!   installed; then Phase 3's ([`web`]), Phase 4's ([`mgmt`]) and
+//!   Phase 5's ([`parts`]), each on a console installed from that ISO.
 //! - `iso`: the installation media, to the installer's first screen.
 
 pub mod base;
 pub mod install;
 pub mod mgmt;
+pub mod parts;
 pub(crate) mod steps;
 pub mod web;
 
@@ -100,6 +102,7 @@ pub fn names(media: Media) -> Vec<&'static str> {
             .chain(install::SUITES.iter().map(|(name, _)| *name))
             .chain(web::SUITES.iter().map(|(name, _)| *name))
             .chain(mgmt::SUITES.iter().map(|(name, _)| *name))
+            .chain(parts::SUITES.iter().map(|(name, _)| *name))
             .collect(),
         Media::Iso => steps::ISO.iter().map(steps::Step::name).collect(),
     }
@@ -183,7 +186,8 @@ impl Suite {
                 .iter()
                 .chain(install::SUITES)
                 .chain(web::SUITES)
-                .chain(mgmt::SUITES);
+                .chain(mgmt::SUITES)
+                .chain(parts::SUITES);
             // A suite run by name only, when it is named.
             let named = mgmt::NAMED.iter().filter(|(n, _)| only == Some(*n));
             for (name, suite) in all.filter(|(n, _)| wanted(n)).chain(named) {

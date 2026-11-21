@@ -167,8 +167,9 @@ tools/          host tools
   conformance/    the QEMU harness
     src/qemu/       base/qemu (as `driver`) with QS/MC's variables; a suite's machine, its forwards and its session's cursor; the test hooks' channel; golden screens
     src/image/      a load source on image files (base/loadsource's writer) and what the suites read of a disk
-    src/web/        a browser of the web interface, pinned to the certificate it expects
-    src/suite/      Phase 0's steps; base/: Phase 1's suites; install/: Phase 2's, the installer and the local console; web/: Phase 3's
+    src/web/        a browser of the web interface, pinned to the certificate it expects; its forms as a browser sends them; an upload streamed
+    src/suite/      Phase 0's steps; base/: Phase 1's suites; install/: Phase 2's, the installer and the local console; web/: Phase 3's; mgmt/: Phase 4's;
+                    parts/: Phase 5's, partitions, profiles, virtual resources, the wizard, groups, schedules, the upload, roles, an older host, audit
     golden/         every installer and local console screen, as text
   fuzz/           qsmcfuzz over QS/400's fuzzer: a backup's reader, the certificate import, what mgmtd does with a peer's messages
 lic/            PID 1, release, the product's binaries
