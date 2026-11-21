@@ -35,16 +35,16 @@ Two things already exist and are reused, never rewritten or copied:
 | 1 | PID 1 and base system: services, state, logging, the management network, time | `docs/PHASE1.md` |
 | 2 | Installer, ISO and the local console | `docs/PHASE2.md` |
 | 3 | The web server and Console Management pages | `docs/PHASE3.md` |
-| **4 (current)** | QSI and managed systems, proven on a QS/VS host; the browser terminal | `docs/PHASE4.md` |
-| 5 | Partitions, profiles and virtual resources | |
+| 4 | QSI and managed systems, proven on a QS/VS host; the browser terminal | `docs/PHASE4.md` |
+| **5 (current)** | Partitions, profiles and virtual resources | `docs/PHASE5.md` |
 | 6 | Service management and updates | |
 | 7 | System plans | |
 | 8 | Release engineering and hardening | |
 
 Work that is not done is listed in the current phase's record,
-`docs/PHASE4.md`. Code and documents mark it `BLOCKED(phase4): reason`
+`docs/PHASE5.md`. Code and documents mark it `BLOCKED(phase5): reason`
 (one line) or `NEEDS-CODY` (Cody's hardware or sign-off); an earlier
-phase's `BLOCKED(phase0)` to `BLOCKED(phase3)` stays as it was written.
+phase's `BLOCKED(phase0)` to `BLOCKED(phase4)` stays as it was written.
 No other marker form.
 
 ## Ground rules
@@ -71,7 +71,7 @@ No other marker form.
 - **The two pins.** QS/VS's crates are git dependencies at one commit of
   its `main`. QS/400's crates are git dependencies at one commit:
   exactly the commit that QS/VS commit pins, so the tree holds one copy
-  of every shared crate. Both are recorded in `docs/PHASE4.md`, where
+  of every shared crate. Both are recorded in `docs/PHASE5.md`, where
   they last moved (`docs/PHASE0.md` has the first). Moving
   either is its own commit, and they move together. Never path
   dependencies, never copies. `build doctor` fails when they disagree
@@ -86,7 +86,7 @@ No other marker form.
   value.
 - No IBM text, product names or marks anywhere. The names in use are
   QS/MC, QS/VS and QS/400.
-- Anything not done is listed in the current phase's record (`docs/PHASE4.md`).
+- Anything not done is listed in the current phase's record (`docs/PHASE5.md`).
 
 ## Locked decisions
 
@@ -186,6 +186,7 @@ lic/            PID 1, release, the product's binaries
   qsmchook/       the test hooks: the channel, flaky, the churn, a failing web server (test image only)
   qsmcwebd/       the web server's binary: web/webd with web/pages, and its socket for the local console
   qsmcmgmtd/      the managed-systems service's binary: its sockets bound, its own user for good, mgmt/mgmtd
+  qsmcschedd/     the scheduler's binary: its socket bound, no capability, sched/schedd
   release/        V1R0M0 over QS/400's vrm, the banner, the prefixes, the Appliance and its interface roles, LOAD_SOURCE, status facts and screen, the processor's words
   refcode/        the console's reference codes (docs/REFCODES.md), each base event's, the poster
 web/            the web interface (docs/WEB.md)
@@ -193,14 +194,18 @@ web/            the web interface (docs/WEB.md)
   users/          web users, roles and the matrix, sign-on rules, web.toml, the web server's socket protocol (docs/WEBUSERS.md)
   msgs/           the QMC message catalogue (docs/MESSAGES.md)
   pages/          every page from its view, a module and its routes each; the App: sessions, the task of each route, audit;
-                  systems/ the managed systems' pages, refcodes/ explanations and the history, terminal/ the window, its socket, the control panel
+                  systems/ the managed systems' pages, refcodes/ explanations and the history, terminal/ the window, its socket, the control panel,
+                  vres/ a host's virtual resources and the upload, partitions/ the list, properties, activate, shut down, the wizard, profiles,
+                  groups.rs custom groups, schedule.rs scheduled operations
   backup/         the backup file: the payload PID 1 restores, sealed under a passphrase (docs/BACKUP.md)
 mgmt/           managed systems (docs/MGMT.md)
   proto/          mgmtproto: what is kept of a system, the requests on mgmtd's socket, a terminal window's connection
-  mgmtd/          the service: keep/ systems.toml, mgmt.toml, the history; peer/ a QSI connection, pairing; system/ a thread a system, its consoles shared; service/ the requests, the console socket
+  mgmtd/          the service: keep/ systems.toml, mgmt.toml, the history; peer/ a QSI connection, pairing; system/ a thread a system, its consoles shared, what it keeps of a host, uploads; service/ the requests, `ask`, the console socket, uploads
+sched/          scheduled operations (docs/SCHED.md)
+  schedd/         the scheduler: schedules.toml, when each is due, the runs in their owners' names, its socket
 svc/            the local console
   console/        qsmccons over base/panels: the sessions, the main menu, status, network, disk units, the web interface (option 4), the one panel for the unit to keep
-docs/           ARCHITECTURE, PHASE0-4, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, MGMT, TERMINAL, SIM, OPEN_QUESTIONS
+docs/           ARCHITECTURE, PHASE0-5, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, MGMT, TERMINAL, SIM, PARTITIONS, VRES, SCHED, OPEN_QUESTIONS
 design/         qsmc-prototype/: the web UI's approved design, every page a golden rendering (its README is the handoff)
 ```
 
@@ -208,9 +213,9 @@ Category folders are made as phases need them. The full set: `tools/`
 (host tools), `lic/` (PID 1, release, the product's binaries), `web/`
 (the server, sessions, templates, the terminal relay, static files),
 `mgmt/` (managed systems: the QSI client's use, pairing, events, what
-is kept about each system), `svc/` (the local console). Phases 0 and 1
-made `tools/` and `lic/`, Phase 2 `svc/`, Phase 3 `web/`, Phase 4
-`mgmt/`.
+is kept about each system), `sched/` (scheduled operations), `svc/`
+(the local console). Phases 0 and 1 made `tools/` and `lic/`, Phase 2
+`svc/`, Phase 3 `web/`, Phase 4 `mgmt/`, Phase 5 `sched/`.
 
 ## Commands
 
@@ -221,7 +226,7 @@ with `QSMC_TARGET_DIR`.
 cargo run -p build -- doctor          host prerequisites, the license headers, the two pins, no shared crate twice
 cargo run -p build -- all             fetch, kernel, userland, initramfs, uki, disk, iso, manifest
 cargo run -p build -- --test-image all   the same with the test hooks, under test-image/ in the target
-cargo run -p build -- test            Phase 0's steps on the release image, then Phases 1 to 4's suites on the test image
+cargo run -p build -- test            Phase 0's steps on the release image, then Phases 1 to 5's suites on the test image
 cargo run -p build -- test --suite mgmt-host   suite 10 on a real QS/VS host: QSMC_QSVS_DISK names its installed test disk
 cargo run -p sim --bin qsmcsim        the prototype's managed systems on the network, told what to do on standard input
 cargo run -p build -- fuzz            the fuzzer with coverage counters, every target 60 s (--target NAME, --secs N)
@@ -232,7 +237,7 @@ cargo run -p build -- deny            cargo-deny and the C-linkage check
 cargo run -p build -- notices         rewrite lic/release/NOTICES.txt (--check in CI)
 cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
-cargo clippy -p qsmcinit -p qsmcstgd -p qsmclogd -p qsmcnetd -p qsmccons -p qsmcinstall -p qsmcwebd -p qsmcmgmtd --all-targets --target x86_64-unknown-linux-musl -- -D warnings
+cargo clippy -p qsmcinit -p qsmcstgd -p qsmclogd -p qsmcnetd -p qsmccons -p qsmcinstall -p qsmcwebd -p qsmcmgmtd -p qsmcschedd --all-targets --target x86_64-unknown-linux-musl -- -D warnings
 QSMC_TEST_HOOKS=1 cargo clippy -p qsmcinit -p qsmchook -p qsmccons -p webpages --all-targets --target x86_64-unknown-linux-musl -- -D warnings
 cargo test --workspace
 cargo test -p build -- --ignored host::pins   the pin checks against cargo's checkout of QS/VS
@@ -277,6 +282,14 @@ guest's second serial port.
 - `docs/PHASE4.md`: QSI and managed systems: the new pins, what exists,
   the pages live, the acceptance table with evidence, the joint gate
   with QS/VS, what is not done.
+- `docs/PHASE5.md`: partitions, profiles and virtual resources: the new
+  pins and what was deleted for `base/`, the pages live, the acceptance
+  table with evidence, what is not done.
+- `docs/PARTITIONS.md`: each partition page's fields and where each
+  lives, what changes when, boot mode and console device.
+- `docs/VRES.md`: a host's pools, switches, disks, media and tape as the
+  console shows them, and the upload.
+- `docs/SCHED.md`: the scheduler, its times, its runs and roles.
 - `docs/MGMT.md`: the managed-systems service: what it keeps, sessions,
   pairing as the console does it, its sockets, what each failure shows.
 - `docs/TERMINAL.md`: the terminal window: the exchange, viewers, roles,

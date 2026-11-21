@@ -604,3 +604,43 @@ fuzzer brings QS/400's `release` crate, which has the name of QS/MC's.
 So `tools/build/src/host/fuzz.rs` (52 lines) stays. The change, for
 QS/VS: a manifest path in `buildaid::fuzz::Fuzzer` for a fuzzer outside
 the workspace.
+
+## 37. The pages built without a design (Phase 5)
+
+Found in Phase 5. The prototype links to these and does not draw them;
+each is the shared pattern of `STYLE.md` it is closest to (a properties
+form, a short form, a confirmation), with no new style and only the
+fields of its requests. They are for the design to draw:
+
+| Page | Route | Pattern | Fields |
+| --- | --- | --- | --- |
+| A switch's create and properties | `/server/<h>/virtual/ethernet/switch?n=` | properties | name, VLAN IDs, MTU, uplink interfaces, bond, native VLAN |
+| A storage pool's create and properties, Extend | `/server/<h>/virtual/storage/pool?n=&extend=` | properties, the free disks as a list | name, protection, disks and spares; a pool's state, units, the media repository |
+| A disk that carries another system's label | the pool form's confirmation | confirmation | the disks named |
+| A virtual disk's properties and resize | `/server/<h>/virtual/storage/resize?p=&n=` | properties | its size (a disk only grows) |
+| Load or unload an image | `/server/<h>/virtual/optical/load?n=` | short form | the partition's device |
+| Tape volumes, a device's volume | `/server/<h>/virtual/tape/volume?p=&s=` | list and short form | a new volume's name, identifier, capacity; protect; the device's volume |
+| A processor pool's change | `/server/<h>/virtual/pools/change?id=` | short form | name, cores, maximum units |
+| A partition's Other tab | `/partition/<h>/<id>/general?tab=other` | properties | serial number, created, default profile, start with the host |
+| A virtual adapter's create and edit, a physical adapter added | `/partition/<h>/<id>/edit?s=&new=&io=` | properties | Ethernet: switch, VLAN, tagged VLANs, MAC, required; SCSI client: the disks; physical: a released device |
+| A profile's copy, create, save current, set default | `/partition/<h>/<id>/profiles?copy=` and its buttons | short form | the new name; the default |
+| The wizard's adapter | `/partitions/create/step/6?edit=` | short form | type, adapter ID, switch and VLAN or disk, required |
+| A group's edit | `/groups/create?g=` | `group-create.html` with the group's values | |
+| A scheduled operation's change | `/schedule/add?id=` | `schedule-add.html` with its values | |
+| The confirmations of Delete partition, Remove adapter, Delete profile, the virtual resources' deletes, Remove and Run now of a scheduled operation, Delete group | `/confirm/<what>` | the shared confirmation | what is affected; Delete partition: its disks too, as chosen |
+
+## 38. What the prototype offers that V1 answers with a message (Phase 5)
+
+As items 19 and 32, for this phase's pages: Fetch an image from a URL
+(`QMC2405`), Add pass-through drive (`QMC2435`: a drive is released at
+the host), Open firmware (`QMC3123`), a physical console adapter
+(`QMC3124`), the console's serial adapters changed (`QMC3125`), a
+scheduled Power on (`QMC2201`), Backup console data (`QMC3407`) and
+Install code update (`QMC3408`) as scheduled operations, the
+partitions' Manage dumps (`QMC9030`, Phase 6), Extend of a QS/VS pool
+(the host's own refusal, `QSI1616`), and anything a host's hello does
+not offer (`QMC1114`). The values QSI has no field for are left empty
+or derived and said so in `docs/VRES.md` and `docs/PARTITIONS.md`: an
+image's upload date and read-only flag, a switch's mode, a pool's type
+and backing devices' words, the confirmation's active jobs and users
+signed on, the SCSI client's server adapter number.

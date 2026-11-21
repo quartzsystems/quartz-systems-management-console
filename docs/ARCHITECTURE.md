@@ -86,6 +86,21 @@ A sentence on each:
   its own build signed.
 - **Local console.** What must work without the network (its address,
   its disks, its users, its clock, shutting down) is at the machine.
+- **What pages read.** A list is what `mgmtd` keeps, fed by events; it
+  never waits on a managed system. An action is a live request, and a
+  refusal shows the managed system's own message. A page sends any of
+  QSI's requests through one call (`ask`) that `mgmtd` checks against
+  what the pages send and what the system's hello offers.
+- **A partition's fields.** Each is its definition's, its default
+  profile's or its settings'; a profile is put back with the revision it
+  was read at, and a stale put shows the page again with the entries
+  kept (`docs/PARTITIONS.md`).
+- **Uploads.** An image streams from the browser through the web server
+  and `mgmtd` to the host, paced by the host's stream credit; nothing of
+  it is held whole on the console.
+- **Scheduled operations.** A service of its own runs them in their
+  owners' names, their roles checked when they run, and never runs a
+  missed one late (`docs/SCHED.md`).
 
 ## The two-pin rule
 

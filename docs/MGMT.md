@@ -59,6 +59,17 @@ the console's address its session leaves from, and a serial number its
 hello said that is not the one paired. A list page reads only this: it
 never waits on a managed system.
 
+From Phase 5 it keeps too, each read only when the system's hello offers
+it (`system/resources.rs`): a host's virtual resources (storage pools,
+virtual disks, images, tape volumes, switches, ports, a running
+partition's drives, and with physical I/O its tape drives and devices),
+its power-on settings, each partition's profiles by name and each one
+whole at its revision, when each partition and each profile was last
+activated, and the control panel functions each partition (a
+standalone system: ID 0) carries out. The events keep them: one that
+carries the whole thing replaces it, one that does not has its list
+read again (`docs/VRES.md`).
+
 | Limit (`mgmt.toml`) | Default |
 | --- | --- |
 | `max_systems` | 256 |
@@ -136,11 +147,28 @@ each connection a thread so a slow answer holds up no other.
 | `screen` | the console family's `Screen` |
 | `partition` | partitions `Get` |
 | `describe` | the console's note about a system |
+| `ask` | any request the pages send, as QSI encodes it (`mgmtproto::ask`): refused `QMC1115` when the pages do not send it (pairing, problems, code update, dumps, a console's or an upload's stream), `QMC1114` naming what the system lacks when its hello does not offer it, else sent in the user's name and its reply or refusal handed back |
 | `status` | counts, limits, the console's QSI certificate |
 | `backup_files` | `mgmt/systems.toml`, `mgmt/mgmt.toml`, the identity's two files |
 
 `release::MGMTD_CONSOLES` (`/run/qsmcmgmtd-consoles.sock`): a terminal
-window's connection (`docs/TERMINAL.md`).
+window's connection (`docs/TERMINAL.md`), or an image's upload. The first
+frame is an `Open` that says which.
+
+An upload (`mgmtproto::console::Upload`: the host, the image's name and
+length, the user) is answered when the host's stream is open; then the
+web server sends the image in frames of at most 256 KiB and an empty
+frame at its end. `mgmtd` takes the next frame only when the host's
+stream had credit for the last, through a channel of one, so the
+browser is read as fast as the host takes the bytes and no more than a
+frame is held. A connection that closes before the empty frame, or a
+length other than the one said, resets the stream and the host keeps
+nothing (`QSI0702`). Last, `mgmtd` answers how the host's
+`UploadEnded` ended it.
+
+The console's hello says `mgmtproto::ask::CONSOLE_CAPS`: every host
+family, servicing, physical I/O, and bits 18 to 24 (problems' notes,
+dump space and the fix level are Phase 6's).
 
 ## What each failure shows an operator
 

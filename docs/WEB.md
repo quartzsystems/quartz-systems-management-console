@@ -138,6 +138,7 @@ Golden corrections, each the only difference allowed:
 | `qsmc/partitions-paged.html` | the boxes are `p1` to `p25`, not `p0` to `p24` | as Servers' paged state |
 | `qsmc/partition-io.html`, `manage-profiles.html`, `create-6.html` | the buttons named (`add`, `remove`; `create`, `save`, `default`; `add`) | the page tells which was pressed |
 | `qsmc/confirm-activate.html`, `confirm-shutdown.html` | the form carries the choices of the page before as hidden fields | as drawn, the confirmation's OK would send nothing of what was chosen |
+| `qsmc/schedule.html` | the buttons named (`add`, `refresh`) | the page tells which was pressed |
 
 ## Time
 

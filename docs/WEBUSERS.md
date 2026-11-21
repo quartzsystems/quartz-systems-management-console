@@ -71,8 +71,22 @@ Console settings. The managed systems' pages of Phase 4:
 | Control panel functions 50 to 70 | Control panel functions 50-70 |
 
 A Viewer sees a terminal window and cannot type (`docs/TERMINAL.md`).
-The later phases' routes need the task their pages will: View for
-partitions and groups, System plans, Serviceable events for events and
+
+Phase 5's pages read for every role with View and change with the task
+the matrix gives the change; a Viewer reads everything and changes
+nothing:
+
+| Route | Task |
+| --- | --- |
+| Partitions, a partition's properties and profiles, a host's virtual resources, Activate's and Shut down's forms, Scheduled operations, Custom groups and a group's page | View |
+| Saving a partition's tab, an adapter's form, Manage profiles' changes, Create partition (every step), Delete partition and its adapters' and profiles' confirmations | Create / delete partitions |
+| Activate, Shut down, Restart (the confirmation's POST), Custom groups made, changed and deleted | Activate / shut down partitions |
+| Every change of a host's virtual resources: switches, pools, virtual disks, images and their upload, Load and Unload, tape volumes, processor pools, and their confirmations | Virtual resources |
+| A scheduled operation added, changed, removed or run now | the task of its operation: Activate / shut down partitions, or Power on / off managed systems |
+
+A scheduled operation runs in its owner's name, its role checked again
+when it runs (`docs/SCHED.md`). The later phases' routes need the task
+their pages will: System plans, Serviceable events for events and
 dumps, Code updates for updates. A route the role lacks answers Not authorized
 (403, `QMC9010`), and the attempt is audited. A change of the matrix
 applies at each user's next sign-on.
