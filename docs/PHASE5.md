@@ -44,7 +44,8 @@ Built from empty targets in a fresh clone at `ad9c372`
 (`~/qsmc-p5-s0`, its log `run.log`): `build doctor`, `build deny`,
 `build notices --check`, `fmt --check`, the three clippy runs and the
 workspace's tests passed; the release and test images were built. The
-53 suites of Phases 0 to 4 ran then (`run.log`, `web.log`): 51 passed,
+59 suites and steps of Phases 0 to 4, and the ISO's `ipl-media`, ran
+then (`run.log`, `web.log`): all but two passed,
 and two failed on what Step 0 itself changed:
 
 - `web-pages` and `mgmt-pages`: the help window's Close window is now
