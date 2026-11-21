@@ -86,7 +86,8 @@ fn shown(b: &Browser, window: &str) -> Result<String, String> {
     Ok(String::new())
 }
 
-/// Wait for one of `wanted` on the partition's screen: its index.
+/// Wait for one of `wanted` on the partition's screen with its
+/// keyboard open (a key while it says `X SYSTEM` is lost): its index.
 fn screen_of(
     b: &Browser,
     window: &str,
@@ -101,7 +102,8 @@ fn screen_of(
             Ok(s) => last = s,
             Err(e) => last = format!("(the socket: {e})"),
         }
-        if let Some(i) = wanted.iter().position(|w| last.contains(w)) {
+        let open = last.contains("\"kb\":") && !last.contains("\"kb\":\"X SYSTEM\"");
+        if let Some(i) = wanted.iter().position(|w| open && last.contains(w)) {
             return Ok((i, last));
         }
         std::thread::sleep(Duration::from_secs(5));

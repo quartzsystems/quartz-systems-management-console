@@ -101,6 +101,16 @@ pub fn refcodes(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     for i in 0..30 {
         fleet.tell(0, &format!("pcode 1 C6004031 Partition IPL step {i}"));
     }
+    // The partition's codes come through its history; the host's are
+    // posted after, as on a host, not in the same millisecond.
+    until(
+        "the partition's codes kept",
+        Duration::from_secs(30),
+        || {
+            let all = page(b, "/qsmc/refcodes?ms=QSHQVS1&rows=100")?;
+            Ok(all.matches(">C6004031</a>").count() >= 30)
+        },
+    )?;
     fleet.tell(0, "code C2005090 Partition started: QSDEV01, side A");
     fleet.tell(0, "code A2999999 A code no table has");
     until("the codes kept", Duration::from_secs(30), || {
