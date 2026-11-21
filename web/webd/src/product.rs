@@ -118,6 +118,8 @@ mod tests {
             "/console/shutdown",
             "/console/version",
             "/servers",
+            "/partitions",
+            "/groups",
             "/refcodes",
             "/connectivity",
         ];
