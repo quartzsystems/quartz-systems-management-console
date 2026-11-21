@@ -103,10 +103,22 @@ pub const MGMTD: Service = Service {
     caps: Caps::Only(&[SETUID, SETGID]),
 };
 
-/// The base services, the local console, the web server and the
-/// managed-systems service.
+/// The scheduler: no capabilities, as the web server; it asks
+/// `mgmtd` in each operation's owner's name.
+pub const SCHEDD: Service = Service {
+    name: "schedd",
+    binary: release::SCHEDD,
+    args: &[],
+    order: 45,
+    needs: &[],
+    ready_within: READY_WITHIN,
+    caps: Caps::Only(&[]),
+};
+
+/// The base services, the local console, the web server, the
+/// managed-systems service and the scheduler.
 #[cfg(not(test_hooks))]
-pub static TABLE: &[Service] = &[STGD, LOGD, NETD, CONSOLE, WEBD, MGMTD];
+pub static TABLE: &[Service] = &[STGD, LOGD, NETD, CONSOLE, WEBD, MGMTD, SCHEDD];
 
 /// The same and, in a test image, the test hooks' two.
 #[cfg(test_hooks)]
@@ -118,6 +130,7 @@ pub static TABLE: &[Service] = &[
     CONSOLE,
     WEBD,
     MGMTD,
+    SCHEDD,
     crate::hooks::FLAKY,
 ];
 
@@ -148,6 +161,7 @@ pub static FAILING_WEB: &[Service] = &[
     CONSOLE,
     crate::hooks::FAILING_WEBD,
     MGMTD,
+    SCHEDD,
     crate::hooks::FLAKY,
 ];
 
@@ -184,13 +198,15 @@ mod tests {
         // places; the later phase's is free.
         assert!(TABLE.iter().any(|s| s.name == WEBD.name && s.order == 30));
         assert!(TABLE.iter().any(|s| s.name == MGMTD.name && s.order == 40));
+        assert!(TABLE.iter().any(|s| s.name == SCHEDD.name && s.order == 45));
         assert!(TABLE.iter().all(|s| s.order != 50));
-        // Without them the table is the same less both.
+        // Without them the table is the same less the three: the
+        // scheduler asks only the managed-systems service.
         assert_eq!(supervise::table::check(WITHOUT_WEB), Ok(()));
         let less: Vec<&str> = TABLE
             .iter()
             .map(|s| s.name)
-            .filter(|n| *n != WEBD.name && *n != MGMTD.name)
+            .filter(|n| *n != WEBD.name && *n != MGMTD.name && *n != SCHEDD.name)
             .collect();
         let without: Vec<&str> = WITHOUT_WEB.iter().map(|s| s.name).collect();
         assert_eq!(less, without);

@@ -18,6 +18,7 @@ const RENAMED: &[(&str, &str)] = &[
     ("/servers/reset", "add-system.html"),
     ("/updates/code", "code-updates.html"),
     ("/groups/create", "group-create.html"),
+    ("/schedule/add", "schedule-add.html"),
     // A test image's pattern reference, and the error page it shows.
     ("/dev/components", "../shared/components.html"),
     ("/dev/error", "../shared/error.html"),

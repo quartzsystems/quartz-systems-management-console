@@ -22,6 +22,7 @@ netd.workspace = true
 x509kit.workspace = true
 zeroize.workspace = true
 qmcbackup = { path = "../backup", version = "0.1.0" }
+schedd = { path = "../../sched/schedd", version = "0.1.0" }
 mgmtproto = { path = "../../mgmt/proto", version = "0.1.0" }
 ipc.workspace = true
 qsi.workspace = true

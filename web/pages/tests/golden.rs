@@ -2403,3 +2403,129 @@ fn group_view() {
         &[],
     );
 }
+
+#[test]
+fn schedule() {
+    use webpages::schedule::{Row, page};
+    let r = |id, d: &str, t: &str, op: &str, tg: &str, rep: &str, owner: &str, st: &str| Row {
+        id,
+        date: d.into(),
+        time: t.into(),
+        operation: op.into(),
+        target: tg.into(),
+        repeat: rep.into(),
+        owner: owner.into(),
+        status: st.into(),
+    };
+    let rows = vec![
+        r(
+            1,
+            "10/30/26",
+            "23:00",
+            "Shut down partition (delayed)",
+            "QSTEST01 on QSHQVS1",
+            "Daily",
+            "qsadmin",
+            "Scheduled",
+        ),
+        r(
+            2,
+            "10/31/26",
+            "06:00",
+            "Activate partition (profile default)",
+            "QSTEST01 on QSHQVS1",
+            "Daily",
+            "qsadmin",
+            "Scheduled",
+        ),
+        r(
+            3,
+            "11/01/26",
+            "02:00",
+            "Backup console data to remote host",
+            "QSHQMC1 -> backup.quartz.example",
+            "Weekly (Sun)",
+            "qsadmin",
+            "Scheduled",
+        ),
+        r(
+            4,
+            "11/02/26",
+            "04:00",
+            "Install QS/VS update 26300",
+            "QSHQVS1",
+            "Once",
+            "operator1",
+            "Scheduled",
+        ),
+        r(
+            1,
+            "10/29/26",
+            "23:00",
+            "Shut down partition (delayed)",
+            "QSTEST01 on QSHQVS1",
+            "Daily",
+            "qsadmin",
+            "Completed",
+        ),
+        r(
+            5,
+            "10/26/26",
+            "01:00",
+            "Power off managed system",
+            "QSHQ400",
+            "Once",
+            "operator1",
+            "Failed - QMC2210",
+        ),
+    ];
+    let here = "/qsmc/schedule";
+    assert_golden(
+        &render(here, &page(&ctx(here), &rows, Vec::new())),
+        "schedule.html",
+        &[
+            (
+                "<input type=\"submit\" value=\"Add...\">",
+                "<input type=\"submit\" name=\"add\" value=\"Add...\">",
+            ),
+            (
+                "<input type=\"submit\" value=\"Refresh\">",
+                "<input type=\"submit\" name=\"refresh\" value=\"Refresh\">",
+            ),
+        ],
+    );
+}
+
+#[test]
+fn schedule_add() {
+    use webpages::schedule::{Add, add_page};
+    let v = Add {
+        date: "10/31/26".into(),
+        time: "06:00".into(),
+        zone: "Eastern".into(),
+        every: "daily".into(),
+        days: Vec::new(),
+        day: "1".into(),
+        until: String::new(),
+        op: "Activate partition".into(),
+        targets: vec![
+            "QSTEST01 on QSHQVS1".into(),
+            "QSDEV01 on QSHQVS1".into(),
+            "QSPROD01 on QSHQVS1".into(),
+            "QSHQVS1".into(),
+            "QSHQ400".into(),
+        ],
+        target: "QSTEST01 on QSHQVS1".into(),
+        profiles: vec!["default".into(), "install".into()],
+        profile: "default".into(),
+        delay: "300".into(),
+        id: 0,
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/schedule/add";
+    assert_golden(
+        &render(here, &add_page(&ctx(here), &v)),
+        "schedule-add.html",
+        &[],
+    );
+}

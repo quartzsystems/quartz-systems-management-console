@@ -34,6 +34,9 @@ members = [
     "mgmt/proto",
     "mgmt/mgmtd",
     "lic/qsmcmgmtd",
+    # Scheduled operations: the service and its binary.
+    "sched/schedd",
+    "lic/qsmcschedd",
 ]
 
 [workspace.package]

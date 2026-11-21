@@ -50,6 +50,10 @@ impl super::Console for Live {
         Box::new(mgmtproto::calls::Client::new(release::MGMTD_SOCKET))
     }
 
+    fn sched(&self) -> Box<dyn schedd::Calls + Send> {
+        Box::new(schedd::calls::Client::new(release::SCHEDD_SOCKET))
+    }
+
     fn consoles(&self) -> Option<std::path::PathBuf> {
         Some(release::MGMTD_CONSOLES.into())
     }

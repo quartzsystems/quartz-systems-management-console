@@ -90,6 +90,12 @@ pub const CATALOGUE: &str = "/qsmc/catalogue.json";
 /// The managed-systems service's binary, in a slot's initramfs.
 pub const MGMTD: &str = "/qsmc/bin/qsmcmgmtd";
 
+/// The scheduler's binary, in a slot's initramfs.
+pub const SCHEDD: &str = "/qsmc/bin/qsmcschedd";
+
+/// The scheduler's socket: the web server's requests.
+pub const SCHEDD_SOCKET: &str = "/run/qsmcschedd.sock";
+
 /// The managed-systems service's socket: the web server's requests.
 pub const MGMTD_SOCKET: &str = "/run/qsmcmgmtd.sock";
 

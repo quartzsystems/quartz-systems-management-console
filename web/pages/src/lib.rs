@@ -32,6 +32,7 @@ pub mod network_routes;
 pub mod pages;
 pub mod partitions;
 pub mod refcodes;
+pub mod schedule;
 pub mod shutdown;
 pub mod shutdown_routes;
 pub mod signon;

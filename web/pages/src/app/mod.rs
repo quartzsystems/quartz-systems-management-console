@@ -89,6 +89,11 @@ pub trait Console: Send + Sync {
         Box::new(mgmt::Nothing)
     }
 
+    /// The scheduler's socket; none answers by default.
+    fn sched(&self) -> Box<dyn schedd::Calls + Send> {
+        Box::new(mgmt::Nothing)
+    }
+
     /// The managed-systems service's console socket, where there is one.
     fn consoles(&self) -> Option<std::path::PathBuf> {
         None

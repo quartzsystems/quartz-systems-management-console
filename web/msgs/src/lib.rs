@@ -211,6 +211,34 @@ catalogue! {
     GROUP_DELETED = "QMC3303", 0, "Custom group &1 deleted.",
         "The group is gone; its systems and partitions are as they were.",
         "None.";
+    // Scheduled operations.
+    SCHEDULED = "QMC3401", 0, "&1 scheduled, first at &2.",
+        "The scheduler keeps the operation and runs it at its times in your name.",
+        "None.";
+    SCHEDULE_CHANGED = "QMC3402", 0, "Scheduled operation &1 changed.",
+        "The scheduler runs it as changed, in your name from now on.",
+        "None.";
+    SCHEDULE_REMOVED = "QMC3403", 0, "Scheduled operation &1 removed.",
+        "It is not run again; its runs stay in the list.",
+        "None.";
+    RAN_NOW = "QMC3404", 0, "Scheduled operation &1 run now: &2.",
+        "The scheduler ran it in its owner's name.",
+        "See the run's status in the list.";
+    SCHEDULE_REFUSED = "QMC3405", 30, "The operation was not scheduled: &1",
+        "The scheduler refused it.",
+        "Correct the operation and add it again.";
+    OWNER_MAY_NOT = "QMC3406", 30, "User &1 may no longer &2: the scheduled run was refused.",
+        "A scheduled operation runs in its owner's name, and the owner's role is checked when it runs: it no longer has the task, or the user is disabled or gone.",
+        "Change the operation to an owner who may do it, or give the role the task.";
+    NO_SCHEDULED_BACKUP = "QMC3407", 20, "A backup of the console's data is not scheduled: it leaves the console through a browser, under a passphrase.",
+        "A backup is downloaded from Backup and restore, sealed under a passphrase typed there; the console sends it nowhere by itself.",
+        "Take the backup from Backup and restore.";
+    NO_SCHEDULED_UPDATE = "QMC3408", 20, "Installing a code update is not scheduled in this release.",
+        "Code updates arrive with a later release of this console.",
+        "None.";
+    SCHEDD_DOWN = "QMC3409", 30, "The scheduler did not answer: &1.",
+        "The console's service that keeps and runs scheduled operations is not running, or is starting.",
+        "Wait a moment and show the page again. If it goes on, see the reference code history of the console.";
     FUNCTION_ACCEPTED = "QMC5003", 0, "Function &1 selected for partition &2; the managed system accepted the request.",
         "The host carried out the control panel function; the result shows what it displays and the code before and after.",
         "None.";

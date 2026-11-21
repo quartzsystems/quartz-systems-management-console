@@ -23,6 +23,7 @@ request refused.
 | `QMC3101`-`QMC3133` | partitions: activated, shut down, changed, made, deleted, and what a host refuses of them |
 | `QMC3201`-`QMC3205` | partition profiles |
 | `QMC3301`-`QMC3303` | custom groups |
+| `QMC3401`-`QMC3409` | scheduled operations |
 | `QMC3002` | 0 | Partition &1 is waiting for a console (&2). Open a terminal window to continue the IPL. | The partition's IPL stopped until a console connects to it. | Open a terminal window to the partition. |
 | `QMC3101` | 0 | Activation of partition &1 started. | The host took the request; the partition's codes follow its IPL. | None. |
 | `QMC3102` | 0 | Shut down of partition &1 started. | The host, or the partition's system, took the request. | None. |
@@ -49,6 +50,15 @@ request refused.
 | `QMC3301` | 0 | Custom group &1 saved. | The console keeps the group and its members. | None. |
 | `QMC3302` | 30 | A custom group named &1 exists. | Each group has a name of its own. | Choose another name, or edit that group. |
 | `QMC3303` | 0 | Custom group &1 deleted. | The group is gone; its systems and partitions are as they were. | None. |
+| `QMC3401` | 0 | &1 scheduled, first at &2. | The scheduler keeps the operation and runs it at its times in your name. | None. |
+| `QMC3402` | 0 | Scheduled operation &1 changed. | The scheduler runs it as changed, in your name from now on. | None. |
+| `QMC3403` | 0 | Scheduled operation &1 removed. | It is not run again; its runs stay in the list. | None. |
+| `QMC3404` | 0 | Scheduled operation &1 run now: &2. | The scheduler ran it in its owner's name. | See the run's status in the list. |
+| `QMC3405` | 30 | The operation was not scheduled: &1 | The scheduler refused it. | Correct the operation and add it again. |
+| `QMC3406` | 30 | User &1 may no longer &2: the scheduled run was refused. | A scheduled operation runs in its owner's name, and the owner's role is checked when it runs: it no longer has the task, or the user is disabled or gone. | Change the operation to an owner who may do it, or give the role the task. |
+| `QMC3407` | 20 | A backup of the console's data is not scheduled: it leaves the console through a browser, under a passphrase. | A backup is downloaded from Backup and restore, sealed under a passphrase typed there; the console sends it nowhere by itself. | Take the backup from Backup and restore. |
+| `QMC3408` | 20 | Installing a code update is not scheduled in this release. | Code updates arrive with a later release of this console. | None. |
+| `QMC3409` | 30 | The scheduler did not answer: &1. | The console's service that keeps and runs scheduled operations is not running, or is starting. | Wait a moment and show the page again. If it goes on, see the reference code history of the console. |
 | `QMC4001`-`QMC4002` | a terminal window's console closed or disconnected |
 | `QMC5003`, `QMC5010` | control panel functions carried out and refused |
 | `QMC8001`-`QMC8011` | users, roles and form values |

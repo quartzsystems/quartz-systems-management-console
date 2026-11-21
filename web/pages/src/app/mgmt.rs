@@ -15,6 +15,15 @@ use mgmtproto::{Mgmt, Request};
 #[derive(Debug, Default)]
 pub struct Nothing;
 
+impl schedd::Calls for Nothing {
+    fn call(&mut self, _req: &schedd::Request) -> Result<Vec<u8>, ipc::WireError> {
+        Err(
+            std::io::Error::new(std::io::ErrorKind::NotFound, "the scheduler is not running")
+                .into(),
+        )
+    }
+}
+
 impl Calls for Nothing {
     fn call(&mut self, _req: &Request) -> Result<Vec<u8>, ipc::WireError> {
         Err(std::io::Error::new(

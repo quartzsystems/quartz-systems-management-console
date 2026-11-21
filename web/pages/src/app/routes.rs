@@ -327,6 +327,11 @@ pub fn task_of(route: &str) -> Option<Task> {
     if route.starts_with("/terminal") || route.starts_with("/partition/") {
         return Some(Task::View);
     }
+    // Scheduled operations: seen by every role; a change needs the task
+    // of the operation, which the page checks.
+    if route.starts_with("/schedule") || route == "/confirm/schedule-remove" {
+        return Some(Task::View);
+    }
     // Custom groups: seen by every role; changed by those that operate.
     if route == "/groups/create" || route == "/confirm/group-delete" {
         return Some(Task::Activate);

@@ -294,9 +294,12 @@ fn act(rq: &Rq<'_>, action: &str, chosen: &[String]) -> Response {
         "Reset or remove connection" => "/connectivity".into(),
         "Add managed system" => "/servers/add".into(),
         "Reference code history" => format!("/refcodes?ms={one}"),
+        "Schedule operations" => format!("/schedule/add?ms={one}"),
+        "Create partition" => format!("/partitions/create/step/1?ms={one}"),
+        "Manage partition profiles" => format!("/partitions?ms={one}"),
+        "Virtual resources" => format!("/server/{one}/virtual/ethernet"),
         _ => {
-            // Schedules, partitions' profiles, virtual resources and
-            // dumps come with later phases.
+            // A system's profiles and its dumps come with later phases.
             let m = qmcmsg::message(Kind::Info, &qmcmsg::LATER_RELEASE, &[action]);
             return rq.done("/servers", m);
         }
