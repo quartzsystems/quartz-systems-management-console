@@ -49,6 +49,168 @@ catalogue! {
     CONSOLE_DISCONNECTED = "QMC4002", 0, "Terminal window to &1 disconnected.",
         "You disconnected the window; the console stays with the managed system and any other window that has it open.",
         "Choose Connect to open it again.";
+    // A host's virtual resources.
+    IMAGE_UPLOADED = "QMC2401", 0, "Image &1 uploaded to &2's media library.",
+        "The host took the whole image and checked it.",
+        "None.";
+    UPLOAD_NOT_TAKEN = "QMC2402", 30, "Image &1 was not uploaded to &2. The messages that follow say why.",
+        "The upload was refused or ended before the host had the whole image; the host keeps nothing of it.",
+        "Act on the messages and upload the image again.";
+    UPLOAD_REFUSED = "QMC2403", 30, "The upload was not taken: &1.",
+        "The browser's form did not arrive as the console's page sends it, or it was cut.",
+        "Upload the image again from Virtual Optical, with the page's own form.";
+    UPLOAD_TOO_LARGE = "QMC2404", 30, "Image &1 is larger than the &2 GB an upload may be.",
+        "The console refuses an upload past its limit before it reads it.",
+        "Copy the image to the host another way, or use a smaller one.";
+    NO_FETCH = "QMC2405", 20, "The console does not fetch an image from an address.",
+        "The console reaches only its managed systems and its product stream; it fetches nothing from an address typed into a page.",
+        "Download the image to your workstation and upload it.";
+    IMAGE_LOADED = "QMC2406", 0, "Image &1 loaded for partition &2.",
+        "The host loaded the image into the partition's virtual optical device.",
+        "None.";
+    IMAGE_UNLOADED = "QMC2407", 0, "Image &1 unloaded from partition &2.",
+        "The host unloaded the image from the partition's device.",
+        "None.";
+    IMAGE_DELETED = "QMC2408", 0, "Image &1 deleted from &2's media library.",
+        "The host deleted the image.",
+        "None.";
+    VDISK_CREATED = "QMC2410", 0, "Virtual disk &1 created in pool &2.",
+        "The host made the virtual disk.",
+        "None.";
+    VDISK_ASSIGNED = "QMC2411", 0, "Virtual disk &1 assigned to partition &2 in its default profile.",
+        "The disk is a LUN on a client adapter of the partition's default profile; a running partition has it at its next activation.",
+        "None.";
+    VDISK_NOT_ASSIGNED = "QMC2412", 30, "Virtual disk &1 was made, but not assigned to partition &2. The messages that follow say why.",
+        "The disk was made; giving it to the partition's profile was refused. The disk stays, unassigned.",
+        "Act on the messages, then assign the disk on the partition's Virtual adapters page.";
+    VDISK_RESIZED = "QMC2413", 0, "Virtual disk &1 is now &2 GB.",
+        "The host grew the disk.",
+        "None.";
+    VDISK_DELETED = "QMC2414", 0, "Virtual disk &1 deleted from &2.",
+        "The host deleted the disk and everything on it.",
+        "None.";
+    VDISK_UNASSIGNED = "QMC2415", 0, "Virtual disk &1 taken off the profiles of &2's partitions.",
+        "The disk is no longer a LUN of any profile that named it; it stays in its pool.",
+        "None.";
+    POOL_CREATED = "QMC2420", 0, "Storage pool &1 created on &2.",
+        "The host made the pool from the disks chosen.",
+        "None.";
+    POOL_CHANGED = "QMC2421", 0, "Storage pool &1 on &2 changed.",
+        "The host took the change.",
+        "None.";
+    SWITCH_CREATED = "QMC2425", 0, "Virtual switch &1 created on &2.",
+        "The host made the switch and its uplink.",
+        "None.";
+    SWITCH_CHANGED = "QMC2426", 0, "Virtual switch &1 on &2 changed.",
+        "The host took the change.",
+        "None.";
+    SWITCH_DELETED = "QMC2427", 0, "Virtual switch &1 deleted from &2.",
+        "The host deleted the switch.",
+        "None.";
+    VOLUME_CREATED = "QMC2430", 0, "Tape volume &1 created on &2.",
+        "The host made the volume in its media library.",
+        "None.";
+    VOLUME_CHANGED = "QMC2431", 0, "Tape volume &1 on &2 changed.",
+        "The host took the change.",
+        "None.";
+    VOLUME_DELETED = "QMC2432", 0, "Tape volume &1 deleted from &2.",
+        "The host deleted the volume.",
+        "None.";
+    VOLUME_GIVEN = "QMC2433", 0, "Tape volume &1 given to &2's tape device.",
+        "The volume is the device's medium in the partition's default profile.",
+        "None.";
+    TAPE_REMOVED = "QMC2434", 0, "Tape device &1 taken off partition &2's default profile.",
+        "The device is no longer in the profile; its volume stays.",
+        "None.";
+    PASS_THROUGH = "QMC2435", 20, "A host's own tape drive is given to a partition on the partition's I/O page.",
+        "A drive passed through to a partition is released for partitions at the host first; the partition's profile then names it.",
+        "Release the drive at the host's Service Tools, then add it on the partition's I/O page.";
+    PROC_POOL_CHANGED = "QMC2440", 0, "Shared processor pool &1 on &2 made or changed.",
+        "The host took the pool.",
+        "None.";
+    PROC_POOL_DELETED = "QMC2441", 0, "Shared processor pool &1 deleted from &2.",
+        "The host deleted the pool.",
+        "None.";
+    // Partitions and their profiles.
+    WAITING_FOR_CONSOLE = "QMC3002", 0, "Partition &1 is waiting for a console (&2). Open a terminal window to continue the IPL.",
+        "The partition's IPL stopped until a console connects to it.",
+        "Open a terminal window to the partition.";
+    ACTIVATED = "QMC3101", 0, "Activation of partition &1 started.",
+        "The host took the request; the partition's codes follow its IPL.",
+        "None.";
+    SHUTTING_DOWN = "QMC3102", 0, "Shut down of partition &1 started.",
+        "The host, or the partition's system, took the request.",
+        "None.";
+    RESTARTING = "QMC3103", 0, "Restart of partition &1 started: it is shut down and activated again.",
+        "The host took the request.",
+        "None.";
+    SELECT_PARTITION = "QMC3104", 30, "Select a partition for &1.",
+        "The action needs a partition and none was chosen.",
+        "Check the box of a partition and choose the action again.";
+    NO_SUCH_PARTITION = "QMC3105", 30, "No partition &1 on managed system &2.",
+        "The partition is not in what the console keeps of the host: it was deleted, or the host has not said it yet.",
+        "Choose a partition from the Partitions list.";
+    ACTIVATE_FAILED = "QMC3110", 30, "Activate request for &1 failed: &2.",
+        "The host refused to activate the partition; its messages follow this one.",
+        "Act on the host's messages, then activate the partition again.";
+    PARTITION_CHANGED = "QMC3120", 0, "Partition &1 changed.",
+        "The host took the change.",
+        "None.";
+    AT_NEXT_ACTIVATION = "QMC3121", 10, "The changes to the profile of running partition &1 take effect at its next activation.",
+        "A host gives a partition its profile's resources when it activates it.",
+        "Restart the partition when the change is wanted now.";
+    ENTITLEMENT_CHANGED = "QMC3122", 0, "The processing units, sharing and weight of running partition &1 are changed now.",
+        "A host changes a running shared partition's entitlement at once.",
+        "None.";
+    NO_OPEN_FIRMWARE = "QMC3123", 20, "Open firmware is not a boot mode of &1.",
+        "A QS/VS host has no open firmware: a partition starts normally or in service mode with a manual IPL.",
+        "Choose Normal or Service - manual IPL.";
+    CONSOLE_IS_TERMINAL = "QMC3124", 20, "The partition's console is the terminal window.",
+        "A QS/VS host gives a partition no physical console adapter: its console is the virtual serial adapter 0.",
+        "Open a terminal window to reach the partition's console.";
+    SERIAL_FIXED = "QMC3125", 20, "The console's serial adapters are fixed.",
+        "Adapters 0 and 1 are the partition's console, the terminal window; they are not added, changed or removed.",
+        "None.";
+    NO_ADDRESS = "QMC3126", 20, "Partition &1 has not said its address.",
+        "The partition's system says its addresses over its service channel; it has not, or the channel is down.",
+        "Reach Navigator at the partition's own address.";
+    PARTITION_CREATED = "QMC3130", 0, "Partition &1 (ID &2) created, Not activated.",
+        "The host made the partition and its first profile.",
+        "Activate it when it is wanted.";
+    ID_IN_USE = "QMC3131", 30, "Partition ID &1 is in use: partition &2 has it.",
+        "Each partition of a host has an ID of its own.",
+        "Choose a free ID; the step shows the next one.";
+    NO_HOST_FOR_PARTITION = "QMC3132", 30, "No managed system can have a partition made from this console.",
+        "A partition is made on a connected QS/VS host that offers it.",
+        "Add a QS/VS host, or wait until it is connected.";
+    PARTITION_DELETED = "QMC3133", 0, "Partition &1 deleted.",
+        "The host deleted the partition and its profiles, and its virtual disks when chosen.",
+        "None.";
+    PROFILE_STALE = "QMC3201", 30, "Profile &1 was changed since this page was read.",
+        "Another session changed the profile, so the change was refused. The page shows the profile as it is now, with your entries.",
+        "Check your entries against the profile and send them again.";
+    PROFILE_SAVED = "QMC3202", 0, "The running configuration saved as profile &1.",
+        "The host saved what the partition holds now as the profile.",
+        "None.";
+    PROFILE_DEFAULT = "QMC3203", 0, "Profile &1 is the default.",
+        "An activation uses it unless another is chosen.",
+        "None.";
+    PROFILE_COPIED = "QMC3204", 0, "Profile &1 copied as &2.",
+        "The host made the new profile.",
+        "None.";
+    PROFILE_DELETED = "QMC3205", 0, "Profile &1 deleted.",
+        "The host deleted the profile.",
+        "None.";
+    // Custom groups.
+    GROUP_SAVED = "QMC3301", 0, "Custom group &1 saved.",
+        "The console keeps the group and its members.",
+        "None.";
+    GROUP_EXISTS = "QMC3302", 30, "A custom group named &1 exists.",
+        "Each group has a name of its own.",
+        "Choose another name, or edit that group.";
+    GROUP_DELETED = "QMC3303", 0, "Custom group &1 deleted.",
+        "The group is gone; its systems and partitions are as they were.",
+        "None.";
     FUNCTION_ACCEPTED = "QMC5003", 0, "Function &1 selected for partition &2; the managed system accepted the request.",
         "The host carried out the control panel function; the result shows what it displays and the code before and after.",
         "None.";

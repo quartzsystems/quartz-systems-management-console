@@ -305,7 +305,7 @@ fn a_role_without_the_task_is_not_authorized_and_a_disabled_user_s_session_ends(
     assert_eq!(r.status, 403);
     assert!(r.text().contains("QMC9010"));
     // A later function says so.
-    let later = v.send("GET", "/qsmc/partitions", &[]);
+    let later = v.send("GET", "/qsmc/events", &[]);
     assert!(later.text().contains("QMC9030"));
     app.change_users(|u| u.set_enabled("viewer", false))
         .unwrap();

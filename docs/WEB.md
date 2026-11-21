@@ -133,6 +133,11 @@ Golden corrections, each the only difference allowed:
 | `qsmc/terminal-disconnected.html` | the status line names `QSTEST01`, not `QSDEV01` | the window is of `QSTEST01` |
 | `qsmc/terminal-config.html` | one form, not one inside another; the strip's box named `strip`, not `cp`; Open and Cancel named | a form in a form is not valid HTML; the code page is `cp` already |
 | `qsmc/console-shutdown.html` | the form begins before the Restart / Power off choice and the message, not after them | as drawn, the choice and the message would not be sent; `qsweb`'s confirmation has them in its form |
+| `qsmc/vr-storage.html`, `vr-tape.html` | the buttons named (`vdisk`, `pool`; `vtape`, `ptape`) | the page tells which was pressed |
+| `qsmc/vr-optical.html` | Read-only checked and `disabled`; the address and Fetch `form="fetch"`, a form of their own after the upload's; Upload named | an upload streams with its length said first, so after the file only Upload's part may come (`web/pages/src/vres/upload.rs`); a host's images are read-only to partitions, QSI has no other |
+| `qsmc/partitions-paged.html` | the boxes are `p1` to `p25`, not `p0` to `p24` | as Servers' paged state |
+| `qsmc/partition-io.html`, `manage-profiles.html`, `create-6.html` | the buttons named (`add`, `remove`; `create`, `save`, `default`; `add`) | the page tells which was pressed |
+| `qsmc/confirm-activate.html`, `confirm-shutdown.html` | the form carries the choices of the page before as hidden fields | as drawn, the confirmation's OK would send nothing of what was chosen |
 
 ## Time
 

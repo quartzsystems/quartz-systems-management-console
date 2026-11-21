@@ -299,4 +299,12 @@ impl webd::serve::Pages for App {
     fn admits(&self, ip: IpAddr) -> bool {
         settings::admits(&lock(&self.settings).allow, ip)
     }
+
+    fn streams(&self, req: &Request, _peer: &Peer) -> bool {
+        crate::vres::upload::is_upload(req)
+    }
+
+    fn page_stream(&self, req: &Request, body: &mut dyn std::io::Read, peer: &Peer) -> Response {
+        routes::route_stream(self, req, body, peer)
+    }
 }

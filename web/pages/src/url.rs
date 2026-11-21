@@ -17,6 +17,7 @@ const RENAMED: &[(&str, &str)] = &[
     ("/servers/add/result", "add-system-result.html"),
     ("/servers/reset", "add-system.html"),
     ("/updates/code", "code-updates.html"),
+    ("/groups/create", "group-create.html"),
     // A test image's pattern reference, and the error page it shows.
     ("/dev/components", "../shared/components.html"),
     ("/dev/error", "../shared/error.html"),
@@ -40,11 +41,20 @@ pub fn proto(url: &str) -> Option<String> {
     // `partition-<page>.html`, its control panel `control-panel.html`.
     if let Some(rest) = route.strip_prefix("/partition/") {
         let page = rest.split('/').nth(2).unwrap_or("general");
-        return Some(if page == "panel" {
-            "control-panel.html".into()
-        } else {
-            format!("partition-{page}.html")
+        return Some(match page {
+            "panel" => "control-panel.html".into(),
+            "activate" => "activate.html".into(),
+            "shutdown" => "shutdown.html".into(),
+            "profiles" => "manage-profiles.html".into(),
+            // An adapter's form is the adapters' tab's.
+            "edit" => "partition-vadapters.html".into(),
+            "navigator" => "../nav/ptfs.html".into(),
+            _ => format!("partition-{page}.html"),
         });
+    }
+    // The wizard: `/partitions/create/step/<n>` is `create-<n>.html`.
+    if let Some(n) = route.strip_prefix("/partitions/create/step/") {
+        return Some(format!("create-{n}.html"));
     }
     // The terminal: its configuration, the window, its picture, the
     // page a window shows when its console went.
@@ -64,7 +74,13 @@ pub fn proto(url: &str) -> Option<String> {
         let mut parts = rest.split('/').skip(1);
         let tab = parts.next().unwrap_or("general");
         if tab == "virtual" {
-            return Some(format!("vr-{}.html", parts.next().unwrap_or("ethernet")));
+            let page = parts.next().unwrap_or("ethernet");
+            // A disk's create, properties and resize are the design's
+            // one form; the other forms are their tab's.
+            if page == "storage" && matches!(parts.next(), Some("create" | "resize")) {
+                return Some("create-vdisk.html".into());
+            }
+            return Some(format!("vr-{page}.html"));
         }
         if tab == "confirm" {
             let op = url.split("op=").nth(1).unwrap_or("poweroff");
@@ -79,6 +95,9 @@ pub fn proto(url: &str) -> Option<String> {
     }
     if route.starts_with("/help/") || route.starts_with("/msg/") || route == "/help" {
         return Some("../shared/help.html".into());
+    }
+    if route.starts_with("/group/") {
+        return Some("group-view.html".into());
     }
     if let Some((_, file)) = RENAMED.iter().find(|(r, _)| *r == route) {
         return Some((*file).into());

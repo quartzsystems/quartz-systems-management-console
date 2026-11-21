@@ -17,7 +17,38 @@ request refused.
 | `QMC1101`-`QMC1120` | what a managed system's connection and pairing failed with, what it does not offer, and the managed-systems service not answering |
 | `QMC1201`-`QMC1202` | reference codes: one this release cannot explain, a date filter |
 | `QMC2201`-`QMC2221` | power on, off and restart of a managed system, and its power-on parameters |
+| `QMC2401`-`QMC2441` | a host's virtual resources: uploads, images, virtual disks, pools, switches, tape, processor pools |
+| `QMC3002` | a partition waiting for a console |
 | `QMC3003` | terminal windows: too many open |
+| `QMC3101`-`QMC3133` | partitions: activated, shut down, changed, made, deleted, and what a host refuses of them |
+| `QMC3201`-`QMC3205` | partition profiles |
+| `QMC3301`-`QMC3303` | custom groups |
+| `QMC3002` | 0 | Partition &1 is waiting for a console (&2). Open a terminal window to continue the IPL. | The partition's IPL stopped until a console connects to it. | Open a terminal window to the partition. |
+| `QMC3101` | 0 | Activation of partition &1 started. | The host took the request; the partition's codes follow its IPL. | None. |
+| `QMC3102` | 0 | Shut down of partition &1 started. | The host, or the partition's system, took the request. | None. |
+| `QMC3103` | 0 | Restart of partition &1 started: it is shut down and activated again. | The host took the request. | None. |
+| `QMC3104` | 30 | Select a partition for &1. | The action needs a partition and none was chosen. | Check the box of a partition and choose the action again. |
+| `QMC3105` | 30 | No partition &1 on managed system &2. | The partition is not in what the console keeps of the host: it was deleted, or the host has not said it yet. | Choose a partition from the Partitions list. |
+| `QMC3110` | 30 | Activate request for &1 failed: &2. | The host refused to activate the partition; its messages follow this one. | Act on the host's messages, then activate the partition again. |
+| `QMC3120` | 0 | Partition &1 changed. | The host took the change. | None. |
+| `QMC3121` | 10 | The changes to the profile of running partition &1 take effect at its next activation. | A host gives a partition its profile's resources when it activates it. | Restart the partition when the change is wanted now. |
+| `QMC3122` | 0 | The processing units, sharing and weight of running partition &1 are changed now. | A host changes a running shared partition's entitlement at once. | None. |
+| `QMC3123` | 20 | Open firmware is not a boot mode of &1. | A QS/VS host has no open firmware: a partition starts normally or in service mode with a manual IPL. | Choose Normal or Service - manual IPL. |
+| `QMC3124` | 20 | The partition's console is the terminal window. | A QS/VS host gives a partition no physical console adapter: its console is the virtual serial adapter 0. | Open a terminal window to reach the partition's console. |
+| `QMC3125` | 20 | The console's serial adapters are fixed. | Adapters 0 and 1 are the partition's console, the terminal window; they are not added, changed or removed. | None. |
+| `QMC3126` | 20 | Partition &1 has not said its address. | The partition's system says its addresses over its service channel; it has not, or the channel is down. | Reach Navigator at the partition's own address. |
+| `QMC3130` | 0 | Partition &1 (ID &2) created, Not activated. | The host made the partition and its first profile. | Activate it when it is wanted. |
+| `QMC3131` | 30 | Partition ID &1 is in use: partition &2 has it. | Each partition of a host has an ID of its own. | Choose a free ID; the step shows the next one. |
+| `QMC3132` | 30 | No managed system can have a partition made from this console. | A partition is made on a connected QS/VS host that offers it. | Add a QS/VS host, or wait until it is connected. |
+| `QMC3133` | 0 | Partition &1 deleted. | The host deleted the partition and its profiles, and its virtual disks when chosen. | None. |
+| `QMC3201` | 30 | Profile &1 was changed since this page was read. | Another session changed the profile, so the change was refused. The page shows the profile as it is now, with your entries. | Check your entries against the profile and send them again. |
+| `QMC3202` | 0 | The running configuration saved as profile &1. | The host saved what the partition holds now as the profile. | None. |
+| `QMC3203` | 0 | Profile &1 is the default. | An activation uses it unless another is chosen. | None. |
+| `QMC3204` | 0 | Profile &1 copied as &2. | The host made the new profile. | None. |
+| `QMC3205` | 0 | Profile &1 deleted. | The host deleted the profile. | None. |
+| `QMC3301` | 0 | Custom group &1 saved. | The console keeps the group and its members. | None. |
+| `QMC3302` | 30 | A custom group named &1 exists. | Each group has a name of its own. | Choose another name, or edit that group. |
+| `QMC3303` | 0 | Custom group &1 deleted. | The group is gone; its systems and partitions are as they were. | None. |
 | `QMC4001`-`QMC4002` | a terminal window's console closed or disconnected |
 | `QMC5003`, `QMC5010` | control panel functions carried out and refused |
 | `QMC8001`-`QMC8011` | users, roles and form values |
@@ -46,6 +77,33 @@ request refused.
 | `QMC1008` | 30 | The name of managed system &1 is the system's own and is changed at the system. | QSI does not change a managed system's name; the console shows the name the system gives. | Change the name at the managed system; the console shows the new name once it is paired again with Reset connection. |
 | `QMC2220` | 20 | The IPL side, keylock and boot mode of &1 are set at the system. | A managed system reports its slot and keylock over QSI and takes no change of them: its IPL side moves only when a code update is activated, its keylock and boot mode at its Service Tools. | Set them at the managed system's Service Tools. |
 | `QMC2221` | 0 | Power-on settings of &1 changed: the partitions to start and the default power off. | The managed system took the settings; they apply at its next power on and power off. | None. |
+| `QMC2401` | 0 | Image &1 uploaded to &2's media library. | The host took the whole image and checked it. | None. |
+| `QMC2402` | 30 | Image &1 was not uploaded to &2. The messages that follow say why. | The upload was refused or ended before the host had the whole image; the host keeps nothing of it. | Act on the messages and upload the image again. |
+| `QMC2403` | 30 | The upload was not taken: &1. | The browser's form did not arrive as the console's page sends it, or it was cut. | Upload the image again from Virtual Optical, with the page's own form. |
+| `QMC2404` | 30 | Image &1 is larger than the &2 GB an upload may be. | The console refuses an upload past its limit before it reads it. | Copy the image to the host another way, or use a smaller one. |
+| `QMC2405` | 20 | The console does not fetch an image from an address. | The console reaches only its managed systems and its product stream; it fetches nothing from an address typed into a page. | Download the image to your workstation and upload it. |
+| `QMC2406` | 0 | Image &1 loaded for partition &2. | The host loaded the image into the partition's virtual optical device. | None. |
+| `QMC2407` | 0 | Image &1 unloaded from partition &2. | The host unloaded the image from the partition's device. | None. |
+| `QMC2408` | 0 | Image &1 deleted from &2's media library. | The host deleted the image. | None. |
+| `QMC2410` | 0 | Virtual disk &1 created in pool &2. | The host made the virtual disk. | None. |
+| `QMC2411` | 0 | Virtual disk &1 assigned to partition &2 in its default profile. | The disk is a LUN on a client adapter of the partition's default profile; a running partition has it at its next activation. | None. |
+| `QMC2412` | 30 | Virtual disk &1 was made, but not assigned to partition &2. The messages that follow say why. | The disk was made; giving it to the partition's profile was refused. The disk stays, unassigned. | Act on the messages, then assign the disk on the partition's Virtual adapters page. |
+| `QMC2413` | 0 | Virtual disk &1 is now &2 GB. | The host grew the disk. | None. |
+| `QMC2414` | 0 | Virtual disk &1 deleted from &2. | The host deleted the disk and everything on it. | None. |
+| `QMC2415` | 0 | Virtual disk &1 taken off the profiles of &2's partitions. | The disk is no longer a LUN of any profile that named it; it stays in its pool. | None. |
+| `QMC2420` | 0 | Storage pool &1 created on &2. | The host made the pool from the disks chosen. | None. |
+| `QMC2421` | 0 | Storage pool &1 on &2 changed. | The host took the change. | None. |
+| `QMC2425` | 0 | Virtual switch &1 created on &2. | The host made the switch and its uplink. | None. |
+| `QMC2426` | 0 | Virtual switch &1 on &2 changed. | The host took the change. | None. |
+| `QMC2427` | 0 | Virtual switch &1 deleted from &2. | The host deleted the switch. | None. |
+| `QMC2430` | 0 | Tape volume &1 created on &2. | The host made the volume in its media library. | None. |
+| `QMC2431` | 0 | Tape volume &1 on &2 changed. | The host took the change. | None. |
+| `QMC2432` | 0 | Tape volume &1 deleted from &2. | The host deleted the volume. | None. |
+| `QMC2433` | 0 | Tape volume &1 given to &2's tape device. | The volume is the device's medium in the partition's default profile. | None. |
+| `QMC2434` | 0 | Tape device &1 taken off partition &2's default profile. | The device is no longer in the profile; its volume stays. | None. |
+| `QMC2435` | 20 | A host's own tape drive is given to a partition on the partition's I/O page. | A drive passed through to a partition is released for partitions at the host first; the partition's profile then names it. | Release the drive at the host's Service Tools, then add it on the partition's I/O page. |
+| `QMC2440` | 0 | Shared processor pool &1 on &2 made or changed. | The host took the pool. | None. |
+| `QMC2441` | 0 | Shared processor pool &1 deleted from &2. | The host deleted the pool. | None. |
 | `QMC1006` | 30 | Select a managed system for &1. | The action acts on the systems selected in the list, and none was. | Select the system's box in the list, then choose the action again. |
 | `QMC1005` | 0 | Managed system &1 added. The console keeps its session open and shows its state. | The managed system was paired and is in the Servers list. | None. |
 | `QMC1120` | 30 | The managed-systems service did not answer: &1. | The console's service that keeps the managed systems' sessions is not running, or is starting. | Wait a moment and show the page again. If it goes on, see the reference code history of the console. |

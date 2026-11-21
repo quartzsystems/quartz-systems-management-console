@@ -327,6 +327,23 @@ pub fn task_of(route: &str) -> Option<Task> {
     if route.starts_with("/terminal") || route.starts_with("/partition/") {
         return Some(Task::View);
     }
+    // Custom groups: seen by every role; changed by those that operate.
+    if route == "/groups/create" || route == "/confirm/group-delete" {
+        return Some(Task::Activate);
+    }
+    if route.starts_with("/group/") {
+        return Some(Task::View);
+    }
+    // Partitions made, changed and deleted.
+    if route.starts_with("/partitions/create")
+        || crate::partitions::confirm::ROUTES.contains(&route)
+    {
+        return Some(Task::CreatePartitions);
+    }
+    // A host's virtual resources' destructive actions.
+    if crate::vres::confirm::ROUTES.contains(&route) {
+        return Some(Task::VirtualResources);
+    }
     if route.starts_with("/console") || route.starts_with("/confirm/") {
         return Some(Task::Settings);
     }
@@ -348,6 +365,54 @@ pub fn task_of(route: &str) -> Option<Task> {
         r if r.starts_with("/dev/") => Some(Task::View),
         _ => None,
     }
+}
+
+/// The signed-on request of `req`, or the answer that its session is
+/// not live.
+fn signed_on<'a>(app: &'a App, req: &'a Request, peer: &'a Peer) -> Result<Rq<'a>, Response> {
+    let (session, role) = match live(app, req) {
+        Ok(s) => s,
+        Err(ended) => {
+            if let Some(id) = PRODUCT.session_id(req) {
+                app.windows.session_ended(id, app.settings().keep_terminals);
+            }
+            if req.method == "GET" && !ended {
+                return Err(Response::redirect(&PRODUCT.url("/signon")));
+            }
+            let m = qmcmsg::message(Kind::Info, &qmcmsg::SESSION_ENDED, &[]);
+            return Err(signon_page(app, "", vec![m]).with("Set-Cookie", &PRODUCT.clear_cookie()));
+        }
+    };
+    Ok(Rq {
+        app,
+        req,
+        peer,
+        ctx: Ctx {
+            product: &PRODUCT,
+            system: app.console.name(),
+            user: session.user.clone(),
+            csrf: session.csrf.clone(),
+            open: None,
+            here: qsweb::frame::here(req),
+        },
+        session,
+        role,
+    })
+}
+
+/// Answer `req` whose body streams (an upload): signed on, then the
+/// page, which checks its form's token as it reads.
+pub fn route_stream(
+    app: &App,
+    req: &Request,
+    body: &mut dyn std::io::Read,
+    peer: &Peer,
+) -> Response {
+    let rq = match signed_on(app, req, peer) {
+        Ok(rq) => rq,
+        Err(r) => return r,
+    };
+    crate::vres::upload::post(&rq, body)
 }
 
 /// Answer `req`.
@@ -376,33 +441,9 @@ pub fn route(app: &App, req: &Request, peer: &Peer) -> Response {
         "" | "/" => return Response::redirect(&PRODUCT.url("/welcome")),
         _ => {}
     }
-    let (session, role) = match live(app, req) {
-        Ok(s) => s,
-        Err(ended) => {
-            if let Some(id) = PRODUCT.session_id(req) {
-                app.windows.session_ended(id, app.settings().keep_terminals);
-            }
-            if req.method == "GET" && !ended {
-                return Response::redirect(&PRODUCT.url("/signon"));
-            }
-            let m = qmcmsg::message(Kind::Info, &qmcmsg::SESSION_ENDED, &[]);
-            return signon_page(app, "", vec![m]).with("Set-Cookie", &PRODUCT.clear_cookie());
-        }
-    };
-    let rq = Rq {
-        app,
-        req,
-        peer,
-        ctx: Ctx {
-            product: &PRODUCT,
-            system: app.console.name(),
-            user: session.user.clone(),
-            csrf: session.csrf.clone(),
-            open: None,
-            here: qsweb::frame::here(req),
-        },
-        session,
-        role,
+    let rq = match signed_on(app, req, peer) {
+        Ok(rq) => rq,
+        Err(r) => return r,
     };
     if rq.post() {
         let f = req.form();
@@ -412,6 +453,7 @@ pub fn route(app: &App, req: &Request, peer: &Peer) -> Response {
         }
     }
     let matrix = app.users().matrix.clone();
+    let role = rq.role;
     if let Some(task) = task_of(route).filter(|t| !matrix.allows(role, *t)) {
         return refuse(&rq, task);
     }

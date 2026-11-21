@@ -1348,3 +1348,1058 @@ fn control_panel() {
         &[],
     );
 }
+
+// Step 9: a host's virtual resources.
+
+#[test]
+fn vr_ethernet() {
+    use webpages::vres::ethernet::{AdapterRow, Ethernet, SwitchRow, page};
+    let sw = |name: &str, vlans: &str, uplink: &str, mode: &str, attached: &str| SwitchRow {
+        name: name.into(),
+        vlans: vlans.into(),
+        uplink: uplink.into(),
+        mode: mode.into(),
+        attached: attached.into(),
+    };
+    let ad = |p: &str, slot, s: &str, vlan, mac: &str, required| AdapterRow {
+        partition: p.into(),
+        slot,
+        switch: s.into(),
+        vlan,
+        mac: mac.into(),
+        required,
+    };
+    let v = Ethernet {
+        host: "QSHQVS1".into(),
+        switches: vec![
+            sw(
+                "ETHSW0",
+                "10, 20, 30",
+                "C1 port 1 (10 GbE)",
+                "VLAN aware",
+                "QSPROD01 (VLAN 10), QSDEV01 (VLAN 20), QSTEST01 (VLAN 20)",
+            ),
+            sw(
+                "ETHSW1",
+                "99",
+                "none (internal)",
+                "Untagged",
+                "QSDEV01, QSTEST01",
+            ),
+        ],
+        adapters: vec![
+            ad("QSPROD01", 2, "ETHSW0", 10, "02:51:53:00:03:02", true),
+            ad("QSDEV01", 2, "ETHSW0", 20, "02:51:53:00:01:02", true),
+            ad("QSDEV01", 3, "ETHSW1", 99, "02:51:53:00:01:03", false),
+            ad("QSTEST01", 2, "ETHSW0", 20, "02:51:53:00:02:02", true),
+            ad("QSTEST01", 3, "ETHSW1", 99, "02:51:53:00:02:03", false),
+        ],
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/server/QSHQVS1/virtual/ethernet";
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "vr-ethernet.html",
+        &[],
+    );
+}
+
+#[test]
+fn vr_storage() {
+    use webpages::vres::storage::{PoolRow, Storage, VdiskRow, page};
+    let pool = |name: &str, backing: &str, cap: &str, used: &str, permille, kind: &str| PoolRow {
+        name: name.into(),
+        backing: backing.into(),
+        capacity: cap.into(),
+        used: used.into(),
+        permille,
+        kind: kind.into(),
+    };
+    let vd = |name: &str, size: &str, pool: &str, part: &str, slot, prov: &str| VdiskRow {
+        name: name.into(),
+        size: size.into(),
+        pool: pool.into(),
+        partition: part.into(),
+        slot,
+        provisioning: prov.into(),
+        status: if part.is_empty() {
+            String::new()
+        } else {
+            "Operating".into()
+        },
+    };
+    let v = Storage {
+        host: "QSHQVS1".into(),
+        pools: vec![
+            pool(
+                "POOL1",
+                "C2 RAID-10 (6 x 1.9 TB SSD)",
+                "5,400",
+                "2,870",
+                531,
+                "Thin provisioned",
+            ),
+            pool(
+                "POOL2",
+                "/dev/sdb (archive, 8 TB HDD)",
+                "7,450",
+                "1,200",
+                161,
+                "Thick",
+            ),
+        ],
+        vdisks: vec![
+            vd("VD01", "400", "POOL1", "QSPROD01", 3, "Thick"),
+            vd("VD02", "400", "POOL1", "QSPROD01", 3, "Thick"),
+            vd("VD03", "120", "POOL1", "QSDEV01", 3, "Thin"),
+            vd("VD04", "120", "POOL1", "QSTEST01", 3, "Thin"),
+            vd("VD05", "2,000", "POOL2", "QSPROD01", 4, "Thick"),
+            vd("VD06", "80", "POOL1", "", 0, "Thin"),
+        ],
+        sort: String::new(),
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/server/QSHQVS1/virtual/storage";
+    // The form's two buttons are named: the page tells which was
+    // pressed.
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "vr-storage.html",
+        &[
+            (
+                "<input type=\"submit\" value=\"Create virtual disk...\">",
+                "<input type=\"submit\" name=\"vdisk\" value=\"Create virtual disk...\">",
+            ),
+            (
+                "<input type=\"submit\" value=\"Create storage pool...\">",
+                "<input type=\"submit\" name=\"pool\" value=\"Create storage pool...\">",
+            ),
+        ],
+    );
+}
+
+#[test]
+fn vr_optical() {
+    use webpages::vres::optical::{DriveRow, ImageRow, Optical, page};
+    let img = |name: &str, size: &str, up: &str, part: &str, drive: &str, ro| ImageRow {
+        name: name.into(),
+        size: size.into(),
+        uploaded: up.into(),
+        partition: part.into(),
+        drive: drive.into(),
+        read_only: ro,
+    };
+    let dr = |part: &str, image: &str| DriveRow {
+        partition: part.into(),
+        drive: "OPT01".into(),
+        slot: 5,
+        image: image.into(),
+    };
+    let v = Optical {
+        host: "QSHQVS1".into(),
+        images: vec![
+            img(
+                "QS400_V1R0M0_INSTALL.iso",
+                "4,120",
+                "10/02/26",
+                "QSTEST01",
+                "OPT01",
+                true,
+            ),
+            img("QS400_CUM_26290.iso", "412", "10/20/26", "", "", true),
+            img("QS400_LICPGM_V1R0M0.iso", "2,840", "10/02/26", "", "", true),
+            img(
+                "HLINV_SAVF_20261028.iso",
+                "96",
+                "10/28/26",
+                "QSDEV01",
+                "OPT01",
+                false,
+            ),
+            img("blank_4700MB.iso", "0", "09/30/26", "", "", false),
+        ],
+        drives: vec![
+            dr("QSPROD01", ""),
+            dr("QSDEV01", "HLINV_SAVF_20261028.iso"),
+            dr("QSTEST01", "QS400_V1R0M0_INSTALL.iso"),
+        ],
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/server/QSHQVS1/virtual/optical";
+    // The upload streams with its length said first: Read-only is
+    // shown and not sent (a host's images are read-only to partitions),
+    // the address and Fetch are a form of their own, and Upload is
+    // named (`docs/WEB.md`).
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "vr-optical.html",
+        &[
+            (
+                "<input type=\"checkbox\" name=\"ro\" checked>",
+                "<input type=\"checkbox\" name=\"ro\" checked disabled>",
+            ),
+            (
+                "<input type=\"submit\" value=\"Upload\">",
+                "<input type=\"submit\" name=\"upload\" value=\"Upload\">",
+            ),
+            (
+                "size=\"40\"> <input type=\"submit\" value=\"Fetch\"></form>",
+                "size=\"40\" form=\"fetch\"> <input type=\"submit\" name=\"fetch\" value=\"Fetch\" form=\"fetch\"></form><form id=\"fetch\" method=\"post\"></form>",
+            ),
+        ],
+    );
+}
+
+#[test]
+fn vr_tape() {
+    use webpages::vres::tape::{Tape, TapeRow, page};
+    let t = |drive: &str, kind: &str, backing: &str, part: &str, slot| TapeRow {
+        drive: drive.into(),
+        kind: kind.into(),
+        backing: backing.into(),
+        partition: part.into(),
+        slot,
+        status: "Operating".into(),
+    };
+    let v = Tape {
+        host: "QSHQVS1".into(),
+        drives: vec![
+            t(
+                "VTAP01",
+                "Virtual (file)",
+                "/vtape/QSDEV01/ (POOL2, 200 GB)",
+                "QSDEV01",
+                6,
+            ),
+            t(
+                "VTAP02",
+                "Virtual (file)",
+                "/vtape/QSTEST01/ (POOL2, 200 GB)",
+                "QSTEST01",
+                6,
+            ),
+            t(
+                "TAP01",
+                "Pass-through FC",
+                "C3 port 1 -> QS-HQ-VTL drive 0 (WWPN 21:00:00:24:ff:3a:1b:02)",
+                "QSPROD01",
+                6,
+            ),
+            t(
+                "TAPMLB01",
+                "Pass-through FC library",
+                "C3 port 1 -> QS-HQ-VTL changer",
+                "QSPROD01",
+                7,
+            ),
+        ],
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/server/QSHQVS1/virtual/tape";
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "vr-tape.html",
+        &[
+            (
+                "<input type=\"submit\" value=\"Create virtual tape drive...\">",
+                "<input type=\"submit\" name=\"vtape\" value=\"Create virtual tape drive...\">",
+            ),
+            (
+                "<input type=\"submit\" value=\"Add pass-through drive...\">",
+                "<input type=\"submit\" name=\"ptape\" value=\"Add pass-through drive...\">",
+            ),
+        ],
+    );
+}
+
+#[test]
+fn vr_pools() {
+    use webpages::vres::pools::{PoolRow, Pools, page};
+    let p = |id, name: &str, r: &str, m: &str, parts: &str, used: &str| PoolRow {
+        id,
+        name: name.into(),
+        reserved: r.into(),
+        maximum: m.into(),
+        partitions: parts.into(),
+        used: used.into(),
+    };
+    let v = Pools {
+        host: "QSHQVS1".into(),
+        pools: vec![
+            p(
+                0,
+                "DefaultPool",
+                "0.00",
+                "6.00",
+                "QSDEV01, QSTEST01",
+                "1.62",
+            ),
+            p(1, "TESTPOOL", "0.50", "2.00", "(none)", "0.00"),
+            p(2, "(unused)", "0.00", "0.00", "", ""),
+            p(3, "(unused)", "0.00", "0.00", "", ""),
+        ],
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/server/QSHQVS1/virtual/pools";
+    assert_golden(&render(here, &page(&ctx(here), &v)), "vr-pools.html", &[]);
+}
+
+#[test]
+fn create_vdisk() {
+    use webpages::vres::vdisk::{Create, page};
+    let v = Create {
+        host: "QSHQVS1".into(),
+        name: "VD07".into(),
+        size: "120".into(),
+        pools: vec![
+            "POOL1 (2,530 GB free)".into(),
+            "POOL2 (6,250 GB free)".into(),
+        ],
+        pool: "POOL1 (2,530 GB free)".into(),
+        thin: true,
+        partitions: vec!["QSDEV01".into(), "QSTEST01".into(), "QSPROD01".into()],
+        assign: "(none)".into(),
+        client: "(next free)".into(),
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/server/QSHQVS1/virtual/storage/create";
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "create-vdisk.html",
+        &[],
+    );
+}
+
+// Steps 10 to 17: partitions, their properties, activate and shut
+// down, the wizard, profiles, custom groups.
+
+#[allow(clippy::too_many_arguments, reason = "a row's columns")]
+fn part_row(
+    name: &str,
+    id: u32,
+    st: &str,
+    ms: &str,
+    pu: &str,
+    mem: &str,
+    prof: &str,
+    rc: &str,
+) -> webpages::partitions::list::Row {
+    webpages::partitions::list::Row {
+        name: name.into(),
+        id,
+        status: st.into(),
+        system: ms.into(),
+        environment: "QS/400".into(),
+        units: pu.into(),
+        memory: mem.into(),
+        profile: prof.into(),
+        code: rc.into(),
+        os: "V1R0M0".into(),
+    }
+}
+
+fn hq_rows() -> Vec<webpages::partitions::list::Row> {
+    vec![
+        part_row(
+            "QSDEV01", 1, "Running", "QSHQVS1", "1.00", "16.0", "default", "00000000",
+        ),
+        part_row(
+            "QSTEST01",
+            2,
+            "Not activated",
+            "QSHQVS1",
+            "0.00",
+            "0.0",
+            "install",
+            "A6005008",
+        ),
+        part_row(
+            "QSPROD01", 3, "Running", "QSHQVS1", "2.00", "64.0", "prod", "00000000",
+        ),
+        part_row(
+            "QSHQ400",
+            0,
+            "Running",
+            "QSHQ400",
+            "8.00",
+            "64.0",
+            "(standalone)",
+            "00000000",
+        ),
+    ]
+}
+
+fn partitions_view(
+    rows: Vec<webpages::partitions::list::Row>,
+    total: usize,
+    messages: Vec<qsweb::msg::Message>,
+) -> webpages::partitions::list::Partitions {
+    webpages::partitions::list::Partitions {
+        rows,
+        systems: vec!["QSHQVS1".into(), "QSHQ400".into()],
+        system: "All".into(),
+        status: "All".into(),
+        name: String::new(),
+        paging: qsweb::partials::Paging::from_query("", "", total, Vec::new()),
+        first: 1,
+        messages,
+        group: None,
+    }
+}
+
+#[test]
+fn partitions() {
+    use webpages::partitions::list::page;
+    let m = qmcmsg::message(
+        qsweb::msg::Kind::Info,
+        &qmcmsg::WAITING_FOR_CONSOLE,
+        &["QSTEST01", "A6005008"],
+    );
+    let v = partitions_view(hq_rows(), 4, vec![m]);
+    let here = "/qsmc/partitions";
+    assert_golden(&render(here, &page(&ctx(here), &v)), "partitions.html", &[]);
+}
+
+#[test]
+fn partitions_empty() {
+    use webpages::partitions::list::page;
+    let v = partitions_view(Vec::new(), 0, Vec::new());
+    let here = "/qsmc/partitions";
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "partitions-empty.html",
+        &[],
+    );
+}
+
+#[test]
+fn partitions_error() {
+    use webpages::partitions::list::page;
+    let m = qmcmsg::message(
+        qsweb::msg::Kind::Error,
+        &qmcmsg::ACTIVATE_FAILED,
+        &[
+            "QSTEST01",
+            "profile install requires virtual optical OPT01 with an image loaded. Load QS400_V1R0M0_INSTALL.iso and try again",
+        ],
+    );
+    let v = partitions_view(hq_rows(), 4, vec![m]);
+    let here = "/qsmc/partitions";
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "partitions-error.html",
+        &[],
+    );
+}
+
+#[test]
+fn partitions_paged() {
+    use webpages::partitions::list::page;
+    let mut rows = Vec::new();
+    for n in 1..=9u32 {
+        let ms = format!("QSBR{n:02}VS1");
+        let (pst, pu, mem, rc) = match n % 3 {
+            1 => ("Running", "2.00", "32.0", "00000000"),
+            2 => ("Not activated", "0.00", "0.0", "00000000"),
+            _ => ("Shutting down", "2.00", "32.0", "D6000298"),
+        };
+        rows.push(part_row(
+            &format!("QSBR{n:02}P01"),
+            1,
+            pst,
+            &ms,
+            pu,
+            mem,
+            "prod",
+            rc,
+        ));
+        rows.push(part_row(
+            &format!("QSBR{n:02}D01"),
+            2,
+            "Running",
+            &ms,
+            "1.00",
+            "16.0",
+            "default",
+            "00000000",
+        ));
+        let (tst, trc) = if n % 3 == 0 {
+            ("Error", "B6000100")
+        } else {
+            ("Running", "00000000")
+        };
+        rows.push(part_row(
+            &format!("QSBR{n:02}T01"),
+            3,
+            tst,
+            &ms,
+            "0.50",
+            "8.0",
+            "test",
+            trc,
+        ));
+    }
+    rows.truncate(25);
+    let v = partitions_view(rows, 61, Vec::new());
+    let here = "/qsmc/partitions";
+    // The boxes are p1 to p25, as on the other states.
+    let fix: Vec<(String, String)> = (0..25)
+        .rev()
+        .map(|i| {
+            (
+                format!("<input type=\"checkbox\" name=\"p{i}\">"),
+                format!("<input type=\"checkbox\" name=\"p{}\">", i + 1),
+            )
+        })
+        .collect();
+    let fix: Vec<(&str, &str)> = fix.iter().map(|(a, b)| (a.as_str(), b.as_str())).collect();
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "partitions-paged.html",
+        &fix,
+    );
+}
+
+fn part_tab(tab: webpages::partitions::props::Tab, file: &str, page: &str, fix: &[(&str, &str)]) {
+    use webpages::partitions::props::{Props, page as render_page};
+    let v = Props {
+        host: "QSHQVS1".into(),
+        id: 1,
+        name: "QSDEV01".into(),
+        tab,
+        messages: Vec::new(),
+    };
+    let here = format!("/qsmc/partition/QSHQVS1/1/{page}");
+    assert_golden(&render(&here, &render_page(&ctx(&here), &v)), file, fix);
+}
+
+#[test]
+fn partition_general() {
+    use webpages::partitions::props::{General, Tab};
+    let g = General {
+        name: "QSDEV01".into(),
+        id: 1,
+        environment: "QS/400".into(),
+        host: "QSHQVS1".into(),
+        description: "Development partition".into(),
+        state: "Running".into(),
+        code: "00000000".into(),
+        configuration: "Configured".into(),
+        os: "V1R0M0".into(),
+        fix: "QS400-CUM-26290".into(),
+        profile: "default".into(),
+        since: "10/30/26 06:02:14".into(),
+        boot: "Normal".into(),
+        keylock: "Normal".into(),
+    };
+    part_tab(Tab::General(g), "partition-general.html", "general", &[]);
+}
+
+#[test]
+fn partition_processors() {
+    use webpages::partitions::props::{Processors, Tab};
+    let p = Processors {
+        shared: true,
+        pools: vec!["DefaultPool (0)".into(), "TESTPOOL (1)".into()],
+        pool: "DefaultPool (0)".into(),
+        units: ["0.25".into(), "1.00".into(), "2.00".into(), "1.00".into()],
+        virtuals: ["1".into(), "2".into(), "4".into(), "2".into()],
+        uncapped: true,
+        weight: "128".into(),
+    };
+    part_tab(
+        Tab::Processors(p),
+        "partition-processors.html",
+        "processors",
+        &[],
+    );
+}
+
+#[test]
+fn partition_memory() {
+    use webpages::partitions::props::{Memory, Tab};
+    let m = Memory {
+        mb: ["8192".into(), "16384".into(), "32768".into()],
+        current: "16,384".into(),
+        region: "256 MB".into(),
+        available: "40,960 MB".into(),
+    };
+    part_tab(Tab::Memory(m), "partition-memory.html", "memory", &[]);
+}
+
+#[test]
+fn partition_io() {
+    use webpages::partitions::props::Tab;
+    part_tab(
+        Tab::Io(Vec::new()),
+        "partition-io.html",
+        "io",
+        &[
+            (
+                "<input type=\"submit\" value=\"Add physical adapter...\">",
+                "<input type=\"submit\" name=\"add\" value=\"Add physical adapter...\">",
+            ),
+            (
+                "<input type=\"submit\" value=\"Remove\">",
+                "<input type=\"submit\" name=\"remove\" value=\"Remove\">",
+            ),
+        ],
+    );
+}
+
+#[test]
+fn partition_vadapters() {
+    use webpages::partitions::props::{AdapterRow, Tab};
+    let a = |slot, kind: &str, to: &str, backing: &str, required| AdapterRow {
+        slot,
+        kind: kind.into(),
+        connecting: to.into(),
+        backing: backing.into(),
+        required,
+        fixed: slot < 2,
+    };
+    let rows = vec![
+        a(
+            0,
+            "Serial (console)",
+            "QS/VS host / 0",
+            "Terminal window",
+            true,
+        ),
+        a(1, "Serial", "QS/VS host / 1", "(reserved)", true),
+        a(
+            2,
+            "Ethernet",
+            "ETHSW0 / VLAN 20",
+            "MAC 02:51:53:00:01:02",
+            true,
+        ),
+        a(
+            3,
+            "SCSI client",
+            "QS/VS host / 13",
+            "Virtual disk VD03 (120 GB, POOL1)",
+            true,
+        ),
+        a(
+            4,
+            "Ethernet",
+            "ETHSW1 / VLAN 99",
+            "MAC 02:51:53:00:01:03",
+            false,
+        ),
+        a(
+            5,
+            "SCSI client",
+            "QS/VS host / 15",
+            "Virtual optical OPT01",
+            false,
+        ),
+        a(
+            6,
+            "SCSI client",
+            "QS/VS host / 16",
+            "Virtual tape VTAP01",
+            false,
+        ),
+    ];
+    part_tab(
+        Tab::Adapters(rows),
+        "partition-vadapters.html",
+        "vadapters",
+        &[],
+    );
+}
+
+#[test]
+fn partition_settings() {
+    use webpages::partitions::props::{Setting, Tab};
+    let s = Setting {
+        auto_start: true,
+        boot: "Normal".into(),
+        source: "A".into(),
+        keylock: "Normal".into(),
+        terminal: true,
+        panel: true,
+        delayed: true,
+        delay: 300,
+    };
+    part_tab(Tab::Settings(s), "partition-settings.html", "settings", &[]);
+}
+
+#[test]
+fn activate() {
+    use webpages::partitions::activate::{Activate, page};
+    let v = Activate {
+        host: "QSHQVS1".into(),
+        name: "QSTEST01".into(),
+        id: 2,
+        state: "Not activated".into(),
+        profiles: vec![
+            "install (default)".into(),
+            "default".into(),
+            "test-small".into(),
+        ],
+        keylock: "Manual".into(),
+        source: "D (optical/install)".into(),
+        ipl_type: "Attended".into(),
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/partition/QSHQVS1/2/activate";
+    assert_golden(&render(here, &page(&ctx(here), &v)), "activate.html", &[]);
+}
+
+#[test]
+fn confirm_activate() {
+    use webpages::partitions::activate::{Confirm, confirm_page};
+    let carried = "<input type=\"hidden\" name=\"prof\" value=\"install (default)\"><input type=\"hidden\" name=\"confirmed\" value=\"1\">";
+    let v = Confirm {
+        host: "QSHQVS1".into(),
+        name: "QSTEST01".into(),
+        id: 2,
+        profile: "install".into(),
+        source: "D".into(),
+        keylock: "Manual".into(),
+        processors: "1.50 shared".into(),
+        memory: "8,192".into(),
+        optical: "OPT01: QS400_V1R0M0_INSTALL.iso".into(),
+        terminal: true,
+        carried: carried.into(),
+    };
+    let here = "/qsmc/partition/QSHQVS1/2/activate";
+    // The choices of the page before are carried in its form.
+    assert_golden(
+        &render(here, &confirm_page(&ctx(here), &v)),
+        "confirm-activate.html",
+        &[(
+            "<form method=\"post\"><div class=\"buttons\">",
+            &format!("<form method=\"post\">{carried}<div class=\"buttons\">"),
+        )],
+    );
+}
+
+#[test]
+fn shutdown() {
+    use webpages::partitions::shutdown::{Shutdown, page};
+    let v = Shutdown {
+        host: "QSHQVS1".into(),
+        name: "QSDEV01".into(),
+        id: 1,
+        state: "Running".into(),
+        delay: 300,
+        restart: false,
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/partition/QSHQVS1/1/shutdown";
+    assert_golden(&render(here, &page(&ctx(here), &v)), "shutdown.html", &[]);
+}
+
+#[test]
+fn confirm_shutdown() {
+    use webpages::partitions::shutdown::{Confirm, confirm_page};
+    let carried = "<input type=\"hidden\" name=\"how\" value=\"delayed\"><input type=\"hidden\" name=\"delay\" value=\"300\"><input type=\"hidden\" name=\"confirmed\" value=\"1\">";
+    let v = Confirm {
+        host: "QSHQVS1".into(),
+        name: "QSDEV01".into(),
+        id: 1,
+        state: "Running".into(),
+        method: "Delayed, 300 s".into(),
+        jobs: "214".into(),
+        users: "3".into(),
+        carried: carried.into(),
+    };
+    let here = "/qsmc/partition/QSHQVS1/1/shutdown";
+    assert_golden(
+        &render(here, &confirm_page(&ctx(here), &v)),
+        "confirm-shutdown.html",
+        &[(
+            "<form method=\"post\"><div class=\"buttons\">",
+            &format!("<form method=\"post\">{carried}<div class=\"buttons\">"),
+        )],
+    );
+}
+
+#[test]
+fn manage_profiles() {
+    use webpages::partitions::profiles::{Profiles, Row, page};
+    let r = |name: &str, procs: &str, mem: &str, adapters, last: &str, default| Row {
+        name: name.into(),
+        processors: procs.into(),
+        memory: mem.into(),
+        adapters,
+        last: last.into(),
+        default,
+    };
+    let v = Profiles {
+        host: "QSHQVS1".into(),
+        name: "QSDEV01".into(),
+        id: 1,
+        rows: vec![
+            r(
+                "default",
+                "Shared 1.00 (0.25-2.00), uncapped",
+                "16,384",
+                7,
+                "10/30/26 06:00",
+                true,
+            ),
+            r(
+                "install",
+                "Shared 0.50 (0.25-1.00)",
+                "8,192",
+                4,
+                "10/02/26 09:15",
+                false,
+            ),
+            r(
+                "big-test",
+                "Shared 2.00 (1.00-3.00), capped",
+                "32,768",
+                7,
+                "10/14/26 18:40",
+                false,
+            ),
+        ],
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/partition/QSHQVS1/1/profiles";
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "manage-profiles.html",
+        &[
+            (
+                "<input type=\"submit\" value=\"Create profile...\">",
+                "<input type=\"submit\" name=\"create\" value=\"Create profile...\">",
+            ),
+            (
+                "<input type=\"submit\" value=\"Save current configuration as profile...\">",
+                "<input type=\"submit\" name=\"save\" value=\"Save current configuration as profile...\">",
+            ),
+            (
+                "<input type=\"submit\" value=\"Set default\">",
+                "<input type=\"submit\" name=\"default\" value=\"Set default\">",
+            ),
+        ],
+    );
+}
+
+/// The wizard's view at `step` with the design's entries.
+#[allow(clippy::too_many_lines, reason = "the fixture, a value a line")]
+fn wizard(step: usize) -> webpages::partitions::create::Wizard {
+    use webpages::partitions::create::{Adapter, Device, Wizard};
+    let mut v = std::collections::BTreeMap::new();
+    for (k, val) in [
+        ("id", "4"),
+        ("n", "QSTEST02"),
+        ("d", "Second test partition"),
+        ("p", "install"),
+        ("dft", "on"),
+        ("copy", "(none)"),
+        ("m", "shared"),
+        ("pool", "DefaultPool (0) - 3.50 units available"),
+        ("vmin", "1"),
+        ("vdes", "1"),
+        ("vmax", "2"),
+        ("sm", "Uncapped"),
+        ("w", "64"),
+        ("opt", "on"),
+        ("iso", "QS400_V1R0M0_INSTALL.iso"),
+        ("tap", "on"),
+        (
+            "src",
+            "D (optical/install) - first install from mounted ISO",
+        ),
+        ("key", "Manual"),
+        ("bm", "Normal"),
+    ] {
+        v.insert(k.to_string(), val.to_string());
+    }
+    let (min, des, max) = if step == 4 {
+        ("4096", "8192", "16384")
+    } else {
+        ("0.25", "0.50", "2.00")
+    };
+    v.insert("min".into(), min.into());
+    v.insert("des".into(), des.into());
+    v.insert("max".into(), max.into());
+    let ad = |slot, kind: &str, switch: &str, vlan, disk: &str| Adapter {
+        slot,
+        kind: kind.into(),
+        switch: switch.into(),
+        vlan,
+        disk: disk.into(),
+        required: true,
+    };
+    let s = |x: &str| x.to_string();
+    Wizard {
+        host: "QSHQVS1".into(),
+        step,
+        v,
+        next_id: 4,
+        copies: vec![s("QSTEST01 / install"), s("QSDEV01 / default")],
+        pools: vec![
+            s("DefaultPool (0) - 3.50 units available"),
+            s("TESTPOOL (1) - 2.00 units"),
+        ],
+        available: "40,960 MB (region size 256 MB)".into(),
+        devices: vec![Device {
+            location: "U9Q10.V1.9F11A2-P1-C5".into(),
+            slot: "C5".into(),
+            description: "Empty".into(),
+            owner: String::new(),
+            name: "c5".into(),
+            chosen: false,
+        }],
+        adapters: vec![
+            (
+                ad(0, "serial", "", 0, ""),
+                s("Serial (console)"),
+                s("QS/VS host / 0 - terminal window"),
+            ),
+            (
+                ad(2, "ethernet", "ETHSW0", 20, ""),
+                s("Ethernet"),
+                s("ETHSW0 / VLAN 20"),
+            ),
+            (
+                ad(3, "scsi", "", 0, "POOL1/VD06"),
+                s("SCSI client"),
+                s("Virtual disk VD06 (80 GB, POOL1, unassigned)"),
+            ),
+        ],
+        images: vec![s("QS400_V1R0M0_INSTALL.iso"), s("QS400_CUM_26290.iso")],
+        media: [
+            s("OPT01 (adapter ID 5)"),
+            s("VTAP03 (adapter ID 6), new file-backed drive in POOL2, 200 GB"),
+            s("TAP01 on C3 (currently assigned to QSPROD01)"),
+        ],
+        summary: vec![
+            (s("Managed system"), s("QSHQVS1")),
+            (s("Partition ID / name"), s("4 / QSTEST02")),
+            (s("Environment"), s("QS/400")),
+            (s("Profile"), s("install (default)")),
+            (
+                s("Processors"),
+                s(
+                    "Shared, DefaultPool, units 0.25 / 0.50 / 2.00, virtual 1 / 1 / 2, uncapped weight 64",
+                ),
+            ),
+            (s("Memory (MB)"), s("4,096 / 8,192 / 16,384")),
+            (s("Physical I/O"), s("None")),
+            (
+                s("Virtual adapters"),
+                s("0 Serial console; 2 Ethernet ETHSW0 VLAN 20; 3 SCSI client -> VD06 (80 GB)"),
+            ),
+            (
+                s("Optical"),
+                s("OPT01 (ID 5), QS400_V1R0M0_INSTALL.iso loaded"),
+            ),
+            (s("Tape"), s("VTAP03 (ID 6), file-backed 200 GB in POOL2")),
+            (
+                s("Boot"),
+                s("IPL source D, keylock Manual, boot mode Normal, auto start No"),
+            ),
+        ],
+        messages: Vec::new(),
+    }
+}
+
+#[test]
+fn create_steps() {
+    use webpages::partitions::create::page;
+    for step in 1..=9 {
+        let here = format!("/qsmc/partitions/create/step/{step}");
+        let fix: &[(&str, &str)] = if step == 6 {
+            &[(
+                "<input type=\"submit\" value=\"Add...\">",
+                "<input type=\"submit\" name=\"add\" value=\"Add...\">",
+            )]
+        } else {
+            &[]
+        };
+        assert_golden(
+            &render(&here, &page(&ctx(&here), &wizard(step))),
+            &format!("create-{step}.html"),
+            fix,
+        );
+    }
+}
+
+#[test]
+fn groups() {
+    use webpages::groups::{Row, page};
+    let r = |name: &str, d: &str, s, p, o: &str| Row {
+        name: name.into(),
+        description: d.into(),
+        systems: s,
+        partitions: p,
+        owner: o.into(),
+    };
+    let rows = vec![
+        r("PROD", "Production partitions", 1, 2, "qsadmin"),
+        r("TEST", "Test and development", 1, 2, "qsadmin"),
+        r("BRANCHES", "Branch office hosts", 25, 61, "operator1"),
+    ];
+    let here = "/qsmc/groups";
+    assert_golden(
+        &render(here, &page(&ctx(here), &rows, Vec::new())),
+        "groups.html",
+        &[],
+    );
+}
+
+#[test]
+fn group_create() {
+    use webpages::groups::{Candidate, Editor, editor};
+    let c = |name: &str, kind: &str, ms: &str, st: &str, included| Candidate {
+        name: name.into(),
+        kind: kind.into(),
+        system: ms.into(),
+        status: st.into(),
+        included,
+    };
+    let v = Editor {
+        name: "TEST".into(),
+        description: "Test and development".into(),
+        candidates: vec![
+            c(
+                "QSHQ400",
+                "Managed system (standalone)",
+                "",
+                "Operating",
+                false,
+            ),
+            c(
+                "QSHQVS1",
+                "Managed system (QS/VS host)",
+                "",
+                "Operating",
+                false,
+            ),
+            c("QSDEV01", "Partition", "QSHQVS1", "Running", true),
+            c("QSTEST01", "Partition", "QSHQVS1", "Not activated", true),
+            c("QSPROD01", "Partition", "QSHQVS1", "Running", false),
+        ],
+        editing: false,
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/groups/create";
+    assert_golden(
+        &render(here, &editor(&ctx(here), &v)),
+        "group-create.html",
+        &[],
+    );
+}
+
+#[test]
+fn group_view() {
+    use webpages::groups::view_page;
+    let rows: Vec<_> = hq_rows().into_iter().take(2).collect();
+    let v = partitions_view(rows, 2, Vec::new());
+    let here = "/qsmc/group/TEST";
+    assert_golden(
+        &render(here, &view_page(&ctx(here), "TEST", &v)),
+        "group-view.html",
+        &[],
+    );
+}

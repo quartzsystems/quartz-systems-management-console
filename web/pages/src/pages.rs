@@ -174,8 +174,8 @@ pub fn later(rq: &Rq<'_>, what: &str, group: &'static str, item: &'static str) -
     })
 }
 
-/// `/server/<name>/<tab>`: a managed system's pages; its virtual
-/// resources are a later phase's.
+/// `/server/<name>/<tab>`: a managed system's pages and its virtual
+/// resources.
 fn server(rq: &Rq<'_>, route: &str) -> Option<Response> {
     let mut parts = route.trim_start_matches("/server/").split('/');
     let name = parts.next().filter(|n| !n.is_empty())?;
@@ -184,12 +184,8 @@ fn server(rq: &Rq<'_>, route: &str) -> Option<Response> {
         return Some(crate::systems::power::route(rq, name));
     }
     if tab == "virtual" {
-        return Some(later(
-            rq,
-            "Virtual resources",
-            "Systems Management",
-            "/servers",
-        ));
+        let rest: Vec<&str> = parts.collect();
+        return Some(crate::vres::serve(rq, name, &rest.join("/")));
     }
     if crate::systems::props::TABS.iter().any(|(r, _)| *r == tab) {
         return Some(crate::systems::props::route(rq, name, tab));
@@ -220,6 +216,20 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         "/console/version" => crate::version_routes::version(rq),
         "/connectivity" => crate::systems::connectivity::route(rq),
         "/servers" => crate::systems::servers::route(rq),
+        "/partitions" => crate::partitions::list::route(rq),
+        "/groups" => crate::groups::route(rq),
+        "/groups/create" => crate::groups::edit(rq),
+        "/confirm/group-delete" => crate::groups::delete(rq),
+        r if r.starts_with("/group/") => crate::groups::view(rq, r.trim_start_matches("/group/")),
+        r if r.starts_with("/partitions/create/step/") => crate::partitions::create::route(
+            rq,
+            r.trim_start_matches("/partitions/create/step/")
+                .parse()
+                .unwrap_or(1),
+        ),
+        r if crate::partitions::confirm::ROUTES.contains(&r) => {
+            crate::partitions::confirm::route(rq, r)
+        }
         "/refcodes" => crate::refcodes::history::route(rq),
         r if r.starts_with("/refcode/") => {
             crate::refcodes::page::route(rq, r.trim_start_matches("/refcode/"))
@@ -239,6 +249,7 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         "/confirm/cert-new" => crate::certs_routes::renew(rq),
         "/confirm/ca-remove" => crate::certs_routes::remove(rq),
         "/confirm/user-delete" => crate::user_routes::delete(rq),
+        r if crate::vres::confirm::ROUTES.contains(&r) => crate::vres::confirm::route(rq, r),
         _ => return None,
     })
 }
