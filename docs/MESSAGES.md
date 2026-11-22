@@ -62,6 +62,10 @@ request refused.
 | `QMC3409` | 30 | The scheduler did not answer: &1. | The console's service that keeps and runs scheduled operations is not running, or is starting. | Wait a moment and show the page again. If it goes on, see the reference code history of the console. |
 | `QMC4001`-`QMC4002` | a terminal window's console closed or disconnected |
 | `QMC5003`, `QMC5010` | control panel functions carried out and refused |
+| `QMC7101`-`QMC7117` | the console's own code update: what `base/update` refuses, in the console's words |
+| `QMC7201`-`QMC7209` | product streams and the download service, `fetchd` |
+| `QMC7301`-`QMC7305` | the console's own problem log: what `base/problem` refuses |
+| `QMC7311`-`QMC7341` | the console's own problems: each condition's description, what to do its second level (`docs/SERVICE.md`) |
 | `QMC8001`-`QMC8011` | users, roles and form values |
 | `QMC8100`-`QMC8103` | Network settings |
 | `QMC8200`-`QMC8201` | Date and time |
@@ -78,6 +82,68 @@ request refused.
 | `QMC4002` | 0 | Terminal window to &1 disconnected. | You disconnected the window; the console stays with the managed system and any other window that has it open. | Choose Connect to open it again. |
 | `QMC5003` | 0 | Function &1 selected for partition &2; the managed system accepted the request. | The host carried out the control panel function; the result shows what it displays and the code before and after. | None. |
 | `QMC5010` | 30 | Function &1 for partition &2 not performed. The managed system's own messages follow. | The host refused the control panel function: it does not have it, or its keylock or the partition's state does not allow it. | Act on the system's messages below this one and try again. |
+| `QMC7101` | 30 | Update image &1 is not signed by a key this console trusts. | An image is installed only if its manifest is signed by a key the running release trusts, and nothing turns that off. | Get the image from the qsmc product stream again, or from media of a QS/MC build. |
+| `QMC7102` | 30 | Update image &1 is damaged: &2. | The image does not read, or a size or a hash in it is not its manifest's. | Download or copy it again; if it is refused again, get it from the product stream again. |
+| `QMC7103` | 30 | Update image &1 is for &2, and this console is &3. | An update image updates the product it was built for; a test image is updated only by a test image. | Use an update image of QS/MC. |
+| `QMC7104` | 30 | Update image &1 holds &2, which is older than &3, which runs. | An older release is installed only when the stage allows it. | Stage the image again allowing an older release, if that is what is wanted. |
+| `QMC7105` | 30 | Update image &1 holds &2, which cannot read the console's state: &3. | The release in the image reads an older form of that file than the console has. It is never installed: the console would not start with its state. | Install a later release of QS/MC. |
+| `QMC7106` | 30 | No update image is staged. | Install needs a staged, verified image. | Stage one first: from a downloaded update on Code updates, or from a removable volume at the local console's option 8. |
+| `QMC7107` | 30 | Update image &1 is staged already. | One image is staged at a time. | Install it, or discard it first. |
+| `QMC7108` | 30 | Update image &1 has not verified: &2. | Only an image that passed every check is installed. | Discard it and stage another. |
+| `QMC7109` | 30 | Update image &1 ended after &2 of its &3 bytes. | The image did not arrive whole; nothing of it was kept. | Stage it again. |
+| `QMC7110` | 30 | An update is &1. | One install or activation at a time. | Wait for it to end. |
+| `QMC7111` | 30 | No code slot is pending. | Activate and cancel need a slot an install wrote. | Install a verified image first: the slot it is written to is then pending. |
+| `QMC7112` | 30 | Work is running: &1. | An activation restarts the console. | Wait for it to end, then activate again. |
+| `QMC7113` | 30 | Code slot &1 is pending already. | An install while a slot is pending would write over it. | Activate the pending slot, or cancel it, before another image is installed. |
+| `QMC7114` | 30 | Code slot &1 could not be written: &2. | The slot is not pending, and the slot that runs is as it was. | Install the image again; if it fails again the load-source disk named may be failing. |
+| `QMC7115` | 30 | The A/B record could not be changed: &1. | PID 1 could not write the record of the load source; the slots are as they were. | Display the code levels at the local console's option 8 and try again. |
+| `QMC7116` | 30 | Update image &1 could not be kept on the data file system: &2. | Nothing of it was kept. | Make room on the data file system, then stage it again. |
+| `QMC7117` | 30 | &1 is not a name and size an update image is staged by. | A stage names the image in 1 to 64 printable characters and gives its size, more than 0. | Stage a file of the qsmc stream, or one an update build made. |
+| `QMC7201` | 30 | The &1 stream's index is not signed by a key this console trusts. | An index or catalog is used only if its signature verifies against the keys built into the console's image. | Check that the update server is the product stream's. Nothing was taken from it. |
+| `QMC7202` | 30 | The &1 stream's index has sequence &2, older than &3, which was seen already. | A stream's sequence never goes back: an older index may hide an update that fixes something. | Check that the update server is the product stream's, not an old copy of it. |
+| `QMC7203` | 30 | The &1 stream's index does not read: &2. | It is signed, but its contents are not an index of this format. | Check that the update server is the product stream's. |
+| `QMC7204` | 30 | The update server &1 was not reached: &2. | The console could not connect to it, it did not answer in time, or it answered with an error. | Check the server's address and the console's route and name servers, then check again. |
+| `QMC7205` | 30 | &1 does not match the stream's index: &2. It was removed. | The file's size or SHA-256 is not the one the signed index names. | Download it again; if it fails again, the server or the path to it changes what it sends. |
+| `QMC7206` | 30 | &1 is &2 bytes, more than the &3 the console downloads. | The download area of the data file system has a limit. | Delete downloaded updates the console no longer needs. |
+| `QMC7207` | 30 | The download service does not answer: &1. | fetchd, the only service that reaches the update server, is not running. | Restart the console; if it does not answer again, report this with a console dump. |
+| `QMC7208` | 30 | &1 is not an update server's address. | The address is https:// or http:// with a host name or address, and a path. | Type the server's address, for example https://updates.quartz.systems. |
+| `QMC7209` | 30 | &1 is not in the &2 stream's index. | Only a file the signed index names is downloaded. | Check now, then download what the stream offers. |
+| `QMC7301` | 30 | There is no problem &1. | The console's problems are numbered from 1 and no number is used twice; the log keeps 500. | Choose a problem from Serviceable events. |
+| `QMC7302` | 30 | Problem &1 was closed already, by &2. | A closed problem stays closed. When its condition is seen again a new problem is opened. | None. |
+| `QMC7303` | 30 | The condition of problem &1 still holds. | A problem is closed once its condition no longer holds, which its analysis log says. | Close it anyway, through the confirmation, when the condition is understood and will be dealt with later. |
+| `QMC7304` | 30 | The problem log could not be written. | The data file system did not take the change; nothing changed. | Make room on the data file system and try again. |
+| `QMC7305` | 30 | A note of &1 bytes is not valid. | A note is one line of 1 to &2 bytes, without control characters. | Type a shorter note on one line. |
+| `QMC7311` | 30 | The console restarted after its kernel panicked: &1. | The kernel stopped the machine. What it kept of the panic is in /data/log/panics and in the dump taken at the next IPL. | Report this problem with the console dump of the same time. |
+| `QMC7312` | 30 | Kernel file systems were not mounted: &1. | PID 1 could not mount a file system the console needs; it runs without it. | Report this problem with a console dump. |
+| `QMC7313` | 30 | The processor lacks what the cryptography needs: &1. | The web server and QSI need AVX2, ADX, AES and PCLMULQDQ. | Run the console on a processor with them, or give its virtual machine the host's processor model. |
+| `QMC7314` | 30 | The A/B record of the load source was not valid: &1. | The record that says which code slot is the default could not be read or written. | If this is seen at every IPL, the load-source disk may be failing: replace it. |
+| `QMC7315` | 30 | Code slot &1 did not confirm, and the console went back to the other slot: &2. | The update in the slot did not start its web server; the state is as it was before the update, and a console dump was taken. | Report this problem with the console dump of the same time before installing the update again. |
+| `QMC7316` | 30 | The data file system was not mounted: &1. | Nothing is kept across a restart while it is not. | Check the load-source disks and their connections; the console never reformats the data file system. |
+| `QMC7317` | 30 | A restore was taken back: &1. | The restored console did not start its web server, or the restore was cut short; the state before it is back. | Restore the backup again; if it is taken back again, report this problem with a console dump. |
+| `QMC7318` | 30 | The clock could not be set from the hardware clock: &1. | The console's time is wrong until a time server sets it. | Configure a time server; if the machine has a real-time clock, check its battery. |
+| `QMC7319` | 30 | A state file was not valid, and its defaults are in use: &1. | The file named was refused when it was read. | Set those settings again. |
+| `QMC7320` | 30 | The console's identity could not be made: &1. | The key pair and certificate the console is known by could not be written. | Check that the data file system has room; it is made again at the next IPL. |
+| `QMC7321` | 30 | The managed-systems service's files could not be given to it: &1. | The managed-systems service does not start, and the console manages no system. | Check the data file system, then report this problem with a console dump. |
+| `QMC7322` | 30 | Service &1 failed five times in ten minutes and is not started again. | The service ended again and again; PID 1 took a console dump. | Restart the console; if the service stops again, report this problem with the dump. |
+| `QMC7323` | 30 | The firmware's boot order was not written for code slot &1: &2. | The record holds the slot; the firmware may start the other first. | In the firmware's setup, put the confirmed slot's entry first. |
+| `QMC7324` | 30 | No management interface was found: &1. | The console has no Ethernet link with carrier, or not the device configured. | Connect a cable to a supported port, or correct the device in the network settings. |
+| `QMC7325` | 30 | Management interface &1 has no carrier. | The interface has had no carrier for 30 seconds. | Check the cable and the switch port of the interface. |
+| `QMC7326` | 30 | Management interface &1 has no address. | The interface has carrier but no address. | Check that a DHCP server answers on its network, or set a static address. |
+| `QMC7327` | 30 | The mirrored load source was not assembled: &1. | The console could not assemble its two load-source disks. | Check that both disks are present and connected, then restart. |
+| `QMC7328` | 30 | Load-source unit &1 is missing or failed. | The console runs on the other unit without protection. | Return or replace the disk of the unit, then rebuild it at the local console's option 6. |
+| `QMC7329` | 30 | The rebuild of load-source unit &1 did not finish: &2. | The unit is still out of step; it is tried again at the next IPL. | If it fails again, replace its disk. |
+| `QMC7330` | 30 | The load-source units each ran without the other: &1. | Each disk ran without the other; one of them must be chosen. | Choose the unit to keep at the local console; the other is written again from it. |
+| `QMC7331` | 30 | The firmware took no boot entry for a new load-source unit: &1. | The new unit holds both slots but the firmware has no entry for it. | Add one in the firmware's setup. |
+| `QMC7332` | 30 | The managed systems were not read: &1. | The console manages none of the systems the file held. | Restore a backup of the console, or add the systems again with new pairing passwords. |
+| `QMC7333` | 30 | Managed system &1 answered with another certificate: &2. | The system's certificate is not the one pinned when it was paired; the console does not trust it. | Find out at the system why it changed; when it is the system, pair it again with Reset connection. |
+| `QMC7334` | 30 | Managed system &1 has not been reached for longer than its setting: &2. | The console has tried and not reached the system. | Check the system and the network between it and the console; Connectivity shows why the connection fails. |
+| `QMC7335` | 30 | The data file system is nearly full: &1. | The console keeps its state, logs, downloads and dumps there. | Delete the downloaded updates and dumps it no longer needs. |
+| `QMC7336` | 30 | A console dump could not be written: &1. | Nothing of it was kept. | Make room on the data file system, then take the dump again. |
+| `QMC7337` | 30 | The web certificate ends soon: &1. | Browsers refuse the console's certificate once it has ended. | Make a new certificate or import one on Certificates. |
+| `QMC7338` | 30 | An update could not be installed into code slot &1: &2. | The slot is not pending, and the slot that runs is as it was. | Check the load-source disks named, then install the update again. |
+| `QMC7339` | 30 | A downloaded file did not match its product stream's index: &1. | Its size or SHA-256 is not the one the signed index names; it was removed. | Download it again; if it fails again, the server or the path to it changes what it sends. |
+| `QMC7340` | 30 | The console's first process failed: &1. | PID 1 panicked and the console parked. | Report this problem with the text after it and a console dump. |
+| `QMC7341` | 30 | The storage service of the mirrored load source stopped: &1. | The data file system has no server and nothing more was written. | Restart the console, then report this problem with a console dump. |
 | `QMC1201` | 10 | This release has no explanation for reference code &1. Its text is shown as the system posted it. | The code is in neither the QS/VS catalogue nor the QS/400 table this console was built with: a system of a later release may post codes this console does not know. | See the system's own documentation for the code, or update the console. |
 | `QMC1202` | 30 | &1 is not a date in this console's format. | A date filter was typed in another format than the one on Language, locale and session. | Type the date as the console shows dates, or leave the field empty. |
 | `QMC2201` | 20 | Power on of &1 is not in this release: a powered-off machine does not answer QSI, and this console has no way to its BMC. | A managed system answers QSI only while it runs; powering one on takes its BMC, which this console is not given. | Power the machine on at its BMC or at the machine. The console reconnects when it answers. |

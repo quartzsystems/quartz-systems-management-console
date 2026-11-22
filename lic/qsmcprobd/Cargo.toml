@@ -1,0 +1,19 @@
+[package]
+name = "qsmcprobd"
+description = "QS/MC's problem service: base/problem run as QS/MC, with the table of the console's own conditions"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+problem.workspace = true
+msg.workspace = true
+qmcmsg = { path = "../../web/msgs", version = "0.1.0" }
+refcode = { path = "../refcode", version = "0.1.0" }
+release = { path = "../release", version = "0.1.0" }
+supervise.workspace = true
+logd.workspace = true
+
+[lints]
+workspace = true

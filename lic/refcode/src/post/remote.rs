@@ -11,6 +11,7 @@ use std::time::Duration;
 use appliance::Event;
 use supervise::control::{Calls, Client};
 
+use crate::RefCode;
 use crate::event::{about_of, code_of};
 
 /// PID 1 serves one request at a time; a busy moment is waited out.
@@ -33,6 +34,21 @@ pub fn post(event: &Event<'_>) {
     let (code, detail) = code_of(event);
     let about = about_of(event);
     let text = code.text_with(&detail);
+    ask(&format!("{} {text}", code.code), |c| {
+        c.post_about(code.code.to_string(), text.clone(), about.clone())
+            .is_ok()
+    });
+}
+
+/// Post `code` with `detail` through PID 1.
+pub fn code(code: &RefCode, detail: &str) {
+    code_about(code, detail, &[]);
+}
+
+/// Post `code` with `detail` through PID 1, about `about`.
+pub fn code_about(code: &RefCode, detail: &str, about: &[supervise::control::About]) {
+    let text = code.text_with(detail);
+    let about = about.to_vec();
     ask(&format!("{} {text}", code.code), |c| {
         c.post_about(code.code.to_string(), text.clone(), about.clone())
             .is_ok()

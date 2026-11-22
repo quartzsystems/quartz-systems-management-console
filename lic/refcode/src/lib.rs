@@ -180,6 +180,13 @@ pub const INSTALL_COMPLETE: RefCode = progress("C3004090", "Installation complet
 
 // A3001xxx: attention from PID 1, numbered after the IPL step.
 
+/// The kernel panicked before this IPL: what it kept is taken.
+pub const KERNEL_PANICKED: RefCode = attention(
+    "A3001005",
+    "Console restarted after a kernel panic",
+    "Report this code with the console dump taken at this IPL, which holds what the kernel kept of the panic",
+);
+
 /// A kernel file system did not mount.
 pub const NOT_MOUNTED: RefCode = attention(
     "A3001010",
@@ -387,6 +394,111 @@ pub const SYSTEM_CERTIFICATE_CHANGED: RefCode = attention(
     "Find out at the managed system why its certificate changed; when it is the system, pair it again with Reset connection",
 );
 
+/// A managed system has not been reached for longer than the setting.
+pub const SYSTEM_NOT_REACHED: RefCode = attention(
+    "A3005030",
+    "Managed system not reached",
+    "Check the system and the network between it and the console; Connectivity shows why the connection fails",
+);
+/// A managed system not reached for long is reached again.
+pub const SYSTEM_REACHED: RefCode = progress("C3005040", "Managed system reached again");
+
+// C3006xxx, A3006xxx: the console's serviceability: its problem log's
+// look at `/data`, its dumps, its web certificate.
+
+/// `/data` is 90% full.
+pub const DATA_NEARLY_FULL: RefCode = attention(
+    "A3006010",
+    "Data file system nearly full",
+    "Delete the downloaded updates and dumps the console no longer needs; if it stays full, report this code with a console dump",
+);
+/// `/data` is under 85% full again.
+pub const DATA_HAS_ROOM: RefCode = progress("C3006010", "Data file system has room again");
+/// A console dump began.
+pub const DUMP_STARTED: RefCode = progress("C3006040", "Console dump started");
+/// A console dump was written.
+pub const DUMP_WRITTEN: RefCode = progress("C3006041", "Console dump written");
+/// A console dump was deleted, or put out for the limits.
+pub const DUMP_REMOVED: RefCode = progress("C3006045", "Console dump removed");
+/// A console dump could not be written.
+pub const DUMP_FAILED: RefCode = attention(
+    "A3006040",
+    "Console dump not written",
+    "Check that the data file system has room, then take the dump again",
+);
+/// The web certificate ends within 30 days.
+pub const CERT_ENDING: RefCode = attention(
+    "A3006050",
+    "Web certificate near its end",
+    "Make a new certificate or import one on Certificates before it ends: browsers refuse it after",
+);
+/// A web certificate with time left is in use.
+pub const CERT_REPLACED: RefCode = progress("C3006050", "Web certificate has time left");
+
+// C3007xxx, A3007xxx: the console's own code update (`base/update`,
+// PID 1) and its product streams (`upd/fetchd`).
+
+/// An update image was staged whole.
+pub const UPDATE_STAGED: RefCode = progress("C3007000", "Update image staged");
+/// It verified.
+pub const UPDATE_VERIFIED: RefCode = progress("C3007010", "Update image verified");
+/// It was refused.
+pub const UPDATE_REFUSED: RefCode = attention(
+    "A3007010",
+    "Update image refused",
+    "Nothing was kept: stage an update image of QS/MC from its product stream or from media of a QS/MC build",
+);
+/// What was staged was thrown away.
+pub const UPDATE_DISCARDED: RefCode = progress("C3007015", "Staged update discarded");
+/// An install began.
+pub const UPDATE_INSTALLING: RefCode = progress("C3007020", "Update install started");
+/// The other slot was written on one disk.
+pub const UPDATE_SLOT_WRITTEN: RefCode = progress("C3007025", "Update slot written");
+/// The install ended: the slot is pending.
+pub const UPDATE_INSTALLED: RefCode = progress("C3007040", "Update installed");
+/// The install failed.
+pub const UPDATE_INSTALL_FAILED: RefCode = attention(
+    "A3007030",
+    "Update not installed",
+    "The running slot is as it was: check the load-source disks named, then install the update again",
+);
+/// The pending slot is pending no more.
+pub const UPDATE_CANCELLED: RefCode = progress("C3007045", "Pending update cancelled");
+/// The restart into the pending slot began.
+pub const UPDATE_ACTIVATING: RefCode = progress("C3007050", "Update activating");
+/// The pending slot confirmed: it runs and is the default.
+pub const UPDATE_CONFIRMED: RefCode = progress("C3007060", "Update confirmed");
+/// The pending slot's first IPL kept a copy of the state.
+pub const UPDATE_STATE_KEPT: RefCode = progress("C3007065", "State kept for the trial");
+/// The copy was put back: the pending slot did not confirm.
+pub const UPDATE_STATE_RESTORED: RefCode = progress("C3007070", "State put back");
+/// State an older release wrote was written in this release's form.
+pub const STATE_MIGRATED: RefCode = progress("C3007075", "State migrated");
+/// The product streams were checked.
+pub const STREAMS_CHECKED: RefCode = progress("C3007100", "Product streams checked");
+/// A stream's index or catalog was refused.
+pub const STREAM_REFUSED: RefCode = attention(
+    "A3007100",
+    "Product stream refused",
+    "Nothing was taken from it: check that the update server is the product stream's, then check again",
+);
+/// The stream server did not answer.
+pub const STREAM_NOT_REACHED: RefCode = attention(
+    "A3007105",
+    "Product stream server not reached",
+    "Check the update server's address on Code updates and the console's route and name servers, then check again",
+);
+/// A file of a stream was downloaded and matched its index.
+pub const DOWNLOADED: RefCode = progress("C3007110", "Update downloaded");
+/// A downloaded file did not match its index: it is removed.
+pub const DOWNLOAD_BAD: RefCode = attention(
+    "A3007110",
+    "Download failed its check",
+    "The file was removed: download it again; if it fails again, the server or the path to it changes what it sends",
+);
+/// A downloaded file was removed.
+pub const DOWNLOAD_REMOVED: RefCode = progress("C3007115", "Downloaded update removed");
+
 /// An orderly shutdown began.
 pub const SHUTDOWN_STARTED: RefCode = power_down("D3001000", "Console shutdown started");
 /// The console powers off.
@@ -469,6 +581,37 @@ pub const ALL: &[&RefCode] = &[
     &SYSTEM_REMOVED,
     &MGMT_STATE_INVALID,
     &SYSTEM_CERTIFICATE_CHANGED,
+    &SYSTEM_NOT_REACHED,
+    &SYSTEM_REACHED,
+    &KERNEL_PANICKED,
+    &DATA_NEARLY_FULL,
+    &DATA_HAS_ROOM,
+    &DUMP_STARTED,
+    &DUMP_WRITTEN,
+    &DUMP_REMOVED,
+    &DUMP_FAILED,
+    &CERT_ENDING,
+    &CERT_REPLACED,
+    &UPDATE_STAGED,
+    &UPDATE_VERIFIED,
+    &UPDATE_REFUSED,
+    &UPDATE_DISCARDED,
+    &UPDATE_INSTALLING,
+    &UPDATE_SLOT_WRITTEN,
+    &UPDATE_INSTALLED,
+    &UPDATE_INSTALL_FAILED,
+    &UPDATE_CANCELLED,
+    &UPDATE_ACTIVATING,
+    &UPDATE_CONFIRMED,
+    &UPDATE_STATE_KEPT,
+    &UPDATE_STATE_RESTORED,
+    &STATE_MIGRATED,
+    &STREAMS_CHECKED,
+    &STREAM_REFUSED,
+    &STREAM_NOT_REACHED,
+    &DOWNLOADED,
+    &DOWNLOAD_BAD,
+    &DOWNLOAD_REMOVED,
 ];
 
 /// The word a posted line starts with.

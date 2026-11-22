@@ -1653,6 +1653,7 @@ dependencies = [
 name = "qmcmsg"
 version = "0.1.0"
 dependencies = [
+ "msg",
  "qsweb",
 ]
 
@@ -1809,6 +1810,19 @@ dependencies = [
  "netd",
  "refcode",
  "release",
+]
+
+[[package]]
+name = "qsmcprobd"
+version = "0.1.0"
+dependencies = [
+ "logd",
+ "msg",
+ "problem",
+ "qmcmsg",
+ "refcode",
+ "release",
+ "supervise",
 ]
 
 [[package]]

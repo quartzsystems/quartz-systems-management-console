@@ -68,9 +68,12 @@ is, and an attention code has the number of the step it belongs to.
 | `C3002xxx`, `A3002xxx` | the management network and time (`base/netd`) |
 | `C3003xxx`, `A3003xxx`, `B3003xxx` | the load source and its protection (`base/stgd`, and PID 1 when the storage service is lost) |
 | `C3004xxx`, `A3004xxx` | the installer (`lic/qsmcinstall`), in the order of its steps |
-| `C3005xxx`, `A3005xxx` | the managed-systems service (`mgmt/mgmtd`): its start, systems paired and removed, a certificate changed. A system lost and found again posts nothing: it is in the log and on the Connectivity page |
+| `C3005xxx`, `A3005xxx` | the managed-systems service (`mgmt/mgmtd`): its start, systems paired and removed, a certificate changed, a system not reached for longer than its setting and reached again. A system lost and found again within the setting posts nothing: it is in the log and on the Connectivity page |
+| `C3006xxx`, `A3006xxx` | the console's serviceability: the problem log's look at `/data` (`lic/qsmcprobd`), the console's dumps (PID 1), its web certificate's end (`web/webd`) |
+| `C3007xxx`, `A3007xxx` | the console's own code update (`lic/qsmcupdd` over `base/update`, and PID 1 for the state across it) and its product streams (`lic/qsmcfetchd`) |
 
-Later phases take further blocks and record them here.
+Later phases take further blocks and record them here. Which `A3` and
+`B3` codes open a problem in the console's own log is `docs/SERVICE.md`.
 
 The installer's codes are in its log (`/run/install.log` on the media,
 copied to `/data/log/install.log` by its state step) and on its progress
@@ -121,6 +124,27 @@ a data file system, so they are not in the reference code history.
 | `C3005010` | Managed system paired | a managed system was paired from the web interface, with its name, its address and the user |
 | `C3005020` | Managed system paired again | Reset connection paired a managed system again, with its name and the user |
 | `C3005030` | Managed system removed | a managed system and its pin were forgotten, with its name and the user |
+| `C3005040` | Managed system reached again | a managed system that had not been reached for longer than the setting was reached, with its name |
+| `C3006010` | Data file system has room again | `/data` is under 85% full again, with how full |
+| `C3006040` | Console dump started | a console dump began, with its name and who asked |
+| `C3006041` | Console dump written | it was written, with its name and size |
+| `C3006045` | Console dump removed | a console dump was deleted, or put out to keep within the limits, with its name |
+| `C3006050` | Web certificate has time left | the web server's certificate in use ends more than 30 days from now, after one that did not |
+| `C3007000` | Update image staged | an update image was written to `/data/update` whole, with its name and size |
+| `C3007010` | Update image verified | it is signed by a trusted key, whole, of this product and readable by this release's state, with its release |
+| `C3007015` | Staged update discarded | what was staged was thrown away |
+| `C3007020` | Update install started | the staged image is being written to the slot that is not running |
+| `C3007025` | Update slot written | the slot's UKI is on one load-source disk and reads back, with the disk |
+| `C3007040` | Update installed | the slot is written on every disk and pending, with the slot and release |
+| `C3007045` | Pending update cancelled | the pending slot is pending no more |
+| `C3007050` | Update activating | the restart into the pending slot began, with the slot and who asked |
+| `C3007060` | Update confirmed | the pending slot confirmed when the web server answered, with the release and build |
+| `C3007065` | State kept for the trial | the pending slot's first IPL copied `/data/state` before anything read it |
+| `C3007070` | State put back | the slot that came back after the pending one did not confirm put the copy of state back |
+| `C3007075` | State migrated | after the confirmation, state files an older release wrote were written in this release's form, with which |
+| `C3007100` | Product streams checked | `fetchd` read each stream's index or catalog and verified it, with each stream's sequence |
+| `C3007110` | Update downloaded | a file of a stream was downloaded whole and matched its index, with its name |
+| `C3007115` | Downloaded update removed | a downloaded file was deleted, with its name |
 | `D3001000` | Console shutdown started | an orderly shutdown began: power off or restart, and who asked (the control socket, `SIGTERM`, the power button) |
 | `D3001090` | Console powering off | the services are ended and `/data` unmounted; on the console only |
 | `D3001091` | Console restarting | the same, before a restart |
@@ -129,6 +153,7 @@ a data file system, so they are not in the reference code history.
 
 | Code | Text | When | What to do |
 |---|---|---|---|
+| `A3001005` | Console restarted after a kernel panic | at the IPL after a kernel panic, with what the kernel kept of it, moved to `/data/log/panics`; a console dump is taken | Report this code with the console dump taken at this IPL, which holds what the kernel kept of the panic |
 | `A3001010` | Kernel file systems not mounted | a kernel file system did not mount, with which and why; the IPL goes on | Note the file systems named and report them with this code; the console runs without them |
 | `A3001015` | Processor lacks what the cryptography needs | the processor lacks AVX2, ADX, AES or PCLMULQDQ, with which: the web server and QSI cannot run on it; the console still IPLs | Run the console on a processor with AVX2, ADX, AES and PCLMULQDQ, or give a virtual machine the host's processor model |
 | `A3001030` | A/B record not valid | no load-source disk was found, or the record could not be read or written | The console runs from the slot the firmware started; if this is posted at every IPL, the load-source disk may be failing: replace it |
@@ -157,6 +182,15 @@ a data file system, so they are not in the reference code history.
 | `A3004090` | Installation failed | a step failed, with the step and why; the progress screen names it | The disks are partly written: start the installation over; if the same step fails, check or replace the disk named |
 | `A3005010` | Managed systems not read | `systems.toml` or `mgmt.toml` could not be read; the service runs without what it held | The console manages none of the systems the file held: restore a backup of the console, or add the systems again with new pairing passwords |
 | `A3005020` | Managed system certificate changed | a managed system answered with a certificate other than the one pinned, with its name and address; it is not trusted | Find out at the managed system why its certificate changed; when it is the system, pair it again with Reset connection |
+| `A3005030` | Managed system not reached | a managed system has not been reached for longer than the setting on Connectivity, with its name and why | Check the system and the network between it and the console; Connectivity shows why the connection fails |
+| `A3006010` | Data file system nearly full | `/data` is 90% full, with how full; looked at every minute | Delete the downloaded updates and dumps the console no longer needs; if it stays full, report this code with a console dump |
+| `A3006040` | Console dump not written | a console dump could not be written, with why; nothing of it is kept | Check that the data file system has room, then take the dump again |
+| `A3006050` | Web certificate near its end | the web server's certificate ends within 30 days, with when | Make a new certificate or import one on Certificates before it ends: browsers refuse it after |
+| `A3007010` | Update image refused | a staged image was refused, with why: not signed by a trusted key, damaged, another product's, older without leave, or unable to read this console's state | Nothing was kept: stage an update image of QS/MC from its product stream or from media of a QS/MC build |
+| `A3007030` | Update not installed | a step of the install failed, with the step and the disk | The running slot is as it was: check the load-source disks named, then install the update again |
+| `A3007100` | Product stream refused | a stream's index or catalog did not verify against the keys in the image, or its sequence went back, with the stream and why | Nothing was taken from it: check that the update server is the product stream's, then check again |
+| `A3007105` | Product stream server not reached | the update server did not answer, or answered with an error, with the address and why | Check the update server's address on Code updates and the console's route and name servers, then check again |
+| `A3007110` | Download failed its check | a downloaded file's size or SHA-256 is not its index's, with the file; it is removed | The file was removed: download it again; if it fails again, the server or the path to it changes what it sends |
 | `B3001000` | Console PID 1 failed | by PID 1's panic handler, with the panic message, before it parks | Restart the console; report this code with the text after it |
 | `B3003000` | Storage service lost | the storage service failed five times while `/data` was on the mirrored set | The data file system has no server and nothing more is written: restart the console |
 
