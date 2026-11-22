@@ -418,7 +418,12 @@ pub fn own(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     crate::suite::base::power_off(&mut guest)?;
     drop(guest);
     machine.oem = vec![qsmchook::oem_string(qsmchook::FLAKY_FAILS)];
-    let mut c = crate::suite::web::boot(run, machine)?;
+    // A service stopped: the base is never ready, the web server is.
+    let mut guest = run.boot(&machine)?;
+    let deadline = std::time::Instant::now() + Duration::from_secs(300);
+    guest.seen(&refcode::SERVICE_STOPPED.tag(), deadline)?;
+    guest.channel(deadline)?;
+    let mut c = crate::suite::web::attach(guest, machine)?;
     signed_on(&mut c.browser, ADMIN, PASSWORD)?;
     let n = own_event(
         &mut c.browser,

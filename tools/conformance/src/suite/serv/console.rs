@@ -41,10 +41,16 @@ pub fn state_sums(guest: &mut Session) -> Result<BTreeMap<String, (u64, u64)>, S
     Ok(out)
 }
 
-/// The files of `a` and `b` that differ, or that one has alone.
+/// What PID 1 takes again from the machine at every IPL, not state an
+/// operator or a service made.
+const RETAKEN: [&str; 1] = ["/data/state/inventory.toml"];
+
+/// The files of `a` and `b` that differ, or that one has alone, but
+/// what every IPL takes again.
 fn differ(a: &BTreeMap<String, (u64, u64)>, b: &BTreeMap<String, (u64, u64)>) -> Vec<String> {
     a.keys()
         .chain(b.keys())
+        .filter(|k| !RETAKEN.contains(&k.as_str()))
         .filter(|k| a.get(*k) != b.get(*k))
         .cloned()
         .collect::<std::collections::BTreeSet<_>>()
@@ -55,7 +61,16 @@ fn differ(a: &BTreeMap<String, (u64, u64)>, b: &BTreeMap<String, (u64, u64)>) ->
 /// Begin the console's own install from its confirmation.
 fn install_console(b: &mut Browser) -> Result<(), String> {
     let path = "/qsmc/confirm/update-install?t=console";
-    let html = page(b, path)?;
+    let a = b.get(path)?;
+    if a.status != 200 {
+        let t = crate::suite::web::follow(b, &a)?.text();
+        return Err(format!(
+            "the console's install confirmation answered {}: {}",
+            a.status,
+            message_of(&t)
+        ));
+    }
+    let html = a.text();
     if !html.contains("other slot on every load-source disk") {
         return Err("the console's confirmation does not say what it does".into());
     }
@@ -146,8 +161,9 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
         &refcode::UPDATE_STATE_RESTORED.tag(),
         Instant::now() + Duration::from_secs(10),
     )?;
-    signed_on(&mut c.browser, ADMIN, PASSWORD)?;
+    // Before a sign-on, which writes its time in `webusers.toml`.
     let after = state_sums(&mut c.guest)?;
+    signed_on(&mut c.browser, ADMIN, PASSWORD)?;
     let changed = differ(&before, &after);
     if !changed.is_empty() {
         return Err(format!(
@@ -159,18 +175,18 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
     if installed_level(b)? != "V1R0M0" {
         return Err("after the roll back the console does not run V1R0M0".into());
     }
-    let events = page(b, "/qsmc/events?rows=100")?;
+    // The problem service reads the codes on its own turn.
     let fell = refcode::SLOT_FELL_BACK.code;
-    if !events.contains(fell) {
-        return Err(format!(
-            "no problem of the console's for the slot: {}",
-            message_of(&events)
-        ));
-    }
-    let dumps = page(b, "/qsmc/dumps")?;
-    if !dumps.contains(consdump::KIND.prefix) {
-        return Err("no console dump was taken when the slot did not confirm".into());
-    }
+    until(
+        "the console's problem for the slot",
+        Duration::from_secs(120),
+        || Ok(page(b, "/qsmc/events?rows=100")?.contains(fell)),
+    )?;
+    until(
+        "a console dump of the slot",
+        Duration::from_secs(120),
+        || Ok(page(b, "/qsmc/dumps")?.contains(consdump::KIND.prefix)),
+    )?;
     let progress = page(b, "/qsmc/updates/code/console/progress")?;
     if !progress.contains("rolled back") {
         return Err("the progress page does not say the update rolled back".into());

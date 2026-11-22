@@ -115,7 +115,14 @@ pub fn listening_443(guest: &mut Guest<'_>, within: Duration) -> Result<(), Stri
 
 /// Boot `machine` to a ready web server and a browser of it.
 pub fn boot<'a>(run: &Run<'a>, machine: Machine) -> Result<Console<'a>, String> {
-    let mut guest = install::boot_installed(run, &machine, run.launch.timeout)?;
+    let guest = install::boot_installed(run, &machine, run.launch.timeout)?;
+    attach(guest, machine)
+}
+
+/// A browser of `guest`, booted from `machine`, once its web server is
+/// ready: for a guest whose base is not ready, a service having
+/// stopped.
+pub fn attach(mut guest: Guest<'_>, machine: Machine) -> Result<Console<'_>, String> {
     webd_ready(&mut guest, Duration::from_secs(60))?;
     listening_443(&mut guest, Duration::from_secs(60))?;
     let (https, http) = (machine.forwards[0].0, machine.forwards[1].0);

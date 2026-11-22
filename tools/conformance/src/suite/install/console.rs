@@ -391,7 +391,7 @@ pub fn panels(run: &Run<'_>) -> Result<String, String> {
     power_off(&mut guest)?;
     Ok(format!(
         "{held} screens and helps equal to their golden files: the main menu, its nine \
-         panels (the service functions' placeholder naming Phase 6), the web interface's \
+         panels, the web interface's \
          three, the logs, the restart's confirmation"
     ))
 }

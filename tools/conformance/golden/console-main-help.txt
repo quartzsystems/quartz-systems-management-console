@@ -10,8 +10,8 @@
  protects or repairs them. 3 sets its open network. 4 shows the
  web interface and resets an Administrator's password. 5 works
  with the users of this console. 6 sets the clock and the time
- servers. 7 shows the logs. 8, service functions, arrives later.
- 9 powers off or restarts.
+ servers. 7 shows the logs. 8 works with the console's problems,
+ dumps and code updates. 9 powers off or restarts.
 
  F3 or F12 signs you off. So do ten minutes without a key.
 
