@@ -142,6 +142,10 @@ every one passed, 07:34 to 11:04 with both builds. Phase 6's:
 | 16 | `serv-audit` | 54 s | 11 kinds of action audited with their user; 17 lines, no password, hash or key |
 | 17 | fuzz | 60 s each | `stream-index` 6.59 M runs, `mgmt-servicing` 608 k (3201 edges), `qsmc-update-image` 8.06 M; nothing found |
 
+On GitHub (`qemu.yml`), at `6fafc17`: the images with both variants,
+then every suite in twelve shards and the ISO's steps, all passed
+(run 45045623139, 1 h 23 min; `ci.yml` passed too).
+
 Earlier phases' suites changed: Phase 1's `supervision` takes the
 console dump's codes after `A3001080` and checks the code was posted;
 Phase 2's `console-panels` and option 8's golden screens hold the new
