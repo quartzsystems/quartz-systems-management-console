@@ -289,10 +289,17 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
     if !web_after.contains("schema_version = 2") {
         return Err(format!("web.toml after the confirmation: {web_after}"));
     }
-    if ch.text("/data/state/webusers.toml")? != users
-        || ch.text("/data/mgmt/systems.toml")? != systems
+    // What a sign-on or an event writes moves on; the users and the
+    // systems themselves do not.
+    let users_after = ch.text("/data/state/webusers.toml")?;
+    let systems_after = ch.text("/data/mgmt/systems.toml")?;
+    if kept(&users_after, &["last_sign_on", "last_from"])
+        != kept(&users, &["last_sign_on", "last_from"])
+        || kept(&systems_after, &["last_seq"]) != kept(&systems, &["last_seq"])
     {
-        return Err("the users or the managed systems changed across the update".into());
+        return Err(format!(
+            "the users or the managed systems changed across the update:\n{users}\n{users_after}\n{systems}\n{systems_after}"
+        ));
     }
     let b = &mut lab.c.browser;
     if installed_level(b)? != "V1R0M1" {
@@ -318,6 +325,18 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
     );
     lab.c.guest.kill();
     Ok(said.join("; "))
+}
+
+/// `text`'s lines but those that set one of `moving`.
+fn kept(text: &str, moving: &[&str]) -> Vec<String> {
+    text.lines()
+        .filter(|l| {
+            !moving
+                .iter()
+                .any(|m| l.trim_start().starts_with(&format!("{m} ")))
+        })
+        .map(str::to_string)
+        .collect()
 }
 
 /// Wait until the console's update confirmed.
