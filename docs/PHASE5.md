@@ -171,7 +171,96 @@ seen only after 30 s, is `qsweb`'s (item 40).
 
 ## Evidence
 
-BLOCKED(phase5): the acceptance run from empty targets (two builds compared, the gate, every suite, the fuzzer) is recorded here when it has run.
+Three runs, each from empty targets:
+
+- **The gate and two builds** at `ed873f1`, in a fresh clone on the
+  build machine (`~/qsmc-p5-two/run.log`). `build doctor`, `build deny`,
+  `build notices --check`, `fmt --check`, the three clippy runs and
+  `cargo test --workspace` passed. `build all` ran twice, the second
+  with its own empty targets and the first's signing key. Every image
+  and binary is the same in both:
+
+  | File | SHA-256 |
+  | --- | --- |
+  | `qsmc-V1R0M0-815712e0189f.img` | `007e0c8d6c63c3694ac8efaa0fca7d21d9a7e57e717bc5cedbeb55dda32cfdd6` |
+  | `qsmc-V1R0M0-a-815712e0189f.efi` | `815712e0189f31cd07c91de35f44ea7446d0708818f6a72cbe51fd96de45e448` |
+  | `qsmc-V1R0M0-b-4759d49d341a.efi` | `4759d49d341af4290008f1517122d2b2d0bb3837e959d8c9449cb4d590d6c70d` |
+  | `qsmc-V1R0M0-d-2bbeca6817e3.efi` | `2bbeca6817e34fa1c06809f7a15834727b50e5049bd80e99dc3a0deb32ab630c` |
+  | `QSMC-V1R0M0-2bbeca6817e3.iso` | `ab74038aae620815b6f0a97dd8d49499ef28a9268ae6056542b7384c5c28ee20` |
+  | `initramfs.cpio` | `28513c9094b71937a36359b613cef6262df75d66a71b135a6af788da75518414` |
+  | `initramfs-media.cpio` | `96b55c02d6b2d4c8241b087e87e1e1886b4be3ef053cdd2bc19a68c7628ded5c` |
+  | `catalogue-0488d96.json` | `a00403001892e1e362fa1fcef47045e39d74bc8ddcfae6429195abc51ef4643e` |
+  | `qsmcinit` | `e99d96b1320d9d4fa620a3ae8a2433aaebfa7b13517a32f6ca338a8dba7471fd` |
+  | `qsmcstgd` | `ba0579a2af1a43f338e0cfce6fc8c99aab32f5dc11eacaa6e8e8fdd7bc31d095` |
+  | `qsmclogd` | `3b41541cac8d3915ca4963c42b769f62ba478a92950df9e0f5d010028a9bf806` |
+  | `qsmcnetd` | `3f5b87516e597299264c7a251d6eac2abd54e11a9c10c1caf7c80d6c09f3881d` |
+  | `qsmccons` | `99a000f20e8705076416f2d72f6631d5ab80327e7b0169f8ab3a1b52515ed1e6` |
+  | `qsmcinstall` | `5abd242ea08ff6d2fafb69785b805cc2cba779fd82f8f3684122ea61ea672d62` |
+  | `qsmcwebd` | `0d194c81fffab369b7474fc7e13cacb773a4a7b0a4add4e3f7a7fb6ebcca78fd` |
+  | `qsmcmgmtd` | `04e33b7bdda04ebb5ab2b6e613cc800ced43d6c4423e823339c548660e8ad794` |
+  | `qsmcschedd` | `cdb3524dd848971475280a837bd27311653323495cc9d4334688b03f9c9ae1fe` |
+
+  The release initramfs names no hook (`qsmchook`, `TEST IMAGE`,
+  `qsmc.hook`, `hook=`, `webd-fails`: none found).
+- **Every QEMU suite** at `ed873f1` on GitHub's runners (`qemu.yml`,
+  run 44984533211, 45 minutes: the build 15, then eight shards and the
+  ISO side by side): the 71 suites and steps on the disk and the ISO's
+  `ipl-media`, 72 in all, passed. Among them `sockets` (TCP only on
+  10.0.2.15:443 and :80, UDP only 68; DHCP, DNS and NTP the only
+  traffic), `web-pages` (56 pages, none with a script),
+  `mgmt-pages` (1,491 pages and files; 312 terminal windows carry the
+  script under their own policy, no other page does), `parts-pages`
+  (231 pages and 229 forms), `parts-upload` (3 GiB in 82 s, webd and
+  mgmtd growing 0 MiB) and `parts-audit` (39 kinds of action).
+  `mgmt-pages`' limit was 1,500 pages then; it is 4,000 since.
+- **The real machines and the fuzzer** at `ccc662d`, on the build
+  machine (`~/qsmc-p5-final/run.log`): the ISO's `ipl-media`;
+  `mgmt-host` (466.7 s), `mgmt-host-pages` (312.2 s) and
+  `mgmt-standalone` (98.4 s) against the QS/VS host at `0488d96` and
+  QS/400 at `cf8f014`; `build fuzz`, every target 60 s, no finding:
+
+  | Target | Runs | Corpus | Edges |
+  | --- | --- | --- | --- |
+  | `backup-file` | 7,689,595 | 516 | 402 |
+  | `backup-payload` | 6,450,484 | 691 | 598 |
+  | `mgmt-peer` | 2,554,717 | 1,380 | 3,412 |
+  | `mgmt-host` | 390,914 | 1,295 | 3,899 |
+  | `cert-import` | 6,822,017 | 1,047 | 930 |
+
+  What changed between `ccc662d` and `ed873f1` is the terminal window's
+  policy when it is not connected and the harness; neither touches what
+  those suites drive.
+
+The same run at `ccc662d` stopped at `mgmt-pages`, and the first CI
+runs found four more, all fixed before `ed873f1`:
+
+- `sockets` on CI: QEMU 8.2 drops a monitor command sent as it starts,
+  so the capture was never made; the harness sends it until the file
+  is there (`b9d1989`).
+- `mgmt-pages`: a terminal window not connected carried no script but
+  the policy that allows one; it has the same policy without the script
+  now (`a308cd1`). Its crawl then took each sort and page of the lists
+  as a page of its own and did not end; it keys them as `parts-pages`
+  does (`ed873f1`).
+- `parts-audit`: its partition had no load source, which the host
+  refuses since Finish says so (`QMC3134`); it is given a disk of its
+  own. `mgmt-audit` looked for Phase 4's words for the IPL side, which
+  Step 1 changed (`230d85e`).
+- `parts-upload`: the harness gave up on the refusal past 64 GiB at
+  30 s, the server's own read timeout (item 40); it waits 75 s
+  (`ed873f1`).
+
+## Acceptance
+
+| # | Item | Evidence |
+| --- | --- | --- |
+| 1 | Step 0 committed on its own; every Phase 0–4 suite passes on the new pins; what `base/` now has is deleted here | Step 0 (above): `d2312d9`, `50e9e34`, `ad9c372`; the 59 suites and steps of Phases 0 to 4 at `ad9c372` with the two fixes of `a9b531b`, and again in the CI run |
+| 2 | A standalone QS/400 managed; the control panel's list the system's; a host's two power-on settings set | `mgmt-standalone` (paired, its console, its 15 functions listed, a refusal and a power down); `parts-requests` (Power on partitions and Default power off reach the host and are kept, `QMC2221`); `parts-older` (a host without bit 23 or 24 answers `QMC1114`) |
+| 3 | Suites 2–12, 15 and 16 pass | the CI run: 2 `parts-pages` and the goldens, 3 `parts-requests`, 4 `parts-stale`, 5 `parts-wizard`, 6 `parts-confirm`, 7 `parts-upload`, 8 `parts-sched`, 9 `parts-groups`, 10 `parts-roles`, 11 `parts-lists`, 12 `parts-older`, 15 `parts-audit`; 16 the fuzzer's `mgmt-host` target |
+| 4 | Suites 13 and 14 against a real host and a real standalone system, or the steps the build machine cannot run listed | `mgmt-host-pages` (13) and `mgmt-standalone` (14) passed; what QEMU's nesting leaves out is under Not done, with the reason |
+| 5 | Every page of steps 9–17 live and equal to its golden; the count; the pages built without a design | 35 pages added, 74 of the 90 prototype files live, each equal under `cargo test -p webpages --test golden` (in `cargo test --workspace`); the pages without a design are open question 37 |
+| 6 | Two clean builds byte-identical; `build deny` and `build doctor` pass | the gate and two builds, above |
+| 7 | Nothing of QSI, `qsweb`, the terminal or `base/` written or copied here; 443 and 80 on `open` only; script on the terminal page only | `build doctor` (the two pins, no shared crate twice); `sockets` and `web-listeners` (only 443 and 80, on the `open` address); `web-pages`, `mgmt-pages` and `parts-pages` (no script or inline handler but a connected terminal window's, under its own policy) |
 
 ## Not done
 

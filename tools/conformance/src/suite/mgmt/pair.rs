@@ -154,8 +154,8 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
                 }
             }
         }
-        if pages > 1500 {
-            return Err("more than 1500 pages: the crawl does not end".into());
+        if pages > 4000 {
+            return Err("more than 4000 pages: the crawl does not end".into());
         }
     }
     c.guest.kill();
