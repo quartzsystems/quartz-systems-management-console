@@ -2817,6 +2817,7 @@ fn code_update_progress() {
         started: started.into(),
         ended: ended.into(),
         message: message.into(),
+        link: None,
     };
     let v = Progress {
         target: "QSHQVS1".into(),
@@ -2842,13 +2843,16 @@ fn code_update_progress() {
                 "07:32:40",
                 "",
             ),
-            s(
-                "Save system plan qshqvs1-20261030",
-                Stand::Complete,
-                "07:32:40",
-                "07:32:41",
-                "",
-            ),
+            Step {
+                link: Some(("qshqvs1-20261030".into(), "/plan/qshqvs1-20261030".into())),
+                ..s(
+                    "Save system plan",
+                    Stand::Complete,
+                    "07:32:40",
+                    "07:32:41",
+                    "",
+                )
+            },
             s(
                 "Install on host",
                 Stand::Going,
@@ -2875,10 +2879,17 @@ fn code_update_progress() {
     assert_golden(
         &render(here, &page(&ctx(here), &v)),
         "code-update-progress.html",
-        &[(
-            "<input type=\"submit\" value=\"View log\">",
-            "<input type=\"submit\" name=\"log\" value=\"View log\">",
-        )],
+        &[
+            (
+                "<input type=\"submit\" value=\"View log\">",
+                "<input type=\"submit\" name=\"log\" value=\"View log\">",
+            ),
+            // The plan saved first is linked.
+            (
+                "<td>Save system plan qshqvs1-20261030</td>",
+                "<td>Save system plan <a href=\"plan-view.html\">qshqvs1-20261030</a></td>",
+            ),
+        ],
     );
 }
 
@@ -2979,4 +2990,360 @@ fn updates() {
     };
     let here = "/qsmc/updates";
     assert_golden(&render(here, &page(&ctx(here), &v)), "updates.html", &[]);
+}
+
+#[test]
+fn plans() {
+    use webpages::plans::list::{Plans, Row, page};
+    let row = |name: &str, d: &str, c: &str, s: &str, n, size: &str| Row {
+        name: name.into(),
+        description: d.into(),
+        created: c.into(),
+        system: s.into(),
+        partitions: n,
+        size: size.into(),
+    };
+    let v = Plans {
+        rows: vec![
+            row(
+                "qshqvs1-baseline",
+                "QSHQVS1 as built, 3 partitions",
+                "10/02/26 10:12",
+                "QSHQVS1",
+                3,
+                "41 KB",
+            ),
+            row(
+                "branch-standard",
+                "Standard branch host: one prod, one test",
+                "09/12/26 15:30",
+                "",
+                2,
+                "28 KB",
+            ),
+            row(
+                "qshqvs1-20261030",
+                "Before QS/VS update 26300",
+                "10/30/26 07:00",
+                "QSHQVS1",
+                3,
+                "41 KB",
+            ),
+        ],
+        systems: vec!["QSHQVS1".into(), "QSHQ400".into()],
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/plans";
+    // Create plan and Import are told apart by their names.
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "plans.html",
+        &[
+            (
+                "<input type=\"submit\" value=\"Create plan\">",
+                "<input type=\"submit\" name=\"create\" value=\"Create plan\">",
+            ),
+            (
+                "<input type=\"submit\" value=\"Import\">",
+                "<input type=\"submit\" name=\"import\" value=\"Import\">",
+            ),
+        ],
+    );
+}
+
+#[test]
+fn plan_view() {
+    use webpages::plans::view::{Profile, View, page};
+    let p = |heading: &str, rows: &[(&str, &str)]| Profile {
+        heading: heading.into(),
+        rows: rows
+            .iter()
+            .map(|(l, v)| ((*l).to_string(), (*v).to_string()))
+            .collect(),
+    };
+    let v = View {
+        name: "qshqvs1-baseline".into(),
+        created: "Created 10/02/26 10:12 by qsadmin from QSHQVS1.".into(),
+        system: [
+            "QSHQVS1".into(),
+            "QS/VS host".into(),
+            "9Q10-V1".into(),
+            "8".into(),
+            "131,072".into(),
+            "POOL1 (5,400 GB), POOL2 (7,450 GB)".into(),
+            "ETHSW0 (VLAN 10,20,30), ETHSW1 (99)".into(),
+        ],
+        profiles: vec![
+            p(
+                "Partition 1: QSDEV01, profile default",
+                &[
+                    (
+                        "Processors",
+                        "Shared, DefaultPool, 0.25 / 1.00 / 2.00 units, 1 / 2 / 4 virtual, uncapped 128",
+                    ),
+                    ("Memory (MB)", "8,192 / 16,384 / 32,768"),
+                    (
+                        "Virtual adapters",
+                        "0 Serial; 2 Ethernet ETHSW0 VLAN 20; 3 SCSI VD03 120 GB; 4 Ethernet ETHSW1 VLAN 99; 5 SCSI OPT01; 6 SCSI VTAP01",
+                    ),
+                    ("Boot", "A, Normal, auto start Yes"),
+                ],
+            ),
+            p(
+                "Partition 2: QSTEST01, profile install",
+                &[
+                    (
+                        "Processors",
+                        "Shared, DefaultPool, 0.25 / 1.50 / 2.00 units, capped",
+                    ),
+                    ("Memory (MB)", "4,096 / 8,192 / 16,384"),
+                    (
+                        "Virtual adapters",
+                        "0 Serial; 2 Ethernet ETHSW0 VLAN 20; 3 SCSI VD04 120 GB; 5 SCSI OPT01; 6 SCSI VTAP02",
+                    ),
+                    ("Boot", "D, Manual, auto start No"),
+                ],
+            ),
+            p(
+                "Partition 3: QSPROD01, profile prod",
+                &[
+                    ("Processors", "Dedicated, 2 / 2 / 4"),
+                    ("Memory (MB)", "32,768 / 65,536 / 98,304"),
+                    ("Physical I/O", "C3 Fibre Channel 8 Gb (QLE2562)"),
+                    (
+                        "Virtual adapters",
+                        "0 Serial; 2 Ethernet ETHSW0 VLAN 10; 3 SCSI VD01+VD02 400 GB; 4 SCSI VD05 2,000 GB; 5 SCSI OPT01; 6 TAP01 pass-through; 7 TAPMLB01",
+                    ),
+                    ("Boot", "A, Normal, auto start Yes"),
+                ],
+            ),
+        ],
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/plan/qshqvs1-baseline";
+    // Edit (the description, Save as template) beside Deploy; Export
+    // downloads the document, and the list is where it lands.
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "plan-view.html",
+        &[(
+            "<a href=\"#\">Export</a>",
+            "<a href=\"plan-view.html\">Edit</a> &nbsp; <a href=\"plans.html\">Export</a>",
+        )],
+    );
+}
+
+#[test]
+fn plan_deploy_1() {
+    use webpages::plans::deploy::{Target, target_page};
+    let v = Target {
+        plan: "qshqvs1-baseline".into(),
+        options: vec![
+            "QSHQVS2 (QS/VS host, 0 partitions)".into(),
+            "QSHQVS1 (QS/VS host, 3 partitions)".into(),
+        ],
+        chosen: String::new(),
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/plan/qshqvs1-baseline/deploy/step/1";
+    assert_golden(
+        &render(here, &target_page(&ctx(here), &v)),
+        "plan-deploy-1.html",
+        &[],
+    );
+}
+
+#[test]
+fn plan_deploy_2() {
+    use plan::Status::{Error, Ok, Warning};
+    use webpages::plans::deploy::{Row, Validated, validated_page};
+    let row = |item: &str, status, message: &str| Row {
+        item: item.into(),
+        status,
+        message: message.into(),
+    };
+    let v = Validated {
+        plan: "qshqvs1-baseline".into(),
+        rows: vec![
+            row(
+                "Managed system QSHQVS2",
+                Ok,
+                "Type-Model 9Q10-V1 matches; 8 processors, 131,072 MB available",
+            ),
+            row("Storage pool POOL1", Ok, "Pool exists, 5,400 GB"),
+            row(
+                "Storage pool POOL2",
+                Error,
+                "No backing device /dev/sdb on target; VD05 (2,000 GB) cannot be created",
+            ),
+            row(
+                "Virtual switch ETHSW0",
+                Ok,
+                "Will be created with VLANs 10, 20, 30 on C1 port 1",
+            ),
+            row(
+                "Partition QSPROD01 physical I/O C3",
+                Warning,
+                "Slot C3 on target is empty; adapter assignment will be skipped",
+            ),
+            row("Partition QSDEV01", Ok, ""),
+            row("Partition QSTEST01", Ok, ""),
+            row(
+                "Partition QSPROD01",
+                Warning,
+                "Depends on POOL2 and C3 (see above)",
+            ),
+        ],
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/plan/qshqvs1-baseline/deploy/step/2";
+    assert_golden(
+        &render(here, &validated_page(&ctx(here), &v)),
+        "plan-deploy-2.html",
+        &[],
+    );
+}
+
+#[test]
+fn plan_deploy_3() {
+    use plan::Status::{Ok, Warning};
+    use webpages::plans::deploy::{Choice, Part, choice_page};
+    let part =
+        |id, name: &str, profile: &str, p: &str, m: &str, status, about: &str, checked| Part {
+            id,
+            name: name.into(),
+            profile: profile.into(),
+            processors: p.into(),
+            memory: m.into(),
+            status,
+            about: about.into(),
+            checked,
+        };
+    let v = Choice {
+        plan: "qshqvs1-baseline".into(),
+        parts: vec![
+            part(
+                1,
+                "QSDEV01",
+                "default",
+                "1.00 shared",
+                "16,384",
+                Ok,
+                "",
+                true,
+            ),
+            part(
+                2,
+                "QSTEST01",
+                "install",
+                "1.50 shared",
+                "8,192",
+                Ok,
+                "",
+                true,
+            ),
+            part(
+                3,
+                "QSPROD01",
+                "prod",
+                "2 dedicated",
+                "65,536",
+                Warning,
+                "POOL2, C3",
+                false,
+            ),
+        ],
+        activate: false,
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/plan/qshqvs1-baseline/deploy/step/3";
+    assert_golden(
+        &render(here, &choice_page(&ctx(here), &v)),
+        "plan-deploy-3.html",
+        &[],
+    );
+}
+
+#[test]
+fn plan_deploy_progress() {
+    use plan::job::StepState::{Complete, Going, Pending};
+    use webpages::plans::deploy::{Progress, StepRow, progress_page};
+    let s = |what: &str, state, started: &str, ended: &str, message: &str| StepRow {
+        what: what.into(),
+        state,
+        started: started.into(),
+        ended: ended.into(),
+        message: message.into(),
+    };
+    let v = Progress {
+        plan: "qshqvs1-baseline".into(),
+        head: Some(qmcmsg::message(
+            qsweb::msg::Kind::Info,
+            &qmcmsg::DEPLOYING,
+            &["qshqvs1-baseline", "QSHQVS2"],
+        )),
+        steps: vec![
+            s(
+                "Create virtual switch ETHSW0",
+                Complete,
+                "07:12:01",
+                "07:12:03",
+                "",
+            ),
+            s(
+                "Create virtual switch ETHSW1",
+                Complete,
+                "07:12:03",
+                "07:12:04",
+                "",
+            ),
+            s(
+                "Create virtual disk VD03 (120 GB, POOL1)",
+                Complete,
+                "07:12:04",
+                "07:12:09",
+                "",
+            ),
+            s(
+                "Create virtual disk VD04 (120 GB, POOL1)",
+                Going,
+                "07:12:09",
+                "",
+                "41% written",
+            ),
+            s(
+                "Create virtual optical OPT01 for QSDEV01",
+                Pending,
+                "",
+                "",
+                "",
+            ),
+            s(
+                "Create partition QSDEV01, profile default",
+                Pending,
+                "",
+                "",
+                "",
+            ),
+            s(
+                "Create partition QSTEST01, profile install",
+                Pending,
+                "",
+                "",
+                "",
+            ),
+            s("Create virtual tape VTAP01, VTAP02", Pending, "", "", ""),
+        ],
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/plan/qshqvs1-baseline/deploy/progress";
+    // Cancel deployment has its name; Refresh needs none.
+    assert_golden(
+        &render(here, &progress_page(&ctx(here), &v)),
+        "plan-deploy-progress.html",
+        &[(
+            "<input type=\"submit\" value=\"Cancel deployment\">",
+            "<input type=\"submit\" name=\"stop\" value=\"Cancel deployment\">",
+        )],
+    );
 }

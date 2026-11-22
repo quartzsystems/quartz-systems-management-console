@@ -51,6 +51,8 @@ pub struct Step {
     pub ended: String,
     /// What it said.
     pub message: String,
+    /// What the step made, linked: its name and route (the plan saved).
+    pub link: Option<(String, String)>,
 }
 
 /// What the page shows.
@@ -81,7 +83,15 @@ pub fn page(ctx: &Ctx, v: &Progress) -> Page {
                 Stand::Skipped => "Skipped".to_string(),
             };
             vec![
-                Cell::text(&s.step),
+                match &s.link {
+                    Some((label, route)) => Cell::html(format!(
+                        "{} <a href=\"{}\">{}</a>",
+                        esc(&s.step),
+                        esc(&ctx.url(route)),
+                        esc(label)
+                    )),
+                    None => Cell::text(&s.step),
+                },
                 Cell::html(st),
                 Cell::text(&s.started),
                 Cell::text(&s.ended),
@@ -138,6 +148,34 @@ fn step(name: impl Into<String>, stand: Stand) -> Step {
         stand,
         ..Step::default()
     }
+}
+
+/// The step of the plan saved before the install (`docs/PLANS.md`):
+/// the host's newest automatic plan since its image's transfer began,
+/// linked; under way once the image verified, until it is saved.
+fn saved_plan(rq: &Rq<'_>, name: &str, k: &mgmtproto::Kept, verified: bool) -> Step {
+    let began = k.staging.as_ref().map(|g| g.began);
+    let saved = began.and_then(|began| {
+        rq.app
+            .console
+            .sched()
+            .plans()
+            .ok()?
+            .0
+            .into_iter()
+            .filter(|e| e.automatic && e.system == name && e.created >= began)
+            .max_by_key(|e| e.created)
+    });
+    let mut s = step("Save system plan", Stand::Pending);
+    if let Some(e) = saved {
+        s.stand = Stand::Complete;
+        s.started = clock(rq, e.created);
+        s.ended = clock(rq, e.created);
+        s.link = Some((e.name.clone(), crate::plans::route_of(&e.name, "")));
+    } else if verified {
+        s.stand = Stand::Going;
+    }
+    s
 }
 
 /// The last line of `step` in a host's log.
@@ -226,10 +264,9 @@ fn host(rq: &Rq<'_>, name: &str, run: Option<&Run>) -> Result<Progress, Message>
     } else if k.staging.as_ref().is_some_and(|g| g.done) {
         verify.stand = Stand::Going;
     }
+    let verified = verify.stand == Stand::Complete;
     steps.push(verify);
-    let mut plan = step("Save system plan", Stand::Skipped);
-    plan.message = qmcmsg::NO_PLAN_SAVED.text.into();
-    steps.push(plan);
+    steps.push(saved_plan(rq, name, &k, verified));
     let mut install = step("Install on host", Stand::Pending);
     if let Some(p) = k.update.as_ref().and_then(|u| u.installing.as_ref()) {
         install.stand = Stand::Going;
@@ -370,9 +407,6 @@ fn console(rq: &Rq<'_>, run: Option<&Run>) -> Result<Progress, Message> {
         v.message = "Signed by a key the console trusts".into();
     }
     steps.push(v);
-    let mut plan = step("Save system plan", Stand::Skipped);
-    plan.message = qmcmsg::NO_PLAN_SAVED.text.into();
-    steps.push(plan);
     let installing = st.installing.is_some();
     let mut install = step(
         "Install into the other slot",

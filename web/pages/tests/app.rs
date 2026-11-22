@@ -305,7 +305,7 @@ fn a_role_without_the_task_is_not_authorized_and_a_disabled_user_s_session_ends(
     let r = v.send("GET", "/qsmc/console", &[]);
     assert_eq!(r.status, 403);
     assert!(r.text().contains("QMC9010"));
-    // A later function says so.
+    // System plans without the scheduler says so.
     let mut a = Browser {
         app: &app,
         cookie: None,
@@ -313,8 +313,8 @@ fn a_role_without_the_task_is_not_authorized_and_a_disabled_user_s_session_ends(
         host: None,
     };
     a.sign_on("qsadmin", PASSWORD);
-    let later = a.send("GET", "/qsmc/plans", &[]);
-    assert!(later.text().contains("QMC9030"));
+    let plans = a.send("GET", "/qsmc/plans", &[]);
+    assert!(plans.text().contains("QMC3409"), "{}", plans.text());
     app.change_users(|u| u.set_enabled("viewer", false))
         .unwrap();
     assert!(

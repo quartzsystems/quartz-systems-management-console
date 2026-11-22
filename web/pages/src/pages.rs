@@ -231,6 +231,12 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         "/servers" => crate::systems::servers::route(rq),
         "/partitions" => crate::partitions::list::route(rq),
         "/groups" => crate::groups::route(rq),
+        "/plans" => crate::plans::list::route(rq),
+        "/confirm/plan-delete" => crate::plans::list::delete(rq),
+        "/confirm/plan-deploy" => crate::plans::deploy::confirm(rq),
+        r if r.starts_with("/plan/") => {
+            return crate::plans::serve(rq, r.trim_start_matches("/plan/"));
+        }
         "/schedule" => crate::schedule::route(rq),
         "/schedule/add" => crate::schedule::add(rq),
         "/confirm/schedule-remove" => crate::schedule::remove(rq),

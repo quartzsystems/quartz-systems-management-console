@@ -214,7 +214,15 @@ impl Plans {
         if !v.is_host {
             return Err(issue(&qmcmsg::NO_PLAN_STANDALONE, &[system]));
         }
-        let plan = capture(&v, meta).map_err(|e| issue(&qmcmsg::CAPTURE_FAILED, &[system, &e]))?;
+        let mut plan =
+            capture(&v, meta).map_err(|e| issue(&qmcmsg::CAPTURE_FAILED, &[system, &e]))?;
+        if plan.description.is_empty() {
+            let n = plan.partitions.len();
+            plan.description = format!(
+                "{system} as built, {n} partition{}",
+                if n == 1 { "" } else { "s" }
+            );
+        }
         self.add(&plan)
     }
 

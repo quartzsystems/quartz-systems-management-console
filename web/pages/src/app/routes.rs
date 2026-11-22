@@ -352,6 +352,13 @@ pub fn task_of(route: &str) -> Option<Task> {
     if route == "/confirm/event-close" || route == "/confirm/dump-delete" {
         return Some(Task::Events);
     }
+    // System plans: every task of them is the one row of the matrix.
+    if route.starts_with("/plan/")
+        || route == "/confirm/plan-delete"
+        || route == "/confirm/plan-deploy"
+    {
+        return Some(Task::Plans);
+    }
     if route == "/confirm/update-install" {
         return Some(Task::CodeUpdates);
     }

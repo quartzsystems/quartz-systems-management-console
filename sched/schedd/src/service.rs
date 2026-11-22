@@ -132,6 +132,12 @@ impl Service {
         svc
     }
 
+    /// Today in the console's zone, `YYYYMMDD`.
+    fn today(&self) -> String {
+        let c = appliance::time::civil(self.now() + i64::from(self.zone().minutes) * 60);
+        format!("{:04}{:02}{:02}", c.year, c.month, c.day)
+    }
+
     /// A plan of `system` saved before its update by `user`, named for
     /// the system and today's date in the console's zone: its name.
     pub fn save_plan_before(
@@ -142,8 +148,7 @@ impl Service {
         user: &str,
     ) -> Result<String, Issued> {
         let now = self.now();
-        let c = appliance::time::civil(now + i64::from(self.zone().minutes) * 60);
-        let date = format!("{:04}{:02}{:02}", c.year, c.month, c.day);
+        let date = self.today();
         let r = self.0.plans.save_before(
             mgmt,
             system,
@@ -487,6 +492,12 @@ impl Sched for Service {
         user: String,
     ) -> Result<plan::index::Entry, Issued> {
         let mut m = (self.0.cfg.mgmt)();
+        // No name given: the system's and today's.
+        let name = if name.is_empty() {
+            self.0.plans.automatic_name(&system, &self.today())
+        } else {
+            name
+        };
         let meta = plan::capture::Meta {
             name: name.clone(),
             description,

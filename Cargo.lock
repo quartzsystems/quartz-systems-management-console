@@ -3136,6 +3136,7 @@ dependencies = [
  "mgmtproto",
  "msg",
  "netd",
+ "plan",
  "problem",
  "qmcbackup",
  "qmcmsg",

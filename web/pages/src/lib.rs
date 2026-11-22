@@ -32,6 +32,7 @@ pub mod network;
 pub mod network_routes;
 pub mod pages;
 pub mod partitions;
+pub mod plans;
 pub mod refcodes;
 pub mod schedule;
 pub mod service;

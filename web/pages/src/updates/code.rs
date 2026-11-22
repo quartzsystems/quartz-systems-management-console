@@ -591,14 +591,11 @@ pub fn confirm(rq: &Rq<'_>) -> Response {
         );
         return rq.done_all(
             &format!("/updates/code/{target}/progress"),
-            vec![
-                qmcmsg::message(
-                    Kind::Done,
-                    &qmcmsg::INSTALL_BEGUN,
-                    &[&level(&plan.entry.release, &plan.entry.build), &plan.target],
-                ),
-                qmcmsg::message(Kind::Info, &qmcmsg::NO_PLAN_SAVED, &[]),
-            ],
+            vec![qmcmsg::message(
+                Kind::Done,
+                &qmcmsg::INSTALL_BEGUN,
+                &[&level(&plan.entry.release, &plan.entry.build), &plan.target],
+            )],
         );
     }
     let console = target == CONSOLE;
@@ -613,7 +610,11 @@ pub fn confirm(rq: &Rq<'_>) -> Response {
         qsweb::partials::mono(&plan.from),
         qsweb::partials::mono(&level(&plan.entry.release, &plan.entry.build)),
         qsweb::partials::mono(&plan.entry.update),
-        esc("Not saved: system plans come with a later release")
+        esc(if target == CONSOLE {
+            "None: a system plan is of a host; the console's own configuration is its backup"
+        } else {
+            "Saved first, once the image verifies on the host; the install stops if it cannot be"
+        })
     );
     for (id, name) in &plan.running {
         let _ = write!(

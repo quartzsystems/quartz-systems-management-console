@@ -114,6 +114,19 @@ pub fn proto(url: &str) -> Option<String> {
     if route.starts_with("/group/") {
         return Some("group-view.html".into());
     }
+    // A plan: its view (and its description's form), the export the
+    // list's Export lands back on, the wizard's steps and progress.
+    if let Some(rest) = route.strip_prefix("/plan/") {
+        let page = rest.split_once('/').map_or("", |(_, p)| p);
+        return Some(match page {
+            "export" => "plans.html".into(),
+            "deploy/progress" => "plan-deploy-progress.html".into(),
+            p => match p.strip_prefix("deploy/step/") {
+                Some(n) => format!("plan-deploy-{n}.html"),
+                None => "plan-view.html".into(),
+            },
+        });
+    }
     if let Some((_, file)) = RENAMED.iter().find(|(r, _)| *r == route) {
         return Some((*file).into());
     }

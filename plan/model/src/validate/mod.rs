@@ -71,6 +71,9 @@ pub struct Item {
     pub message: String,
     /// The rule it stands by.
     pub why: Why,
+    /// A partition's: what it needs that has a Warning or an Error,
+    /// as its message names them (`POOL2`, `C3`).
+    pub depends: Vec<String>,
 }
 wire_struct!(Item {
     kind,
@@ -78,7 +81,8 @@ wire_struct!(Item {
     label,
     status,
     message,
-    why
+    why,
+    depends
 });
 
 /// What a storage pool, switch, processor pool, disk or volume comes to.
@@ -312,6 +316,7 @@ impl Ctx<'_> {
             status: why.status(),
             message,
             why,
+            depends: Vec::new(),
         });
     }
 
@@ -1423,6 +1428,9 @@ fn partition(c: &mut Ctx<'_>, p: &PartitionPlan, default_pool: &str, made: &[Str
         );
     }
     c.push(Kind::Partition, &key, label, why, words.join("; "));
+    if let Some(i) = c.items.last_mut() {
+        i.depends = depends;
+    }
     c.d.partitions.insert(p.id, outcome);
 }
 
