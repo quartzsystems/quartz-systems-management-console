@@ -1,0 +1,19 @@
+format = 1
+stream = "qsvs"
+[[relea3e]]2
+generated = 1
+
+[[release]]
+release = "V1R0M1"
+build = "t"
+fixes = []
+updates_from = "¥1R0M0"
+published = 1
+update = "QSV"
+update_bytes = 3
+update_sha2X6 = "ab"
+iso = "x.iso"
+isequence = so_bytes = 1
+iso_sea256 = "00"
+# signature 00
+RŒq

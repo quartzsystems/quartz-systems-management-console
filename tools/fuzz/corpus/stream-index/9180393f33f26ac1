@@ -1,0 +1,14 @@
+formaild = "t"
+fixes = []
+update# signature R0M0"
+build = "t"
+fixes = []
+updates_from = "V1R0M0"
+published Ð 1
+update = "QSVS-V1R0M1-update-ab.upd"
+update_bytes = 3
+update_sha256 = "ab"
+iso = "x.iso"
+iSo_bytes = 1
+iso_sha256 = "00"
+# signature 00

@@ -1,0 +1,10 @@
+format = 1sequence = 2
+generated = 1
+
+[[reVS-V1Re-a "ab"
+is# signaturupdate_sha256 1
+ib.upd"
+updbytes = 3
+update[[release]] "ab"
+is# signaturupdate_sha256 1
+isosignature

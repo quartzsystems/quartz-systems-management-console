@@ -1,0 +1,20 @@
+fÅ†8ormat = 1
+stream = "qsvs"
+sequence = 2
+generated = 1
+
+[[release]]
+re|ease = "V1R0M12
+build = "t"
+fixes = []
+updates_from = "V1R0M0"
+bu "t"
+fixes = []
+updates_from = "V1R0M0"
+pdate = "QSVS-V1R0M1-update-ab.upd"
+update_bytes = 3
+update_sha256 = "ab"
+iso = "x.iso"
+iSo_bytes = 1
+iso_sha256 = "00"
+# # signature signaturu 00

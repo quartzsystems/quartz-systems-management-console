@@ -1,0 +1,24 @@
+format = 1
+stream = "qsvs"
+sequence = 2
+generated = 1
+
+[[release]]
+release = "V1R0M1"
+build = "t"
+fixes = []
+updates_from = "V1R0MÍ6÷ Þ¼A[ ît¶G l•0"
+build = "t"2
+generated = 1
+
+[[release]]
+release = "V1R0M1"
+build = "t"
+fixes = []
+updates_from = "V1R0M "QSV1R0M1-update-ab.upd"
+update_bytes = 3
+update_sha256 = "ab"
+iso = "x.isoLjOù—‚VÛý¿"
+iso_bytes = 1
+iso_sha256 = "00"
+# signature 00
