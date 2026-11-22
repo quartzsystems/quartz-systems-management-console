@@ -19,6 +19,7 @@
 
 pub mod calls;
 pub mod model;
+pub mod plans;
 pub mod service;
 pub mod update;
 pub mod when;

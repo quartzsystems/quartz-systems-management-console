@@ -136,6 +136,10 @@ pub const PROBD: &str = "/qsmc/bin/qsmcprobd";
 /// The update service's binary.
 pub const UPDD: &str = "/qsmc/bin/qsmcupdd";
 
+/// System plans' folder under [`DATA_DIR`]: the scheduler's alone
+/// (`docs/PLANS.md`).
+pub const PLANS: &str = "plans";
+
 /// The console's own dumps, PID 1's, under `/data`.
 pub const DUMPS_DIR: &str = "/data/dumps/console";
 

@@ -61,6 +61,8 @@ request refused.
 | `QMC3409` | 30 | The scheduler did not answer: &1. | The console's service that keeps and runs scheduled operations is not running, or is starting. | Wait a moment and show the page again. If it goes on, see the reference code history of the console. |
 | `QMC4001`-`QMC4002` | a terminal window's console closed or disconnected |
 | `QMC5003`, `QMC5010` | control panel functions carried out and refused |
+| `QMC6001`-`QMC6010` | deploying a system plan: its progress, how it ended, what is refused |
+| `QMC6101`-`QMC6114` | system plans: created, imported, deleted, refused, the plan before an update |
 | `QMC7001`-`QMC7019` | Code updates and Updates: checks, downloads, installs, how each ended |
 | `QMC7101`-`QMC7117` | the console's own code update: what `base/update` refuses, in the console's words |
 | `QMC7201`-`QMC7210` | product streams, the download service `fetchd`, and a downloaded host update |
@@ -84,6 +86,30 @@ request refused.
 | `QMC4002` | 0 | Terminal window to &1 disconnected. | You disconnected the window; the console stays with the managed system and any other window that has it open. | Choose Connect to open it again. |
 | `QMC5003` | 0 | Function &1 selected for partition &2; the managed system accepted the request. | The host carried out the control panel function; the result shows what it displays and the code before and after. | None. |
 | `QMC5010` | 30 | Function &1 for partition &2 not performed. The managed system's own messages follow. | The host refused the control panel function: it does not have it, or its keylock or the partition's state does not allow it. | Act on the system's messages below this one and try again. |
+| `QMC6001` | 0 | Deploying plan &1 to &2. This page reloads every 10 seconds. | The deployment runs on the console, its steps one by one through the managed system's session, in your name. | Watch its steps; Cancel deployment stops it before its next step. |
+| `QMC6002` | 0 | Plan &1 deployed to &2: &3 steps complete, &4 skipped. | Every step of the deployment ran. A step skipped was an item in Error at validation. | Correct what was in Error and deploy the plan again: what now exists is skipped. |
+| `QMC6003` | 10 | Deployment of plan &1 to &2 cancelled before its next step. | Cancel was asked. What was made stays and is listed; nothing is undone. | Deploy the plan again to go on: what now exists is skipped. |
+| `QMC6004` | 30 | Deployment of plan &1 to &2 stopped: the managed system refused &3. | A step the managed system refused stops the deployment before its next. What was made stays; its message is the step's. | Act on the managed system's message, then deploy the plan again: what now exists is skipped. |
+| `QMC6005` | 30 | Deployment of plan &1 to &2 stopped: the console restarted during &3. | The step that was running when the console restarted is marked interrupted; nothing after it ran. | Deploy the plan again: what now exists is skipped. |
+| `QMC6006` | 30 | A deployment to &1 is running: one at a time a managed system. | A managed system takes one deployment at a time. | Wait for it to end, or cancel it on its progress page. |
+| `QMC6007` | 30 | Plan &1 cannot be deployed to &2: &3. | The managed system is in Error at validation: nothing would be deployed. | Choose a QS/VS host that is connected and large enough for a partition of the plan. |
+| `QMC6008` | 20 | No deployment to &1 is running. | There is nothing to cancel. | None. |
+| `QMC6009` | 0 | The deployment to &1 stops before its next step. | Cancel was asked; the step under way ends first. | None. |
+| `QMC6010` | 30 | Choose a managed system to deploy plan &1 to. | Step 1 names the target of the deployment. | Choose one of the QS/VS hosts listed. |
+| `QMC6101` | 0 | System plan &1 created from &2. | The managed system's configuration was read now and kept as a plan. | None. |
+| `QMC6102` | 0 | System plan &1 imported. | The file was read as a plan and kept. Nothing of it is acted on until it is deployed through validation. | None. |
+| `QMC6103` | 0 | System plan &1 deleted. | The plan's file and its row are gone; no managed system was changed. | None. |
+| `QMC6104` | 30 | The file is not a system plan this console reads: &1. | An imported file is read strictly: at most 1 MiB of UTF-8 TOML, its schema version no newer than this release's, only the document's keys, every name and number in its bounds. Nothing of a refused file is kept. | Import a plan exported by a QS/MC console of this release or an earlier one, unchanged. |
+| `QMC6105` | 20 | &1 is a standalone QS/400 system: it has no partitions to plan. | A system plan is of a QS/VS host and its partitions. | Back up a standalone system with its own save functions. |
+| `QMC6106` | 30 | There is already a system plan named &1. | Each plan has a name of its own. | Choose another name, or delete the plan of that name first. |
+| `QMC6107` | 30 | System plan &1 was not saved: &2. | The plan could not be written, or a value is out of its bounds. | Act on the reason given; see the console's log. |
+| `QMC6108` | 20 | A deployment does not replace partitions: it never deletes or changes what exists. | Partitions that exist are kept; a deployment only creates those not present. | Delete partitions on their own pages first, then deploy the plan. |
+| `QMC6109` | 0 | Template &1 saved from plan &2. | The plan was kept again without its host's name and serial number, its partitions' serial numbers and MAC addresses. | None. |
+| `QMC6110` | 0 | Description of system plan &1 changed. | The plan's description was written. | None. |
+| `QMC6111` | 30 | There is no system plan named &1. | The plan was deleted, or the name is not one. | Choose a plan from System plans. |
+| `QMC6112` | 30 | No plan was made of &1: &2. | The managed system's configuration could not be read whole. | Act on the reason given, then create the plan again. |
+| `QMC6113` | 30 | &1 is not a plan's name: 1 to 32 of a-z, 0-9, -, _ and ., a letter or digit first. | A plan's name is its file's name. | Type a name of that form. |
+| `QMC6114` | 0 | System plan &1 of &2 saved before its update. | An install of a host's code update saves a plan of the host first. | None. |
 | `QMC7001` | 0 | Checked &1 at &2. &3 | The console read each product stream's index or catalog from the update server and verified it against the keys built into its image. | None. |
 | `QMC7002` | 10 | The &2 stream offers nothing newer than &1. | The newest release the stream names, that updates from what runs, is what runs. | None; check again later. |
 | `QMC7003` | 30 | Download &1 before it is installed: it is not on the console. | An update is installed from the image the console downloaded and checked against the stream's index. | Choose Download, then Install when its status says it is downloaded. |
@@ -96,7 +122,7 @@ request refused.
 | `QMC7010` | 0 | Installing &1 on &2. This page reloads every 10 seconds. | The image is brought to the system, verified there, written to its other slot and activated. | Wait for the steps to end; the page shows each. |
 | `QMC7011` | 0 | &1 confirmed &2. | The system restarted into its other slot, which started and became its default. | None. |
 | `QMC7012` | 30 | &1 rolled back to its other slot: &2. | The slot the update was written to did not confirm; the system came back on the slot it ran before, as it was. | See the system's serviceable events and its dump; install the update again when the cause is known. |
-| `QMC7013` | 20 | No system plan is saved before the install: system plans come with a later release. | The design saves a plan of the host first; this release has no system plans. | None. |
+| `QMC7013` | 30 | The install of &1 stopped: no system plan of it could be saved first: &2. | An install of a host's code update saves a plan of the host before it is installed; the plan could not be made or written. | Act on the reason given, then install the update again. |
 | `QMC7014` | 0 | The console is restarting into &1. Sign on again when it is back. | The update is installed in the console's other slot; it confirms when its web server answers, or the console comes back as it was. | Sign on again in a few minutes; Code updates then says how the update ended. |
 | `QMC7015` | 30 | &1 does not answer: &2. | A service of the console that the page or the schedule needs is not running, or is starting. | Wait a moment and try again; if it goes on, see the console's serviceable events. |
 | `QMC7016` | 30 | The release notes of &1 are not on the console. | The notes are fetched when a stream is checked and its index names them. | Choose Check now on Code updates. |

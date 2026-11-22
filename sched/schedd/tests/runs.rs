@@ -77,6 +77,7 @@ fn service(d: &std::path::Path, clock: &Arc<AtomicI64>, asked: &Asked) -> schedd
         look: schedd::update::NOW,
         clock: Box::new(move || c.load(Ordering::Relaxed)),
         log: Box::new(|l| eprintln!("schedd: {l}")),
+        plans: d.join("plans"),
     })
 }
 

@@ -72,6 +72,7 @@ fn run() -> Result<(), String> {
         look: schedd::update::USUAL,
         clock: Box::new(appliance::time::now_secs),
         log: Box::new(|l| eprintln!("{l}")),
+        plans: std::path::Path::new(release::DATA_DIR).join(release::PLANS),
     });
     supervise::ready::signal().map_err(|e| format!("ready: {e}"))?;
     schedd::calls::serve(&listener, &svc);

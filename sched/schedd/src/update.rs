@@ -136,6 +136,9 @@ pub struct Reach<'a> {
     pub updd: &'a mut dyn update::proto::Calls,
     /// How long to wait between looks; tests wait none.
     pub look: Duration,
+    /// Save a plan of the host before its install, described as given:
+    /// the plan's name, or why not (`docs/PLANS.md`).
+    pub plans: &'a mut dyn FnMut(&str) -> Result<String, Issued>,
 }
 
 fn down(what: &str, e: &ipc::WireError) -> Issued {
@@ -168,6 +171,7 @@ fn wait<T>(
 /// verified, installed, then activated. Partitions that run are shut
 /// down through their systems when `timeout` is past 0, each given that
 /// long; the install is refused while they run otherwise. What ran.
+#[allow(clippy::too_many_lines, reason = "the install's steps in their order")]
 pub fn install_host(
     r: &mut Reach<'_>,
     system: &str,
@@ -224,6 +228,19 @@ pub fn install_host(
         },
         &late,
     )?;
+    // A plan of the host first; the install stops when there is none.
+    let level = if plan.entry.build.is_empty() {
+        plan.entry.release.clone()
+    } else {
+        plan.entry.build.clone()
+    };
+    let described = format!("Before {} update {level}", Stream::Qsvs.product());
+    let saved = (r.plans)(&described).map_err(|e| {
+        issue(
+            &qmcmsg::NO_PLAN_SAVED,
+            &[system, &format!("{} {}", e.id, e.text)],
+        )
+    })?;
     let ask = |mgmt: &mut dyn mgmtproto::Calls, req: qsi::update::Request| {
         let asked = mgmtproto::Asked::of(&qsi::any::AnyRequest::Update(req));
         mgmt.ask(system.to_string(), asked, owner.to_string())
@@ -267,7 +284,7 @@ pub fn install_host(
         }),
     )?;
     Ok(format!(
-        "{} {} installed on {system} and activated",
+        "{} {} installed on {system} and activated, system plan {saved} saved first",
         Stream::Qsvs.product(),
         plan.entry.release
     ))

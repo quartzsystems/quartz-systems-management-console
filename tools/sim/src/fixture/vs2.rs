@@ -298,5 +298,7 @@ pub fn qshqvs2() -> Shared {
     s.vres = resources(disks);
     s.parts = Vec::new();
     s.next_revision = 1;
+    // Its own MAC prefix: what it makes is not QSHQVS1's.
+    s.settings.mac_prefix = Some("02:51:54".into());
     shared(s)
 }

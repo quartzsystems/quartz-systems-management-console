@@ -19,10 +19,43 @@ ipc::rpc! {
     3 => fn remove / Remove (id: u32, user: String) -> Result<(), String>;
     /// Run operation `id` now, as its owner, its role checked.
     4 => fn run_now / RunNow (id: u32, user: String) -> Result<Run, String>;
+    /// Every system plan's row, and how many automatic plans are kept.
+    5 => fn plans / Plans () -> (Vec<Entry>, u32);
+    /// A plan's document, as exported.
+    6 => fn plan / Plan (name: String) -> Option<String>;
+    /// A plan of managed system `system` captured now for `user`.
+    7 => fn capture / Capture (system: String, name: String, description: String, user: String) -> Result<Entry, Issued>;
+    /// A plan's file imported: read strictly, nothing acted on.
+    8 => fn import / Import (bytes: Vec<u8>, user: String) -> Result<Entry, Issued>;
+    /// A plan deleted.
+    9 => fn delete_plan / DeletePlan (name: String, user: String) -> Result<(), Issued>;
+    /// A plan's description changed.
+    10 => fn describe_plan / DescribePlan (name: String, description: String, user: String) -> Result<(), Issued>;
+    /// A plan saved again as template `to`.
+    11 => fn template / Template (name: String, to: String, user: String) -> Result<Entry, Issued>;
+    /// Plan `name` against host `target` now: every row; the chosen
+    /// partitions only when `chosen` is not empty.
+    12 => fn validate / Validate (name: String, target: String, chosen: Vec<u32>, user: String) -> Result<Vec<Item>, Issued>;
+    /// Deploy plan `name` to `target`: begun.
+    13 => fn deploy / Deploy (name: String, target: String, chosen: Vec<u32>, activate: bool, user: String) -> Result<(), Issued>;
+    /// `target`'s latest deployment, its text (`plan::job`).
+    14 => fn job / Job (target: String) -> Option<String>;
+    /// Cancel `target`'s deployment before its next step.
+    15 => fn cancel / Cancel (target: String, user: String) -> Result<(), Issued>;
+    /// A plan of `system` saved before its update, described so: its name.
+    16 => fn save_before / SaveBefore (system: String, description: String, user: String) -> Result<String, Issued>;
 }
+
+use msg::Issued;
+use plan::index::Entry;
+use plan::validate::Item;
 
 /// The most a frame carries.
 pub const MAX_FRAME: usize = 4 << 20;
+const _: () = assert!(
+    plan::doc::text::MAX_BYTES * 2 < MAX_FRAME,
+    "a plan crosses the socket whole"
+);
 /// How long a call may take: a run now waits for the managed system.
 pub const WAIT: std::time::Duration = std::time::Duration::from_secs(120);
 

@@ -144,19 +144,16 @@ pub fn steps(plan: &Plan, val: &Validation, chosen: &[u32], activate: bool) -> V
     for s in &plan.switches {
         let what = format!("Create virtual switch {}", s.name);
         match d.switches.get(&s.name) {
-            Some((Make::Made, with_uplink)) => out.push(done(
+            // Its uplink by the target's own location codes.
+            Some((Make::Made, uplink)) => out.push(done(
                 what,
                 Action::Switch {
                     name: s.name.clone(),
                     vlans: s.vlans.clone(),
                     mtu: s.mtu,
-                    uplink: if *with_uplink {
-                        s.uplink.clone()
-                    } else {
-                        Vec::new()
-                    },
-                    bond: s.bond.filter(|_| *with_uplink),
-                    native_vlan: s.native_vlan.filter(|_| *with_uplink),
+                    uplink: uplink.clone(),
+                    bond: s.bond.filter(|_| !uplink.is_empty()),
+                    native_vlan: s.native_vlan.filter(|_| !uplink.is_empty()),
                 },
             )),
             Some((Make::Skipped, _)) => out.push(skipped(what, msg(Kind::Switch, &s.name))),

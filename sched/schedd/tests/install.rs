@@ -56,6 +56,12 @@ impl mgmtproto::Calls for Mgmt {
                 ipc::encode(&Ok::<(), mgmtproto::Refusal>(()))
             }
             R::Ask { name, req, user } => {
+                // The reads of the plan saved first: a host of nothing.
+                if let Some(r) = req.request().as_ref().and_then(read) {
+                    return Ok(ipc::encode(&Ok::<_, mgmtproto::Refusal>(
+                        mgmtproto::Answered::of(&r),
+                    )));
+                }
                 let what = match req.request() {
                     Some(qsi::any::AnyRequest::Update(qsi::update::Request::Install(_))) => {
                         if let Some(u) = k.update.as_mut() {
@@ -179,6 +185,51 @@ fn fetched(downloaded: bool) -> Fetched {
     }
 }
 
+/// What the host answers a plan's read: its processors and memory, and
+/// nothing else of it.
+fn read(req: &qsi::any::AnyRequest) -> Option<qsi::any::AnyReply> {
+    use qsi::any::{AnyReply as Y, AnyRequest as Q};
+    use qsi::host::{host, partitions, vres};
+    let amount = |n| host::Amount {
+        installed: n,
+        configurable: n,
+        available: n,
+    };
+    Some(match req {
+        Q::Host(host::Request::Host(_)) => Y::Host(host::Reply::Host(host::Host {
+            sockets: 1,
+            cores: 8,
+            threads_per_core: 1,
+            processors: amount(800),
+            memory: amount(131_072),
+            memory_block_mib: 256,
+            reserved_cores: Vec::new(),
+            reserved_memory_mib: 0,
+            pools: Vec::new(),
+            partitions: 0,
+            max_partitions: 64,
+        })),
+        Q::Host(host::Request::Hardware(_)) => Y::Host(host::Reply::Hardware(host::Hardware {
+            manufacturer: String::new(),
+            product: String::new(),
+            processor: String::new(),
+            virtualization: String::new(),
+            items: Vec::new(),
+        })),
+        Q::Vres(vres::Request::Disks(_)) => Y::Vres(vres::Reply::Disks(Vec::new())),
+        Q::Vres(vres::Request::Pools(_)) => Y::Vres(vres::Reply::Pools(Vec::new())),
+        Q::Vres(vres::Request::Vdisks(_)) => Y::Vres(vres::Reply::Vdisks(Vec::new())),
+        Q::Vres(vres::Request::Images(_)) => Y::Vres(vres::Reply::Images(Vec::new())),
+        Q::Vres(vres::Request::Volumes(_)) => Y::Vres(vres::Reply::Volumes(Vec::new())),
+        Q::Vres(vres::Request::TapeDrives(_)) => Y::Vres(vres::Reply::TapeDrives(Vec::new())),
+        Q::Vres(vres::Request::Switches(_)) => Y::Vres(vres::Reply::Switches(Vec::new())),
+        Q::Partitions(partitions::Request::List(_)) => {
+            Y::Partitions(partitions::Reply::List(Vec::new()))
+        }
+        _ => return None,
+    })
+}
+
 fn host() -> Kept {
     Kept {
         name: "QSHQVS1".into(),
@@ -244,6 +295,7 @@ fn world(name: &str, downloaded: bool) -> World {
         look: schedd::update::NOW,
         clock: Box::new(move || c.load(Ordering::Relaxed)),
         log: Box::new(|_| {}),
+        plans: dir.join("plans"),
     });
     World { dir, log, svc }
 }
@@ -287,6 +339,55 @@ fn a_host_install_runs_with_the_page_s_checks_in_the_owner_s_name() {
             "activate ShutDown 300 QSHQVS1 qsadmin",
         ]
     );
+    // Its plan saved first, named for the host and the day, described
+    // by the update.
+    assert!(
+        r.text.contains("system plan qshqvs1-20261026 saved first"),
+        "{}",
+        r.text
+    );
+    let (plans, kept) = w.svc.plans();
+    assert_eq!(kept, 10);
+    assert_eq!(plans.len(), 1);
+    assert_eq!(plans[0].name, "qshqvs1-20261026");
+    // The fixture's entry has no build: the release names it.
+    assert_eq!(plans[0].description, "Before QS/VS update V1R0M1");
+    assert!(plans[0].automatic);
+    let _ = std::fs::remove_dir_all(&w.dir);
+}
+
+#[test]
+fn the_eleventh_automatic_plan_removes_the_oldest_and_no_operator_s() {
+    let w = world("prune", true);
+    let mut svc = w.svc.clone();
+    let one = |svc: &mut schedd::Service, n: u64| {
+        let d = format!("Before QS/VS update {n}");
+        svc.save_before("QSHQVS1".into(), d, "qsadmin".into())
+            .unwrap()
+    };
+    let first = one(&mut svc, 1);
+    for n in 2..=10 {
+        one(&mut svc, n);
+    }
+    // An operator's plan of the same host.
+    let own = svc
+        .capture(
+            "QSHQVS1".into(),
+            "mine".into(),
+            "kept".into(),
+            "qsadmin".into(),
+        )
+        .unwrap();
+    assert_eq!(own.name, "mine");
+    let names = |svc: &mut schedd::Service| -> Vec<String> {
+        svc.plans().0.into_iter().map(|e| e.name).collect()
+    };
+    assert_eq!(names(&mut svc).len(), 11);
+    let eleventh = one(&mut svc, 11);
+    let now = names(&mut svc);
+    assert_eq!(now.len(), 11, "{now:?}");
+    assert!(!now.contains(&first), "{now:?}");
+    assert!(now.contains(&eleventh) && now.contains(&"mine".to_string()));
     let _ = std::fs::remove_dir_all(&w.dir);
 }
 

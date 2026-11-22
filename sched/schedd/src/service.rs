@@ -12,6 +12,7 @@ use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
 
 use mgmtproto::Asked;
+use msg::Issued;
 use qsi::any::AnyRequest;
 use qsi::host::partition::{self, ShutdownKind};
 use state::Store;
@@ -50,11 +51,15 @@ pub struct Config {
     pub clock: Box<dyn Fn() -> i64 + Send + Sync>,
     /// Its log.
     pub log: Box<dyn Fn(&str) + Send + Sync>,
+    /// The system plans' folder, `/data/plans`, the scheduler's alone.
+    pub plans: std::path::PathBuf,
 }
 
 struct Inner {
     cfg: Config,
     doc: Mutex<Schedules>,
+    plans: crate::plans::Plans,
+    deployer: crate::plans::deploy::Deployer,
 }
 
 /// The scheduler.
@@ -89,16 +94,32 @@ pub fn not_scheduled(op: Op) -> Option<(&'static str, &'static str)> {
 impl Service {
     /// Start: the file read, what was missed while the service was not
     /// running recorded, the loop begun.
-    pub fn start(cfg: Config) -> Self {
+    pub fn start(mut cfg: Config) -> Self {
         let doc = cfg
             .store
             .load::<Schedules>()
             .ok()
             .flatten()
             .unwrap_or_default();
+        // The deployments' threads share the ways to mgmtd and the clock.
+        let mgmt: Arc<MakeMgmt> = Arc::new(std::mem::replace(
+            &mut cfg.mgmt,
+            Box::new(|| Box::new(crate::service::Down)),
+        ));
+        let m = mgmt.clone();
+        cfg.mgmt = Box::new(move || m());
+        let clock: Arc<dyn Fn() -> i64 + Send + Sync> =
+            Arc::from(std::mem::replace(&mut cfg.clock, Box::new(|| 0)));
+        let c = clock.clone();
+        cfg.clock = Box::new(move || c());
+        let plans = crate::plans::Plans::open(&cfg.plans);
+        let deployer = crate::plans::deploy::Deployer::new(plans.clone(), mgmt, clock, cfg.look);
+        deployer.recover();
         let svc = Self(Arc::new(Inner {
             cfg,
             doc: Mutex::new(doc),
+            plans,
+            deployer,
         }));
         svc.tick();
         let s = svc.clone();
@@ -109,6 +130,40 @@ impl Service {
             }
         });
         svc
+    }
+
+    /// A plan of `system` saved before its update by `user`, named for
+    /// the system and today's date in the console's zone: its name.
+    pub fn save_plan_before(
+        &self,
+        mgmt: &mut dyn mgmtproto::Calls,
+        system: &str,
+        described: &str,
+        user: &str,
+    ) -> Result<String, Issued> {
+        let now = self.now();
+        let c = appliance::time::civil(now + i64::from(self.zone().minutes) * 60);
+        let date = format!("{:04}{:02}{:02}", c.year, c.month, c.day);
+        let r = self.0.plans.save_before(
+            mgmt,
+            system,
+            described,
+            user,
+            u64::try_from(now).unwrap_or(0),
+            &date,
+        );
+        let what = r.as_ref().map_or_else(
+            |_| format!("save a system plan of {system} before its update"),
+            |n| format!("save system plan {n} of {system} before its update"),
+        );
+        eprintln!(
+            "audit: user {user} from the scheduler: {what}: {}",
+            match &r {
+                Ok(_) => "done".to_string(),
+                Err(e) => format!("refused: {} {}", e.id, e.text),
+            }
+        );
+        r
     }
 
     fn now(&self) -> i64 {
@@ -230,11 +285,16 @@ impl Service {
         if s.op == Op::Update {
             let mut fetch = (self.0.cfg.fetch)();
             let mut updd = (self.0.cfg.updd)();
+            let mut saving = (self.0.cfg.mgmt)();
+            let (system, owner) = (s.system.clone(), s.owner.clone());
+            let mut plans =
+                |described: &str| self.save_plan_before(&mut *saving, &system, described, &owner);
             let mut reach = crate::update::Reach {
                 mgmt: &mut *mgmt,
                 fetch: &mut *fetch,
                 updd: &mut *updd,
                 look: self.0.cfg.look,
+                plans: &mut plans,
             };
             // The same checks as the page's, at the run's time.
             let done = if s.system.is_empty() {
@@ -408,5 +468,153 @@ impl Sched for Service {
         drop(doc);
         self.save(&snapshot);
         Ok(run)
+    }
+
+    fn plans(&mut self) -> (Vec<plan::index::Entry>, u32) {
+        let i = self.0.plans.list();
+        (i.plans, i.automatic_kept)
+    }
+
+    fn plan(&mut self, name: String) -> Option<String> {
+        self.0.plans.text(&name)
+    }
+
+    fn capture(
+        &mut self,
+        system: String,
+        name: String,
+        description: String,
+        user: String,
+    ) -> Result<plan::index::Entry, Issued> {
+        let mut m = (self.0.cfg.mgmt)();
+        let meta = plan::capture::Meta {
+            name: name.clone(),
+            description,
+            created: u64::try_from(self.now()).unwrap_or(0),
+            by: user.clone(),
+            automatic: false,
+        };
+        let r = self.0.plans.capture(&mut *m, &system, meta);
+        plan_audit(
+            &user,
+            &format!("create system plan {name} from {system}"),
+            &r,
+        );
+        r
+    }
+
+    fn import(&mut self, bytes: Vec<u8>, user: String) -> Result<plan::index::Entry, Issued> {
+        let r = self.0.plans.import(&bytes);
+        let what = r.as_ref().map_or_else(
+            |_| format!("import a system plan of {} bytes", bytes.len()),
+            |e| format!("import system plan {}", e.name),
+        );
+        plan_audit(&user, &what, &r);
+        r
+    }
+
+    fn delete_plan(&mut self, name: String, user: String) -> Result<(), Issued> {
+        let r = self.0.plans.delete(&name);
+        plan_audit(&user, &format!("delete system plan {name}"), &r);
+        r
+    }
+
+    fn describe_plan(
+        &mut self,
+        name: String,
+        description: String,
+        user: String,
+    ) -> Result<(), Issued> {
+        let r = self.0.plans.describe(&name, &description);
+        plan_audit(&user, &format!("describe system plan {name}"), &r);
+        r
+    }
+
+    fn template(
+        &mut self,
+        name: String,
+        to: String,
+        user: String,
+    ) -> Result<plan::index::Entry, Issued> {
+        let now = u64::try_from(self.now()).unwrap_or(0);
+        let r = self.0.plans.template(&name, &to, &user, now);
+        plan_audit(
+            &user,
+            &format!("save system plan {name} as template {to}"),
+            &r,
+        );
+        r
+    }
+
+    fn validate(
+        &mut self,
+        name: String,
+        target: String,
+        chosen: Vec<u32>,
+        user: String,
+    ) -> Result<Vec<plan::validate::Item>, Issued> {
+        let chosen = (!chosen.is_empty()).then_some(chosen.as_slice());
+        self.0.deployer.items(&name, &target, chosen, &user)
+    }
+
+    fn deploy(
+        &mut self,
+        name: String,
+        target: String,
+        chosen: Vec<u32>,
+        activate: bool,
+        user: String,
+    ) -> Result<(), Issued> {
+        let r = self
+            .0
+            .deployer
+            .start(&name, &target, &chosen, activate, &user);
+        if let Err(e) = &r {
+            eprintln!(
+                "audit: user {user} from the web interface: deploy system plan {name} to {target}: refused: {} {}",
+                e.id, e.text
+            );
+        }
+        r
+    }
+
+    fn job(&mut self, target: String) -> Option<String> {
+        self.0.deployer.job(&target).map(|j| plan::job::write(&j))
+    }
+
+    fn cancel(&mut self, target: String, user: String) -> Result<(), Issued> {
+        self.0.deployer.cancel(&target, &user)
+    }
+
+    fn save_before(
+        &mut self,
+        system: String,
+        description: String,
+        user: String,
+    ) -> Result<String, Issued> {
+        let mut m = (self.0.cfg.mgmt)();
+        self.save_plan_before(&mut *m, &system, &description, &user)
+    }
+}
+
+/// An audit line of a plan's request for `user`.
+fn plan_audit<T>(user: &str, what: &str, r: &Result<T, Issued>) {
+    let outcome = match r {
+        Ok(_) => "done".to_string(),
+        Err(e) => format!("refused: {} {}", e.id, e.text),
+    };
+    eprintln!("audit: user {user} from the web interface: {what}: {outcome}");
+}
+
+/// No way to `mgmtd`: every call fails.
+pub struct Down;
+
+impl mgmtproto::Calls for Down {
+    fn call(&mut self, _req: &mgmtproto::Request) -> Result<Vec<u8>, ipc::WireError> {
+        Err(std::io::Error::new(
+            std::io::ErrorKind::NotConnected,
+            "the managed-systems service is not reached",
+        )
+        .into())
     }
 }

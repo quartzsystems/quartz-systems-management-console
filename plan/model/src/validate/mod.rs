@@ -101,8 +101,9 @@ pub struct Decisions {
     /// Storage pools, by name: what, and the target's disks a new one
     /// is made on, in the plan's unit order.
     pub pools: BTreeMap<String, (Make, Vec<String>)>,
-    /// Switches: what, and whether a new one has its uplink.
-    pub switches: BTreeMap<String, (Make, bool)>,
+    /// Switches: what, and a new one's uplink: the target's interfaces
+    /// at the plan's places; none to make it without.
+    pub switches: BTreeMap<String, (Make, Vec<String>)>,
     /// Shared processor pools: what, and a new one's cores.
     pub proc_pools: BTreeMap<String, (Make, Vec<u32>)>,
     /// Virtual disks by `POOL/NAME`: what, and whether made thick.
@@ -112,8 +113,9 @@ pub struct Decisions {
     /// Images in the target's library.
     pub images: BTreeMap<String, bool>,
     /// Each partition's physical devices and tape drives, by
-    /// `ID@location`: assigned, or left out.
-    pub io: BTreeMap<String, bool>,
+    /// `ID@location`: the target's own location code there when it is
+    /// assigned, none when it is left out.
+    pub io: BTreeMap<String, Option<String>>,
     /// Partitions by ID.
     pub partitions: BTreeMap<u32, PartMake>,
 }
@@ -673,7 +675,8 @@ fn switches(c: &mut Ctx<'_>) {
                     Why::SwitchExists,
                     format!("Switch exists with {}", vlans(&s.vlans)),
                 );
-                c.d.switches.insert(s.name.clone(), (Make::Exists, false));
+                c.d.switches
+                    .insert(s.name.clone(), (Make::Exists, Vec::new()));
             } else {
                 c.push(
                     Kind::Switch,
@@ -686,7 +689,8 @@ fn switches(c: &mut Ctx<'_>) {
                         vlans(&s.vlans)
                     ),
                 );
-                c.d.switches.insert(s.name.clone(), (Make::Skipped, false));
+                c.d.switches
+                    .insert(s.name.clone(), (Make::Skipped, Vec::new()));
             }
             continue;
         }
@@ -698,17 +702,19 @@ fn switches(c: &mut Ctx<'_>) {
                 Why::SwitchMade,
                 format!("Will be created with {} and no uplink", vlans(&s.vlans)),
             );
-            c.d.switches.insert(s.name.clone(), (Make::Made, false));
+            c.d.switches
+                .insert(s.name.clone(), (Make::Made, Vec::new()));
             continue;
         }
         let at = s.uplink.iter().map(|l| shown(l)).collect::<Vec<_>>();
         let mut absent = None;
         let mut management = None;
+        let mut targets = Vec::new();
         for l in &s.uplink {
             match v.interface_at(l) {
                 None => absent = Some(format!("there is no interface at {} on target", shown(l))),
                 Some((Owner::Host, _)) => management = Some(shown(l)),
-                Some((Owner::None, _)) => {}
+                Some((Owner::None, at)) => targets.push(at.to_string()),
                 Some((_, _)) => absent = Some(format!("{} on target is in use", shown(l))),
             }
         }
@@ -720,7 +726,8 @@ fn switches(c: &mut Ctx<'_>) {
                 Why::SwitchManagement,
                 format!("The uplink {m} is the target's management interface"),
             );
-            c.d.switches.insert(s.name.clone(), (Make::Skipped, false));
+            c.d.switches
+                .insert(s.name.clone(), (Make::Skipped, Vec::new()));
         } else if let Some(why) = absent {
             c.push(
                 Kind::Switch,
@@ -732,7 +739,8 @@ fn switches(c: &mut Ctx<'_>) {
                     vlans(&s.vlans)
                 ),
             );
-            c.d.switches.insert(s.name.clone(), (Make::Made, false));
+            c.d.switches
+                .insert(s.name.clone(), (Make::Made, Vec::new()));
         } else {
             c.push(
                 Kind::Switch,
@@ -741,7 +749,7 @@ fn switches(c: &mut Ctx<'_>) {
                 Why::SwitchMade,
                 format!("Will be created with {} on {}", vlans(&s.vlans), and(&at)),
             );
-            c.d.switches.insert(s.name.clone(), (Make::Made, true));
+            c.d.switches.insert(s.name.clone(), (Make::Made, targets));
         }
     }
 }
@@ -1086,7 +1094,9 @@ fn io(c: &mut Ctx<'_>, p: &PartitionPlan) {
             ),
             Some(_) => (Why::IoFree, format!("{at} on target is released and free")),
         };
-        let ok = why == Why::IoFree;
+        let ok = (why == Why::IoFree)
+            .then(|| v.device_at(&l).map(|d| d.location.clone()))
+            .flatten();
         c.push(Kind::PhysicalIo, &key, label, why, msg);
         c.d.io.insert(key, ok);
     }
@@ -1135,7 +1145,9 @@ fn io(c: &mut Ctx<'_>, p: &PartitionPlan) {
                 format!("Tape drive {} on target is released and free", shown(&l)),
             ),
         };
-        let ok = why == Why::IoFree;
+        let ok = (why == Why::IoFree)
+            .then(|| v.drive_at(&l).map(|d| d.location.clone()))
+            .flatten();
         c.push(Kind::PhysicalIo, &key, label, why, msg);
         c.d.io.insert(key, ok);
     }
@@ -1177,7 +1189,7 @@ pub fn adjusted(pr: &ProfilePlan, id: u32, d: &Decisions) -> ProfilePlan {
     p.ethernet.retain(|e| {
         e.switch
             .as_ref()
-            .is_none_or(|s| !skipped(d.switches.get(s)))
+            .is_none_or(|s| !matches!(d.switches.get(s), Some((Make::Skipped, _))))
     });
     if !d.same_host {
         for e in &mut p.ethernet {
@@ -1191,20 +1203,34 @@ pub fn adjusted(pr: &ProfilePlan, id: u32, d: &Decisions) -> ProfilePlan {
             m.media = None;
         }
     }
+    // A drive and a device by the target's own location code there; one
+    // left out, empty or gone.
     for m in &mut p.tape {
-        let empty = match m.media.as_deref() {
-            None => false,
-            Some(x) => match x.strip_prefix(qsi::host::model::DRIVE_MARK) {
-                Some(l) => d.io.get(&format!("{id}@{l}")) == Some(&false),
-                None => matches!(d.volumes.get(x), Some(Make::Skipped)),
-            },
+        let Some(x) = m.media.clone() else {
+            continue;
         };
-        if empty {
-            m.media = None;
+        match x.strip_prefix(qsi::host::model::DRIVE_MARK) {
+            Some(l) => match d.io.get(&format!("{id}@{l}")) {
+                Some(Some(at)) => m.media = Some(format!("{}{at}", qsi::host::model::DRIVE_MARK)),
+                Some(None) => m.media = None,
+                None => {}
+            },
+            None => {
+                if matches!(d.volumes.get(&x), Some(Make::Skipped)) {
+                    m.media = None;
+                }
+            }
         }
     }
     p.physical_io
-        .retain(|io| d.io.get(&format!("{id}@{}", io.location)) != Some(&false));
+        .retain_mut(|io| match d.io.get(&format!("{id}@{}", io.location)) {
+            Some(Some(at)) => {
+                io.location.clone_from(at);
+                true
+            }
+            Some(None) => false,
+            None => true,
+        });
     p
 }
 

@@ -140,6 +140,9 @@ pub fn begin(rq: &Rq<'_>, target: &str, timeout: u32) {
     let mut mgmt = rq.app.console.mgmt();
     let mut fetch = rq.app.console.fetch();
     let mut updd = rq.app.console.updd();
+    // The plan before the install is the scheduler's to save: it owns
+    // the plans' folder.
+    let mut sched = rq.app.console.sched();
     let runs: Arc<Runs> = rq.app.installs.clone();
     let key = target.to_string();
     runs.lock()
@@ -153,11 +156,18 @@ pub fn begin(rq: &Rq<'_>, target: &str, timeout: u32) {
             },
         );
     std::thread::spawn(move || {
+        let (system, by) = (key.clone(), user.clone());
+        let mut plans = |described: &str| {
+            sched
+                .save_before(system.clone(), described.to_string(), by.clone())
+                .map_err(|e| qmcmsg::base_of(&qmcmsg::SCHEDD_DOWN).with(&[&e.to_string()]))?
+        };
         let mut reach = schedd::update::Reach {
             mgmt: &mut *mgmt,
             fetch: &mut *fetch,
             updd: &mut *updd,
             look: schedd::update::USUAL,
+            plans: &mut plans,
         };
         let done = if key == CONSOLE {
             schedd::update::install_console(&mut reach, &console_name, &user)
