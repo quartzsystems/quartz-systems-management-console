@@ -101,7 +101,9 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     let (mut pages, mut scripts) = (0, 0);
     while let Some(path) = queue.pop_front() {
         let bare = path.split('?').next().unwrap_or("").to_string();
-        if !seen.insert(path.clone()) || bare.starts_with("/qsmc/signoff") || bare.ends_with("/ws")
+        if !seen.insert(crate::suite::parts::pages::key(&path))
+            || bare.starts_with("/qsmc/signoff")
+            || bare.ends_with("/ws")
         {
             continue;
         }

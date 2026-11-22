@@ -124,7 +124,7 @@ fn window(path: &str) -> bool {
 }
 
 /// A crawl's key: a page's other sorts, pages and rows are the same page.
-fn key(path: &str) -> String {
+pub(crate) fn key(path: &str) -> String {
     let (p, q) = path.split_once('?').unwrap_or((path, ""));
     let kept: Vec<&str> = q
         .split('&')

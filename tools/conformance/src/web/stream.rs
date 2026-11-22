@@ -168,10 +168,11 @@ impl Browser {
         req.push_str("\r\n");
         let sock = Self::connect(self.https)?;
         // A paced upload waits on the host: give each write its time. A
-        // body cut short after its first parts waits only for a refusal.
+        // body cut short after its first parts waits for a refusal, which
+        // comes when the server's read times out (30 s, item 40).
         let long = Some(Duration::from_secs(300));
         let wait = if u.head_only {
-            Some(Duration::from_secs(30))
+            Some(Duration::from_secs(75))
         } else {
             long
         };

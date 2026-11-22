@@ -10,7 +10,7 @@
 
 mod audit;
 mod confirm;
-mod pages;
+pub(crate) mod pages;
 mod requests;
 mod sched;
 mod upload;
