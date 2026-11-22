@@ -39,6 +39,9 @@ members = [
     "lic/qsmcschedd",
     # Serviceability: the console's problem log, its update, its streams.
     "lic/qsmcprobd",
+    "lic/qsmcupdd",
+    "upd/fetchd",
+    "lic/qsmcfetchd",
 ]
 
 [workspace.package]
@@ -97,6 +100,9 @@ termlook = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = 
 srcdata = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cf8f01453846fdf78129ca79589e18798aa03fae" }
 httpc = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cf8f01453846fdf78129ca79589e18798aa03fae" }
 updcat = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cf8f01453846fdf78129ca79589e18798aa03fae" }
+# The shipped root authorities, which the download service checks an
+# https:// update server by.
+certs = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cf8f01453846fdf78129ca79589e18798aa03fae" }
 
 anyhow = "1.0.104"
 ed25519-dalek = "3.0.0"

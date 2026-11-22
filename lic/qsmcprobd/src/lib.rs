@@ -259,16 +259,30 @@ mod tests {
         };
         let opened = book.take(
             &RULES,
-            &post(1, "A3003020", "Load-source unit failed: unit 2", vec![unit.clone()]),
+            &post(
+                1,
+                "A3003020",
+                "Load-source unit failed: unit 2",
+                vec![unit.clone()],
+            ),
             1,
         );
         assert_eq!(opened.len(), 1);
         book.take(
             &RULES,
-            &post(2, "A3003020", "Load-source unit failed: unit 2", vec![unit.clone()]),
+            &post(
+                2,
+                "A3003020",
+                "Load-source unit failed: unit 2",
+                vec![unit.clone()],
+            ),
             2,
         );
-        book.take(&RULES, &post(3, "C3003035", "Rebuild finished", vec![unit]), 3);
+        book.take(
+            &RULES,
+            &post(3, "C3003035", "Rebuild finished", vec![unit]),
+            3,
+        );
         let page = book.list(&problem::Filter::default(), None, 10);
         assert_eq!(page.problems.len(), 1);
         let p = &page.problems[0];

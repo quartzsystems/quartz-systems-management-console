@@ -111,6 +111,33 @@ pub const MGMT_DIR: &str = "/data/mgmt";
 /// reads the console's QSI key.
 pub const MGMT_ID: u32 = 23_990;
 
+/// The download service's binary.
+pub const FETCHD: &str = "/qsmc/bin/qsmcfetchd";
+
+/// The download service's socket, root's.
+pub const FETCHD_SOCKET: &str = "/run/qsmcfetchd.sock";
+
+/// The download service's own folder: `updates.toml`.
+pub const FETCH_DIR: &str = "/data/fetch";
+
+/// What the download service downloads, readable by every service once
+/// it matched its stream's index.
+pub const UPDATES_DIR: &str = "/data/updates";
+
+/// The user and group the download service runs as: no key of the
+/// console's is its; the control socket's group (the managed-systems
+/// service's) is its only other, for posting its codes.
+pub const FETCH_ID: u32 = 23_991;
+
+/// The problem service's binary.
+pub const PROBD: &str = "/qsmc/bin/qsmcprobd";
+
+/// The update service's binary.
+pub const UPDD: &str = "/qsmc/bin/qsmcupdd";
+
+/// The console's own dumps, PID 1's, under `/data`.
+pub const DUMPS_DIR: &str = "/data/dumps/console";
+
 /// The web server's certificate and key, under `/data`.
 pub const WEB_DIR: &str = "/data/web";
 

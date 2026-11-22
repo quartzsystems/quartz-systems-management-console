@@ -687,18 +687,20 @@ catalogue! {
         "Check now, then download what the stream offers.";
 }
 
+/// `d` in `base/msg`'s form: its first-level text, and what to do as
+/// the second.
+pub const fn base_of(d: &Def) -> msg::Message {
+    msg::Message {
+        id: d.id,
+        text: d.text,
+        help: d.recovery,
+    }
+}
+
 /// The catalogue's messages in `base/msg`'s form, which the base crates
 /// refuse with: the first-level text, and what to do as the second.
 pub mod base {
-    use super::Def;
-
-    const fn of(d: &Def) -> msg::Message {
-        msg::Message {
-            id: d.id,
-            text: d.text,
-            help: d.recovery,
-        }
-    }
+    use super::base_of as of;
 
     macro_rules! base {
         ($($name:ident),* $(,)?) => {

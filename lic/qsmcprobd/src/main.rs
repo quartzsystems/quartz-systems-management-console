@@ -22,6 +22,7 @@ fn post_data(full: bool, detail: &str, about: &[supervise::control::About]) {
 
 /// Nobody else's: every client is root.
 #[cfg(target_os = "linux")]
+#[allow(clippy::unnecessary_wraps, reason = "the base crate's share hook")]
 fn keep(_: &std::path::Path) -> std::io::Result<()> {
     Ok(())
 }

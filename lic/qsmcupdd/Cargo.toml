@@ -1,0 +1,25 @@
+[package]
+name = "qsmcupdd"
+description = "QS/MC's update service: base/update run as QS/MC, with its image's format, the release that runs, the keys its image trusts and the state schemas it reads"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+build = "build.rs"
+
+[dependencies]
+update.workspace = true
+qmcmsg = { path = "../../web/msgs", version = "0.1.0" }
+refcode = { path = "../refcode", version = "0.1.0" }
+release = { path = "../release", version = "0.1.0" }
+state.workspace = true
+
+[dev-dependencies]
+webusers = { path = "../../web/users", version = "0.1.0" }
+mgmtd = { path = "../../mgmt/mgmtd", version = "0.1.0" }
+schedd = { path = "../../sched/schedd", version = "0.1.0" }
+webpages = { path = "../../web/pages", version = "0.1.0" }
+upd = { path = "../../upd/fetchd", package = "fetchd", version = "0.1.0" }
+
+[lints]
+workspace = true

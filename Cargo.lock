@@ -737,7 +737,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -757,6 +757,28 @@ version = "0.1.0"
 source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=0488d96b067358688f35f34b86a2a4662bcfe93f#0488d96b067358688f35f34b86a2a4662bcfe93f"
 dependencies = [
  "rustix",
+]
+
+[[package]]
+name = "fetchd"
+version = "0.1.0"
+dependencies = [
+ "appliance",
+ "ed25519-dalek",
+ "hex",
+ "httpc",
+ "ipc",
+ "msg",
+ "qmcmsg",
+ "refcode",
+ "release",
+ "serde",
+ "sha2 0.11.0",
+ "state",
+ "stream",
+ "supervise",
+ "updcat",
+ "vrm",
 ]
 
 [[package]]
@@ -1725,6 +1747,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "qsmcfetchd"
+version = "0.1.0"
+dependencies = [
+ "appliance",
+ "certs",
+ "fetchd",
+ "libc",
+ "refcode",
+ "release",
+ "state",
+ "supervise",
+]
+
+[[package]]
 name = "qsmchook"
 version = "0.1.0"
 dependencies = [
@@ -1845,6 +1881,22 @@ dependencies = [
  "refcode",
  "release",
  "stgd",
+]
+
+[[package]]
+name = "qsmcupdd"
+version = "0.1.0"
+dependencies = [
+ "fetchd",
+ "mgmtd",
+ "qmcmsg",
+ "refcode",
+ "release",
+ "schedd",
+ "state",
+ "update",
+ "webpages",
+ "webusers",
 ]
 
 [[package]]
@@ -2023,7 +2075,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -2088,7 +2140,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -2806,6 +2858,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "updcat"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=cf8f01453846fdf78129ca79589e18798aa03fae#cf8f01453846fdf78129ca79589e18798aa03fae"
+dependencies = [
+ "ed25519-dalek",
+ "serde",
+ "thiserror",
+ "toml",
+]
+
+[[package]]
 name = "url"
 version = "2.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3044,7 +3107,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

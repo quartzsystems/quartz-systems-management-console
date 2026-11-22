@@ -1,0 +1,20 @@
+[package]
+name = "qsmcfetchd"
+description = "QS/MC's download service: upd/fetchd run as its own user, the only process of the console that reaches the update server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+fetchd = { path = "../../upd/fetchd", version = "0.1.0" }
+release = { path = "../release", version = "0.1.0" }
+refcode = { path = "../refcode", version = "0.1.0" }
+appliance.workspace = true
+state.workspace = true
+supervise.workspace = true
+certs.workspace = true
+libc.workspace = true
+
+[lints]
+workspace = true

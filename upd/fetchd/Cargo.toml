@@ -1,0 +1,30 @@
+[package]
+name = "fetchd"
+description = "QS/MC's download service: the only process that reaches the update server; it checks the three product streams against the keys in the image and downloads what they name, verified before anything reads it"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+stream.workspace = true
+updcat.workspace = true
+httpc.workspace = true
+state.workspace = true
+ipc.workspace = true
+msg.workspace = true
+vrm.workspace = true
+appliance.workspace = true
+supervise.workspace = true
+qmcmsg = { path = "../../web/msgs", version = "0.1.0" }
+refcode = { path = "../../lic/refcode", version = "0.1.0" }
+release = { path = "../../lic/release", version = "0.1.0" }
+serde.workspace = true
+sha2.workspace = true
+hex.workspace = true
+
+[dev-dependencies]
+ed25519-dalek.workspace = true
+
+[lints]
+workspace = true
