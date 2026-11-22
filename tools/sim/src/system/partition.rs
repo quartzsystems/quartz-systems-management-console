@@ -110,7 +110,7 @@ impl System {
                 .find(|i| self.part_ref(*i).is_none())
                 .unwrap_or(max),
         };
-        let serial = format!("K2M41{id:02}");
+        let serial = serial_of(&self.hello.serial, id);
         let definition = Definition {
             id,
             name: name.into(),
@@ -148,6 +148,24 @@ impl System {
         self.defined(id, name, true);
         Ok(definition)
     }
+}
+
+/// A partition's serial number as QS/VS makes it: five characters of
+/// its host's serial number's hash, the same for every partition of the
+/// host (`QSHQVS1`'s are the fixture's `K2M41`), then its ID.
+pub fn serial_of(host: &str, id: u32) -> String {
+    use sha2::{Digest as _, Sha256};
+    const ALPHABET: &[u8] = b"0123456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+    if host == "10-9F11A2" {
+        return format!("K2M41{id:02}");
+    }
+    let h = Sha256::digest(host.as_bytes());
+    let head: String = h
+        .iter()
+        .take(5)
+        .map(|b| char::from(ALPHABET[usize::from(*b) % ALPHABET.len()]))
+        .collect();
+    format!("{head}{id:02}")
 }
 
 fn create_with(s: &mut System, c: &CreateWith) -> Result<Definition, Refusal> {

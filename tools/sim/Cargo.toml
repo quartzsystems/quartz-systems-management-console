@@ -13,6 +13,7 @@ path = "src/main.rs"
 
 [dependencies]
 qsi.workspace = true
+mgmtproto = { path = "../../mgmt/proto", version = "0.1.0" }
 qsisess.workspace = true
 qsitrust.workspace = true
 qsipart.workspace = true

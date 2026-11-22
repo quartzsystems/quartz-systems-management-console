@@ -17,6 +17,7 @@
 #![forbid(unsafe_code)]
 
 pub mod control;
+pub mod direct;
 pub mod fixture;
 pub mod net;
 pub mod system;

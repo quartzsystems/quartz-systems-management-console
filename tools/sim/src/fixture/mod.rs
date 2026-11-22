@@ -11,9 +11,11 @@ mod hq;
 pub mod screen;
 mod service;
 mod vres;
+mod vs2;
 
 pub use hq::{DEV_SINCE, PROD_SINCE, qshqvs1};
 pub use vres::loc;
+pub use vs2::qshqvs2;
 
 use std::sync::{Arc, Mutex};
 

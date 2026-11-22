@@ -1,0 +1,21 @@
+[package]
+name = "plan"
+description = "QS/MC's system plans: the document, its capture from a host, comparison, validation against a host and the steps of a deployment"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+mgmtproto = { path = "../../mgmt/proto", version = "0.1.0" }
+ipc.workspace = true
+qsi.workspace = true
+serde.workspace = true
+state.workspace = true
+
+[dev-dependencies]
+sim = { path = "../../tools/sim", version = "0.1.0" }
+
+[lints]
+workspace = true

@@ -43,6 +43,8 @@ members = [
     "upd/fetchd",
     "lic/qsmcfetchd",
     "lic/consdump",
+    # System plans: the document, capture, validation, deployment's steps.
+    "plan/model",
 ]
 
 [workspace.package]
