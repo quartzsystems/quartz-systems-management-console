@@ -144,6 +144,13 @@ Golden corrections, each the only difference allowed:
 | `qsmc/code-updates.html` | the note under the hosts says what activating a QS/VS update does: the host restarts into its other slot and its running partitions are shut down first | the design's note (the management layer restarts, partitions keep running) is not what QS/VS does (`docs/UPDATES.md`) |
 | `qsmc/code-update-progress.html` | View log named (`log`) | the page tells which was pressed |
 
+What a live page adds to its golden file's data, its golden test
+unchanged: Add scheduled operation lists `the console` last among the
+targets, Install code update's alone (`docs/SCHED.md`), and Code
+updates' Schedule opens it with that operation and its row's target
+chosen; Code updates shows a download that stopped with its message
+(`QMC7204`, `QMC7205`) until it is asked for again.
+
 ## Time
 
 Sessions, the sign-on lock-out and the window of an `open` address

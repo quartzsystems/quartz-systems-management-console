@@ -36,15 +36,15 @@ Two things already exist and are reused, never rewritten or copied:
 | 2 | Installer, ISO and the local console | `docs/PHASE2.md` |
 | 3 | The web server and Console Management pages | `docs/PHASE3.md` |
 | 4 | QSI and managed systems, proven on a QS/VS host; the browser terminal | `docs/PHASE4.md` |
-| **5 (current)** | Partitions, profiles and virtual resources | `docs/PHASE5.md` |
-| 6 | Service management and updates | |
+| 5 | Partitions, profiles and virtual resources | `docs/PHASE5.md` |
+| **6 (current)** | Service management and updates | `docs/PHASE6.md` |
 | 7 | System plans | |
 | 8 | Release engineering and hardening | |
 
 Work that is not done is listed in the current phase's record,
-`docs/PHASE5.md`. Code and documents mark it `BLOCKED(phase5): reason`
+`docs/PHASE6.md`. Code and documents mark it `BLOCKED(phase6): reason`
 (one line) or `NEEDS-CODY` (Cody's hardware or sign-off); an earlier
-phase's `BLOCKED(phase0)` to `BLOCKED(phase4)` stays as it was written.
+phase's `BLOCKED(phase0)` to `BLOCKED(phase5)` stays as it was written.
 No other marker form.
 
 ## Ground rules
@@ -86,7 +86,7 @@ No other marker form.
   value.
 - No IBM text, product names or marks anywhere. The names in use are
   QS/MC, QS/VS and QS/400.
-- Anything not done is listed in the current phase's record (`docs/PHASE5.md`).
+- Anything not done is listed in the current phase's record (`docs/PHASE6.md`).
 
 ## Locked decisions
 
@@ -120,12 +120,15 @@ See `docs/ARCHITECTURE.md`. Short form:
 - **A partition's console.** Frames of a cell grid from the managed
   side, drawn in the browser by one small script; keys go back as key
   events. The only script in the product.
-- **Updates.** The console reads a product stream's signed index,
-  downloads, and brings an update to a host over QSI. Hosts fetch
-  nothing.
+- **Updates.** The console reads three product streams' signed indexes
+  (`qsmc`, `qsvs`, `qs400`) through `fetchd`, downloads, and brings an
+  update to a host over QSI. Hosts fetch nothing. It updates itself
+  with `base/update` into its other slot, back on the old one with its
+  state put back when the new one does not confirm.
 - **Outbound traffic.** DHCP, DNS, NTP, QSI to managed systems, HTTPS to
-  the configured product stream, and the BMC of a machine it is asked to
-  power on. Nothing else.
+  the configured product stream (`fetchd` alone, unprivileged, holding
+  no key), and the BMC of a machine it is asked to power on. Nothing
+  else.
 - **Identity.** Release `V1R0M0` from `VERSION` (`1.0.0`). Fixes
   `QMnnnnn`. Message prefix `QMC`. Product identifier `qsmc`;
   environment prefix `QSMC_`; kernel command-line keys `qsmc.`; ESP
@@ -161,22 +164,24 @@ kernel/         VERSION, SHA256 (QS/VS's), config/qsmc.config
 tools/          host tools
   sim/            the simulated managed systems (docs/SIM.md): sim, binary qsmcsim; screens/ the recorded console screen
   build/          the orchestrator, a thin binary over buildkit: cargo run -p build -- <cmd>
-    src/product/    QS/MC as buildkit's Product, release or test image: names, kernel, initramfs, media
-    src/image/      the userland and its hook check, the disk's record, the manifest, the load-source writer
+    src/product/    QS/MC as buildkit's Product, release or test image: names, kernel, initramfs, media, the streams' keys, the test image's variants
+    src/image/      the userland and its hook check, the disk's record, the manifest, the load-source writer, the update image
     src/host/       doctor rows, the license header check, the two pins, `test`, `fuzz`
   conformance/    the QEMU harness
     src/qemu/       base/qemu (as `driver`) with QS/MC's variables; a suite's machine, its forwards and its session's cursor; the test hooks' channel; golden screens
     src/image/      a load source on image files (base/loadsource's writer) and what the suites read of a disk
     src/web/        a browser of the web interface, pinned to the certificate it expects; its forms as a browser sends them; an upload streamed
     src/suite/      Phase 0's steps; base/: Phase 1's suites; install/: Phase 2's, the installer and the local console; web/: Phase 3's; mgmt/: Phase 4's;
-                    parts/: Phase 5's, partitions, profiles, virtual resources, the wizard, groups, schedules, the upload, roles, an older host, audit
+                    parts/: Phase 5's, partitions, profiles, virtual resources, the wizard, groups, schedules, the upload, roles, an older host, audit;
+                    serv/: Phase 6's, events, the console's problems, dumps, streams, a host's update, the console's own update, refusals, power pulls, option 8, its dump, schedules, roles, audit
+    src/streams/    a stream server of the harness's own: signed indexes and a catalog under test keys, images, notes; slow, cut, wrong or absent
     golden/         every installer and local console screen, as text
-  fuzz/           qsmcfuzz over QS/400's fuzzer: a backup's reader, the certificate import, what mgmtd does with a peer's messages
+  fuzz/           qsmcfuzz over QS/400's fuzzer: a backup's reader, the certificate import, what mgmtd does with a peer's messages and the servicing families', a stream's index, the update image
 lic/            PID 1, release, the product's binaries
   qsmcinit/       PID 1
-    src/ipl/        the IPL in order: mounts, the record, storage and /data (the panel for the unit to keep), a restore, clock, seed, state and inventory, identity; the media's hand-off to the installer
-    src/host/       the running console: the loop, the table, the control socket, the web server's listeners, option 4's requests while it is down, shutdown, the load source's line, the serial port lent to a session
-    src/slot/       the slot rule: a slot on trial, and a restore, confirm when the web server answers
+    src/ipl/        the IPL in order: mounts, the record, storage and /data (the panel for the unit to keep), a restore, a panic's records, clock, seed, the state kept or put back across a trial, state and inventory, identity; the media's hand-off to the installer
+    src/host/       the running console: the loop, the table, the control socket, the web server's listeners, option 4's requests while it is down, shutdown, the load source's line, the serial port lent to a session, the console's dump
+    src/slot/       the slot rule: a slot on trial, and a restore, confirm when the web server answers; an update's slot written, pending, cancelled
     src/console/    /dev/console and /dev/ttyS0, the status screen
     src/sys/        the panic path, reaping, the power button
     src/hooks.rs    a test image's hooks (cfg(test_hooks) only)
@@ -184,10 +189,14 @@ lic/            PID 1, release, the product's binaries
   qsmcstgd/       base/stgd run as QS/MC
   qsmclogd/       base/logd run as QS/MC
   qsmcnetd/       base/netd run as QS/MC
-  qsmchook/       the test hooks: the channel, flaky, the churn, a failing web server (test image only)
+  qsmchook/       the test hooks: the channel, flaky, the churn, a failing web server, a code posted, a dump (test image only)
   qsmcwebd/       the web server's binary: web/webd with web/pages, and its socket for the local console
   qsmcmgmtd/      the managed-systems service's binary: its sockets bound, its own user for good, mgmt/mgmtd
   qsmcschedd/     the scheduler's binary: its socket bound, no capability, sched/schedd
+  qsmcprobd/      the console's problem log: base/problem with QS/MC's table (docs/SERVICE.md)
+  qsmcupdd/       the console's update service: base/update with QS/MC's image format, codes and schemas (docs/UPDATES.md)
+  qsmcfetchd/     the download service's binary: its socket and folders made, its own user for good, upd/fetchd
+  consdump/       the console's service dump over base/servicedump: what it takes, what it leaves out
   release/        V1R0M0 over QS/400's vrm, the banner, the prefixes, the Appliance and its interface roles, LOAD_SOURCE, status facts and screen, the processor's words
   refcode/        the console's reference codes (docs/REFCODES.md), each base event's, the poster
 web/            the web interface (docs/WEB.md)
@@ -197,16 +206,18 @@ web/            the web interface (docs/WEB.md)
   pages/          every page from its view, a module and its routes each; the App: sessions, the task of each route, audit;
                   systems/ the managed systems' pages, refcodes/ explanations and the history, terminal/ the window, its socket, the control panel,
                   vres/ a host's virtual resources and the upload, partitions/ the list, properties, activate, shut down, the wizard, profiles,
-                  groups.rs custom groups, schedule.rs scheduled operations
+                  groups.rs custom groups, schedule.rs scheduled operations, service/ events and dumps, updates/ Code updates, progress, Updates
   backup/         the backup file: the payload PID 1 restores, sealed under a passphrase (docs/BACKUP.md)
 mgmt/           managed systems (docs/MGMT.md)
   proto/          mgmtproto: what is kept of a system, the requests on mgmtd's socket, a terminal window's connection
-  mgmtd/          the service: keep/ systems.toml, mgmt.toml, the history; peer/ a QSI connection, pairing; system/ a thread a system, its consoles shared, what it keeps of a host, uploads; service/ the requests, `ask`, the console socket, uploads
+  mgmtd/          the service: keep/ systems.toml, mgmt.toml, the history, the problems' numbers; peer/ a QSI connection, pairing; system/ a thread a system, its consoles shared, what it keeps of a host, uploads, servicing, stages and downloads; service/ the requests, `ask`, the console socket, uploads, dumps
+upd/            code updates (docs/UPDATES.md)
+  fetchd/         the download service: the three streams, their keys, checks, downloads verified and resumed, its settings, its socket
 sched/          scheduled operations (docs/SCHED.md)
-  schedd/         the scheduler: schedules.toml, when each is due, the runs in their owners' names, its socket
+  schedd/         the scheduler: schedules.toml, when each is due, the runs in their owners' names, its socket; update.rs an install's checks and steps, shared with the pages
 svc/            the local console
-  console/        qsmccons over base/panels: the sessions, the main menu, status, network, disk units, the web interface (option 4), the one panel for the unit to keep
-docs/           ARCHITECTURE, PHASE0-5, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, MGMT, TERMINAL, SIM, PARTITIONS, VRES, SCHED, OPEN_QUESTIONS
+  console/        qsmccons over base/panels: the sessions, the main menu, status, network, disk units, the web interface (option 4), service functions (option 8), the one panel for the unit to keep
+docs/           ARCHITECTURE, PHASE0-6, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, MGMT, TERMINAL, SIM, PARTITIONS, VRES, SCHED, SERVICE, UPDATES, OPEN_QUESTIONS
 design/         qsmc-prototype/: the web UI's approved design, every page a golden rendering (its README is the handoff)
 ```
 
@@ -214,9 +225,10 @@ Category folders are made as phases need them. The full set: `tools/`
 (host tools), `lic/` (PID 1, release, the product's binaries), `web/`
 (the server, sessions, templates, the terminal relay, static files),
 `mgmt/` (managed systems: the QSI client's use, pairing, events, what
-is kept about each system), `sched/` (scheduled operations), `svc/`
-(the local console). Phases 0 and 1 made `tools/` and `lic/`, Phase 2
-`svc/`, Phase 3 `web/`, Phase 4 `mgmt/`, Phase 5 `sched/`.
+is kept about each system), `sched/` (scheduled operations), `upd/`
+(code updates: the download service), `svc/` (the local console).
+Phases 0 and 1 made `tools/` and `lic/`, Phase 2 `svc/`, Phase 3
+`web/`, Phase 4 `mgmt/`, Phase 5 `sched/`, Phase 6 `upd/`.
 
 ## Commands
 
@@ -225,9 +237,11 @@ with `QSMC_TARGET_DIR`.
 
 ```
 cargo run -p build -- doctor          host prerequisites, the license headers, the two pins, no shared crate twice
-cargo run -p build -- all             fetch, kernel, userland, initramfs, uki, disk, iso, manifest
+cargo run -p build -- all             fetch, kernel, userland, initramfs, uki, disk, iso, update, manifest
 cargo run -p build -- --test-image all   the same with the test hooks, under test-image/ in the target
-cargo run -p build -- test            Phase 0's steps on the release image, then Phases 1 to 5's suites on the test image
+QSMC_RELEASE=V1R0M1 QSMC_NEXT_SCHEMA=1 cargo run -p build -- --test-image --variant next all   the update Phase 6's suites install
+QSMC_RELEASE=V1R0M1 QSMC_TEST_WEBD_BROKEN=1 cargo run -p build -- --test-image --variant broken all   the update that rolls back
+cargo run -p build -- test            Phase 0's steps on the release image, then Phases 1 to 6's suites on the test image
 cargo run -p build -- test --suite mgmt-host   suite 10 on a real QS/VS host: QSMC_QSVS_DISK names its installed test disk
 cargo run -p sim --bin qsmcsim        the prototype's managed systems on the network, told what to do on standard input
 cargo run -p build -- fuzz            the fuzzer with coverage counters, every target 60 s (--target NAME, --secs N)
@@ -257,7 +271,7 @@ screens instead of comparing (`docs/PHASE2.md`).
 
 A test image's hooks are switched on for one boot by an SMBIOS OEM
 string `qsmc.hook=<name>` (`churn`, `flaky-fails`, `refuse-confirm`,
-`short-idle`, `webd-fails`); a test image also serves the pattern
+`short-idle`, `short-trial`, `webd-fails`); a test image also serves the pattern
 reference under `/qsmc/dev/`;
 the harness reaches the control socket through the channel on the
 guest's second serial port.
@@ -286,6 +300,14 @@ guest's second serial port.
 - `docs/PHASE5.md`: partitions, profiles and virtual resources: the new
   pins and what was deleted for `base/`, the pages live, the acceptance
   table with evidence, what is not done.
+- `docs/PHASE6.md`: service management and updates: what exists, how
+  to run it, hashes, the pages live, the acceptance table with
+  evidence, what is not done and what needs a person.
+- `docs/SERVICE.md`: serviceable events and dumps as the console shows
+  them, its own problem table and its dump.
+- `docs/UPDATES.md`: the streams, their trust, `fetchd`, a host's
+  update, the console's own update and its state across it, what each
+  failure leaves.
 - `docs/PARTITIONS.md`: each partition page's fields and where each
   lives, what changes when, boot mode and console device.
 - `docs/VRES.md`: a host's pools, switches, disks, media and tape as the

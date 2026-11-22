@@ -7,14 +7,16 @@ user whose role has the Console settings task.
 
 ## What a backup holds
 
-Every file under `/data/state` and `/data/web`, and the managed
-systems' files under `/data/mgmt`:
+Every file under `/data/state` and `/data/web`, the managed systems'
+files under `/data/mgmt`, and the download service's settings under
+`/data/fetch`:
 
 | Folder | What |
 | --- | --- |
 | `state/` | the state files (`host.toml`, `network.toml`, `inventory.toml`, `webusers.toml`, `web.toml`, `trusted.toml`, `backups.toml`), the service tools users (`users.db`), and the console's QSI identity: its key and certificate |
 | `web/` | the web certificate and its key |
 | `mgmt/` | `systems.toml`, the managed systems as paired with their pins, and `mgmt.toml` (`docs/MGMT.md`) |
+| `fetch/` | `updates.toml`: the update server, and whether to check and download automatically (`docs/UPDATES.md`), which the web server asks the download service for (`backup`) |
 
 The QSI key and the `mgmt/` files are the managed-systems service's
 user's alone: the web server cannot read them, and asks the service for
@@ -27,8 +29,13 @@ service's user.
 
 Not held: the logs and the reference code history under `/data/log`
 (the log service's, not restored over a running one), the managed
-systems' reference code histories under `/data/mgmt/refcodes`, and
-anything of a later phase. A file being written (a name beginning `.` or ending
+systems' reference code histories under `/data/mgmt/refcodes`, the
+console's numbers of the fleet's problems (`/data/mgmt/problems.bin`,
+made again as the problems are seen), the console's own problem log
+(`/data/problems`), the downloaded images and notes (`/data/updates`,
+fetched again), what the update service keeps of its slots
+(`/data/update`, the slots' own), the console's dumps
+(`/data/dumps/console`), and anything of a later phase. A file being written (a name beginning `.` or ending
 `.new`) is left out.
 
 ## The file

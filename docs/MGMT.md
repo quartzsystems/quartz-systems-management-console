@@ -45,6 +45,7 @@ log and looks again every 5 seconds.
 | `/data/mgmt/systems.toml` | each managed system as paired: name, address, port, kind, its certificate's SHA-256, when paired, its serial number then, the last event seen, the console's description of it | `mgmtd` only, through `base/state` |
 | `/data/mgmt/mgmt.toml` | the limits, below; defaults when absent | read by `mgmtd` |
 | `/data/mgmt/refcodes/<NAME>.codes` | each system's reference code history, a code a line | `mgmtd` |
+| `/data/mgmt/problems.bin` | the console's number of each problem it has seen, by system and the system's own number (`docs/SERVICE.md`) | `mgmtd` |
 
 Both TOML files are in a backup, with the identity, under `mgmt/` and
 `state/` (`docs/BACKUP.md`); the history is not, as the console's own
@@ -70,12 +71,21 @@ standalone system: ID 0) carries out. The events keep them: one that
 carries the whole thing replaces it, one that does not has its list
 read again (`docs/VRES.md`).
 
+From Phase 6, from the servicing families (`system/servicing.rs`): each
+system's problems from `service` with their severity and notes, kept by
+its events; its own service dumps and their space (base, bits 4 and
+26); a host's partitions' dumps and their space (`dumps`); its `update`
+status (both slots, what is staged, an install's progress), the update
+log, how its last activation ended, and a stage under way; a standalone
+system's fix level (bit 27).
+
 | Limit (`mgmt.toml`) | Default |
 | --- | --- |
 | `max_systems` | 256 |
 | `max_setups`: connections being set up at once | 8 |
 | `max_consoles`: terminal windows open at once, across every system | 32 |
 | `history`: reference codes kept for each system | 4,096 |
+| `unreached_minutes`: how long a system may go unreached before the console opens a problem of its own for it (`A3005030`, cleared by `C3005040`) | 30 |
 
 ## Sessions
 
@@ -149,6 +159,8 @@ each connection a thread so a slow answer holds up no other.
 | `describe` | the console's note about a system |
 | `ask` | any request the pages send, as QSI encodes it (`mgmtproto::ask`): refused `QMC1115` when the pages do not send it (pairing, problems, code update, dumps, a console's or an upload's stream), `QMC1114` naming what the system lacks when its hello does not offer it, else sent in the user's name and its reply or refusal handed back |
 | `status` | counts, limits, the console's QSI certificate |
+| `problems`, `problem` | a page of the fleet's problems with the console's numbers, filtered; one whole |
+| `stage` | a downloaded update image streamed to a host (`docs/UPDATES.md`) |
 | `backup_files` | `mgmt/systems.toml`, `mgmt/mgmt.toml`, the identity's two files |
 
 `release::MGMTD_CONSOLES` (`/run/qsmcmgmtd-consoles.sock`): a terminal
@@ -166,9 +178,19 @@ length other than the one said, resets the stream and the host keeps
 nothing (`QSI0702`). Last, `mgmtd` answers how the host's
 `UploadEnded` ended it.
 
+A dump's download (`mgmtproto::console::Fetch`: the system, the
+partition or 0, the dump's name, the user) is answered with its length
+when the system's stream is open; then `mgmtd` sends its bytes in
+frames and an empty frame at the end, granting the system credit only
+for what the web server has taken, so nothing of a dump is held whole.
+A web server that closes the connection ends the system's stream.
+
+An image's stage (`stage`) reads the downloaded file a piece at a time
+as the host's stream has credit, and answers how the host's `Staged`
+and `Verified` ended it.
+
 The console's hello says `mgmtproto::ask::CONSOLE_CAPS`: every host
-family, servicing, physical I/O, and bits 18 to 24 (problems' notes,
-dump space and the fix level are Phase 6's).
+family, servicing, physical I/O, and bits 18 to 27.
 
 ## What each failure shows an operator
 
@@ -198,5 +220,7 @@ and on Connectivity.
 | `C3005020` | a system paired again |
 | `C3005030` | a system removed |
 | `A3005010` | `systems.toml` or `mgmt.toml` could not be read |
+| `A3005030` | a system not reached for longer than `unreached_minutes`, once, about the system |
+| `C3005040` | that system reached again |
 | `A3005020` | a system's certificate changed |
 | `A3001076` | PID 1 could not give the service its files |

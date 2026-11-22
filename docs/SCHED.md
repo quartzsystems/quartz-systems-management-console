@@ -57,9 +57,22 @@ is kept missed, logged, and the next time computed from now.
 Run now runs an operation at once in its owner's name, its role checked
 the same way, after its confirmation page.
 
+## Install code update
+
+From Phase 6, for a QS/VS host or for `the console` (a schedule whose
+system is empty; Code updates' Schedule opens the form with it chosen).
+It needs Code updates, and runs the page's own steps with the page's
+checks as they are at its time (`schedd::update`, `docs/UPDATES.md`):
+the stream must offer the target a newer release whose image is
+downloaded (`QMC7003`); a host's running partitions are shut down only
+when the operation's delay gives them seconds to (`QMC7004` with no
+delay); then the image is brought to the host and the host activated,
+or, for the console, staged, installed and restarted into. A console's
+run is kept `Completed` before its restart; that the new slot confirmed
+is on Code updates.
+
 ## What is not scheduled
 
 Power on answers as its page does (`QMC2201`). Backup console data
 answers `QMC3407`: a backup leaves the console through a browser, under
-a passphrase typed there. Install code update answers `QMC3408` until
-Phase 6.
+a passphrase typed there.

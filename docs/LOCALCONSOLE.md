@@ -172,8 +172,33 @@ warnings and errors, or errors.
 
 ### 8. Service functions
 
-Not available yet: the console's dumps and its code updates arrive in
-Phase 6.
+The console's own service (`svc/console/src/service/`, `docs/SERVICE.md`,
+`docs/UPDATES.md`); the systems it manages are serviced from the web
+interface.
+
+- **1. Work with problems**: the console's problem log, newest first.
+  `5` displays one whole (its code, resources and analysis log); `4`
+  closes it after F10, with the service tools user's name. A problem
+  whose condition still holds says so on the confirmation.
+- **2. Take a console dump**: F10 asks PID 1 for one; it is written in
+  the background and listed by 3.
+- **3. Work with dumps**: the console's dumps. `3` copies one to a
+  removable volume (its device, as `sdb1`; FAT, exFAT, ext4 or xfs);
+  `4` deletes it after F10.
+- **4. Install an update from a removable volume**: the volume's
+  device, then `1` by an image (`.upd`). It is staged and verified;
+  the confirmation shows what it is beside what runs, and F10 installs
+  it into the other slot on every load-source disk. Then F10 restarts
+  into it now, or F12 leaves it pending for later. A refused image
+  says why on the message line and nothing is kept.
+- **5. Display code levels**: both slots with their release, build and
+  fixes, which runs and which is the default, anything pending or
+  staged, and how the last activation ended. F10 restarts into a
+  pending slot; F9 cancels it.
+
+A volume is mounted read-only to read an image and without device
+files, set-user-ID or execution either way, and never when it is a
+load-source disk of this console.
 
 ### 9. Power off or restart
 

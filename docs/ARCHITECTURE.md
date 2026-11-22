@@ -24,7 +24,7 @@ recorded here.
 | QSI | QS/400's crates, used as a client: mutual TLS 1.3 with pinned certificates, pairing by the managed system's one-time password, events with replay, streams for consoles, uploads and downloads. |
 | A partition's console | Frames of a cell grid from the managed side, drawn in the browser by one small script; keys go back as key events. This is the only script in the product. |
 | Updates | The console reads a product stream's signed index, downloads, and brings an update to a host over QSI. Hosts fetch nothing. |
-| Outbound traffic | DHCP, DNS, NTP, QSI to managed systems, HTTPS to the configured product stream, and the BMC of a machine it is asked to power on. Nothing else. |
+| Outbound traffic | DHCP, DNS, NTP, QSI to managed systems, HTTPS to the configured product stream, and the BMC of a machine it is asked to power on. Nothing else. The product stream is reached by one unprivileged process alone, `fetchd`, holding no key of the console's. |
 | Identity | Release `V1R0M0` from `VERSION` (`1.0.0`). Fixes `QMnnnnn`. Message prefix `QMC`. Product identifier `qsmc`; environment prefix `QSMC_`; kernel command-line keys `qsmc.`; ESP vendor directory `QSMC`; ESP label `QSMC ESP`; record magic `QSMCREC`; data label `QSMCDATA`; seed label `QSMCSEED`; default host name `QSMC` and six hexadecimal digits. |
 | Reference codes | A console posts its own, as `REF <code> <text>`, in the families whose second character is `3` (`C3`, `A3`, `B3`, `D3`), so a console's line never reads as a QS/400 system's or a QS/VS host's. No family of either ends in `3` (`docs/REFCODES.md`). Confirmed in Phase 1. |
 | Network roles | Two, as `network.toml` names them: `open`, first, the network operators reach the console on, with the default route, the name servers and the time; `private`, optional, toward the systems it manages, with no default route. Decided in Phase 2. |
@@ -71,9 +71,16 @@ A sentence on each:
   other script is ever served.
 - **Updates.** The console is the one machine that reaches the product
   stream; a host is updated by what the console brings it, verified by
-  the host's own keys.
+  the host's own keys. The console updates itself as a host does, with
+  `base/update`, into its other slot, confirming when its web server
+  answers and otherwise back on the old slot with its state put back
+  (`docs/UPDATES.md`).
 - **Outbound traffic.** What a console may reach is a short, fixed list,
-  so a network team can write its rule from this table.
+  so a network team can write its rule from this table. Beyond DHCP,
+  DNS, NTP and QSI, the one exception is `fetchd`'s traffic to the
+  configured server: one small service, the only process that connects
+  to it, unprivileged and holding no key, so what talks to the internet
+  can do nothing else.
 - **Identity.** Every name that carries the product is one constant in
   `lic/release`, and what is on an installed disk is held by a test.
 - **Reference codes.** The `3` families keep a console's codes apart

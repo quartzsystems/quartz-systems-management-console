@@ -669,3 +669,40 @@ but a client that sends nothing more waits for the read timeout, 30 s,
 before it sees the answer. A browser goes on sending, so it is told at
 once; `parts-upload` sends only the first parts and records the time.
 For QS/400: the pump stops reading when the handler has answered.
+
+## 41. `update::state_copy` takes one folder (QS/VS)
+
+`base/update`'s `state_copy` keeps a copy of the state directory before
+a pending slot's first IPL and puts it back on a roll back. A console's
+state is also in `/data/mgmt`, `/data/web` and `/data/fetch`, each its
+own service's folder with its own owner, so PID 1 copies those beside
+it itself (`lic/qsmcinit/src/ipl/carry.rs`), the same rule over three
+more folders. For QS/VS: `state_copy` over a list of folders, each
+copied with its owner and mode; the console's own then goes.
+
+## 42. A removable volume belongs in `base/panels` (QS/VS)
+
+Option 8 of the local console mounts a removable volume to read an
+update image from or copy a dump to (`svc/console/src/service/volume.rs`):
+its device by kernel name, never a load-source disk, the file systems
+tried in turn, read-only to read, no device files, set-user-ID or
+execution. QS/VS's Service Tools will want the same for a host. For
+QS/VS: the volume in `base/panels` (or `base/loadsource`, which knows
+the load-source disks); the console's then goes.
+
+## 43. Priority on Serviceable events (design)
+
+The prototype's event detail has Severity and Priority; QSI has a
+severity and no priority. The console derives a resource's priority
+from the severity (`docs/SERVICE.md`) and shows what the prototype
+shows for event 1042. For the design: Priority dropped, or a field QSI
+would carry.
+
+## 44. Check now waits on the slowest stream (Phase 6)
+
+Check now reads the three streams in turn within the page's request,
+each given 30 s, so a server that is slow but not absent holds the page
+for up to 90 s before it says `QMC7204`. A browser waits; the harness's
+does not, and posts it from a thread of its own (`serv-streams`). A
+check begun in the background with its result on the page, as a
+download is, would answer at once.

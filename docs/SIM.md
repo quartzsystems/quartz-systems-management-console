@@ -85,6 +85,9 @@ it; a profile's validation gives every message at once.
 | panel | QS/VS's functions and their keylock rules (`QVS2003`, `QVS2306`, `QVS2307`, `QVS2309`, `QVS2318` when the partition's settings keep panel functions from consoles) |
 | console | attach, one viewer, take over, `QVS2314`; screen |
 | pair | pairing |
+| service | list, list rated, get, get rated, close (`QSI1001` while its condition holds and the close has no leave, `QSI1002`, `QSI1003`), note; `Opened`, `Seen`, `Cleared`, `Closed`, `Noted` |
+| update | status, stage (a stream; an image that does not begin `QSVSUPDT` is refused `QSI1102`, as is the next one told), install into the other slot (`QSI1106`, `QSI1108`, `QSI1114`), activate (`QSI1113` with `QVS5313` while partitions run and the activation said refuse), cancel, discard; `Staged`, `Verified`, `Installing`, `Installed`, `Activating`, `Confirmed` or `RolledBack` as told |
+| dumps, base dumps | a host's partitions' dumps and their space, a system's own service dumps and their space, download as a stream, delete; the fix level (bit 27) |
 
 Every change pushes the events a QS/VS host pushes: partitions
 `StateChanged`, `ResourcesChanged`, `Defined`; partition
@@ -111,6 +114,18 @@ with the same profile. A restart (and function 03) posts `C2005110` and
 IPLs again holding what it held. A power down shuts partitions down (or
 ends them), posts its codes, goes away and, for a restart, comes back
 after 3 seconds.
+
+**Servicing** (`system/servicing.rs`, `fixture/service.rs`): `QSHQVS1`
+has event 1042 (`B6000100`, `QSTEST01`, the virtual disk `VD04`, the
+prototype's analysis log) open and 1039 and 1040 closed, slots A
+(`V1R0M0` build `26280`, running) and B (empty), and a dump of
+`QSDEV01` and of `QSTEST01`; `QSHQ400` has event 1041 closed, its
+firmware dump and the fix level `QS400-CUM-26290`. A dump's bytes are
+made from its name and offset (`content`), so a download is checked
+without keeping it; a console that goes away ends the stream, and the
+system logs `download NAME ended by the console after N of M bytes`.
+An activation restarts the host into the pending slot, which confirms
+or rolls back as `outcome` said.
 
 **An upload** (`ImageUpload`) is checked first (`QVS3201` no
 repository, `QVS3202`, `QVS3203`, `QVS3207` not whole 2048-byte blocks
@@ -158,6 +173,12 @@ short, reset or its connection gone: `QSI0702`, nothing kept.
 | `lines S` | what it logged: every request with its user, pairings, sessions, uploads |
 | `pins S` | the consoles it pinned |
 | `withhold S BIT...\|new` | take capability bits from the hello (`new`: bits 19 to 24); the session comes back without them |
+| `problem S open P CODE TEXT` | open a problem (of partition `P`, or the system's with 0): its number |
+| `problem S seen\|clear\|close N` | problem `N` seen again, its condition cleared, closed by the system |
+| `dump S P NAME MIB` | a dump of partition `P` (or the system's own with 0) of so many MiB |
+| `stage-refuse S ID TEXT` | the next image staged is refused with that message |
+| `outcome S confirm`, `outcome S rollback CODE REASON` | how the next activation ends |
+| `fixlevel S LEVEL` | the fix level the system says |
 
 ```
 cargo run -p sim --bin qsmcsim -- --port 2300
