@@ -25,8 +25,9 @@ given) has the list read again. Processor pools are the host family's
 Each switch with its VLANs, its uplink (its members' names and speeds,
 or `none (internal)`), its mode (`VLAN aware` for more than one VLAN,
 else `Untagged`) and the partitions whose profile's adapters are on it.
-The adapters are each partition's last activated profile's, with the
-MAC its port has when the profile gives none. Properties is a short form
+The adapters are each partition's last activated profile's (its
+default profile's before its first activation: `Kept::devices`), with
+the MAC its port has when the profile gives none. Properties is a short form
 (`/virtual/ethernet/switch?n=`): name, VLANs, MTU, uplink interfaces,
 bond and native VLAN, sent as `SwitchCreate` or `SwitchChange`,
 `SwitchRename`, `UplinkSet` or `UplinkClear` (bit 19). Remove is a
@@ -56,8 +57,9 @@ and Unassign are confirmations.
 ## Virtual Optical
 
 The media library's images with their sizes and the partition and
-device each is loaded in; each partition's optical devices, its
-profile's, or what a running one has loaded now (`OPT01`, `OPT02` in
+device each is loaded in; each partition's optical devices, those of
+the profile it has (`Kept::devices`), or what a running one has loaded
+now (`OPT01`, `OPT02` in
 slot order). Load and Unload are a short form choosing the device. An
 image's upload date and a read-only flag are not in QSI: the date is
 empty, and every image is read-only to partitions.
@@ -79,7 +81,8 @@ an address typed into a page.
 
 ## Virtual Tape
 
-Each partition's tape devices from its last activated profile: a
+Each partition's tape devices from the profile it has
+(`Kept::devices`): a
 volume of the media library (`Virtual (file)`, `VTAP01` in order) or one
 of the host's own drives passed through (`Pass-through`, `TAP01`), a
 drive released at the host. The volumes are their own form

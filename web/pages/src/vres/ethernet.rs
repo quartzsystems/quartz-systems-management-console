@@ -191,7 +191,7 @@ pub fn view(k: &Kept, messages: Vec<Message>) -> Ethernet {
     };
     let mut adapters = Vec::new();
     for p in &k.partitions {
-        let Some(profile) = k.profile(p.id) else {
+        let Some(profile) = k.devices(p.id) else {
             continue;
         };
         for a in &profile.ethernet {

@@ -457,6 +457,15 @@ impl Kept {
             .find(|p| p.id == id)
             .map(|p| &p.profile)
     }
+
+    /// The profile whose devices a partition has: its last activated,
+    /// or its default as kept when it was never activated.
+    pub fn devices(&self, id: u32) -> Option<&Profile> {
+        self.profile(id).or_else(|| {
+            let default = self.profile_list(id).iter().find(|e| e.default)?;
+            self.profile_body(id, &default.name).map(|b| &b.profile)
+        })
+    }
 }
 
 #[cfg(test)]

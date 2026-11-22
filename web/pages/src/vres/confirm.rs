@@ -261,7 +261,7 @@ fn carry_out(
                 k.partitions
                     .iter()
                     .filter(|x| {
-                        k.profile(x.id).is_some_and(|pr| {
+                        k.devices(x.id).is_some_and(|pr| {
                             pr.scsi
                                 .iter()
                                 .any(|a| a.luns.iter().any(|l| l.backing == backing))

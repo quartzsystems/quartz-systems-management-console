@@ -139,8 +139,9 @@ pub fn page(ctx: &Ctx, v: &Optical) -> Page {
     super::page(ctx, &v.host, "optical", v.messages.clone(), &body)
 }
 
-/// Each partition's optical devices: its profile's, with what a running
-/// one has loaded now. Named `OPT01`, `OPT02` in slot order.
+/// Each partition's optical devices: its last activated profile's, or
+/// its default's before its first activation, with what a running one
+/// has loaded now. Named `OPT01`, `OPT02` in slot order.
 pub fn drives(k: &Kept) -> Vec<DriveRow> {
     let mut out = Vec::new();
     for p in &k.partitions {
@@ -153,7 +154,7 @@ pub fn drives(k: &Kept) -> Vec<DriveRow> {
                 .map(|d| (d.slot, d.name.clone()))
                 .collect(),
             None => k
-                .profile(p.id)
+                .devices(p.id)
                 .map(|pr| {
                     pr.optical
                         .iter()

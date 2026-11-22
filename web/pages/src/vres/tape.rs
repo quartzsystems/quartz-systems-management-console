@@ -118,7 +118,7 @@ pub fn view(rq: &Rq<'_>, k: &Kept, messages: Vec<Message>) -> Tape {
     let (mut virtuals, mut passed) = (0, 0);
     let mut drives = Vec::new();
     for p in &k.partitions {
-        let Some(profile) = k.profile(p.id) else {
+        let Some(profile) = k.devices(p.id) else {
             continue;
         };
         for t in &profile.tape {
