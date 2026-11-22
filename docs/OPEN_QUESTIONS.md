@@ -106,12 +106,15 @@ and add `DEBUG_FS` to its `REQUIRED_N`.
 tracing off and its check holds debugfs off. QS/MC's fragment already
 had both; the kernel pin did not move.
 
-## 6. The QEMU job in CI (NEEDS-CODY)
+## 6. The QEMU job in CI (closed in Phase 5)
 
-`.github/workflows/qemu.yml` is written for a GitHub-hosted runner with
-KVM, as QS/VS's is, and fails with a clear message where the runner has
-none; it then needs a self-hosted runner. Nothing has been pushed, so
-neither `ci.yml` nor `qemu.yml` has run on GitHub.
+`.github/workflows/qemu.yml` runs on GitHub's hosted runners, which have
+KVM (4 processors, 15 GB). One job builds the images and the build tool;
+eight shards run the suites on them side by side, and one more the ISO's
+steps. The first runs found QEMU 8.2 there dropping a monitor command
+sent as it starts (the `sockets` suite's capture), which the harness now
+sends again. The suites on a real QS/VS host or QS/400 stay on the build
+machine: CI has neither system's images.
 
 ## 7. The outbound rule and a packet filter (closed)
 
