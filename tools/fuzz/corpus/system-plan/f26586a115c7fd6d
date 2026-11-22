@@ -1,0 +1,22 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10 [{ slot= 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = backing = "@11A2-P-C2-T1-0&
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlanes = 8m

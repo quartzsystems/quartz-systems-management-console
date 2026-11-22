@@ -1,0 +1,61 @@
+'
+'[[pool.unit]]Jf7??
+'
+system!= "QSHQVS1"
+
+[host]
+name
+'
+system! = "QSib = 131072
+
+[[pHQVS1"
+serial = "10-9F11A2"
+cores = 8
+mocpool]R
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdiskemory_mnb = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 10[[pool]]un= "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name =g 2"
+cores == #POOL1/VD01"g 2"
+cores == #POOL1/VD01" }] }]
+etA2"
+core }] }]
+etA2"
+cores = 8
+memory_mib = 13107:
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741ory_[poo 2"
+corcores == #POOL1/VD01" }] }]
+etA2"
+core }] }]
+etA2"
+cores = 8
+memory_mib = 13107:
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741ory_[poo 2"
+cores == #l]]

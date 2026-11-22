@@ -1,0 +1,30 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmiystem = "QSHQVS1"
+
+[host]
+name =g = "POOL1/VD01" }] }]
+ethernet = backing = serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1 "qsadmiystem = "QSHQVS1"
+
+[host]
+name =g 0737418.4
+
+[[pytes = 1073741824
+ool.unit]]
+location = "U9Q10.V1.9F11A2-P1[[vdisk]]"
+disk = "sdc"
+bytes = 1073741824
+
+[= "@ch
+by = "qsadmiystem = "QSHQVS1"
+
+[host]
+name

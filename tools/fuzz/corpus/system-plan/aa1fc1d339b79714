@@ -1,0 +1,17 @@
+skmodg =+ing00
+sharing = "uncapped"
+weight = 128
+pool = "TESTPOOL"
+
+[partition.profile.memory]
+minimum_mib = 1024
+deg =+ing00
+sharing = "uncapped"
+weight = 128
+pool =sired_mib = 2048
+maximum_mib = 4096
+
+[partition.profile.boot]
+source = "A"
+ipl_type = "unattended"
+console = "partition"

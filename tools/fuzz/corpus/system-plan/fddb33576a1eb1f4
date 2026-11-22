@@ -1,0 +1,105 @@
+schema_verid6"
+bytes = L0"
+ """] """!107374182
+
+[[pool.unit]]
+location = "U9Q10"] """
+vlans 2
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = L0"
+ """] """!1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-tion = "raid6"
+by1824
+
+[[switc`]]
+name = "ETHSW0"
+vlans 2
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = L0"
+ """] """!107374182
+
+[[pool.unit]]
+location = "U9Q10.V[partition.profile.l]]aid6"
+bytes = L0"
+ """] """!107374182
+
+[[pool.unit]]
+location = "U9Q10.V[partition.profile.p24
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-tion = "raid6"
+by1824
+
+[[switc`]]
+name = "ETHSW0"
+vlans 2
+
+[Opool]]
+name = "POOL1"
+protection = "r[pool]]aid6"
+bytes = L0"
+ """] """!107374182
+
+[[pool.unit]]
+location = "U9Q10.V[partition.profile.processors]bytes = L0"
+ """]T1-L0"
+ """] """
+vlans 2
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = L0"
+ """] """!1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-tion = "raid6"
+by1824
+
+[[switc`]]
+name = "ETHSW0"
+vlans 2
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = L0"
+ """] """!107374182
+
+[[pool.unit]]
+location = "U9Q10"] """
+vlans 2
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = L0"
+ """] """!1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-tion = "raid6"
+by1824
+
+[[switc`]]
+name = "ETHSW0"
+vlans 2
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = L0"
+ """] """!107374182
+
+[[pool.unit]]
+location = "U9Q10.V[partition.profile.processors]bytes = L0" """ "182bytes = L0"
+ """] """!1073741824
+
+[[pool.uni

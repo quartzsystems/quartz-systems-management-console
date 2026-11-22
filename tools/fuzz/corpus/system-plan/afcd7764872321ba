@@ -1,0 +1,35 @@
+sc = ={[vdisd]] """18dis] ""d24
+= ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTAP01"
+mib = 100
+
+[[image]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name$= "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+ile]]mode = "d_versfile.pro
+[Fd1A"
+cores = 8[[partition.pro[[poo1
+by = "qsadmin"
+system = "QSHQV[[switch]]S1"
+
+[host]
+name = "QSHQVS1"[[switch]]
+ = 1
+by = "qsao&[l!&&[o&[vdisk]]l!&&[o&o!&&[o&o[&[o&o[[o&o[[vdivdisk]]l!&&[o&o!&&[o&o[&[o&o[[o&o[[vdisk]]l!&&[[o&o[[vdisk]]l!&&[o&[vdisk]]l!&&

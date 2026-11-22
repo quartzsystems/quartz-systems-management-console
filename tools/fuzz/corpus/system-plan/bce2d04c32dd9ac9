@@ -1,0 +1,9 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qSHQVS1"
+
+[host]
+name = "QSHQV2"
+cores = 8
+memory_mib = 1310

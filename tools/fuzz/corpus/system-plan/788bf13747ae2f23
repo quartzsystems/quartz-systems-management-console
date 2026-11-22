@@ -1,0 +1,26 @@
+schema_version = 1
+name = "seed"
+cr
+created = 1by = "qsa[[pool.unit]]F1
+system =n = 1
+name = "sated = 1by = "ksadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8ory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raiol.unit]]
+location = "U9Q10.V1.F1
+system = "QSHQVS1"
+
+[host]
+n"sated = 1by = "ksadmin"
+system = "QSHQVS1"
+
+[host]
+name = "Qame = "QSHQVS1"
+serial = "10-91A2-P

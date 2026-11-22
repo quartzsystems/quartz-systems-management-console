@@ -1,0 +1,25 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadminS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOLܪOw1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2[[pool.unit]]-P1-C2-P1-L0"
+disk = "sdc"
+bytes = 1063741824
+
+[[switch]]
+name = "ET[pool.uniHSW0"
+vlans = [10, 20]
+mtu = 150

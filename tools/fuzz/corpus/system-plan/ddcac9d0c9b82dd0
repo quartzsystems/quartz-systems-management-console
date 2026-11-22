@@ -1,0 +1,41 @@
+schema_version = 1
+name = "seed"
+creat= 1
+by = "qsadminS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "ܪOw1"
+protection = "raid6"
+bytes = 1073741824
+
+[[[[pool.unit]]ocation = "U9Q10.V1.9F11A2[[pool.unit]]-P1-C2-P1-L0"
+disk = "sdc"
+bytes = 10637411072
+
+[[pool]]
+ecti1824
+
+[[pool.[poname = "POOL1"
+pron = "raid6"
+bytes = 10737E1824
+
+[[pool.[poname = "POOL1"
+protection = "raid6"
+bytes = 10737E1824
+
+[[pool.[poolunit]]
+location = "T9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = [

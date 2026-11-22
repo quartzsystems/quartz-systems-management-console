@@ -1,0 +1,41 @@
+sch=[[poomoWe = "dedicated"e-ory_m]_1[[pogl.unt5[ch![{0xrywitch]]ory_m]_1[[pogl.pogl.unt5[ch=[[0x[[vdisk]]/8e[[pools m_8e-ory_m]_1[[ch2[[0xr HQVS1"
+
+[[0xr HQVS1"
+
+[host[host]
+name = [[pools m_8e-ory_m]_1[[ch2[[0xr HQVS1"
+
+[host]"QSHQVS1"
+seri  = 1
+by = "qsadmin"
+sysname = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = 1-T1"]
+
+[[procpool]]
+name = "TESTPOOL" 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[isk]]/8e[[pools m_8e-ory_m]_1[[ch2[[0xr HQVvolume]]
+name = "VTAP01"
+mib = 100
+
+[[image]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+Eame = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 

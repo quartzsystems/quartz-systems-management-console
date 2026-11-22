@@ -1,0 +1,27 @@
+schema_versiosystem =
+
+[[vdisk]]
+pool = "POOL1"
+nam0
+thick = true
+
+[[volume "QSHQVS1"
+
+[n = 1
+name = "seed"
+created = 1
+by = "qsadmiQVS1"
+U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+pool = "POOL1"
+nam0
+thick = true
+
+[[volume]]
+name = "VTe]]
+name

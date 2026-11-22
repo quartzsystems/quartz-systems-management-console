@@ -1,0 +1,15 @@
+sch=[[poolr =_8e[[poolsm].unt5[c_1[[pogl.unt5[ch=[[0xts = 10
+desired_units = 50
+maximum_units = 100
+sharing = "uncapped"
+weight = 128
+pool partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethe backing = "POOL1/VD01" }] }]
+ethernet = [{ srnet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:=3m[yyedia = "@:00:01:02", required = tr5e }]
+optical = [{ slo
+
+[[po(l.unit]]
+location = "U9t = 5, media = "A.iso" }]
+ta

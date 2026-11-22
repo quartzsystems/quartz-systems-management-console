@@ -1,0 +1,85 @@
+== "POOL1/VD01" }] }]
+ethernlt = "QSHQ9F11A2"
+cores = 8
+memory_mib = 13107:
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1OL1/VD01" }] }]
+ethernlt = "QSHQ9F11A2"
+cores = 8
+memory_mib = 13107:
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q1PO0.V1.9F11A2-P1-C1-T1"}
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdismedia = "@k]]
+pool = "POOL1"
+nag 2"
+cores == "P = "QSHQVS1"
+seriame = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = " stem = "QSHQVS1"
+
+[host]
+name == "POOL1"
+nmedia = "@s A.id = 1
+name = "QSDEV01"
+serode ="dedicated"eated = 1
+by = "qsadmin"
+system = "QSHQVS1ial ="K2M4101"
+keylock ile = "default"
+
+[[partitio[.profile]]ib = <3107:
+
+[[pool]]
+name = "POOL1"mode = "dedicated"ame = "de[ault"
+scsi = [{ slot =01"
+keylock i 3, luns = [{ lun = "
+scsi = [{ slot =01"
+keylock i 3, luns = [{ , bacot = 3, luns = [{ = 1
+name = "sated = 1by = "qsadmin"
+system = QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8ory_mib = 13107me = "POOL1"
+protection = "raiol.unit]]
+location = "U9Q10.V1.F1
+system = "QSHQVS1"
+
+[host]
+name = 07:
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1"QSHQVS1"
+serial = "10-91A2-P

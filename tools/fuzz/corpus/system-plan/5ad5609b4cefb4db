@@ -1,0 +1,104 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1e = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot= 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "Umedia = "@11A2-P1-C2-T1-0&
+disk = "sdc"
+bytes = 10737[[switch]]41824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10: 20]
+mtid = 1
+name = "QSDEV01"
+serialmode = "dedicated" = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot [{ lun = 0, backing tition= "POOL1/VD0" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", reqocation = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sqc"
+bytds = 1073741824
+
+[[switch]]
+name"ion = 1
+.ame schema_version = er3ion = 1
+.aema_ver3ion[partition.profile.processors] = 1
+.ame < mma_versio = 1
+.ame < "sema_ver3ion = 1
+.ame < media = "1
+.ame < "sema_ver3ion = 1
+.ame < media =@sion73741824
+[[p[[partition.profile]]dia = "@V1.9F11A2-P1-C2-T1-[[partition]]L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"}
+
+[[procpool]]
+name = "TESlan = 10, mac = "02				@		e = "POOL1"
+protection = "raid6"
+bytes ool.unit]]dia = "VTAP01" }]
+physical_io = [{ OL1"
+procation se= 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sqc"
+bytds = 1073741824
+
+[[switch]]
+name"ion = 1
+.ame schema_an = 10, mac = "02:51:53:00:01:02", required = true }]
+opticalversion = er3ion = 1
+.aema_ver3ion = 1
+.ame < mma_versio = 1
+.ame < "sema_ver3io
+disk = "sqc"
+bytds = 1073741824
+
+[[switch]]
+name"ion = 1
+.ame schema_an = 10, mac = "02:51:53:00:01:02", required = true }]
+opticalversion = er3ion = 1
+.aema_ver3ion = 1
+.ame < mma_versio = 1
+.ame < "sema_ver3ion = 1
+.ame < media = "1
+.ame < "sema_ver3ion = 1
+.ame < media =@sion73741824
+[[pool.unit]]locationmedia = "@V1.9F11A2-P1-C2-T1-[[partition]]L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"}
+
+[[procpool]]
+name = "TESlan = 10, mac = "02				@		X[p@		ool]]

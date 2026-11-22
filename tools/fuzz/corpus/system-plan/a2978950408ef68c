@@ -1,0 +1,43 @@
+schema_version = seed"
+#reated
+
+[[switch]]
+name = "ETHSW0"
+vlabacking = ns = [10,  = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+nambacking = e = "QSA2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = -9F11A2"
+cores = 8
+memory_mib = 13:07 = "QSHQVS1"
+serial = =_8e-"raid6"
+bytes = 10737418pool.unit]]
+location = chema_v
+memory_mib = 13:07 = "QSHQVS1"
+serial = =_8e-_ersion = 1
+b= [10, 20ytes = 1.unit]]bytes 0-9F11A2"
+cores = 8
+memory_mib = 13:07 = "QSHQVS1"
+serial = =_8e-_1_1[[poo0,  = 1
+by = "qsadmin"
+sy` 1
+[h=0= 8
+memorot]
+name =g = "POOL1/VD01"= "qsadmin"
+sy` 1
+[h=0-9F11A2"
+cores = 8
+memorot]
+name =g  QSHQVS1y = "qsadmig"
+system = "QSHQVS1"U
+tl =0-ed ` 1QVS1"U
+tl =0-ed ` 1
+[hot 8
+mschema_version 

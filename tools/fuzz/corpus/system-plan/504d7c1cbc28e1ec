@@ -1,0 +1,28 @@
+sch=[[pools =_8e[[pools =_8e-ory_m]_1[[poschema_version = _sch=[[pools .unt5[ch=[[0x =_8e-ory_m]_1[[ch=[[0xry_s8e-ory_m]_1[[ch=[[0[[0xry_sxry_sch backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, swit[[partition.profile]]ch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ }]
+tape = [{ slot = 6, media = "VTAP01" }]xry_s8e-ory_m]_1[[ch=[[0[[0xry_sxry_sch backing
+physical_i" }]xry_s8e-ory_m]_1[[ch=[[0[[0xry_sxry_sch backing
+physical_o = [{ locataon = "E9Q10.V1.[[pool.unit]]9F11A2-P1-C3" }]
+
+[partition.profile.proces0ors]
+mode = "shared"
+minimum = 1
+desired = 1
+maximum = 2
+minis = 50
+maximum_units = 100
+sharing = "uncapped"
+weight = 128
+pool = "TESTPOOL"
+
+[partition.profile.memory]
+minimum_mib = 10ry_m]_1[[ch=[[0[[0xry_sxry_sch backing
+p24
+desired_mib = 2048
+maximum_mib = 4096
+
+[partition.profile.boot]
+source = "A"
+ipl_type = "unattended
+console = "partition"

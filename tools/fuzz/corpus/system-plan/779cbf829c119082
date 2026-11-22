@@ -1,0 +1,26 @@
+schema_versio= "seed"
+created =L1"
+protection = "raid6"
+bytes = 1073741:24 1
+n = 1
+name = "seed"
+created =L1"
+protection = "raid6"
+bytes = 1073741:24 1
+by = "qsadmin"
+system = "QSHQVS = "raid6"
+bytes = 1073741:24 1
+by = "qsad1"
+
+[host]
+namel = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]qname = "POOL1"
+protection = "raid6"
+bytes = 1073741:24
+
+[[pool.udefault"
+scsi = [nip]]
+locatio

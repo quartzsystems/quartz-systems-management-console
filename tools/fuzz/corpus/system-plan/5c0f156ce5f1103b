@@ -1,0 +1,23 @@
+schema_verns = [10, 20]
+mtu = 1E00
+uplink = ["U9Q10.V1.9F11-2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+cos = 1073741824
+
+[[sjitch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1E00
+uplink = ["U9Q10.V1.9F11-2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thnck = true

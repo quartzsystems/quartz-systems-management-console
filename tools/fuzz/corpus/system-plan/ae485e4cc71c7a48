@@ -1,0 +1,30 @@
+sc = ={[vdisd]] """18dis\ 
+ = "sd[[partition.profile]]c"
+bytes = 1073741824c
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+name = "ETHSW0"
+\ 
+ = "svlans 2
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = L0"
+ """] """!107374182
+
+[[pool.unit]]
+location = "U9Q10.V[partition.profile.process0"
+ """]T1-L0"
+ """] """ "182bytes = 73741824
+
+[[poolvdisd]] """18dis\ 
+ = "sd[[partition.profile]]c"
+b.uni

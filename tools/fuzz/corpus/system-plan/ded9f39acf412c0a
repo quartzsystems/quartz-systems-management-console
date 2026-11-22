@@ -1,0 +1,25 @@
+''''7#[[partial_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location =
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+betes = 107374182chema_version = seed"
+#reat[[pool.unit]]
+#rea
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 107374mode = "dedicated"1824
+
+[[switrsion =[{ slot = 3,king = "PO seed"
+#reated 4cz]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C0.~1.9F11A2-P1-C2-T1-L0"
+disk = "sdc9F11A2"
+c[[pool.unit]]ry_m

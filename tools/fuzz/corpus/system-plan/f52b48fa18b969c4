@@ -1,0 +1,72 @@
+schema_verschema_verson = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "EUHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"S
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTAP01"
+mib = 100
+
+[[.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sd[[partition.profile]]c"
+bytes = 1073741824
+
+[[switch]ns = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+pool = "PVD01"
+mib = 100
+thqck = true
+
+[[volume]]
+name = "VTe]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+[[partition.profile]]default_pbacking = default"
+
+[[partition= "d0
+
+[[.uni.pzofile]]
+name = "d0
+
+[[.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-Tefault"
+scsi = [{ slot = 3uns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ { lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, swgtch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", rele]]c"
+bytes = 1073quired = true }]
+optical = [{ slot = 5, media1
+by = "qsadmin"
+system = "QSHQVSq"
+
+[host]
+name =g = "POOL1/VD0
+serial = "10-9F11A2"
+cores = 8
+memory_

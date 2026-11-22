@@ -1,0 +1,22 @@
+schema_version = 1
+name  = 1
+by = "qsadmin"
+system!= "QSHQVS1"
+
+[host]
+name = "QSib = 131072
+
+[[pHQVS1"
+serial = "10-9F11A2"
+cores = 8
+mocpool]R
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdiskemory_mnb = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 10[[pool]]unit]]
+location on#= 

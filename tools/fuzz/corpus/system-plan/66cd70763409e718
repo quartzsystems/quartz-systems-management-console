@@ -1,0 +1,12 @@
+schema_verschema_verson = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vl = [10, 20]
+mtu = 1500
+uplink = [2U9Q10.V1.9F11A2-P1-C1-T1"a
+
+[[procpool]]
+name = ''''''a_version = ''''''

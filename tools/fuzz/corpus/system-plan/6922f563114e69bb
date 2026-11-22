@@ -1,0 +1,23 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 13107#[#[[tion]2
+
+[[poom]]
+name = "POOL1"
+protection = "raid6"
+ction = "raid6"
+bytes =07#[#[[tion]2
+
+[[p 1073741824
+
+by5temedia = "@741824
+
+[[toop''7#[p''7#''[77#p''7#[p'p''7#''[7#p''7#[#[[tion]4'5

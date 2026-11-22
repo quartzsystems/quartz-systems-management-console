@@ -1,0 +1,26 @@
+schema_version =ЛbK 1
+name = "seed"
+crmode = "dedicated"eated = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name =g 2"
+cores == #POOL1/VD01"g 2"
+cores == #POOL1/VD01" }] }]
+etA2"
+core }] }]
+etA2"
+cores = 8
+memory_mib = 13107:
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741ory_[poo 2"
+cores == #l]]

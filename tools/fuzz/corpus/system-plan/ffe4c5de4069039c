@@ -1,0 +1,44 @@
+sch=[[pools =_8e[[pools =_8e-ory_m]_1_m]_1[[pool.unhtsch=[[pools =_8e[[pools =_8e-ory_m]_1[[pool.pool.unhtsch=[[pounry_m]_1[[pool.unhtsch=[[p =_8e-ory_m]_1_m]_1[[pool.unhtsch=[[pools =_8e[[poools =_8e[[pools =_8e-ory_ml = "10-9F11A2"
+cores = 8
+memory_mib = 131media = "@072
+
+[[pool]]
+name =protection = "raid6"
+betes = 107374182chema_protection = "raid6"
+bytes = 10737418pool.unit]]
+location = chema_version = 1
+b= [10, 20ytes = 1.unit]]bytes = 1073741824
+
+[[switch]a
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 13:072
+
+[[pool]]
+name = "PObacking = ction = "raid6"
+b= [10, 20[[pool]].unit]]bytes = 1073741824
+
+[[switch]a
+name = "ETH073741824
+
+[[pool.unit]ion = "U9Q10.V1.9F1122-P1-C2-T1-L0"
+[[pool.unit]]bytes = 1073741824
+
+[[switch]a
+ar[[partit[[switch]]ion]]tition]]
+id = 1
+name = "QSDEV01"
+ser =_8e[[poools =_8e[[pools =_8eial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "defaultbacking = { slot = 3uns = [{ lun =mode = "dedicated" 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ s, vlan = 10, mac = "02:51:53:00

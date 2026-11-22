@@ -1,0 +1,11 @@
+schema_version = 1
+name = "seed"
+created = 1
+by =protection =  "qsadmin"
+system = media = "@"[[pool.unit]]QSHQVS1"
+
+[host]
+[[pool.unit]]name = "QSHQVS"
+serial = "1|j0-9F11A2"
+cores = 8
+memory_mib = 1310

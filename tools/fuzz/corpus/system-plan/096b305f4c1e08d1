@@ -1,0 +1,30 @@
+schema_versioN =eated
+
+[[switch]][[pool.unit]]
+name = "ETHSW0"
+vlans = [10,  = 1
+by = "Wsadmin"
+sy` 1
+[hot]
+name =g = "POOL1/VDQVS1"U
+tl =0d"POOL1a = "qsadmin"ted
+
+[[switch]][[poolnet m = "QSHQVS1"U
+tl =0d"POOL1a = "qsadmin"te=vers.01" QSHQVS1y = "qsadmin"
+ystem = backing = "QSHQVS1"U
+tl =0d"POOL1a = "qsadmin"ted
+
+[[switch]][[pool.un/VD41"}] }]
+ethernet m = "QSHQVS1"U
+tl =0d"POOL1a = "qsadmin"te=version =eated
+
+[[switch]][[pool "QSHQVS1"
+serialrhost]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"

@@ -1,0 +1,7 @@
+schema_version = 1
+name =[#reat[[pool.unit]]
+#rea
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+by[10,_20]
+mtu = 1500

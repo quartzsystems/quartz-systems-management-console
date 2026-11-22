@@ -1,0 +1,65 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+mschema_version = 2
+
+[[pool]]
+name = "
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytprotection = es = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[ppocpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[par]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"}
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vd[[pool.unit]]ismedia]] """1824
+
+[

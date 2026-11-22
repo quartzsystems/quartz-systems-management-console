@@ -1,0 +1,12 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name =g = "POOL1/VD01" }] }]
+ethernet = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_

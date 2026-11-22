@@ -1,0 +1,24 @@
+schema_vers)on = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[hot]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib [[pool.unit]]= 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sd[[partition.prof, vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ e = "POOL1"
+protection = "raid6"
+bytes = 10[[pool]]unit]]
+location on#=[partition.profile.processors] 

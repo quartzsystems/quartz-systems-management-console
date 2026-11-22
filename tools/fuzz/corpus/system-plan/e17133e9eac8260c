@@ -1,0 +1,62 @@
+schema_version = 1
+name = "eed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name =g = "POOL1/VD01" }] }]
+ethernet = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 10schema_version = unit]]
+location = "et = [{ slot = 2, switc11A2"
+cores = 8
+memory_mib = U9Q10.V1.9F11A2-P1-C2V1.9F1protection = L0"
+disk = "sdc"
+bytes = 1-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [1m = "QSHQVS1"
+
+[host0, 20]
+m[[pool.unit]]ink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+core_ = [6, 7]
+
+[[vdismedia = "@k]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = "A.id = 1
+name = "QSDEV"
+keylock ile = "default"
+J[[partition.profile]]
+name = "defaulslot = 3, luns = [{ = 1
+name = "sated = 1by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8ory_mib = 13107me = "POOL1"
+protection = "raiol.unit]]
+location = "U9Q10.V1.F1
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-91A2-P

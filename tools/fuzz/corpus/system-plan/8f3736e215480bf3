@@ -1,0 +1,494 @@
+schema_version =ЛbK 1
+name = "seed"
+crmode = "dedicated"eated = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name =g 2"
+cores == "POOL1/VD01" }] }]
+ethernet = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 13107:
+
+[[pool]]
+name = "POOL backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = tr5e }]
+optical = [{ slot = 5, media = "A.iso" }]
+tape = [{ slot = 6, medya = "VTAP01" }]
+physical_io = [{ location = "U9Q10.V1.9F11A2-P1-C3" }]
+
+[partitV1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL" 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTAP01"
+mib = 100
+
+[[image]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "0, backing = "PO.memory]
+minimum_mib = 1024
+desired_mib = 2048
+mK2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, lu{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:=3m[yyedia = "@:00:01:02", required = tr5e }]
+optical = [{[[partition.profile]].iso" }]
+tape = [{ slot = 6, medya = "VTAP01" }]
+p[[pool.unit]]h1"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = tr5e }]
+optical = [{ slot = 5, media = "A.iso" }]
+tape = [{ slot = 6, medya = "VTAP01" }]
+physical_io = [{ location = "U9Q10.V1.9F11A2-P1-C3" }]
+
+[partitV1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL" 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTAP01"
+mib = 100
+
+[[image]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "0, backing = "PO.memory]
+minimum_mib = 1024
+desired_mib = 2048
+mK2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, lu{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:=3m[yyedia = "@:00:01:02", required = tr5e }]
+optical = [{[[partition.profile]].iso" }]
+tape = [{ slot = 6, medya = "VTAP01" }]
+physical_io = [{ location = "U9Q10.V1.9F11A2-P1-C3" }]
+
+[partition.profile.processors]
+mode = "shared"
+minimum = 1
+desired = 1
+maximum = 2
+minimum_units = 10
+desired_units =m_units = 100
+sharing = "uncapped"
+weight = 128
+pool = "TESTPOOL"
+
+[partition.profile= "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "PO.memory]
+minimum_mib = 1024
+desired_mib = 20
+tapeot = 6, medya = "VTAP01" }]vlans = [10, 20]
+mt 107374mode ="dedicated"1824
+
+[[swi "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame 0 "se mtc11edia =@ssema_ver3ion = 1
+.aema_ver3ion = 1
+.ame < mma_versio = 1
+1
+.ame < "sema_ver3ionio = 1
+.ame .ame < "se mediedra =@sion = 1
+.mode = "dedia = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio . 1
+.ame 0 "se media = "e < medraode ="dedicated"1824
+
+[[swi "1
+.ame < "sot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:=3m[yyedia =p"@:00:01:02", required = tr5e }backing = = [{ slo
+
+[[pool.unit]]
+location = "U9t = 5, media = "A.}so" }]
+tapeot = 6, medya = "VTA:51:=3m[yyedia = "@:00:01:02", required = tr5e }backing = = [{ slo
+
+[[pool.unit]]
+location = "U9t = 5, media = "A.}so" }]
+tapeot = 6, medya = "VTAP01" }]vlans = [10, 20]
+mt 107374mode ="dedicated"1824
+
+[[swi "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame 0 "se mtc11edia =@ssema_ver3ion = 1
+.aema_ver3ion = 1
+.ame < mma_versio = 1
+1
+.ame < "sema_ver3ionio = 1
+.ame .ame < "se mediedra =@sion = 1
+.mode = "dedia = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se me[[pool.unit]] < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio . 1
+.ame 0 "se media = "e < medraode ="dedicated"1824
+
+[[swi "1wi "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame 0 "se mtc11edia =@ssema_ver3ion = 1
+.aema_ver3ion = 1
+.ame < mma_versio = 1
+1
+.ame < "sema_ver3ionio = 1
+.ame .ame < "se mediedra =@sion = 1
+.mode = "dedia = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio . 1
+.ame 0 "se media = "e < medraode ="dedicated"1824
+
+[[swi "1
+.ame < "sot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:=3m[yyedia =p"@:00:01:02", required = tr5e }backing = = [{ slo
+
+[[pool.unit]]
+location = "U9t = 5, media = "A.}so" }]
+tapeot = 6, medya = "VTA:51:=3m[yyedia = "@:00:01:02", required = tr5e }backing = = [{ slo
+
+[[pool.unit]]
+location = "U9t = 5, media = "A.}so" }]
+tapeot = 6, medya = "VTAP01" }]vlans = [10, 20]
+mt 107374mode ="dedicated"1824
+
+[[swi "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame 0 "se mtc11edia =@ssema_ver3ion = 1
+.aema_ver3ion = 1
+.ame < mma_versio = 1
+1
+.ame < "sema_ver3ionio = 1
+.ame .ame < "se mediedra =@sion = 1
+.mode = "dedia = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio . 1
+.ame 0 "se media = "e < medraode ="dedicated"1824
+
+[[swi "1
+.ame < "sema_ver3i =@sinn = 1
+.mode = "dedicatmd"ame < "sesema_ver3ionio = 1
+.ame .ame < "se mediedra =@sion = 1
+.mode = "dedia = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame 0 "se media = "e < medra =@sion = 1
+.mode "e < medra =@sion = 1
+.mode = "dedicatmd"ame"
+serial = "10-9F11Adia = "A.}so" }]
+tapeot = 6, medya = "VTAP01" }]vlans = [10, 20]
+mt 107374mode ="dedicated"1824
+
+[[swi "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.= 8
+memory_mib = 131072
+
+[[pool]]
+name = "OOL1"
+protection = "raid6"
+bytersi = "ksadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raiol.unit]]
+location =ediedra =@sion = 1
+.mode = "dedia = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio . 1
+.ame 0 "se media = "e < medraode ="dedicated"18
+desired_units = 50
+maximum_units = 100
+sharing = "uncapped"
+weight = 128
+pool = "TESTPOOL"
+
+[partition.profile= = "K2M4101"
+keylock = "normal"
+default_profile = "d7ion = 1
+.a = 1
+.am "se mediaefault"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:=3m[yyedia =p"@:00:01:02", required = tr5e }backing = = [{ slo
+
+[[pool.unit]]
+location = "U9t = 5, media = "A.}so" }]
+tapeot = 6, medya = "VTA:51:=3m[yyedia = "@:00:01:02", required = tr5e }backing = = [{ slo
+
+[[pool.unit]]
+location = "U9t = 5, media = "A.}so" }]
+tapeot = 6, medya = "VTAP01" }]vlans = [10, 20]
+mt 107374mode ="dedicated"1824
+
+[[swi "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame 0 "se mtc11edia =@ssema_ver3ion = 1
+.aema_ver3ion = 1
+.ame < mma_versio = 1
+1
+.ame < "sema_ver3ionio = 1
+.ame .ame < "se mediedra =@sion = 1
+.mode = "dedia = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio . 1
+.ame 0 "se media = "e < medraode ="dedicated"1824
+
+[[swi "1
+.ame < "sot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:=3m[yyedia =p"@:00:01:02", required = tr5e }bsema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio . 1
+.ame 0 "se media = "e < medraode ="dedicated"18
+desired_units = 50
+maximum_units = 100
+sharing = "uncapped"
+weight = 128
+pool = "TESTPOOL"
+
+[partition.profile= = "K2M4101"
+keylock = "normal"
+default_profile = "d7ion = 1
+.a = 1
+.am "se mediaefault"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:=3m[yyedia =p"@:00:01:02", required = tr5e }backing = = [{ slo
+
+[[pool.unit]]
+location = "U9t = 5, media = "A.}so" }]
+tapeot = 6, medya = "VTA:51:=3m[yyedia = "@:00:01:02", required = tr5e }backing = = [{ slo
+
+[[pool.unit]]
+location = "U9t = 5, media = "A.}so" }]
+tapeot = 6, medya = "VTAP01" }]vlans = [10, 20]
+mt 107374mode ="dedicated"1824
+
+[[swi "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame 0 "se mtc11edia =@ssema_ver3ion = 1
+.aema_ver3ion = 1
+.ame < mma_versio = 1
+1
+.ame < "sema_ver3ionio = 1
+.ame .ame < "se mediedra =@sion = 1
+.mode = "dedia = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio . 1
+.ame 0 "se media = "e < medraode ="dedicated"1824
+
+[[swi "1
+.ame < "sot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:=3m[yyedia =p"@:00:01:02", required = tr5e }backing = = [{ slo
+
+[[pool.unit]]
+location = "U9t = 5, media = "A.}so" }]
+tapeot = 6, medya = "VTA:51:=3m[yyedia = "@:00:01:02", required = tr5e }backing = = [{ slo
+
+[[pool.unit]]
+location = "U9t = 5, media = "A.}so" }]
+tapeot = 6, medya = "VTAP01" }]vlans = [10, 20]
+mt 107374mode ="dedicated"1824
+
+[[swi "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame 0 "se mtc11edia =@ssema_ver3ion = 1
+.aema_ver3ion = 1
+.ame < mma_versio = 1
+1
+.ame < "sema_ver3ionio = 1
+.ame .ame < "se mediedra =@sion = 1
+.mode = "dedia = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se me[[pool.unit]] < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio . 1
+.ame 0 "se media = "e < medraode ="dedicated"1824
+
+[[swi "1wi "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame 0 "se mtc11edia =@ssema_ver3ion = 1
+.aema_ver3ion = 1
+.ame < mma_versio = 1
+1
+.ame < "sema_ver3ionio = 1
+.ame .ame < "se mediedra =@sion = 1
+.mode = "dedia = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio . 1
+.ame 0 "se media = "e < medraode ="dedicated"1824
+
+[[swi "1
+.ame < "sot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:=3m[yyedia =p"@:00:01:02", required = tr5e }backing = = [{ slo
+
+[[pool.unit]]
+location = "U9t = 5, media = "A.}so" }]
+tapeot = 6, medya = "VTA:51:=3m[yyedia = "@:00:01:02", required = tr5e }backing = = [{ slo
+
+[[pool.unit]]
+location = "U9t = 5, media = "A.}so" }]
+tapeot = 6, medya = "VTAP01" }]vlans = [10, 20]
+mt 107374mode ="dedicated"1824
+
+[[swi "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame 0 "se mtc11edia =@ssema_ver3ion = 1
+.aema_ver3ion = 1
+.ame < mma_versio = 1
+1
+.ame < "sema_ver3ionio = 1
+.ame .ame < "se mediedra =@sion = 1
+.mode = "dedia = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio . 1
+.ame 0 "se media = "e < medraode ="dedicated"1824
+
+[[swi "1
+.ame < "sema_ver3i =@sinn = 1
+.mode = "dedicatmd"ame < "sesema_ver3ionio = 1
+.ame .ame < "se mediedra =@sion = 1
+.mode = "dedia = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame 0 "se media = "e < medra =@sion = 1
+.mode = "dedicatmd"ame < "seed"
+S1"
+se.ial ="
+n%rial1

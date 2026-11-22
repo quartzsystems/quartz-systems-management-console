@@ -1,0 +1,16 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadm[host\
+name = "QSHQVS1"
+serial = "10ema_version = 1
+name = "seed"
+created = 1
+by = "qsadm[host\
+name-9F11A2"
+cores = 8
+memory_mib = 1072
+
+[[pool]]
+name = "POOL1"
+protection = "raiol.u[[partition.profile]]10.V1.9F11A2-P

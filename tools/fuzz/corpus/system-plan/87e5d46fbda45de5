@@ -1,0 +1,19 @@
+s1-L0"
+[[pool.uni.]]bytes = 1073741824
+
+[[swchema_version = 1
+name = "sebackinged"
+created = 1by "U9Q10.V1.9F1122-P1-C2-T1-L0"
+[[pool.uni.]]bytes = 1073741824
+
+[[switch]a
+name = "ETV1.9F1122-P1-C2-TY-L073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F1122-P1-C2-T1-L0"
+[[pool.uni.]]bytes = 1073741824
+
+[[switch]a
+name = "ETHSW0"
+vlans = [10, 20]
+1500

@@ -1,0 +1,25 @@
+schema_version = 1
+nqme = "seed"
+
+name = "default"
+cores = [6, 7]
+
+[["
+scsi = [{ slot = 3, lunscreated = 1
+by = "qsmdmin"
+system = "QSHQVS1"
+[host]
+name = xQSHQVS1"
+seefault"
+
+[[partition.profile]]
+name = "default"
+cores = [6, 7]
+
+[["
+scsi = [{ slot = 3, luns = [{ lun = 0,OL1/VD01" }] }]
+ethernet = [{ slot = 2, switc11A2"
+cores = 8
+memory_mib = 131072
+
+[[

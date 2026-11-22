@@ -1,0 +1,21 @@
+schema_version"= 1
+name = "seeprofile = "default"
+
+[[partition.pzofile]]
+name = "default"
+scsi = [{ slot = 3uns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ { lun = 0, backing = "POOL1/VD01" }] }]
+eth = [{ { lun = 0, backing = "POOL1/VD01" }] }]
+etherneernet = [{ slot = 2, swgtch = "ETHSW0", vlan =3uns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+etherne0 = [{ { lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, swgtch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", rele]]c"
+bytes = 1073quired = true }]
+optical = [{ slot = 5, media1
+by = "qsadmin"
+system = "QSHQVSq"
+
+[host]
+name =g = "POOL1/VD0
+serial = "10-9F11A2"
+cores = 8
+memory_

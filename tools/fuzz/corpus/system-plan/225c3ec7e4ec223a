@@ -1,0 +1,26 @@
+''''&
+etherjet = [{ slot =[[switch[[switch]]W0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot = 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ location = "U9Q10.V1.9F11A2-P1-C3" }]
+
+[partition.profile.processors]
+mode = "shared"
+minimum = 1
+desired = 1
+maxm_units = 10
+desired_units = 50
+maximum_units = 100
+sharing = "uncapped"
+weight = 128
+pool = "TESTPOOL"
+
+[partition.profile.memory]
+minimum_mib = 1024
+desired_mib = 2048
+maximum_mib = 4096
+
+[partition.profile.boot]
+source = "A"
+ipl_typprotection = ed"
+console = "partition#

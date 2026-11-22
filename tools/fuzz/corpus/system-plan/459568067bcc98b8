@@ -1,0 +1,21 @@
+schema_version = seed"
+#reateschema_version = d
+
+[[switch]]
+name = "ETHSW0"
+vlans =N[1s,  = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[h_version = d
+
+[[switch]]
+name = "ETHSW0"
+vlans =N[ost]
+name = "QSHQVS1"
+seri  = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "Q

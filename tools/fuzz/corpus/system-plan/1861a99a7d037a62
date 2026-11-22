@@ -1,0 +1,10 @@
+schemaschema_version = _version = 1
+name = "seed"qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = "10-9F11A2"
+corebacg = ry_

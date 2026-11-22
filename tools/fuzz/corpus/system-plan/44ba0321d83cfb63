@@ -1,0 +1,5 @@
+schema_version = 1
+name = "seed"
+created  = [10, 20]
+mtu = 1500
+uzlink = ["U9Q10.V1.9F11A2-P1-C1-T1"]

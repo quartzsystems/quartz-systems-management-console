@@ -67,6 +67,14 @@ fn mgmt_peer(data: &[u8]) {
     mgmtd::system::fuzzing::peer(data);
 }
 
+/// An imported system plan: read strictly, written and read back the
+/// same, validated and its steps made.
+fn system_plan(data: &[u8]) {
+    plan::fuzz(data);
+}
+
+const PLAN: &[u8] = b"schema_version = 1\nname = \"seed\"\ncreated = 1\nby = \"qsadmin\"\nsystem = \"QSHQVS1\"\n\n[host]\nname = \"QSHQVS1\"\nserial = \"10-9F11A2\"\ncores = 8\nmemory_mib = 131072\n\n[[pool]]\nname = \"POOL1\"\nprotection = \"raid6\"\nbytes = 1073741824\n\n[[pool.unit]]\nlocation = \"U9Q10.V1.9F11A2-P1-C2-T1-L0\"\ndisk = \"sdc\"\nbytes = 1073741824\n\n[[switch]]\nname = \"ETHSW0\"\nvlans = [10, 20]\nmtu = 1500\nuplink = [\"U9Q10.V1.9F11A2-P1-C1-T1\"]\n\n[[procpool]]\nname = \"TESTPOOL\"\ncores = [6, 7]\n\n[[vdisk]]\npool = \"POOL1\"\nname = \"VD01\"\nmib = 100\nthick = true\n\n[[volume]]\nname = \"VTAP01\"\nmib = 100\n\n[[image]]\nname = \"A.iso\"\n\n[[partition]]\nid = 1\nname = \"QSDEV01\"\nserial = \"K2M4101\"\nkeylock = \"normal\"\ndefault_profile = \"default\"\n\n[[partition.profile]]\nname = \"default\"\nscsi = [{ slot = 3, luns = [{ lun = 0, backing = \"POOL1/VD01\" }] }]\nethernet = [{ slot = 2, switch = \"ETHSW0\", vlan = 10, mac = \"02:51:53:00:01:02\", required = true }]\noptical = [{ slot = 5, media = \"A.iso\" }]\ntape = [{ slot = 6, media = \"VTAP01\" }]\nphysical_io = [{ location = \"U9Q10.V1.9F11A2-P1-C3\" }]\n\n[partition.profile.processors]\nmode = \"shared\"\nminimum = 1\ndesired = 1\nmaximum = 2\nminimum_units = 10\ndesired_units = 50\nmaximum_units = 100\nsharing = \"uncapped\"\nweight = 128\npool = \"TESTPOOL\"\n\n[partition.profile.memory]\nminimum_mib = 1024\ndesired_mib = 2048\nmaximum_mib = 4096\n\n[partition.profile.boot]\nsource = \"A\"\nipl_type = \"unattended\"\nconsole = \"partition\"\n";
+
 const PAYLOAD: &[u8] =
     b"QSMCPAY1console QSHQMC1\nrelease V1R0M0\nbuild 1\nmade 1\n\n\x00\x0fstate/host.toml\x00\x00\x01\xa4\x00\x00\x00\x03abc";
 
@@ -156,6 +164,27 @@ pub static TARGETS: &[Target] = &[
             b"format = 1\nsequence = 42\ngenerated = 1\n\n[[group]]\nname = \"C26290110\"\nkind = \"cumulative\"\n# signature 00\n",
         ],
         dict: &[b"# signature ", b"[[release]]", b"[[group]]", b"sequence = ", b"stream = ", b"update_sha256", b"updates_from"],
+        max_len: 64 * 1024,
+    },
+    Target {
+        name: "system-plan",
+        what: "an imported system plan: its strict reader, writer, validation and steps",
+        run: system_plan,
+        seeds: &[PLAN],
+        dict: &[
+            b"schema_version = ",
+            b"[[partition]]",
+            b"[[partition.profile]]",
+            b"[[pool]]",
+            b"[[pool.unit]]",
+            b"[[switch]]",
+            b"[[vdisk]]",
+            b"[partition.profile.processors]",
+            b"mode = \"dedicated\"",
+            b"backing = ",
+            b"media = \"@",
+            b"protection = ",
+        ],
         max_len: 64 * 1024,
     },
     Target {

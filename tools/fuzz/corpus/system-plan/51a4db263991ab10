@@ -1,0 +1,28 @@
+schema_version = seed"
+#reated = 1
+by = "qsadmin"rsionost]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131media = "@072
+
+[[pool]]
+name =protection = "raid6"
+betes = 107374182chema_protection = "raid6"
+bytes = 10737418pool.unit]]
+location =[[pool]] chema_version = 1
+b= [10, 20ytes = 1.unit]]bytes = 1073741824
+
+[[switch]a
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 13source = "A"
+ipl_type = "unattended"
+console = "partition"

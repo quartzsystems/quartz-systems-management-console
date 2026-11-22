@@ -1,0 +1,14 @@
+schema^version =~ 1
+name = "schem[[partition]]ib = 100
+thick = true
+
+[[volume]]
+name(= "VTe]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile == '''mion = '''''''a_versi'''

@@ -1,0 +1,21 @@
+schen = 072
+
+[[pool]ma_version= 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+c = 072
+
+[[pool]]
+name = "POOL1"
+protection = "raiol.unital = "10-9F11A2"
+coresschema_version = 072
+
+[[pool]]
+name = "PO]]ress
+location = "U9Q10.V1.9F11A2-P

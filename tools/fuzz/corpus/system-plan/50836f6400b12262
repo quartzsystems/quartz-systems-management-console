@@ -1,0 +1,63 @@
+'
+
+[[poo[{ slot = 2, switc11A2"
+cores = 8
+memory_mib =SHQVS "m = "QSHQV[[switch]]S1"
+
+= "QSHQVS1"[[switcmedia = "@y = 1"
+tition.profile.pro
+[F11A2"
+cores = 8[[partition.profile]]mode = "d_version e"72
+
+profile.pro
+[F11A"
+cores = 8[[partition.pro[[poo1
+by = "qsadmin"
+system = "QSHQV[[switch]]S1"
+
+= "QSHQVS1"[[switch]]
+ = 1
+by = "qsadmin"
+system = "QSHQVS1"
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = [[partition]]= 131072
+
+[[poo[{ slot = 2, switc11A2"
+cores = 8
+memory_mib = [[pool]].9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+byths =
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F1isk]]Q= 131072
+
+[[poo[{ slot = 2, sw1A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+core_ = [6, 7]
+
+[[vdismedia = "@k]]
+pool = "ame = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = "A.id = 1
+name = me = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mi"
+cores = 8
+memorb = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bpool.udefault"
+scsi = [nit]]
+locatio

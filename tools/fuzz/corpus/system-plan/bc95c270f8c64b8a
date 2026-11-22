@@ -1,0 +1,51 @@
+schema_version = 1
+name = "seed"
+creats = 8
+memory_mibed = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pooSTPotectionry_mib = 131072
+
+[,namemmory_mib = OOL"
+cores = [6, 7]
+,namemode = "dedicated"ion y_mib = 131072
+
+[,namemode = "de "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[
+nam 131072
+
+[
+name = "POOL1"
+protee = "POOL1"
+protectionry_mib = 131072
+
+[,namemmory_mib = 131072
+
+[
+nam 131072
+
+[
+name = "POOL1"
+protee = "POOL1"
+protectionry_mib = 131072
+
+[,namemode = "dedicated"ion = "raid6"
+byt[[switch]]aid6"
+bytes = 1073741824
+
+[[pool.

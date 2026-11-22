@@ -1,0 +1,67 @@
+sc = ={[vdisdtion.profilschema_version ]] """18eis] [partition.profilsch
+memorot]
+name =g  QSHQVS1y = "qsadmin"
+system = "QSHVS1"U
+tl =0-9F11Aed ` 1
+[hot]
+name =g = "POOL1/VD41" Q"seed"
+crmode ="dedicated"eated = 1
+by = "qsadmin"
+system = "QSHQVS1
+
+[host]
+name =g 2"
+cores == "POOL1/VD01" }] }]
+ethernet = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 13107:
+
+[[poo "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q1PO0.V1.9F11A2-P1-C1-T1"}
+
+[[procpESTPOOL"
+cores = [6, 7]
+
+[[vdismedia = "@k]]
+pool = "POOL1"
+nag 2"
+cores == "P =s_ ""d24
+
+schema_vschema_version = ebackin "QSHQVS1"
+seriame = "VD01"
+miX = 100
+thick = true
+ "A.id = 1
+name = "QSDEV01"
+serial ="K2M] """!1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-tion = "raid6"
+by1824
+
+[[switc`]]
+name = "ETHSW0"
+vlans 2
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = L0"
+ """] """!107374182
+
+[[pool.unit]]
+location = "U9Q10.V[partition.profile.processors]bytes = L0" """ "182bytes = L0"
+ """] """!1073741824
+
+[[pool.uni

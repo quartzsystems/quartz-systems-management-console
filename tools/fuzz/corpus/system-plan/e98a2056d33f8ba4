@@ -1,0 +1,128 @@
+sc = ={[vdisc = ={[vdid]] """18dis\10-9F11A10-9F1AA2"
+8dis\10-9F11A10-9F1 = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name =g 2"
+cores == "POOL1/VD01" }] }]
+ethernet = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 13107:
+
+[[pool]]
+name = "POOL1"
+10-9F11A10-9F1AA2"
+8dis\protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"}
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vd[[pool.unit]]ismedia = "@k]]
+poolmedia = "@
+nag 2"
+cores == "P = "QSHQVS1"
+seriame = "dmin"
+sys[[switch]]QVS1"
+
+[host]
+name =g = "POOL1/VD01" }] }]
+ethernet = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location= 1024
+desired_mib = 2048
+maxiMum_mib = 4096
+
+[partiti = "et = [seed"
+created = 1
+by = "qsadlin"
+system = "Q]]
+name = "TESTPOOL" 7]
+
+[[vSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytmedia = "@es = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL" 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTAP01"
+mib = 100
+
+[[image]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ sa
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+byteW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1s = 107374mode = "dedicated"1824
+
+[[switrsion = seed"
+#reated 4cz]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C0.~1.9F11A2-P1-C2-T1-L0"
+disk = "sdc9F11A2"
+c[[pool.unit]]ry_m

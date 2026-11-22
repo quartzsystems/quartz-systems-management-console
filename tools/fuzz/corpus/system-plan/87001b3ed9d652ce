@@ -1,0 +1,18 @@
+schema_version = 1
+name = "sadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQV11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "r!id6"
+bytes = 10737E1824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A*-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 14

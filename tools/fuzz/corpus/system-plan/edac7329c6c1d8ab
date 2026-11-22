@@ -1,0 +1,60 @@
+schema_version = seed"
+created = 1
+by = "qsadmin"
+syst"em = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 107
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P[partition.profile.processors]
+mode = "shared"
+minimum = 1
+desired = 1
+maximum = 2
+minimum_units = 10
+desired_units = 50
+maximum_units = 100
+sharing = "uncapped"
+weight = 128
+pool = "TESTPOOL"
+
+[partition#profile.memory]
+minimum_mib = 1024
+desired_mib = 2048
+maximum_mib = 4096
+
+[partitiobacking = n.profile.boo]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8ory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raiol.unit]]
+location = "U9Q10.V1.F1
+system = "QSHQVS1"
+
+[host]
+n"sated = 1b[partition.profile.processors]y = "ksadmin"
+system = "QSHQVS1"
+
+[host]
+name = "Qame = "QSHQVS 1
+name = "seed"
+created = 1
+by = "qsadm[[switch]] = "QSHQVS1"
+
+[host]
+name =g = "POOL1/VD01" }] }]
+ethernet = "QSHQVS1"
+serial = "10-9F11A2"
+corebacking = ry_

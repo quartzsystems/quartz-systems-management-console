@@ -1,0 +1,14 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+nam					X[p@X[p@		oo		@								@		X[pD		@		X[pDX[p			@			oo@X[p			@		X[pDX[p@	@		oo@		X[p@X[oo@			X		oo@		[p[[disk]]@p@		oo@			X		oo@			X		oo@		[p[[vdisk]]@		ool]dp@		oo@			X		oo@			X	@		X[p@X[oo@			X		oo@			@		X[pDX[p[[pool.unit]]			oo@DX[p			@			oo@X[p			@		X[pdisk]]@p@		oo@			X		oo@			X		oo@		[p[[vdisk]]@		ool]dp@		oo@			X		oo@			X	@		X[p@X[oo@		X		oo@			@		X[pDX[p			@			oo@		[

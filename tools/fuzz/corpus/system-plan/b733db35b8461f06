@@ -1,0 +1,13 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+systmm = "QSHQVS1"
+
+[host]
+name= 1073741824
+
+[[pool.unit]]
+location = "U9Q.9F11A:-P1-C2-T:-L0"
+disk= "sdc"
+bytes = 107

@@ -1,0 +1,393 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[howt]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sd[[partition.profil1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default[[partition]]"
+scsi = [{ slot = 3uns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot = 5, media1
+by = "[partition.profile.processors]host]
+na]rnet = "QSplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = "A.iso"
+
+[[par01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot= 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "Umedia = "@11A2-P1-C2-T1-0&
+disk = "sdc"
+bytes = 1073741824
+
+[[switch][[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M41s = [{ lun = 0, backing tition= "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", reqrainame = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02",!required = true }]
+optical = [{ slot= 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "Umedia = "@11A2-P1-C2-T1-0&
+disk = "sdc"
+bytes = 107[[partition.profile]]ame = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-ocpool]]
+name = "TESTPOOL"
+pool = "POO= 100
+= [[switch]]ge]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{.9F11A2-P1 sloT = 2, switch = "ETHSmac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot = 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "V\AP01" }]
+physical_io = [{ location = "U9Q10.V1.9F11A2-P1-C3" }]
+
+[partition.profile.processors]
+mode = "shared"
+minimum = 1
+desired = 1
+maximum = 2
+minimum_units = 10
+desired_units = 50
+maximum_units = 100
+sharing = "uncapped"
+weight = 128
+pool = "TEMTPOOL"
+
+[partition#profile.memory]
+minimum_mib = 1024
+desired_mib = 2048
+maximum_mib = 4096
+
+[partition.profile.boo]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8ory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raiol.unit]]
+keylock = "normal"
+default_profile = "default"
+
+[[pale.memory]
+minimum_mib = 1024
+drtition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{.9F11A2-P1 slot = 2, switch = "ETHSW0", vlan = 1ool = "TESTPOOL"
+
+[partition#profile.memory]
+mini0, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot = 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ location = "U9Q10.V1.9[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTAP01"
+mib = 100
+
+[[image]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+sed" "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac
+
+[[image]]
+n= 128
+pool = "TE = "02:51:53:00:01:02", required = true }]
+optical = [{ slot= 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "Umedia = "@11A2-P1-C2-T1-0&
+disk = "sdc"
+8ytes = 10737[[switch]]41824
+
+[[switch = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+pool = "POO= 100
+thictrue
+
+[[volumedia = "@me]]
+name = schema_version = "VTAP01"
+mib = 100
+
+[[image]]
+n= 128
+pool = "TESTPOOL"
+
+[par|ition.profile.memoryool = "POOL1"
+name = "VDue
+
+[[volume]]
+name = "VTe]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0"; vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot= 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "Umedia = "@11A2-P1-C2-T1-0&
+disk = "sdc"
+bytes = 10737[[switch]]41824
+
+[[switch]]
+name = "ETHSW0backing = "
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-1"]
+
+[[procpool]]
+name = "TESTPOOL"
+pool = "POO= 100
+thictrue
+
+[[volumedia = "@me]]
+name = schema_version = "VTAP01"
+mib = 100
+
+[[image]]
+n= 128
+pool = "TESTPOOL"
+
+[partition.profile.memory]
+minimum_mib = 1024
+d4
+
+[[switc
+mib = 100
+thick =h]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdismedia = "@k]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name 11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]neme = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial"A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylos = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+ck = "normam"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW'", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical =schema = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "0.:51:53:00:01:02", required = true }]
+optical = [{ slot = 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ location = "U9Q10.V1.9F11A2-P1-C3" }]
+
+[partition.profile.processors]
+mode = "shared"
+minimum = 1
+desired = 1
+maximum = 2
+minimum_units = 10
+desired_units = 50
+maximum_units = 100
+sharing = "uncapped"
+weight = 128
+pool = "TESTPOOL"
+
+[partition.profile.memor "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+poy]
+minimum_mib = 1024
+desired_mib = /048
+maximum_mib = 4096
+
+[partition.profileion = "raid6"
+bprotection = 1824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc9F11A2"
+cores = 8
+memory_m

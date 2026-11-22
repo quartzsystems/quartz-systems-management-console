@@ -1,0 +1,104 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadminem = "Q]
+name = "VTe]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02",!required = true }]
+optical = [{ slot= 5, media = "A.iso" }]
+tapenet = [{.9F11A2-P1 = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "Umedia = "@11A2-P1-C2-T1-0&
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 15(0
+uplink = ["U9Q10.V1.9F11A2-P1-C1-ocpool]]
+name = "TESTPOOL"
+pool = "POO= 100
+= [[switch]]ge]]
+nam "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backin
+ethernet = [{.9F11A2-P1 sloT = 2, switch = "ETHSmac = "02:51:53:00:01:02", required = true }]
+op
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02",!required = true }]
+optical = [{ slot= 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "Umedia = "@11A2-P1-C2-T1-0&
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-ocpool]]
+name = "TESTPOOL"
+pool = "POO= 100
+= [[switch]]ge]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{.9F11A2-P1 sloT = 2, switch = "ETHSmac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot = 5, media = "A.iso" }]
+tape = [{cpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+ slot = 6, media = "VTAP01" }]
+physical_io = [{ locatios = 8
+.profim
+name =.pim 'p ( 1
+name =.profim 'p ( 1
+namen =.pro 'p ( 1
+name =.pim 'p ( 1
+name =.profim 'p ( 1
+namen =.profirofim 'p ( 1
+namero 'p ( 1
+name =.pim 'p ( 1
+name =.profim 'pn =.profim 'p ( 1
+name[partitionprofile.processors] "qs

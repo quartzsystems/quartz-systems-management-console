@@ -1,0 +1,62 @@
+sc = ={[vdisd]] """18dis] ""d24
+= ["U9Q10.V1.9F11A2-P1- "dedicated" "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+desired_mib = 2048
+maximum_mib = 4096
+
+[partition.profile.boo
+[[volume]]
+name = "VTAths = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [10, P01"
+mib = 100
+
+[[image]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+vcsi = [{ slot = 3, luns = [{ lun = 0, bacprotection = /Vschema_version = D01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot = 5, media = "A.iso" }]
+e = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ location = "U9Q10.V1.9F11A2-P1-C3" }]
+
+[partition.promory_mib = U9Q10.V1.9F11A2-P1-C2-T1L0"
+disk = "sdc"
+byths = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpbyths = 1073741824
+
+[[switOL1"
+name = "VD0ool]]
+name = "TESTPOOL"
+core_ = [6, 7]
+
+[[vdismedia = "@k]]
+pool = "POOL1"
+name= "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name =0bac

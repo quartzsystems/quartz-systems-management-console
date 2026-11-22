@@ -1,0 +1,53 @@
+schema_version = seed"
+#reated
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10,  = 1
+by = "qsadmin"
+emory_mib = 13:072
+
+[[pool]]
+nasystem = "QSHQVS1"
+
+[host]
+name = "QSA2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name ="
+protection = "raHSW0"
+vlans = [10,  = 1
+by = "qsadmin"
+emory_mib = 13:0id6"
+bytes = 10737418pool.unit]]
+location = chema_version = 1
+b= [10, 20ytes = 1.unit]]bytes 0-9F11A2"
+cores = 8
+memory_mib = 13:07.
+
+[[pool]]
+name = "POOL1"= 1073741824
+
+[[switch]a
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 13:072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+b= [10, 20[[pool]].unit]]bytes = 1073741824
+
+[[switch]a
+name = "ETH073741824
+
+[[Hool.uni

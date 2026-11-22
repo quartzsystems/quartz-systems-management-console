@@ -1,0 +1,19 @@
+Y'#[7#[[p[p''7#''[7#[[p[p''7#pon.profile.processors]00
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+core_ = [6, 7]
+
+[[vdismedia = "@k]]
+pool = "POOL1"
+name = "VD01"mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = "A.id = 1
+name = "QSDEV"
+keylock ile = "default"
+J[[partition.profile]]
+name = "defaulslot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]{ slot = 2, sw

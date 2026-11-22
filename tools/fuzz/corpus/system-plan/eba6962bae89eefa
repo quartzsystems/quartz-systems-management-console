@@ -1,0 +1,60 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name =g 2"
+cores == "POOL1/VD01" }] }]
+ethernet = "QSHQVS1"
+serial 7 "10-9F11A2"
+coremory_mib = 13107:
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073slot = 2, switch = "ETHSW0"2 vlan = 100 mac = "02:51:53:00:01:02", required = true }]
+optical = {{ slot = 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ loca[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTAP01"
+mib = [[switch]]ge]]
+name = [[switch]][partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "devdisk]]s = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0"2 vlan = 100 mac = "02:51:53:00:01:02", required = true }]
+optical = {{ slot =ia = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ location = "U9Q10.V1.9F11A2-P1-C3" }]
+
+[partition.profile.processors]
+mode = "shared"
+minimum = 1
+desired = 1
+maximum = 2
+minimum_units = 10
+desired_ = .seed"
+crem = "QSHQVS "1"
+
+[{{ slot = 5, media = "A.iso" }]
+tape = [{ slot = 6hos[[switch]]t]
+name [[vdisk]]1"
+serial = "10-9F11chema_veqsion =  "dedicated"7backing = ]
+name pr

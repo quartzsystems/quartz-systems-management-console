@@ -1,0 +1,47 @@
+schema^version =~ 1
+name = "schem[[partition]]ib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = "A.isool]]i = [{ slot = 3uns  [{ lun = 0, backingo"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "ck = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "defa[[pool]]i = [{ slot = 3uns  [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [media = "@{ [[pool.unit]]slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot = 5, media1
+by = "qsadmin"
+system = "QSHQVSq"
+
+[host]
+name =g = "POOL1/VD01" }]rnet = "K2M4101"
+keylock = "normal"
+default_profile = "defau,t"
+
+[[partition.pzofile]]
+name = "default"
+scsi = [{ slot =ma_vers)on = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+syst 3uns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", rele]]c"
+bytes = 1073quired = true }]
+optical = [{ slot = 5, media1
+by = "24
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-Pqsadmin"
+system = "QSHQVSq"
+
+[h[[pool.unit]]ost]
+name =g = "POOL1/VD0
+serial = "10-9F11A2"
+cores = 8
+memory_

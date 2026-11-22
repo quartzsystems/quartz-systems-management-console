@@ -1,0 +1,49 @@
+schema_version = 1
+name = }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "Umedia = "@11A2-P1-C2-H1-0&
+disk = "sdc"
+bytes = 1073741824
+
+[[swi[[partition.pr[[partition.profile]]20]
+mtu = 1500
+uvlink = ["U9Q10.V1.9F11A2-P1-C1-T1!]
+
+[[procpool]]
+name = "TESTPOOL"
+pool = "POO= 100
+thick = true
+
+[[volume]]
+name = schema_version = "VTAP01"
+mib = 100
+
+[[image]]
+n= 128
+pool = "TMSTPOOL"
+
+[partition.profile.memory]
+minimum_mib = 1024
+desired_mib = 2048
+maximum_mib = 4096
+
+[partition.prof_ver3ion = 1
+.aema_ver3ion = 1
+.ame < mma_versio = 1
+.ame < "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "1
+.ame < "sema_ver7ion = 1
+.a = 1
+.am "se media = "1
+.ame < "sema_ver3ionio = 1
+.ame < "se media = "e < medra =@sion = 1
+.mode = "dedicatmd"ame < "seed"
+S1"
+se.ial ="
+n%rial1

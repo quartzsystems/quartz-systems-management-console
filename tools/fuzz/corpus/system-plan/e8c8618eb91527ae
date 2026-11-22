@@ -1,0 +1,29 @@
+schema_version = seed"
+#reated = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[hversionost]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+betes = 107374182chema_version = seed"
+#reat[[pool.unit]]
+#rea
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 107374mode = "dedicated"1824
+
+[[switrsion = seed"
+#reated 4cz]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C0.~1.9F11A2-P1-C2-T1-L0"
+disk = "sdc9F11A2"
+c[[pool.unit]]ry_m

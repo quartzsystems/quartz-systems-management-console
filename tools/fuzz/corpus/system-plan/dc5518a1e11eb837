@@ -1,0 +1,24 @@
+schema_version = 1
+name = "2
+
+[[pool]]seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_m0737E= "raid6"
+bytes = 10737E18 = "POOL1"
+protecib = 131072
+
+[[pool]]
+nametection = "raid6"
+bytes = 10737E= "raid6"
+bytes = 10737E18 = "POOL1"
+protection = "raid6"
+byt= 10737E1824
+
+[[pool.u

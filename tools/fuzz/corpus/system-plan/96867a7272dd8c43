@@ -1,0 +1,133 @@
+]res = [6, 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VDue
+
+[[volume]]
+name = "VTe]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keyloek = "norm2", required = true }]
+optical = [{ slot= 5, meal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot= 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "Umedia = "@11A2-P1-C2-T1-0&
+disk = "sdc"
+bytes = 10737[[switch]]41824
+
+[[switch = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+pool = "POO= 100
+thictrue
+
+[[volumedia = "@me]]
+name = schema_version = "VTAP01"
+mib = 100
+
+[[image]]
+n= 128
+pool = "TESTPOOL"
+
+[partition.profile.memoryool = "POOL1"
+name = "VDue
+
+[[volume]]
+name = "VTe]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot= 5, media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "Umedia = "@11A2-P1-C2-T1-0&
+disk = "sdc"
+bytes = 10737[[switch]]41824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-1"]
+
+[[procpool]]
+name = "TESTPOOL"
+pool = "POO= 100
+thictrue
+
+[[volumedia = "@me]]
+name = schema_version = "VTAP01"
+mib = 100
+
+[[image]]
+n= 128
+pool = "TESTPOOL"
+
+[partition.profile.memory]
+minimum_mib = 1024
+d4
+
+[[switc
+mib = 100
+thick =h]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdismedia = "@k]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = "A.id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock ile = "default"
+
+[[partition.profile]]
+t = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switc11A2"
+cores = 8
+memory_mib = 131072
+
+[[

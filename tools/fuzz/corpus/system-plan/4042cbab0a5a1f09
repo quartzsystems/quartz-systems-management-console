@@ -1,0 +1,8 @@
+sum_mib = 1024
+desired_mib = 2048
+maximum_mib = 4096
+
+[partition.profile.boot]
+source = "A"
+ipl_type = "unattended"
+console = "partition"

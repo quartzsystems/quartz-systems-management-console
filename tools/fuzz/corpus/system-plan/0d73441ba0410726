@@ -1,0 +1,12 @@
+schema_version = 1
+name = "dmin"
+system = "QSHQVS1"
+
+[host]
+na= "sdc"
+bytes = 1073741824
+
+[artition.profile.boot]
+source = "A"
+ipl_type = "unattended"
+console = "partition"

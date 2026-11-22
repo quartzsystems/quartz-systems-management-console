@@ -1,0 +1,30 @@
+schema_version = 1
+name =[#reat[[pool.unit]]
+#rea
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+byteW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1s = 107374mode = "dedicated"1824
+
+[[switrsion = seed"
+#reated 4cz]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C0.[[pool.unit]]C2-T1-L0"
+disk = "sdc9F11Aseed"
+#reated
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10,  = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memn"

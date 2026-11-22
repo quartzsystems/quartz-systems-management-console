@@ -1,0 +1,24 @@
+schema_versi = "ksadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8ory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raiol.unit]]
+location = ""
+
+[host]
+n"sated = U9Q10.V1.F1
+system = "QSHQVS1"
+
+[host]
+n"sated = 1b[partition.profile.processors]y = "ksadmin"
+system = "QSHQVS1"
+
+[host]
+name = "Qame = "QSHQVS1"
+serial = "10-91fA2-P

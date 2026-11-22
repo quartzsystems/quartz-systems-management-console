@@ -1,0 +1,23 @@
+uchema_version = 1
+name = "seed"
+cial = "10-9F11A2"
+cores = 8
+memory_mib = 13107-
+
+[[pool]]
+nareated = 1by = "qs
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 13107-
+
+[[poadmin"
+system = "QSHQVS[partition.profile.processors]1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 13107-
+
+[[pool]]
+name =

@@ -1,0 +1,6 @@
+schema_version = 1
+name = 10737E98
+[[pool.unit]]
+location = "U9Q1[[pool]]1A*-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824

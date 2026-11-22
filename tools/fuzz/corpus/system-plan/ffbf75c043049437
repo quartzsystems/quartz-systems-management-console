@@ -1,0 +1,45 @@
+schema_verschema_version = sion = 1
+name = "seedHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q1PO0.V1.9F11A2-P1-C1-T1"}
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdismedia = "@k]]
+pool = "POOL1"
+nag 2"
+cores == "P = "QSHQVS1"
+seriame = "VD01"
+miX = 100
+thick = true
+ "A.id = 1
+name = "QSDEV01"
+serial ="K2M4101"
+keylock ile = "default"
+
+[[partitio[.profile]]ib = <3107:
+
+[[pool]]
+name = "POOQVS1"
+serial = "10-9F11L1"mode = "dedicated"ame = "de[ault"
+scsi = [{ slot =01"
+keylock i 3, luns = [{ lun = "
+scsi = [{ slot =[[switch]]k i 3, luns = [{ lun = 0, backing =0, bacot = 3, luns = [{ = 1
+name = "sated = 1by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "12-9F11A2"
+cores = 8ory_mib = 13107me = "POOL1"
+protection = "raiol.unit]]
+location = "U9Q10.V1.F1
+system = "QSHQVS1"
+
+[host]
+n{[vdisd]]mo{[vdis]"""1de = "dedicated" """18dis_ ""d24
+
+schema_vschema_version = ebacking = rsio{[vdis]"""18eiisd]] """18eis] 

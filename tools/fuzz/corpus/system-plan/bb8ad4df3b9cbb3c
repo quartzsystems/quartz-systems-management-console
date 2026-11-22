@@ -1,0 +1,81 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = [{ slot = 3,king = "PO seed"
+#reated 4cz]]
+name = "ETHSW0"
+vl"raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "[partition.prof[[partition]]s]isk = "sdc"
+bytprotectioj = es = 10737t= 56 media = "A.is41824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[\procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+rool&= "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profilmedia = "@e = "default"
+
+[[partitiont"
+scsi = [{ slot = 3,king = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10,[[vdisk]] mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot= 56 media = "A.iso" }]
+tape = [{ slot = 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location =
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+betes = 107374182chema_version = seed"
+#reat[[pool.unit]]
+#rea
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 107374mode = "dedicated"1824
+
+[[switrsion =[{ slot = 3,king = "PO seed"
+#reated 4cz]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C0.~1.9F11A2-P1-C2-T1-L0"
+disk = "sdc9F11A2"
+c[[pool.unit]]ry_m

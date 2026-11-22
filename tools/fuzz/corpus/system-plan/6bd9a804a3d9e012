@@ -1,0 +1,10 @@
+schema_version = 1
+name = "sedued"
+created = 1
+by = "qsadmSHQVS[[_mibpool]]1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A:"
+cores = 8
+memory_mib = 131

@@ -1,0 +1,28 @@
+schema_version = 1
+name = "seed"
+created = 1by = "qsadmin"
+system = "QSHQVS1"
+
+[
+[[vdismedia = "@k]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = "A.id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock ile M4101"
+keylock ile = "default"
+
+[]]
+name = "default"
+scsi == "default"
+
+[]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, swit

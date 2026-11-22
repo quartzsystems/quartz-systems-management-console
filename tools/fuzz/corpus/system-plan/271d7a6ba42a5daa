@@ -1,0 +1,68 @@
+schema_version = 1
+name = "senimumed"
+cre 1500
+u ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]ated = 1
+by = "qsadmin"
+\ystem = "QSHQVS1"
+
+[host]
+name =g 21" , 7]
+
+[[vdismedia = "@k]]
+pool1"
+mib = 100
+}] }]
+ethernet = "QSHQVS1"
+seris
+
+[partition.profile.metem = "QSHQVS1"
+
+[host]
+e =g 21" , 7]
+
+[[vdismedia =al = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit"U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+byt1A2-P1-C1-T1"]
+
+[[es = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+schema_version = V1.9FVS1"
+
+[host]
+name =g 21" , 7]
+
+[[11A2-P1-C1-T1"]
+
+[[procpool]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdismedia = "@k]]
+pool1"
+mib = 100
+
+[[image]]
+n= 128
+pool = "TESTPOOL"
+
+[partition.profile.memorst]
+e =g 21" , 7]
+
+[[vdismedia =al = "10-9F11A2"
+cores = 8
+my]
+minimum_m

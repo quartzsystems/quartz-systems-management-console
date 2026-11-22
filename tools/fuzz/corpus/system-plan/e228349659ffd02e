@@ -1,0 +1,125 @@
+schema_version = seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 13107
+protection = "raid6"
+bytesocation = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 15-0
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTAP01"
+mib = 100
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = 1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "rarid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+cores =L1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTAP01"
+mib = 100
+
+[[image]]
+name = "A.iso"
+
+[[partition][
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{backing = "POOL1/VD01" }] }]
+ethernet = [{ slot =[[swAtin"
+system = "QSHQVS1"
+
+[host]
+name = "QSschema_version = HQVS1"
+seory_mib = 131072
+
+[[pool]]
+nametection = "raid6"
+bytes = 10737E18 = "POOL1"
+protection = "raid6"
+bytes = 10737Eו1824
+
+[[pool]]
+nametection = "raid6"
+byten = "raid6"
+bytes = 10737Eו1824
+
+[[ptection = "raid6"
+bytes = 10737E18 = "POOL1"
+protection = "raid6"
+bytes = 10737Eו1824
+
+[[pool]]
+nametection = "raid6"
+byten = "raid6"
+bytes = 10737Eו1824
+
+[[pool]]
+nametes = 1073[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans =18.4
+
+[[pytes = 1073741824
+ool.unit]]
+location = "UA2-P1[[vdisk]

@@ -1,0 +1,20 @@
+smode = "dedicated"ede = "QSHQVS1"[[switch]]
+serial = 210-ted
+
+[switc"
+#reated
+
+[switch]]
+name = "ETHSW0"
+vlans = [10,  = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"[[switch]]
+serial = -10-ted
+
+[switch]]
+9F11A2"
+cores = 8
+memn

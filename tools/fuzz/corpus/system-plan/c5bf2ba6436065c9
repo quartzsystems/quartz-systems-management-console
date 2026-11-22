@@ -1,0 +1,27 @@
+schem"qsadmin"
+system =]
+name = "QSHQVSi_vesadmin"
+system =]
+name = "QSHQVS1"
+serial =  =rsion = 1
+name e = "Q37E1824
+
+[[pool.unit]]
+location =ted = 1
+by = "qsadmin"
+system =]
+name = "QSHQVS1"
+serial =  = 1
+tem =]
+name = "Q37E1824schema_version = 
+
+[[pool.unit]]
+location = "U9Q[partition.profile.processors]10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+media = "@

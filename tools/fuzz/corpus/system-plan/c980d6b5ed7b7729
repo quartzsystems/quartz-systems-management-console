@@ -1,0 +1,13 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name =g =ernet = "QSHQVS1"
+serial =.profile.processors]= 8
+memory_mib = 131072
+
+[[pool]]
+nam

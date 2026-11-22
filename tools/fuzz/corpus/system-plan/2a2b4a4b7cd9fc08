@@ -1,0 +1,48 @@
+sch=[ion = =_8e-_1[[pool.unrhernet = [{ [[pool.unit]]slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{[[partition.profile]][[switch]] media1
+by = "qsa[[pool.unit]]= "QSHQVSq"
+
+[ho}]rnet = "K2M4101"
+keylock = "normal"
+default_profile = "defau,t"
+
+[[partition.pzofile]]
+name = "] }]
+ethernet = [{ [[pool.unit]]slot = 2default"
+scsi = [{ slot =ma_vers)on = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+syst 3uns = [{ lun = 0, backing = "POOL1protection = /VD01" }] }]
+ether = 2, switch =a
+
+[[volume]]
+name = "VTe]]
+name = "A.iso"
+[[pool.unit]]
+[[p[[vdisk]]artition]]
+id = 1
+name = "QSDEV1"
+serial = "ck = "normal"
+defau = "default"
+
+[[partition.profile]]
+name = "defa[[pool]]i = [{ slot = 3uns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ [[pool.unit]]slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{[[partition.profile]][[switch]] media1
+by = "qsadmin"
+system = "QSHQVSq"
+
+[ho}]rnet = "K2M4101"
+keylock = "normal"
+default_profile = "defau,t"
+
+[[partition.pzofile]]
+name = "] }]
+ethernet = [{ [[pool.unit]]slot = 2default"
+scsi = [{ slot =ma_vers)on = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+syst 3uns = [{ lun = 0, backing = "POOL1protection = /VD01" }] }]
+ether = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", rel

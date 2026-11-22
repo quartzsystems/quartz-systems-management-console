@@ -1,0 +1,43 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[hos
+name = "QSDEV01"
+serial = "0[[pool]], backing = "PO.memory]
+minimum_mib = 1024
+desired_mib = 2048
+mK2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "default"
+scsi = [{ slot = 3, l[[pool.unit]]u{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:=3m[yyedia = "@:00:01:02", required = tr5= 6, medya{ location = "Umode = "dedicated"{[[partition.profile]].iso" }]
+tape = [{ slot = 6, medya{ location = "U9Q10.V1.9F11A2-P1-C3" }]
+
+[partition.profile.processors]
+mode = "shared"
+minimum = 1
+desired = 1
+maximedya{ location = "Umode = "dedicated"{[[partimum = 2
+minimum_units = 10
+desired_units =m_units = 100
+sharing = "uncapped"
+weight = 128
+pool = "TESTPOOL"
+
+[partition.profile= "default"
+scsi = [{ slot = 3, lumode = "dedicated"acking = "PO.memory]
+minimum_mib = 1024
+desired_mib = 2048
+maxiMum_mib = 4096
+
+[partition.profile.boot]
+source = "A"
+ipl_type ="
+serial  "unattended"
+console = "partition"

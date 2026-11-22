@@ -1,0 +1,58 @@
+}] }]
+ethernet = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 13107:
+
+[[{ool]]
+name = "P= 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name =g 2"cores == "POOL1/VD01" }] }]
+ethernet = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 13107:
+
+[[{ool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.uni
+[[{ool]]
+name = "Pt]]
+location = "U9Q10.V1.9F11A2-@1-C2-T1-L0"
+disk OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.uni
+[[{= "sdc"
+bytes = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q1PO0.V1.9F11A2-P1-C1-T1"}
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdismedia = "@k]]
+pool = "POOL1"
+nag 2"
+cores == "P = "QSHQVS1"
+seriame = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = "A.id = 1
+name = "QSDEV01"
+serial ="K2M4101"
+keylock ile

@@ -1,0 +1,117 @@
+schema_verschema_version = sion = 1
+name = "seedHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q1PO0.V1.9F11A2-P1-C1-T1"}
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6- 7]
+
+[[vdismedia = "@k]]
+pool = "POOL1"
+nag0= 8
+memorot]
+name =g = "POOL1/VD01"= "qsadmin"
+sy` 1
+[h=0-9F11A2"
+cores = 8
+memorot]
+name =g  QSHQVS1y = "qsadmig"
+system = "QSHQVS1"U
+tl =0-ed ` 1QVS1"U
+tl =0-ed ` 1
+[hot 8
+mschema_version = 2
+
+[[pool]]
+name = "POOL1"
+protection U
+t=@"raa_version = 1
+name = "seed"
+created = 1
+by = 2-P1-C1-T1"]
+
+[[id6"
+bytes = 107374182[[switch]]4
+
+[}pool.unit]]
+locatmedia = "@ion = sk = "sdc"
+bytprotection =
+created = 1
+by = 2-P1-0es = 1073741824
+
+[[switch]]
+name = "ETHSW0 = "seed"
+created = 1
+by = 2-P1-C1-T1""
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q[pool]]
+name = "POOL1"
+protectaon = 8
+memory_mib = 13:07 = "QSHQVS1"
+serial = =_8e-_1_1[[poo0,  = 1
+by = "qsadmin"
+sy` 1
+[h=0= 8
+memorot]
+name =g = "POOL1/VD01"= "qsadmin"
+sy` 1
+[h=0-9F11A2"
+cores = 8
+
+name =g  QSHQVS1y = "qsadmig"
+system = "QSHQVS1"U
+tl =0-ed ` 1QVS1"U
+tl =0-ed ` 1
+[hot 8
+mschema_version = 2
+
+[[pool]]
+name = "POOL1"
+protection U
+t=@"raa_version = 1
+name = "seed"
+created = 1
+by = 2-P1-C1-T1"]
+
+[[id6"
+bytes = 107374182[[switch]]4
+
+[}pool.unit]]
+locatmedia = "@ion = sk = "sdc"
+bytprotection =
+created = 1
+by = 2-P1-0es = 1073741824
+
+[[switch]]
+name = "ETHSW0 = "seed"
+created = 1
+by = 2-P1-C1-T1""
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10[partition.profile.processors]ion = "]
+
+[[procpool]]
+name = "TESTPOOL"ame = "ETHSW0"
+vlans = [10,  = 1
+by = "qsadmin"
+sy` 1
+[h=0= 8
+memorot]
+name =g = "POOL1/VD01"= "qsadmin"
+sy` 1
+[h=0-9F11A2"
+cores = 8
+memorot]
+name =g  QSHQVS1y = "qsadmin"
+system = "QSHQVS1"U
+tl =0-ed ` 1
+[hot]
+name[[vdisk]] =g = "POOL1/VD41" QSHQVS1"
+serial = }] }]
+ethernet = "QSHQVS1"
+serial =0-9F11A2"
+cores = 8
+memory_

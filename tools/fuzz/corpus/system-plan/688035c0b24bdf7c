@@ -1,0 +1,16 @@
+schema_version = 1
+name = "seed"
+created = 1
+b = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+"POOL1/VD "QSHQVS1" 1
+b = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+"PO
+
+[host]
+"POOL1/VD1" }] }1" }] }c

@@ -1,0 +1,43 @@
+schema_version = 1
+.ame < "sema_version = 1
+.ame < "seed"
+version = 1
+.ame < "seme < "seed"
+version = 1[[partition.profile]]dttttended"
+ecreatedttcreatedttended"
+ecreatedttended"
+consartition.profile]]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot = 5, media = "A.iso" }]
+ media = "VTAP01" }]
+physical_io = [{ location = "U9Q10.V1.9F11A2-P1-C3" }]
+
+[partition.profile.processors]
+mode = "shared"
+minimum = 1
+desired = 1
+maximum = 2
+minimum_units = 10
+desired_units = 50
+maximum_units = 100
+sharing = "uncapped"
+weight = 128
+pool = "TESTPOOL"
+
+[partition.profile.memory]
+minimum_mib = 1024
+desired_mi1
+.ame < "sema_version = 1
+.b = /048
+maximum_mib = 4096
+
+[partition.profileion = "raid6"
+bprotection = 1824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc9F11A2"
+cores = 8
+memory_m

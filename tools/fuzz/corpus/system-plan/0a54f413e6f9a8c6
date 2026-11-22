@@ -1,0 +1,14 @@
+schema_version = 1
+name = "s"qsadmin"
+system = "QSHQVS1"
+
+[host]
+name =g 2"
+cores ==eed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name =g 2"
+cores == "POOL1/VD01"

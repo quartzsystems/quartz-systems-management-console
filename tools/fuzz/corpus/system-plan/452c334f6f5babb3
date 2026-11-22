@@ -1,0 +1,27 @@
+schema^version =~ 1
+name = "schem[[partition]]ib = 100
+thick = true
+
+[[volume]]
+name = "VTe]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "default"
+
+[[partition.profile]]
+name = "defa[[pool]]i = [{ slot = 3uns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot = 5, media1
+by = "qsadmin"
+system = "QSHQVSq"
+
+[host]
+name =g = "POOL1/VD01" }]rnet = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_

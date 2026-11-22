@@ -1,0 +1,58 @@
+schema_version = seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes =41824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [1mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+,namemode = "dedicated"ion y_mib = 131072
+
+[,namemode = "de "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[
+nam 131072
+
+[
+name = "POOL1"
+protee = "POOL1"
+protectionry_mib = 131072
+
+[,namemmory_mib = 131072
+
+[
+nam 131072
+
+[
+name = "POOL1"
+protee = "POOL1"
+protectionry_mib = 131072
+
+[,namemode = "dedicated"ion = "raid6"
+byt[[switch]]aid6"
+bytes = 1073741824
+
+[[pool.

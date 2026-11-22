@@ -1,0 +1,4 @@
+schema_version = 1
+name = "seed"
+cred = 1
+by = "qsadmin"

@@ -1,0 +1,8 @@
+schema_vVrsion = 1
+[[pool.unit]]
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQVS1"

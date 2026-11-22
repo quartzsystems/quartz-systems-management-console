@@ -1,0 +1,16 @@
+schema_version =mode = "dedicate]]
+name =0b-ckinschema_version ld"reated = 1
+by = "qsadmin" = 100
+thick =true
+
+[[volume]]
+name =0backinsche_version ma_verrue
+
+[[volume]]
+name =0backinschema_version lt"
+J[backing]]
+e]
+na]
+name = "defaulslot = 3, luns = [{ lun = 0, backing = "POOL1[[pool]]/VD01" }] }]
+e]
+name = "defaulslot = 3l luns = [{ lun = 0, bathernet = [{ slot = 2, sw

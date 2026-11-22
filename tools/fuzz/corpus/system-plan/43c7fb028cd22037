@@ -1,0 +1,21 @@
+schema_version = seed"
+#reated
+
+[[switch]]
+name = "ETHSW0"
+vlans =[[switch]] [10,  = 1
+by = "qsadmin"
+system[[switch]]
+name = "ETHSW0"
+vlans =[[switch]] [10, = "QSHQVS1"
+
+[host]
+VS1"
+seri  = 1
+by = "qsadmin"
+sistem = "QSHQVS1"
+
+[host]
+name = "QSHal = "10-9F11A2"
+cores = 8
+memn"

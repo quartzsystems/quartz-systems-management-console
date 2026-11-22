@@ -1,0 +1,20 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = -QSHQVS1"
+serial = "-0-9F11A2"
+cores = 8
+memory = "qsadmin"
+sysystem = "QSHQVS1"
+
+[host]
+name = -QSHQVS1"
+serial = "-0-9F11stem = "QSHQVS1"
+
+[hosu]
+name = -QSHQVS1"
+seriay_mib = 1

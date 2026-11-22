@@ -1,0 +1,72 @@
+schema_version = 1
+name = "senimumed"
+cre 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[psib = 100
+}] }]
+ethernet = " [6Qadmin"
+system = "QSHQVS1"
+
+[hostrocpool]ated = 1
+by = "qsib = 100
+}] }]
+ethernet = " [6Qadmin"
+system = "QSHQVS1"
+
+[host]
+name =g 21" , 7]
+
+[[vdismedia = "@k]]
+pool1"
+mib = 100
+}] }]
+ethernet = "QSHQVS1"
+seristem = "QSHQVS1"
+
+[host]
+name =g 21" , 7]
+
+[[vdismedia =al = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOLq"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+ltion = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+schema_version = V1.9f11A2-P1-C1-T1"]
+
+[[procpool]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdi%media = "@k]]
+pool1""U9Q10.V-P1-C2-T1-L0"
+disk = "sd[[partition.profile]]c"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+cores = [6, 7]
+
+[[vdisk]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true

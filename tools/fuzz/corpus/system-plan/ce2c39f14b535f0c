@@ -1,0 +1,13 @@
+schema_version = 1
+nqme = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = xQSHQVS1"
+serial = "1[[partition.profile]]0-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[

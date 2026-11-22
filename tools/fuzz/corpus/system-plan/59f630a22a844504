@@ -1,0 +1,32 @@
+schema_version = 1
+name = "seed"
+created = 1
+
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[sjitch]]
+name = "ETHSU0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9schema_version = 
+[[procpool]]
+name = "TESTPOOL"
+cores = [6media = _um_units = 100
+sharing =[[pool.unit]]eight = 128
+pool = "TESTPOOL"
+
+[partition.profile.memory]
+minimum_mib = 1024
+desired_mib = 2048
+maximum_mib = 4096
+
+[partition.profile.boot]
+sourcbacking = l_type = "unattended"
+console = "partition"

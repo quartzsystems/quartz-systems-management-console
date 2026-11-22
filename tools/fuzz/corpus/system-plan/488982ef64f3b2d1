@@ -1,0 +1,53 @@
+schema_versbacking = ion = 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system =]
+name = "QSHQVS1"
+[partition.741824
+
+[[[partition.profile]] = [10, 20]
+mtu = 1500
+uplprofile.processors]
+memory_mib = 131072
+
+[[pool01"
+serial = "K2M4101"
+keylock = "normal"
+default_profile = "difault"
+
+[[partition.profile]quired = true }]
+optical = [{ slot= 5, media = "=]
+name = "default"
+scsi = [{ slot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slot= 5, media = "= "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+.p ( 1
+name = "seed"A.iso" }]
+tape = [{ slo= 6, media = "VTAP01" }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location =ytes =  "Umedia = "@11A2-P1-C2-T "QSHQVS1"
+
+{hos= "QSHQVS1"
+seriav = "10-9F11A2"
+cores1-0&
+disk = "sdc"
+bytes = 10737[[switch]]41824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+.p ( 1
+name = "seed"
+created = .
+by = "qsadmin"
+system =[partition.proofim .p (
+fim .p (
+by = "q

@@ -1,0 +1,29 @@
+schema_version = seed"
+#reated = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[hial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 107374182411A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824schema_version = 
+
+[[switc
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 150schema_version = 0.V1.9F11A2-P1-C0.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc9F11A2"
+cores = 8
+memory_m

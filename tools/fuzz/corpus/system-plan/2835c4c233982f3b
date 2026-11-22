@@ -1,0 +1,37 @@
+schema_versUion =ЛbK 1
+name = "seed"
+crmode = "dedicated"eated = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name =g 2"
+cor_s == "POOL1/VD01" }] }]
+ethernet = "QSH[partition.profile.processors]QVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mname = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+[[pool.unit]]
+locationmedia = "@V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"}
+
+[[procpool]]
+name = "TESlan = 10, mac = "02:51:53:00e }]
+optical = [{ slot = 5, media1
+by = "qsadmin"
+system = "QSHQVSq"
+
+[host]
+name =g = "POOL1/ 10, mac = "02:51:5[[switch]]", required = true }]
+optical VD01" }]rnet = "QSHQVS1"
+serial = "10-yF11A"
+cores = 8
+memory_

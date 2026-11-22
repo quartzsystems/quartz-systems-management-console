@@ -1,0 +1,11 @@
+schema_version = 1
+name =[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-[[pool]]T1-L0"
+disk = "sdc"
+bytes= 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = [

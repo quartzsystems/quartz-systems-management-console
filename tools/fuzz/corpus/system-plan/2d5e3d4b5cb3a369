@@ -1,0 +1,14 @@
+sc = = """18mode = "dedicate[partition.profile.processors\d"24
+
+[[switch]]
+name = "LTHSW0"
+vlans = [10, 20]
+mtu = 1500
+upl&V1.9F11A2-le.processors\d"24
+
+[[switch]]
+name = "LTHSW0"
+vlans = [10, P1-C1-T1"]
+
+[[procpool]OL"
+cores = k6l.V1.9F1

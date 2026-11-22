@@ -1,0 +1,59 @@
+schema_version = 9
+name = "see00
+sharing = "uncapped"
+weight = 128
+pool = "TESTPOOL"
+
+[partition.profile.memory]
+minimum_mib = 1024
+desired_mib = /048
+maximum_mib = 4096
+
+[partition.profileion = "raid6"
+bprotection = 1824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-LS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc"
+bytes = 1073741824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu =  = true
+
+[[volume]]
+name = "VTe]]
+name =name = "seed1""U9Q10.V1.9F11A2-P1-C3" }]
+
+[partition.profile.processors]
+mode = "shared"
+minimum = 1
+desired = 1
+maxm_units = 10
+desired_units = 50
+maximum_units = 100
+sharing = "uncapped"
+weight = 128
+pool = "TESTPOOL"
+
+[partition.profile.memory]
+minimum_mib = 1024
+desired_mib = 2048
+maximum_mib = 4096
+
+[xartition.profile.boot]
+source = "A"
+ipl_type = "unattended"
+console = "partition"

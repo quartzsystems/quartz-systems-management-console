@@ -1,0 +1,42 @@
+scname = "socessrs]e\use[p]e\ese[pa[[pool.unit]]lm.rro
+essrs]e\a[[pool.unit]]le.rrocessrs]rs]e\\e[partition.profrrocessors[[pool.unit]]]e\\ee\\e[partition.profrrocessors[[pool.unit }]
+physical_io = [{ OL1"
+protection = "raid6"
+bytes = 1073741824
+
+[[pool.unit]]
+location = "Umelia = "@11A2-P1-C2-T1-0&
+disk = "sdc"
+bytes = 10737[[switch]]41824
+
+[[switch]]
+name = "ETHSW0"
+vlans = [10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+pool = "PQO= 100
+thictrue
+
+[[volumedia = "@me]]
+name = schema_version = "VTAP01"
+mib = 100
+
+[[image]]
+n= 128
+pool = "TESTPOOL"
+
+[partition.profile.memoryool = "POOL1"
+name = "VDue
+
+[[volume]]
+name = "VTe]]
+name = "A.iso"
+
+[[partition]]
+id = 1
+name = "QSDEV01"
+serial = "K2M4101"
+keylool.unit]]k]]l[pool.unit]]k]]l!&&[o&o[[vdis]]!&&[o&o[[vdis]]]]l!&

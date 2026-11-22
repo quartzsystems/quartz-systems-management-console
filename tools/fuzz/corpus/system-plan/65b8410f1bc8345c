@@ -1,0 +1,75 @@
+schema_version= 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSH{VS1"
+s31072
+
+[[pool]]
+name = "POOL1"
+
+memo1
+by = ry_mib= 13"POOL1[[vdisK
+{hos= "QSHQVS1"
+serial = "10-9F11A2"
+cores]]"
+protection = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+{hos= "QSHQV= "raid6"
+bprotectisadmin"
+system = "QSHQVS1"
+
+{hos= "QSHQV= "raid6"
+bproteon = 1824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11mib= 13"POOL1[[vdisk
+{hos= "QSHQVS1"
+s= 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+{hos= "QSHQV= "raid6"
+bprotec"U9Q10.V1.9F11mib= 13"POOcores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+
+memo1
+by = ry_mib= 13"POOL1[[vdisK
+{hos= "QSHQVS1"
+serial = "10-9F11A2"
+cores]]"
+protection = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+{hos= "QSHQV= "raid6"
+bprotectisadmin"
+system = "QSHQVS1"
+
+{hos= "QSHQV= "raid6"
+bproteon = 1824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11mib= 13"POOL1[[vdisk
+{hos= "QSHQVS1"
+s= 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+{hos= "QSHQV= "raid6"
+bprotec"U9Q10.V1.9F11mib= 13"POOL1[[vdisk
+{hos= "QStion = 1824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc9F11A2"
+cores = 8
+memory_[pool]]

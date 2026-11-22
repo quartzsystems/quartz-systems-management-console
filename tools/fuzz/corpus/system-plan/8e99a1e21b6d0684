@@ -1,0 +1,82 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "qs11A2admin"
+system = "QSHQV[[partition.profile]] "POOL1/VD01" }] }]
+ethernet = "QSHQVS1"
+serial = "10-9Fme =g 2"
+cor_s == "POOL1/VD01" }] }]
+ethernet = "QSH[partition.profile.processors]QVS1"
+serial =0-9F11A2"
+cores = 8
+memory_mib = 13107:
+
+[[pool[[pool.unit]]]]"10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[
+nam 131072
+
+
+nma_versUion =ЛbK 1
+name = "seed"
+cr = "qsadmin"
+system = "QSHQVS1"
+
+[hos
+[,namemmory_mib = 131072
+
+[
+nadedicated"t]
+name =g 2"
+cor_s == "POOL1/VD01" }] }]
+e "dedicated"ion y_mib "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[
+nam 131072
+
+[
+name = "POOL1"
+protee = "POOL[[switch]]aid6"
+1"
+p = 131072
+
+[,namrotectionry_mib = 131072
+
+[,namemmory_mib = 131072
+
+[
+nadedicated"ion y_mib = 131072
+
+[,namemode = "de = [6, 7]
+,namemodmode = "dedicated"e = "dedicated"ion y_mib "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[
+nam 131072
+
+[
+name = "POOL1"
+protee = "ode = "dedicated"
+1"
+protectionry_mib = 131072
+
+[,namemmory_mib = 131072
+
+[
+nam 131072
+
+[
+name = "POOL1"
+protee = "POOL1"
+protectionry_mib = 131072
+
+[,namemode = "dedicated"ion = "raid6"
+byt[[switch]]aid6"
+bytes = 1073741824
+
+[[pool.

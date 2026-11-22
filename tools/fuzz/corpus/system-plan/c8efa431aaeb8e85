@@ -1,0 +1,25 @@
+schema_version = 1
+name = "seed"
+created  = [10, 20]
+mtu = 1500
+uzlink = ["U9Q10.V1.9F11A2-P1-C1-T1"]
+
+[[procpool]]
+name = "TESTPOOL"
+pool = "POO= 100
+thick = true
+
+[[volume]]
+name = "VTAP01"
+mib = 100
+
+[[mode = "dedicated"l = "TESTPOOL"
+
+[partition.profile.memory]
+minimum_mib = 1024
+desired_mib = 2048
+maximum_mib = 4096
+
+[partition.prof[[switch]]ile.boot]
+sourcbacking = l_type = "unattended"
+console = "partition"

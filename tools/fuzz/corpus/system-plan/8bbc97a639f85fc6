@@ -1,0 +1,60 @@
+sQheserial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[poo[{ slot = 2, switc11A2"= "sdc"
+byths = 1073741824
+
+[[switOL1"
+name 
+cores = 8
+memory_mib = U9Q10.V1.9F1L0"
+diske = "TESTPOOL"
+core_ = [6, 7]
+
+[[vdismedia = "@k]]
+vool = " = "sdc"
+byths = 1073741824
+
+[[switOL1"
+name = "VD01"
+mib = 100
+thick = tr= 1
+name = "seed"
+created = 1
+by = "qsadmin"
+system = "QSHQVS1"
+[host]
+name =backing = 
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[poo[{ slot = 2, switc11A2"
+cores = 8
+memory_mib = U9Q10.V1.9F11A2-P1-C2-T1L0"
+disk = "sdc"
+b
+[[switch]]name = "ETHSW0"
+vlans = [10, 20]
+mtu = [[partition.profile]].V1.9F11A2-P1-C1-T1"]
+
+[[procpbyths = 1073741824
+
+[[switOL1"
+name = "VD0ool]]
+name = "TESTPOOL"
+core_ = [6, 7]
+
+[[vdismedia = "@k]]
+pool = "POOL1"
+name = "VD01"
+mib = 100
+thick = true
+
+[[volume]]
+name =0backingEV"
+keylock ile = "default"
+J[backing = [partition.profile]]
+name = "defaulslot = 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, sw

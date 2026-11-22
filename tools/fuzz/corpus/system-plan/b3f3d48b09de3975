@@ -1,0 +1,13 @@
+'''J[SDEV01"
+serial = "K2M4101"
+keylock ile = "default"
+
+[[partitio[.profile]]ib = 13107:
+
+[[pool]]
+name = "POOL1"
+protection = "r
+name = "de[ault"
+scsi = [{ slot =01"
+keylock i 3, luns = [{ lun = 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ slot = 2, swit

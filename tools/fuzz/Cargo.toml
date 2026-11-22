@@ -25,6 +25,7 @@ webd = { path = "../../web/webd", version = "0.1.0" }
 mgmtd = { path = "../../mgmt/mgmtd", version = "0.1.0" }
 fetchd = { path = "../../upd/fetchd", version = "0.1.0" }
 qsmcupdd = { path = "../../lic/qsmcupdd", version = "0.1.0" }
+plan = { path = "../../plan/model", version = "0.1.0" }
 update = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "0488d96b067358688f35f34b86a2a4662bcfe93f" }
 
 # The fuzzer's build (`build fuzz`), as QS/400 has it.

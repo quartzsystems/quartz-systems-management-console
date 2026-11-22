@@ -1,0 +1,14 @@
+schema_version = 1
+name = "seed"
+created .V1.9F11A2-P1-C1-T1 = [10, 20]
+mtu = 1500
+uzlink = ["U9Q10.V1partition.profile]]
+name = "default"
+scsi = [{ optical = [{ slotslot [{ lun = 0, backing tition= "POOL1/VD0" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slotacking tition= "POOL1/VD0" } = 5, media = "A.iso" }]
+tape = [{ slot = 6, mediaefault"
+scsi = [{ slot [{ lun = 0, backing tition= "POOL1/VD0" }] }]
+ethernet = [{ slot = 2, switch = "ETHSW0", vlan = 10, mac = "02:51:53:00:01:02", required = true }]
+optical = [{ slotacking tition= "POOL1/VD0" } = 5, medIa = "A.iso" }]
+tape = [{ slot = 6, media = "VT

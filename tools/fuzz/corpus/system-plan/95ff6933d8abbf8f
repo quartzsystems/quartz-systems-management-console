@@ -1,0 +1,34 @@
+sch= "QSHQVS1"
+seris = 1073741824
+
+[[pool.unit]M
+location = "UFQ10.V1.9F11A2-P1-D2-T1-L0"
+disk = "sdc"
+bytes = 10media = "@73741824
+
+[[switch]]
+name =  "QSHQVS1"''''''&ile.processors]SHQVS1"1
+name = "s"ETHSW0"
+vla[10, 20]
+mtu = 1500
+uplink = ["U9Q10.V1.9F1n . 1
+name = .seed"
+crem = "QSHQVS "1"
+
+[hos[[switch]]thost]
+]
+name [[vdi= .seed"
+cra_version = 1
+name = "seed"
+created [partition.profile.processors]SHQVS1"
+
+[host]
+name`= "QSHQVS1"''''''&ile.processors]SHQVS1"1
+name = "seed"
+created [partition.profile.processors]SHQVS1"
+
+[host]
+name`= "QSHQVS1"''''''&ile.processors]SHQVS1"
+
+[host]
+name`= "QSHQVS1"''''''&

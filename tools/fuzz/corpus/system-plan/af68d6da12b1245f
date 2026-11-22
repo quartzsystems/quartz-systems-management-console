@@ -1,0 +1,17 @@
+schema_version = 1
+name = "sadmin"
+system = "QSHQVS1"
+
+[host]
+name = "QSHQV11A2"
+cores =131072
+
+[[pool]]
+name = "POOL1"
+protection = "[[vdisk]]r!id6"
+bytes = 10737E1824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A*-P1-C2-T?-L0"
+disk = "sdc"
+bytes = 14

@@ -1,0 +1,10 @@
+schema_version = 1
+name = "seed"
+created = 1
+by = "q[[partition]]sadmSHQVS1"
+
+[host]
+name = "QSHQV[[partition]]S1"
+serial = "10%9F11A2"
+cores = 8
+memory_mib = 131

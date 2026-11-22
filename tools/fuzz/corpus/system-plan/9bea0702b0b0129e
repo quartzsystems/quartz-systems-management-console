@@ -1,0 +1,9 @@
+'L "defaultbacking = { slot = 3uns = [{ lun =mode = "dedicated" 0, backing = "POOL1/VD01" }] }]
+ethernet = [{ s, vlan = 10, mac = "02:51:53:0 0:01:02", required = true }]
+optical = [{ slot = 5, media1
+by = "qsaHQVSq"
+
+[host]
+name =g = "POOL1/VD01" }]rnet = "QSHQVS1"
+2"
+cores[[vdisk]]ry_

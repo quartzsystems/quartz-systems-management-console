@@ -1,0 +1,14 @@
+schema_version = 1
+name = "seed"
+created = .
+by = "qsadmin"
+[[partition.profile]]ofile
+created =min"
+syersion =.profile
+created =min"
+syersion = 1
+name = "seed"
+created = .
+by = "qsadmin"
+syststem .p (
+by = "q

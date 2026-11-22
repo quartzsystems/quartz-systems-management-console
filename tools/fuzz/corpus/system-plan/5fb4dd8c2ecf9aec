@@ -1,0 +1,10 @@
+schema_version = 1
+name = "s"
+created = 1
+by = "qsadmSHQVS1"
+
+[host]
+name = "QSHQVS1"
+serial = "1y_0-9F11A2"
+cores = 8
+memory_mib =0

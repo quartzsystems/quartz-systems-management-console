@@ -1,0 +1,41 @@
+schema_version = 1
+naee = "seed"
+created = 1
+by = "qsadmiystem = "QSHQVS1"
+
+[host]
+name =g = "POOL1/VD01" }] }]
+ethernet = "QSHQVS1"
+serial = "10-9F11A2"
+cores = 8
+memory_mib = 131072
+
+[[pool]]
+name = "POOL1"
+
+memory_mib= 13"POOL1[[vdisk
+{hos= "QSHQVS1"
+serial = "10-9F11A2"
+cores]]"
+protection = 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+{hos= "QSHQV= "raid6"
+bprotection = 1824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11mib= 13"POOL1[[vdisk
+{hos= "QSHQVS1"
+s= 1
+by = "qsadmin"
+system = "QSHQVS1"
+
+{hos= "QSHQV= "raid6"
+bprotection = 1824
+
+[[pool.unit]]
+location = "U9Q10.V1.9F11A2-P1-C2-T1-L0"
+disk = "sdc9F11A2"
+cores = 8
+memory_[pool]]
