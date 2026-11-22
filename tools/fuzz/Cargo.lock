@@ -976,7 +976,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e35d6e78f4cebb90e51d543db8fe41528851d6deeef6ef21ebd4bfdc1e784776"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -996,6 +996,27 @@ version = "0.1.0"
 source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=0488d96b067358688f35f34b86a2a4662bcfe93f#0488d96b067358688f35f34b86a2a4662bcfe93f"
 dependencies = [
  "rustix",
+]
+
+[[package]]
+name = "fetchd"
+version = "0.1.0"
+dependencies = [
+ "appliance",
+ "hex",
+ "httpc",
+ "ipc",
+ "msg",
+ "qmcmsg",
+ "refcode",
+ "release 0.1.0",
+ "serde",
+ "sha2 0.11.1",
+ "state",
+ "stream",
+ "supervise",
+ "updcat",
+ "vrm",
 ]
 
 [[package]]
@@ -1280,6 +1301,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "httpc"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=cf8f01453846fdf78129ca79589e18798aa03fae#cf8f01453846fdf78129ca79589e18798aa03fae"
+dependencies = [
+ "rustls",
+ "rustls-graviola",
+ "sha2 0.11.1",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "hybrid-array"
 version = "0.4.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1477,6 +1509,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53"
 
 [[package]]
+name = "loadsource"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=0488d96b067358688f35f34b86a2a4662bcfe93f#0488d96b067358688f35f34b86a2a4662bcfe93f"
+dependencies = [
+ "abrec",
+ "appliance",
+ "diskimg",
+ "ed25519-dalek",
+ "hex",
+ "protect",
+ "rustix",
+ "sha2 0.11.1",
+ "uuid",
+ "vrm",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1582,9 +1631,11 @@ dependencies = [
  "qsisess",
  "qsitrust",
  "refcode",
+ "release 0.1.0",
  "rustls",
  "serde",
  "state",
+ "supervise",
 ]
 
 [[package]]
@@ -1629,6 +1680,14 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "msg"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=0488d96b067358688f35f34b86a2a4662bcfe93f#0488d96b067358688f35f34b86a2a4662bcfe93f"
+dependencies = [
+ "ipc",
 ]
 
 [[package]]
@@ -1928,6 +1987,7 @@ dependencies = [
 name = "qmcmsg"
 version = "0.1.0"
 dependencies = [
+ "msg",
  "qsweb",
 ]
 
@@ -2001,10 +2061,24 @@ dependencies = [
 name = "qsmcfuzz"
 version = "0.1.0"
 dependencies = [
+ "fetchd",
  "fuzz",
  "mgmtd",
  "qmcbackup",
+ "qsmcupdd",
+ "update",
  "webd",
+]
+
+[[package]]
+name = "qsmcupdd"
+version = "0.1.0"
+dependencies = [
+ "qmcmsg",
+ "refcode",
+ "release 0.1.0",
+ "state",
+ "update",
 ]
 
 [[package]]
@@ -2163,6 +2237,7 @@ version = "0.1.0"
 dependencies = [
  "appliance",
  "processor",
+ "state",
  "supervise",
  "vrm",
 ]
@@ -2233,7 +2308,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -2653,6 +2728,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "stream"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=0488d96b067358688f35f34b86a2a4662bcfe93f#0488d96b067358688f35f34b86a2a4662bcfe93f"
+dependencies = [
+ "ed25519-dalek",
+ "hex",
+ "serde",
+ "toml",
+ "vrm",
+]
+
+[[package]]
 name = "strsim"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2964,6 +3051,27 @@ name = "untrusted"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
+
+[[package]]
+name = "update"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=0488d96b067358688f35f34b86a2a4662bcfe93f#0488d96b067358688f35f34b86a2a4662bcfe93f"
+dependencies = [
+ "appliance",
+ "diskimg",
+ "ed25519-dalek",
+ "hex",
+ "ipc",
+ "loadsource",
+ "msg",
+ "rustix",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "state",
+ "supervise",
+ "vrm",
+]
 
 [[package]]
 name = "updcat"

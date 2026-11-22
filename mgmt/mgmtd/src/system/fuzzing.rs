@@ -84,6 +84,29 @@ pub fn peer(data: &[u8]) {
 /// host (resources, profiles, activations, functions) is read and kept
 /// by its events, with what the fuzzer makes of them.
 pub fn host_family(data: &[u8]) {
+    families(data, mgmtproto::ask::CONSOLE_CAPS);
+}
+
+/// The servicing families' replies and events alone, for the fuzzer
+/// (target `mgmt-servicing`): a system whose hello offers problems,
+/// dumps and code update, and the partitions its dumps are of.
+pub fn servicing(data: &[u8]) {
+    use qsi::caps;
+    families(
+        data,
+        caps::BASE
+            | caps::PAIR
+            | caps::SERVICING
+            | caps::PROBLEM_NOTES
+            | caps::DUMP_SPACE
+            | caps::FIX_LEVEL
+            | caps::DUMPS
+            | caps::PARTITIONS,
+    );
+}
+
+/// The replies and events of the families `offered`, as `host_family`.
+fn families(data: &[u8], offered: u64) {
     use qsi::any::AnyReply;
     use qsisess::{EventLog, Incoming};
     static SAMPLES: OnceLock<Vec<(u16, u16, AnyReply)>> = OnceLock::new();
@@ -96,7 +119,7 @@ pub fn host_family(data: &[u8]) {
     let events = qsi::samples::events();
     let hello = Hello {
         version: qsi::VERSION,
-        caps: mgmtproto::ask::CONSOLE_CAPS,
+        caps: offered,
         kind: PeerKind::Host,
         name: "FUZZVS".into(),
         release: "V1R0M0".into(),
@@ -189,6 +212,13 @@ pub fn host_family(data: &[u8]) {
 mod tests {
     use qsi::any::AnyRequest;
     use qsisess::{EventLog, Incoming, Limits, Role, Session};
+
+    #[test]
+    fn the_servicing_families_are_answered_and_kept() {
+        super::servicing(b"");
+        super::servicing(&[2u8; 512]);
+        super::servicing(&(0u8..=255).cycle().take(4096).collect::<Vec<_>>());
+    }
 
     #[test]
     fn the_host_family_is_answered_and_kept() {

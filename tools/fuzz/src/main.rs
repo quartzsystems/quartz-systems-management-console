@@ -44,6 +44,23 @@ fn mgmt_host(data: &[u8]) {
     mgmtd::system::fuzzing::host_family(data);
 }
 
+/// The servicing families' replies and events (problems, dumps, code
+/// update), as the managed-systems service keeps them.
+fn mgmt_servicing(data: &[u8]) {
+    mgmtd::system::fuzzing::servicing(data);
+}
+
+/// A product stream's index or catalog, as the download service reads
+/// it, for each of the three streams.
+fn stream_index(data: &[u8]) {
+    fetchd::verify::fuzz(data);
+}
+
+/// An update image of the console, as its update service reads it.
+fn update_image(data: &[u8]) {
+    update::fuzz_image(&qsmcupdd::FORMAT, data);
+}
+
 /// A managed system's bytes after the handshake, as the managed-systems
 /// service takes them.
 fn mgmt_peer(data: &[u8]) {
@@ -121,6 +138,33 @@ pub static TARGETS: &[Target] = &[
             b"\x30\x82",
         ],
         max_len: 16 * 1024,
+    },
+    Target {
+        name: "mgmt-servicing",
+        what: "a system's replies and events of problems, dumps and code update, picked and broken by the input",
+        run: mgmt_servicing,
+        seeds: &[b"", &[1u8; 64], &[2u8; 64]],
+        dict: &[b"\x00\x03", b"\x00\x04", b"\x00\x16", b"QSI1001"],
+        max_len: 64 * 1024,
+    },
+    Target {
+        name: "stream-index",
+        what: "a product stream's signed index or catalog, as the download service reads it",
+        run: stream_index,
+        seeds: &[
+            b"format = 1\nstream = \"qsmc\"\nsequence = 1\ngenerated = 1\n\n[[release]]\nrelease = \"V1R0M1\"\n# signature 00\n",
+            b"format = 1\nsequence = 42\ngenerated = 1\n\n[[group]]\nname = \"C26290110\"\nkind = \"cumulative\"\n# signature 00\n",
+        ],
+        dict: &[b"# signature ", b"[[release]]", b"[[group]]", b"sequence = ", b"stream = ", b"update_sha256", b"updates_from"],
+        max_len: 64 * 1024,
+    },
+    Target {
+        name: "qsmc-update-image",
+        what: "an update image of the console, its container, manifest and verification",
+        run: update_image,
+        seeds: &[b"QSMCUPDT\x01\x00\x00\x00", b"QSMC-UPDATE 1\nproduct QS/MC\nrelease V1R0M1\n"],
+        dict: &[b"QSMCUPDT", b"QSMC-UPDATE 1", b"product ", b"release ", b"state ", b"file ", b"SLOTA.EFI", b"SLOTB.EFI"],
+        max_len: 64 * 1024,
     },
 ];
 

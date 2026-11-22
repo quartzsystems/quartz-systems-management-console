@@ -6,7 +6,7 @@ resolver = "3"
 
 [package]
 name = "qsmcfuzz"
-description = "QS/MC's fuzz targets over QS/400's fuzzer: a backup's reader, the certificate import, and what the managed-systems service does with a peer's messages"
+description = "QS/MC's fuzz targets over QS/400's fuzzer: a backup's reader, the certificate import, what the managed-systems service does with a peer's messages, a product stream's index, the console's update image"
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
@@ -23,6 +23,9 @@ fuzz = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "cf8
 qmcbackup = { path = "../../web/backup", version = "0.1.0" }
 webd = { path = "../../web/webd", version = "0.1.0" }
 mgmtd = { path = "../../mgmt/mgmtd", version = "0.1.0" }
+fetchd = { path = "../../upd/fetchd", version = "0.1.0" }
+qsmcupdd = { path = "../../lic/qsmcupdd", version = "0.1.0" }
+update = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "0488d96b067358688f35f34b86a2a4662bcfe93f" }
 
 # The fuzzer's build (`build fuzz`), as QS/400 has it.
 [profile.fuzz]
