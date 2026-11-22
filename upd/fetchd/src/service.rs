@@ -107,10 +107,21 @@ fn base(d: &qmcmsg::Def, values: &[&str]) -> Issued {
 
 /// Write `bytes` to `path` whole, readable by all.
 fn publish(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
-    let tmp = path.with_extension("new");
-    fs::write(&tmp, bytes)?;
-    readable(&tmp);
-    fs::rename(&tmp, path)
+    // Durable: a power loss leaves the old index or the new, whole.
+    state::atomic_write(path, bytes)?;
+    readable(path);
+    Ok(())
+}
+
+/// Move a verified download into place durably: its bytes on the disk
+/// before the rename, the rename before the answer.
+fn settle(from: &Path, to: &Path) -> std::io::Result<()> {
+    fs::File::open(from)?.sync_all()?;
+    fs::rename(from, to)?;
+    if let Some(dir) = to.parent() {
+        fs::File::open(dir)?.sync_all()?;
+    }
+    Ok(())
 }
 
 /// Make `path` readable by every service.
@@ -513,7 +524,7 @@ impl Service {
                 let _ = fs::create_dir_all(&dir);
                 readable(&dir);
                 readable(partial);
-                match fs::rename(partial, done) {
+                match settle(partial, done) {
                     Ok(()) => {
                         i.going.remove(&key);
                         (i.config.post)(&refcode::DOWNLOADED, &format!("{} {name}", stream.name()));
