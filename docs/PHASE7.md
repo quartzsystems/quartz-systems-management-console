@@ -162,6 +162,12 @@ Phase 7's suites on the test image at `c5359d5` (`31fcc5e` for suite
 Phase 6's `serv-host` passed on the same image with its plan step now
 done (66 s).
 
+On GitHub (`qemu.yml`), at `31fcc5e`: the images with both variants,
+then every suite of Phases 0 to 7 in twelve shards and the ISO's steps,
+all passed (run 45066159785). Shard 7 was cancelled once by an internal
+error of GitHub's runner and passed when run again on the same images;
+`ci.yml` passed too.
+
 Fixed in the product by the suites and tests: a switch's uplink, a
 partition's physical device and its tape drive named by the plan's
 host's location codes rather than the target's; a partition's own
@@ -196,7 +202,7 @@ A deployment, a capture and a validation reach a host only through
 
 | # | Check | Evidence |
 | --- | --- | --- |
-| 1 | Suites 1 to 11 pass | The suites, above; every earlier phase's on GitHub (`qemu.yml`) |
+| 1 | Suites 1 to 11 pass | The suites, above; every phase's on GitHub, run 45066159785 |
 | 2 | Suite 12 against a real host, or what cannot run listed; what could not be put back the same recorded | On a real host, above; Not done |
 | 3 | Every page of steps 21 and 22 live and equal to its golden file; the count recorded | The pages: 86 of 90 |
 | 4 | A host's install saves its plan first | `plans-update`, `schedd`'s `install` test |
