@@ -56,10 +56,10 @@ fn sim(sys: &sim::Shared, cmd: &str) -> String {
     sim::control::command(std::slice::from_ref(sys), cmd)
 }
 
-fn ask(svc: &mut Service, req: AnyRequest) -> Result<AnyReply, mgmtproto::Refusal> {
+fn ask(svc: &mut Service, req: &AnyRequest) -> Result<AnyReply, mgmtproto::Refusal> {
     svc.ask(
         "QSHQVS1".into(),
-        mgmtproto::Asked::of(&req),
+        mgmtproto::Asked::of(req),
         "qsadmin".into(),
     )
     .map(|a| a.reply().unwrap())
@@ -132,14 +132,14 @@ fn problems_keep_the_console_s_numbers_and_act_at_the_host() {
             anyway,
         }))
     };
-    let no = ask(&mut svc, close(false)).unwrap_err();
+    let no = ask(&mut svc, &close(false)).unwrap_err();
     assert_eq!(no.main.msgid, "QSI1001");
     let note = AnyRequest::Service(qsi::service::Request::Note(qsi::service::Note {
         number: 1042,
         text: "Pool checked".into(),
     }));
-    ask(&mut svc, note).unwrap();
-    ask(&mut svc, close(true)).unwrap();
+    ask(&mut svc, &note).unwrap();
+    ask(&mut svc, &close(true)).unwrap();
     until("closed", 10, || {
         svc.problems(ProblemFilter::default(), 0, 25)
             .rows
@@ -192,8 +192,8 @@ fn problems_keep_the_console_s_numbers_and_act_at_the_host() {
 fn a_dump_downloads_paced_by_its_reader_and_an_abandoned_one_ends_at_the_host() {
     let host = sim::fixture::qshqvs1();
     let at = sim::net::listen(host.clone(), "127.0.0.1:0").unwrap();
-    let d = dir("dumps");
-    let mut svc = service(&d);
+    let work = dir("dumps");
+    let mut svc = service(&work);
     let pw = sim(&host, "pair QSHQVS1");
     svc.add(at.ip().to_string(), at.port(), pw, "qsadmin".into())
         .unwrap();
@@ -206,12 +206,12 @@ fn a_dump_downloads_paced_by_its_reader_and_an_abandoned_one_ends_at_the_host() 
                 .any(|p| p.dumps.iter().any(|x| x.name == "BIG.core"))
         })
     });
-    let consoles = d.join("consoles.sock");
-    let l = std::os::unix::net::UnixListener::bind(&consoles).unwrap();
+    let consoles = work.join("consoles.sock");
+    let listener = std::os::unix::net::UnixListener::bind(&consoles).unwrap();
     let s2 = svc.clone();
-    std::thread::spawn(move || mgmtd::service::consoles::serve(&l, &s2));
+    std::thread::spawn(move || mgmtd::service::consoles::serve(&listener, &s2));
     let open = |name: &str| {
-        let mut s = std::os::unix::net::UnixStream::connect(&consoles).unwrap();
+        let mut stream = std::os::unix::net::UnixStream::connect(&consoles).unwrap();
         let o = mgmtproto::console::Open {
             watch: None,
             upload: None,
@@ -222,15 +222,15 @@ fn a_dump_downloads_paced_by_its_reader_and_an_abandoned_one_ends_at_the_host() 
                 user: "qsadmin".into(),
             }),
         };
-        ipc::frame::write_frame(&mut s, &ipc::encode(&o)).unwrap();
-        let a = ipc::frame::read_frame(&mut s).unwrap();
+        ipc::frame::write_frame(&mut stream, &ipc::encode(&o)).unwrap();
+        let a = ipc::frame::read_frame(&mut stream).unwrap();
         let bytes: Result<u64, mgmtproto::Refusal> = ipc::decode(&a).unwrap();
-        (s, bytes)
+        (stream, bytes)
     };
     let (s, bytes) = open("BIG.core");
     assert_eq!(bytes.unwrap(), 64 << 20);
     let mut r = mgmtproto::console::Frames::new(s);
-    let mut h = Sha256::new();
+    let mut hash = Sha256::new();
     let mut buf = vec![0u8; 1 << 16];
     let mut got = 0usize;
     loop {
@@ -238,12 +238,12 @@ fn a_dump_downloads_paced_by_its_reader_and_an_abandoned_one_ends_at_the_host() 
         if n == 0 {
             break;
         }
-        h.update(&buf[..n]);
+        hash.update(&buf[..n]);
         got += n;
     }
     assert_eq!(got, 64 << 20);
     let want = Sha256::digest(sim::system::servicing::content("BIG.core", 0, 64 << 20));
-    assert_eq!(h.finalize(), want);
+    assert_eq!(hash.finalize(), want);
 
     // Abandoned after a piece: the host is told, and its stream ends.
     let (s, _) = open("BIG.core");
@@ -256,7 +256,7 @@ fn a_dump_downloads_paced_by_its_reader_and_an_abandoned_one_ends_at_the_host() 
     // No such dump: the host's refusal.
     let (_, no) = open("NONE.core");
     assert_eq!(no.unwrap_err().main.msgid, "QVS2312");
-    let _ = std::fs::remove_dir_all(&d);
+    let _ = std::fs::remove_dir_all(&work);
     let _ = std::io::stdout().flush();
 }
 
@@ -305,7 +305,7 @@ fn a_host_update_is_staged_installed_activated_and_confirmed_or_rolled_back() {
     let k = svc.system("QSHQVS1".into()).unwrap();
     assert_eq!(k.staging.as_ref().unwrap().sent, bytes.len() as u64);
     let install = AnyRequest::Update(qsi::update::Request::Install(qsi::Empty));
-    ask(&mut svc, install).unwrap();
+    ask(&mut svc, &install).unwrap();
     // Partitions run: refused unless they are shut down.
     let activate = |p| {
         AnyRequest::Update(qsi::update::Request::Activate(qsi::update::Activate {
@@ -313,9 +313,9 @@ fn a_host_update_is_staged_installed_activated_and_confirmed_or_rolled_back() {
             timeout: 30,
         }))
     };
-    let no = ask(&mut svc, activate(qsi::update::Partitions::Refuse)).unwrap_err();
+    let no = ask(&mut svc, &activate(qsi::update::Partitions::Refuse)).unwrap_err();
     assert_eq!(no.main.msgid, "QSI1113");
-    ask(&mut svc, activate(qsi::update::Partitions::ShutDown)).unwrap();
+    ask(&mut svc, &activate(qsi::update::Partitions::ShutDown)).unwrap();
     until("confirmed after the restart", 30, || {
         svc.system("QSHQVS1".into())
             .and_then(|k| k.update_end)
@@ -339,10 +339,10 @@ fn a_host_update_is_staged_installed_activated_and_confirmed_or_rolled_back() {
     });
     ask(
         &mut svc,
-        AnyRequest::Update(qsi::update::Request::Install(qsi::Empty)),
+        &AnyRequest::Update(qsi::update::Request::Install(qsi::Empty)),
     )
     .unwrap();
-    ask(&mut svc, activate(qsi::update::Partitions::ShutDown)).unwrap();
+    ask(&mut svc, &activate(qsi::update::Partitions::ShutDown)).unwrap();
     until("rolled back after the restart", 30, || {
         svc.system("QSHQVS1".into())
             .and_then(|k| k.update_end)
