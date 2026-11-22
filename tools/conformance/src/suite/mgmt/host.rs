@@ -35,14 +35,14 @@ pub const DISK: &str = "QSMC_QSVS_DISK";
 pub const QS400: &str = "QSMC_QS400_IMAGE";
 
 /// QS/VS's Service Tools, as its own suites name them.
-pub(super) const SIGN_ON: &str = "Service Tools Sign On";
-pub(super) const MAIN_MENU: &str = "QS/VS Service Tools";
-pub(super) const PAIRING: &str = "Management Console Pairing";
+pub(crate) const SIGN_ON: &str = "Service Tools Sign On";
+pub(crate) const MAIN_MENU: &str = "QS/VS Service Tools";
+pub(crate) const PAIRING: &str = "Management Console Pairing";
 /// The Service Tools user QS/VS's test installation makes.
-pub(super) const USER: &str = "ADMIN";
-pub(super) const USER_PASSWORD: &str = "service tools 1";
+pub(crate) const USER: &str = "ADMIN";
+pub(crate) const USER_PASSWORD: &str = "service tools 1";
 /// QS/VS's own harness's NIC.
-pub(super) const MAC: &str = "52:54:00:12:34:56";
+pub(crate) const MAC: &str = "52:54:00:12:34:56";
 /// The partition's name.
 const PART: &str = "MCTEST";
 /// QSECOFR's password in QS/400's image, and the one it ships with.
@@ -52,7 +52,7 @@ const IPL_COMPLETE: &str = "C6001090";
 /// How long an IPL may take, three levels deep.
 const IPL: Duration = Duration::from_mins(40);
 
-pub(super) fn password_of(screen: &str) -> Option<String> {
+pub(crate) fn password_of(screen: &str) -> Option<String> {
     screen
         .split_whitespace()
         .find(|w| {
@@ -64,7 +64,7 @@ pub(super) fn password_of(screen: &str) -> Option<String> {
         .map(ToString::to_string)
 }
 
-pub(super) fn env(name: &str, how: &str) -> Result<PathBuf, String> {
+pub(crate) fn env(name: &str, how: &str) -> Result<PathBuf, String> {
     std::env::var_os(name)
         .map(PathBuf::from)
         .ok_or_else(|| format!("{name} is not set: {how}"))

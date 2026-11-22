@@ -11,9 +11,9 @@ mod act;
 mod beside;
 pub(crate) mod guard;
 pub mod host;
-mod host_pages;
+pub(crate) mod host_pages;
 mod pair;
-mod standalone;
+pub(crate) mod standalone;
 mod terminal;
 
 use std::time::{Duration, Instant};

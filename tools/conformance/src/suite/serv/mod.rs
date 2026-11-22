@@ -22,6 +22,7 @@ mod events;
 mod host;
 mod local;
 mod pages;
+mod real;
 mod streams;
 
 use std::path::Path;
@@ -204,6 +205,29 @@ pub fn lab<'a>(run: &super::base::Run<'a>, tag: &str, qsmc: &[Release]) -> Resul
     ready(&mut c.browser)?;
     Ok(Lab { fleet, c, streams })
 }
+
+/// A stream server for a console already signed on in `b`: the three
+/// streams at sequence 2, QS/400's catalog's package for `release`,
+/// the console pointed at it and checked. The server, kept for as long
+/// as it is used.
+pub fn lab_streams(b: &mut Browser, release: &str) -> Result<Server, String> {
+    let streams = Server::start("127.0.0.1:0");
+    publish(&streams, 2, &[]);
+    streams.publish_catalog(2, release, CUM, &test_key("qs400"));
+    point(b, &server_url(&streams))?;
+    let t = check(b)?;
+    if !super::web::shows(&t, qmcmsg::CHECKED.id) {
+        return Err(format!("Check now: {}", message_of(&t)));
+    }
+    Ok(streams)
+}
+
+/// The suites run by name only: a real host and a real standalone
+/// system.
+pub const NAMED: &[(&str, SuiteFn)] = &[
+    ("serv-real-host", real::host),
+    ("serv-real-standalone", real::standalone),
+];
 
 /// Wait until what `mgmtd` keeps of both systems' servicing is whole:
 /// event 1042 listed, the dumps and the host's slots.

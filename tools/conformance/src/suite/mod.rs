@@ -166,7 +166,11 @@ impl Suite {
         only: Option<&str>,
         mut passed: impl FnMut(&Report),
     ) -> Result<Vec<Report>, HarnessError> {
-        let by_name = media == Media::Disk && mgmt::NAMED.iter().any(|(n, _)| only == Some(*n));
+        let by_name = media == Media::Disk
+            && mgmt::NAMED
+                .iter()
+                .chain(serv::NAMED)
+                .any(|(n, _)| only == Some(*n));
         if let Some(name) = only
             && !names(media).contains(&name)
             && !by_name
@@ -193,7 +197,10 @@ impl Suite {
                 .chain(parts::SUITES)
                 .chain(serv::SUITES);
             // A suite run by name only, when it is named.
-            let named = mgmt::NAMED.iter().filter(|(n, _)| only == Some(*n));
+            let named = mgmt::NAMED
+                .iter()
+                .chain(serv::NAMED)
+                .filter(|(n, _)| only == Some(*n));
             for (name, suite) in all.filter(|(n, _)| wanted(n)).chain(named) {
                 let report = self.base(name, *suite)?;
                 passed(&report);

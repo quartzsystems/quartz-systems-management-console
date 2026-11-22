@@ -83,7 +83,7 @@ pub fn dumps(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         Ok(page(&mut lab.c.browser, "/qsmc/dumps")?.contains(BIG))
     })?;
     let t = page(&mut lab.c.browser, "/qsmc/dumps")?;
-    for who in [VS, STANDALONE, "the console"] {
+    for who in [VS, STANDALONE, crate::suite::install::HOST] {
         if !t.contains(&format!("{who}: ")) {
             return Err(format!("no dump space shown for {who}"));
         }
@@ -213,20 +213,44 @@ pub fn dumps(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     ))
 }
 
-/// What `unzip` says of `args`, or why it failed.
-fn unzip(args: &[&str]) -> Result<Vec<u8>, String> {
-    let out = Command::new("unzip")
+/// What Python's `zipfile`, a standard tool, says of `args`, or why it
+/// failed.
+fn zipfile(args: &[&str]) -> Result<Vec<u8>, String> {
+    let out = Command::new("python3")
+        .args(["-I", "-m", "zipfile"])
         .args(args)
         .output()
-        .map_err(|e| format!("unzip: {e}"))?;
+        .map_err(|e| format!("python3 -m zipfile: {e}"))?;
     if out.status.success() {
         Ok(out.stdout)
     } else {
         Err(format!(
-            "unzip {args:?}: {}",
+            "python3 -m zipfile {args:?}: {}",
             String::from_utf8_lossy(&out.stderr)
         ))
     }
+}
+
+/// Every file under `dir`, by its path from `dir`, with its bytes.
+fn files_under(dir: &std::path::Path) -> Vec<(String, Vec<u8>)> {
+    let mut out = Vec::new();
+    let mut todo = vec![dir.to_path_buf()];
+    while let Some(d) = todo.pop() {
+        for e in std::fs::read_dir(&d).into_iter().flatten().flatten() {
+            let p = e.path();
+            if p.is_dir() {
+                todo.push(p);
+            } else if let Ok(bytes) = std::fs::read(&p) {
+                let rel = p
+                    .strip_prefix(dir)
+                    .map(|r| r.to_string_lossy().replace('\\', "/"))
+                    .unwrap_or_default();
+                out.push((rel, bytes));
+            }
+        }
+    }
+    out.sort();
+    out
 }
 
 /// Suite 12.
@@ -266,10 +290,17 @@ pub fn dump_file(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         return Err(format!("the console's dump answered {}", got.status));
     }
     let path = file.to_string_lossy().into_owned();
-    unzip(&["-tq", &path])?;
-    let listed = String::from_utf8_lossy(&unzip(&["-Z1", &path])?).into_owned();
-    let names: Vec<&str> = listed.lines().collect();
-    let manifest = String::from_utf8_lossy(&unzip(&["-p", &path, "MANIFEST.txt"])?).into_owned();
+    zipfile(&["-t", &path])?;
+    let out = run.file("dump-opened");
+    let _ = std::fs::remove_dir_all(&out);
+    zipfile(&["-e", &path, &out.to_string_lossy()])?;
+    let opened = files_under(&out);
+    let names: Vec<&str> = opened.iter().map(|(n, _)| n.as_str()).collect();
+    let manifest = opened
+        .iter()
+        .find(|(n, _)| n == "MANIFEST.txt")
+        .map(|(_, b)| String::from_utf8_lossy(b).into_owned())
+        .ok_or("the dump has no MANIFEST.txt")?;
     // Each entry the manifest names with its size is in the archive.
     let in_manifest: Vec<&str> = manifest
         .lines()
@@ -284,7 +315,7 @@ pub fn dump_file(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             "the manifest names {n}, which is not in the archive"
         ));
     }
-    for want in ["state/web.toml", "MANIFEST.txt"] {
+    for want in ["state/host.toml", "state/inventory.toml", "MANIFEST.txt"] {
         if !names.iter().any(|n| n.ends_with(want)) {
             return Err(format!("the dump lacks {want}: {names:?}"));
         }
@@ -320,15 +351,17 @@ pub fn dump_file(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         return Err("systems.toml names no pin to look for".into());
     }
     secrets.extend(pins.iter().cloned());
-    let all = unzip(&["-p", &path])?;
-    let all = String::from_utf8_lossy(&all);
+    let all: String = opened
+        .iter()
+        .map(|(_, b)| String::from_utf8_lossy(b).into_owned())
+        .collect();
     if let Some(s) = secrets.iter().find(|s| all.contains(s.as_str())) {
         let shown = &s[..s.len().min(12)];
         return Err(format!("the dump holds a secret ({shown}...)"));
     }
     lab.c.guest.kill();
     Ok(format!(
-        "{name} ({} bytes) taken from Manage dumps, downloaded, tested and listed by unzip: {} \
+        "{name} ({} bytes) taken from Manage dumps, downloaded, tested and opened by Python's zipfile: {} \
          entries, each the manifest names among them; webusers.toml, the web key, systems.toml, \
          identity.key and users.db left out and said so; no password, key, hash or the {} pins in \
          any entry",

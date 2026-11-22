@@ -238,9 +238,9 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
         "both systems connected again",
         Duration::from_secs(120),
         || {
-            let t = page(b, "/qsmc/servers")?;
-            Ok(row(&t, VS).contains("Connected")
-                && row(&t, super::STANDALONE).contains("Connected"))
+            let t = page(b, "/qsmc/connectivity")?;
+            Ok(row(&t, VS).contains(">Connected<")
+                && row(&t, super::STANDALONE).contains(">Connected<"))
         },
     )?;
     let mut w = b.fresh();
@@ -452,7 +452,9 @@ pub fn refusals(run: &Run<'_>) -> Result<String, String> {
             .lines()
             .nth(1)
             .is_some_and(|t| t.trim() == "Confirm Install Update")
-            && !shown.contains("Verified . . . . . . . . . no")
+            && !shown
+                .lines()
+                .any(|l| l.contains("Verified") && l.trim_end().ends_with(" no"))
         {
             return Err(format!("{name} ({what}) was taken:\n{shown}"));
         }
@@ -486,6 +488,29 @@ pub fn refusals(run: &Run<'_>) -> Result<String, String> {
         "five images refused from a removable volume, nothing pending ({record}): {}",
         said.join("; ")
     ))
+}
+
+/// F9 at the serial port.
+const F9: &str = "\x1b[20~";
+
+/// Cancel a slot an install left pending, never activated (power pulled
+/// after it was written), from option 8, 5: whether there was one.
+fn cancel_pending(c: &mut Console<'_>) -> Result<bool, String> {
+    let st = channel(&mut c.guest)?.status()?;
+    let record = crate::suite::base::fact_of(&st, release::fact::RECORD)?.to_string();
+    if !record.contains("pending") {
+        return Ok(false);
+    }
+    let d = Instant::now() + Duration::from_secs(60);
+    sign_on(&mut c.guest, USER, PASSWORD, d)?;
+    option(&mut c.guest, 8, "Service Functions", d)?;
+    option(&mut c.guest, 5, "Display Code Levels", d)?;
+    c.guest.type_keys(F9)?;
+    install::said(&mut c.guest, "pending no more", d)?;
+    c.guest.type_keys(key::F3)?;
+    titled(&mut c.guest, install::MAIN_MENU, d)?;
+    c.guest.type_keys(key::F3)?;
+    Ok(true)
 }
 
 /// How many times power is pulled.
@@ -570,10 +595,14 @@ pub fn power(run: &Run<'_>) -> Result<String, String> {
     let mut fresh_n = 0;
     let mut c = fresh(run, fresh_n, &streams, next)?;
     let (mut in_install, mut in_trial, mut confirmed, mut both) = (0, 0, 0, false);
+    let mut cancelled = 0;
     for pull in 0..PULLS {
         let at = |e: String| format!("after {pull} pulls: {e}");
-        // At each start nothing is pending: a slot an install marked
-        // pending is the next IPL's, which confirms it or falls back.
+        // A slot activated and pulled is the next IPL's, which falls
+        // back; one written and never activated is cancelled here.
+        if cancel_pending(&mut c).map_err(at)? {
+            cancelled += 1;
+        }
         install_console(&mut c.browser).map_err(at)?;
         let machine = if pull % 2 == 0 {
             // During the install: staged, verified, the slot written.
@@ -616,6 +645,7 @@ pub fn power(run: &Run<'_>) -> Result<String, String> {
     }
     // One install left to finish: it is on both disks.
     if !both {
+        cancel_pending(&mut c)?;
         install_console(&mut c.browser)?;
         ends(&mut c.guest, Duration::from_secs(600))?;
         let Console { guest, machine, .. } = c;
@@ -631,6 +661,7 @@ pub fn power(run: &Run<'_>) -> Result<String, String> {
         "{PULLS} power pulls on a mirrored load source, {in_install} during an install and \
          {in_trial} during the pending slot's first IPL: after each the console came back ready \
          on a good slot with its web users signing on ({confirmed} times on V1R0M1, the rest on \
-         V1R0M0); V1R0M1's slot B on both disks"
+         V1R0M0; {cancelled} times a slot written but never activated, cancelled at option 8, \
+         5); V1R0M1's slot B on both disks"
     ))
 }

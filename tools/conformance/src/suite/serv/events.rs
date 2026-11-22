@@ -180,8 +180,8 @@ pub fn events(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         .collect();
     lab.fleet.tell(0, "drop");
     until("QSHQVS1 connected again", Duration::from_secs(120), || {
-        let t = page(&mut lab.c.browser, "/qsmc/servers")?;
-        Ok(row(&t, VS).contains("Connected"))
+        let t = page(&mut lab.c.browser, "/qsmc/connectivity")?;
+        Ok(row(&t, VS).contains(">Connected<"))
     })?;
     let after_drop: BTreeMap<&str, u64> = before
         .keys()
@@ -224,11 +224,11 @@ pub fn events(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             .count()
             >= 6)
     })?;
-    let one = page(b, "/qsmc/events?s=All&rows=3")?;
-    let two = page(b, "/qsmc/events?s=All&rows=3&page=2")?;
+    let one = page(b, "/qsmc/events?s=All&rows=10")?;
+    let two = page(b, "/qsmc/events?s=All&rows=10&page=2")?;
     let rows = |t: &str| t.matches("/qsmc/event/").count();
     if rows(&one) == 0 || rows(&two) == 0 || one == two || !one.contains("page=2") {
-        return Err("three rows a page do not page".into());
+        return Err("ten rows a page do not page".into());
     }
     let sorted = page(b, "/qsmc/events?s=All&rows=100&sort=ms")?;
     let (q, v) = (
@@ -239,8 +239,7 @@ pub fn events(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         return Err("sorted by managed system, QSHQ400 is not before QSHQVS1".into());
     }
     said.push(
-        "Closed for QSHQ400 alone, Open by default, three rows a page paged, sorted by system"
-            .into(),
+        "Closed for QSHQ400 alone, Open by default, ten rows a page paged, sorted by system".into(),
     );
     lab.c.guest.kill();
     Ok(said.join("; "))
@@ -316,8 +315,8 @@ pub fn own(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     lab.fleet.tell(0, "down");
     let now = super::clock(&mut lab.c.guest)?;
     until("QSHQVS1 not reached", Duration::from_secs(60), || {
-        let t = page(&mut lab.c.browser, "/qsmc/servers")?;
-        Ok(!row(&t, VS).contains("Connected"))
+        let t = page(&mut lab.c.browser, "/qsmc/connectivity")?;
+        Ok(!row(&t, VS).contains(">Connected<"))
     })?;
     set_clock(&mut lab.c.guest, now + 31 * 60)?;
     lab.c.browser = lab.c.browser.fresh();
@@ -356,7 +355,7 @@ pub fn own(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     let n = own_event(
         &mut lab.c.browser,
         "A3006050",
-        "certificate",
+        "A3006050",
         Duration::from_secs(120),
     )?;
     set_clock(&mut lab.c.guest, back)?;
@@ -424,7 +423,7 @@ pub fn own(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     let n = own_event(
         &mut c.browser,
         "A3001080",
-        "flaky",
+        "A3001080",
         Duration::from_secs(180),
     )?;
     let t = own_page(&mut c.browser, n)?;

@@ -296,9 +296,21 @@ fn options(page: &str) -> Vec<(u8, String)> {
         .collect()
 }
 
-/// Suite 14.
-#[allow(clippy::too_many_lines, clippy::many_single_char_names)] // a system, a step at a time
-pub fn standalone(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
+/// The standalone QS/400 of `QSMC_QS400_IMAGE` booted to its IPL's end
+/// and paired from the Add page of a console installed for `tag`: the
+/// system, the console signed on, and the system's name.
+#[allow(clippy::many_single_char_names)] // a machine, a console, its browser, as the suite has them
+pub(crate) fn paired<'a>(
+    run: &crate::suite::base::Run<'a>,
+    tag: &str,
+) -> Result<
+    (
+        crate::suite::base::Guest<'a>,
+        crate::suite::web::Console<'a>,
+        String,
+    ),
+    String,
+> {
     let image = std::env::var_os(super::host::QS400)
         .map(std::path::PathBuf::from)
         .ok_or_else(|| {
@@ -341,7 +353,7 @@ pub fn standalone(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     address(&mut sys)?;
     let pw = pairing_password(&mut sys)?;
     // The console, and the system added from the Add page.
-    let mut c = start(run, "mgmt-standalone")?;
+    let mut c = start(run, tag)?;
     let b = &mut c.browser;
     signed_on(b, ADMIN, PASSWORD)?;
     let r = submit(
@@ -370,6 +382,14 @@ pub fn standalone(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     if !shows(&t, "QMC1005") {
         return Err(format!("{name} was not kept: {}", message_of(&t)));
     }
+    Ok((sys, c, name))
+}
+
+/// Suite 14.
+#[allow(clippy::too_many_lines, clippy::many_single_char_names)] // a system, a step at a time
+pub fn standalone(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
+    let (mut sys, mut c, name) = paired(run, "mgmt-standalone")?;
+    let b = &mut c.browser;
     // Servers, and its properties.
     let servers = page(b, "/qsmc/servers")?;
     if !servers.contains(&name) || !servers.contains("Standalone QS/400") {

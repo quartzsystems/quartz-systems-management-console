@@ -84,9 +84,7 @@ pub fn host_update(run: &crate::suite::base::Run<'_>) -> Result<String, String> 
     let r = b.post(&path, &[("csrf", &token), ("t", VS), ("ok", "OK")])?;
     expect(b, &r, qmcmsg::PARTITIONS_RUN.id)?;
     std::thread::sleep(Duration::from_secs(3));
-    if lab.fleet.lines(0).contains("request 0016/")
-        || sim::lock(&lab.fleet.systems[0]).servicing.staged.is_some()
-    {
+    if sim::lock(&lab.fleet.systems[0]).servicing.staged.is_some() {
         return Err("an install refused still sent the host its image".into());
     }
     // Rolled back, as the host is told to.

@@ -35,7 +35,7 @@ pub const ISO: &str = "QSMC_QS400_ISO";
 
 const PART: &str = "MCINST";
 const PROFILE: &str = "INSTALL";
-const POOL: &str = "MCPOOL";
+pub(crate) const POOL: &str = "MCPOOL";
 const VDISK: &str = "MCLS01";
 const SWITCH: &str = "MCSW1";
 const SAVED: &str = "SAVED1";
@@ -43,7 +43,7 @@ const IPL_COMPLETE: &str = "C6001090";
 /// The image's name in the media library: a store name has no dot.
 const IMAGE: &str = "QS400";
 /// The blank further disk.
-const BLANK: u64 = 16 << 30;
+pub(crate) const BLANK: u64 = 16 << 30;
 /// What QS/400's installer shows first, as QS/VS's own suite takes it.
 const FIRST: [&str; 5] = [
     "Install Licensed Internal Code - Status",
@@ -78,7 +78,7 @@ fn next(b: &mut Browser, n: usize, set: &[(&str, &str)]) -> Result<(), String> {
 }
 
 /// The first free disk the pool form offers: its name.
-fn free_disk(html: &str) -> Option<String> {
+pub(crate) fn free_disk(html: &str) -> Option<String> {
     html.split("name=\"d_")
         .nth(1)
         .and_then(|s| s.split('"').next())

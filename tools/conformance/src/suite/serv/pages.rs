@@ -252,7 +252,7 @@ pub fn roles(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             let Some((task, fields)) = route.post else {
                 continue;
             };
-            let token = nb.csrf("/qsmc/welcome")?;
+            let token = nb.csrf("/qsmc/partitions")?;
             let mut all = vec![("csrf", token.as_str())];
             all.extend(fields.iter().map(|(k, v)| (*k, v.as_str())));
             let a = nb.post(&route.path, &all)?;
