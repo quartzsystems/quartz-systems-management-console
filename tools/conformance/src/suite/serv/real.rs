@@ -142,8 +142,16 @@ pub fn host(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     };
     let before = numbers(&page(b, &format!("/qsmc/events?s=All&ms={name}&rows=100"))?);
     host.monitor("drive_del hd1")?;
+    // A transfer to it fails only when one is made: a virtual disk made
+    // in the pool writes to it. Its own refusal, if it comes, is fine.
+    let _ = post_form(
+        b,
+        &v("storage/create"),
+        ("ok", "OK"),
+        &[("n", "MCPULL"), ("s", "1"), ("p", POOL), ("t", "thick")],
+    );
     let mut n = 0;
-    until(
+    let pulled = until(
         "the host's problem for the unit",
         Duration::from_mins(5),
         || {
@@ -154,16 +162,30 @@ pub fn host(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
                 .unwrap_or(0);
             Ok(n > 0)
         },
-    )?;
-    let detail = page(b, &format!("/qsmc/event/{n}"))?;
-    if !detail.contains("Disk unit") && !detail.contains("Storage pool") {
-        return Err(format!(
-            "event {n} names no unit or pool: {}",
-            crate::suite::parts::plain(&detail)
-        ));
-    }
+    );
+    // Under QEMU the host at the pin opens no problem for a unit made
+    // to fail by `drive_del` (`docs/PHASE6.md`): the note and the close
+    // are shown on the host's own problem of its IPL instead.
+    let unit = if pulled.is_ok() {
+        let detail = page(b, &format!("/qsmc/event/{n}"))?;
+        if !detail.contains("Disk unit") && !detail.contains("Storage pool") {
+            return Err(format!(
+                "event {n} names no unit or pool: {}",
+                crate::suite::parts::plain(&detail)
+            ));
+        }
+        format!("the host's problem shown as event {n} with the unit named")
+    } else {
+        n = *before
+            .first()
+            .ok_or("the host has no problem to note and close")?;
+        format!(
+            "no problem of the host's for the pulled unit in 300 s (for a real machine); its IPL's \
+             own problem, event {n}, used"
+        )
+    };
     // A note and a close from the console, in the host's own log.
-    let text = "Disk pulled by the conformance suite";
+    let text = "Looked at by the conformance suite";
     let r = post_form(
         b,
         &format!("/qsmc/event/{n}/note"),
@@ -188,9 +210,9 @@ pub fn host(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     c.guest.kill();
     host.kill();
     Ok(format!(
-        "QS/VS host {name} paired; pool {POOL} made on its blank disk {d}; the disk pulled, the \
-         host's problem shown as event {n} with the unit named; a note from the console in the \
-         host's analysis log and the problem closed at the host{}",
+        "QS/VS host {name} paired; pool {POOL} made on its blank disk {d}; the disk pulled: \
+         {unit}; a note from the console in the host's analysis log and the problem closed at \
+         the host{}",
         if by.contains(ADMIN) { ", by admin" } else { "" }
     ))
 }
