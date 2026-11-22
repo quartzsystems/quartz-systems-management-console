@@ -250,6 +250,7 @@ cargo run -p build -- test --media iso   the installation ISO
 cargo run -p build -- loadsource a.img [b.img]   a load source (two files: mirrored) from the built UKIs
 cargo run -p build -- deny            cargo-deny and the C-linkage check
 cargo run -p build -- notices         rewrite lic/release/NOTICES.txt (--check in CI)
+cargo run -p build -- keys DIR        the release keys, once, outside the checkout (docs/UPDATES.md)
 cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
 cargo clippy -p qsmcinit -p qsmcstgd -p qsmclogd -p qsmcnetd -p qsmccons -p qsmcinstall -p qsmcwebd -p qsmcmgmtd -p qsmcschedd --all-targets --target x86_64-unknown-linux-musl -- -D warnings

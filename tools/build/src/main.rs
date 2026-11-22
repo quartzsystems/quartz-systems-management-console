@@ -122,6 +122,12 @@ enum Command {
         #[arg(long)]
         check: bool,
     },
+    /// Make the release keys once, into a folder outside the checkout:
+    /// `qsmc-release.ed25519` and `.pub`, `qsmc-db.key`, `.cer`, `.esl`.
+    Keys {
+        /// The folder; no key in it is written over.
+        dir: PathBuf,
+    },
 }
 
 /// The context of one image kind. A test image is built in its own
@@ -188,7 +194,7 @@ fn main() -> Result<()> {
     if !cfg!(target_os = "linux")
         && !matches!(
             cli.command,
-            Command::Doctor | Command::Deny | Command::Notices { .. }
+            Command::Doctor | Command::Deny | Command::Notices { .. } | Command::Keys { .. }
         )
     {
         tracing::warn!("the pipeline needs a Linux host; run this from WSL");
@@ -232,6 +238,7 @@ fn main() -> Result<()> {
         Command::Notices { check } => {
             notices::notices(&ctx, check)?;
         }
+        Command::Keys { dir } => product::keys::make(&dir)?,
     }
     Ok(())
 }

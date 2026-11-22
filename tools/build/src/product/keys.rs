@@ -28,6 +28,20 @@ pub const ENV: &str = "QSMC_STREAM_KEYS";
 /// The streams, by name.
 pub const STREAMS: [&str; 3] = conformance::streams::keys::STREAMS;
 
+/// QS/MC's release keys' names: `qsmc-release.ed25519`, `qsmc-db.cer`.
+pub const NAMES: buildaid::release::Names = buildaid::release::Names {
+    prefix: "qsmc",
+    sb_subject: "CN=Quartz Systems QS/MC Secure Boot db 2026,O=Quartz Systems",
+    stream: "qsmc",
+};
+
+/// `build keys DIR`: the release signing key and a Secure Boot db pair,
+/// made once on a trusted machine by `base/buildaid`. Nothing is written
+/// over.
+pub fn make(dir: &Path) -> Result<()> {
+    buildaid::release::keys(dir, &NAMES)
+}
+
 /// Whether `text` is a keys' file: at least one line, each 64
 /// hexadecimal characters.
 fn keys_file(text: &str) -> bool {

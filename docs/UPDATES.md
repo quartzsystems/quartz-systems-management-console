@@ -30,11 +30,27 @@ the one kept; otherwise it is refused, `QMC7201` or `QMC7202` with
 **The keys.** A test image trusts the harness's test keys
 (`tools/conformance/src/streams/keys.rs`). A release image trusts the
 keys in the folder `QSMC_STREAM_KEYS` names (`qsmc.pub`, `qsvs.pub`,
-`qs400.pub`, the three streams' release keys: `NEEDS-CODY`); the build
-refuses an image signed with a release key (`QSMC_SIGNING_KEY`) without
-them. A development build without either trusts development keys made
-from its own development signing key, and says so
+`qs400.pub`, the three streams' release keys); the build refuses an
+image signed with a release key (`QSMC_SIGNING_KEY`) without them. A
+development build without either trusts development keys made from its
+own development signing key, and says so
 (`tools/build/src/product/keys.rs`).
+
+QS/MC's own release keys are made once, on a trusted machine, into a
+folder outside the checkout, by `base/buildaid` as QS/VS's are:
+
+```
+cargo run -p build -- keys /path/to/qsmc-keys
+```
+
+It writes `qsmc-release.ed25519` (the signing key's 32-byte seed in
+hexadecimal) and its public half `qsmc-release.pub`, and the Secure Boot
+db pair `qsmc-db.key`, `qsmc-db.cer` and `qsmc-db.esl`; it never writes
+over a key that is there. The folder `QSMC_STREAM_KEYS` names is made
+beside them, `streams/`, of public halves only: `qsmc.pub` (a copy of
+`qsmc-release.pub`), `qsvs.pub` (QS/VS's `qsvs-release.pub`) and
+`qs400.pub` (QS/400's release key's public half). Only the private
+files are secrets: `qsmc-release.ed25519` and `qsmc-db.key`.
 
 ## The download service
 

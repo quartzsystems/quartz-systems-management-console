@@ -187,9 +187,9 @@ the stream; `serv-dumpfile` and `serv-audit` found no secret.
 
 ## Not done
 
-- NEEDS-CODY: the three streams' release keys (`qsmc.pub`, `qsvs.pub`,
-  `qs400.pub`, `QSMC_STREAM_KEYS`); the build refuses a release image
-  signed with a release key without them.
+- NEEDS-CODY: two offline copies of QS/MC's release keys, made by
+  `build keys` (`docs/UPDATES.md`), and the repository's secrets for
+  them once a release workflow exists (Phase 8).
 - NEEDS-CODY: a real update of the Dell's host and of a real console,
   with a forced roll back of each.
 - NEEDS-CODY: a disk pulled by hand on a real host and its event read at
