@@ -473,6 +473,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "consdump"
+version = "0.1.0"
+dependencies = [
+ "identity",
+ "mgmtd",
+ "release",
+ "servicedump",
+ "state",
+ "users",
+ "webusers",
+]
+
+[[package]]
 name = "console"
 version = "0.1.0"
 source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=cf8f01453846fdf78129ca79589e18798aa03fae#cf8f01453846fdf78129ca79589e18798aa03fae"
@@ -1780,6 +1793,7 @@ version = "0.1.0"
 dependencies = [
  "abrec",
  "appliance",
+ "consdump",
  "diskimg",
  "fdpass",
  "identity",
@@ -1792,9 +1806,11 @@ dependencies = [
  "release",
  "rustix",
  "seed",
+ "servicedump",
  "state",
  "stgd",
  "supervise",
+ "update",
  "users",
  "webusers",
 ]
@@ -1835,6 +1851,7 @@ dependencies = [
  "mgmtd",
  "mgmtproto",
  "qsitrust",
+ "refcode",
  "release",
  "supervise",
 ]
@@ -1867,6 +1884,7 @@ version = "0.1.0"
 dependencies = [
  "appliance",
  "mgmtproto",
+ "refcode",
  "release",
  "schedd",
  "state",
@@ -1903,10 +1921,12 @@ dependencies = [
 name = "qsmcwebd"
 version = "0.1.0"
 dependencies = [
+ "refcode",
  "release",
  "users",
  "webd",
  "webpages",
+ "webusers",
 ]
 
 [[package]]
@@ -1996,7 +2016,10 @@ version = "0.1.0"
 dependencies = [
  "appliance",
  "processor",
+ "serde",
+ "state",
  "supervise",
+ "toml",
  "vrm",
 ]
 
@@ -2298,6 +2321,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4e7523beb55eece201a2356bee0bbca0d1ab466c14c07703b2e0ee6d42cb0c2c"
 dependencies = [
  "serde_core",
+]
+
+[[package]]
+name = "servicedump"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=0488d96b067358688f35f34b86a2a4662bcfe93f#0488d96b067358688f35f34b86a2a4662bcfe93f"
+dependencies = [
+ "appliance",
+ "ipc",
 ]
 
 [[package]]

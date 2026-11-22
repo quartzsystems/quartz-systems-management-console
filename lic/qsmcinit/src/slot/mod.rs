@@ -221,6 +221,62 @@ mod on_console {
             }
         }
 
+        /// Write `next` as the record, on every disk.
+        fn write(&mut self, next: HostRecord) -> Result<(), String> {
+            let part = self.part.as_mut().ok_or("there is no A/B record")?;
+            record::write_all(part, next).map_err(|e| e.to_string())?;
+            self.record = Some(next);
+            Ok(())
+        }
+
+        /// `slot` is installed: pending, not activated. Not the slot
+        /// that runs, and not while a trial is under way.
+        pub fn install(&mut self, slot: Slot) -> Result<(), String> {
+            if slot == self.booted {
+                return Err(format!("slot {} is the one that runs", letter(slot)));
+            }
+            if self.ipl == Ipl::Trial {
+                return Err("the slot that runs has not confirmed yet".into());
+            }
+            let current = self.record.ok_or("there is no A/B record")?;
+            self.write(current.install(slot))
+        }
+
+        /// Nothing is pending, and the firmware boots by its order.
+        pub fn cancel(&mut self) -> Result<(), String> {
+            let current = self.record.ok_or("there is no A/B record")?;
+            if current.pending.is_none() {
+                return Err("no slot is pending".into());
+            }
+            self.write(current.cancel())?;
+            boot::clear_next(Path::new(EFIVARS))
+        }
+
+        /// The pending slot activated: its attempt spent, `BootNext` it.
+        /// The slot.
+        pub fn activate(&mut self) -> Result<Slot, String> {
+            let current = self.record.ok_or("there is no A/B record")?;
+            let slot = current.pending.ok_or("no slot is pending")?;
+            self.write(current.activate())?;
+            if let Err(e) = boot::boot_next(
+                Path::new(EFIVARS),
+                &release::LOAD_SOURCE,
+                release::NAME,
+                &self.esps,
+                slot,
+            ) {
+                // Not activated after all: the record says so again.
+                let _ = self.write(current);
+                return Err(format!("the firmware's next boot: {e}"));
+            }
+            Ok(slot)
+        }
+
+        /// Whether this IPL is the pending slot's trial.
+        pub fn on_trial(&self) -> bool {
+            self.ipl == Ipl::Trial
+        }
+
         /// The record in words, or that there is none.
         pub fn summary(&self) -> String {
             self.record

@@ -29,7 +29,7 @@ fn nodev() -> MountFlags {
 }
 
 /// The table, in order; `run` is the appliance's run directory.
-fn table(run: &str) -> [Mount<'_>; 6] {
+fn table(run: &str) -> [Mount<'_>; 7] {
     [
         Mount {
             source: "proc",
@@ -58,6 +58,15 @@ fn table(run: &str) -> [Mount<'_>; 6] {
             fs: "tmpfs",
             flags: nodev(),
             data: Some(c"mode=0755"),
+        },
+        // What the kernel kept of a panic, in the firmware's variables
+        // (`logd::panics`, taken at the next IPL).
+        Mount {
+            source: "pstore",
+            at: logd::panics::PSTORE,
+            fs: "pstore",
+            flags: nodev(),
+            data: None,
         },
         // The firmware's boot entries, by which the slot is chosen.
         Mount {

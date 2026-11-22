@@ -28,6 +28,17 @@ fn bind(path: &str) -> Result<std::os::unix::net::UnixListener, String> {
     Ok(l)
 }
 
+/// Say that state files were written in this release's form.
+#[cfg(target_os = "linux")]
+fn migrated(files: &str) {
+    refcode::post::remote::code(&refcode::STATE_MIGRATED, files);
+}
+
+#[cfg(target_os = "linux")]
+fn said(line: &str) {
+    eprintln!("{line}");
+}
+
 #[cfg(target_os = "linux")]
 fn run() -> Result<(), String> {
     let listener = bind(release::SCHEDD_SOCKET)?;
@@ -36,6 +47,15 @@ fn run() -> Result<(), String> {
     while !state.is_dir() {
         std::thread::sleep(std::time::Duration::from_secs(5));
     }
+    release::trial::migrate_after(
+        state.clone(),
+        &[(
+            "schedules.toml",
+            release::trial::migrate::<schedd::model::Schedules>,
+        )],
+        migrated,
+        said,
+    );
     let svc = schedd::Service::start(schedd::Config {
         store: state::Store::at(&state),
         mgmt: Box::new(|| Box::new(mgmtproto::calls::Client::new(release::MGMTD_SOCKET))),

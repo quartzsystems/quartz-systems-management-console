@@ -3,9 +3,8 @@
 // root directory of this project.
 
 //! The control socket's requests, answered by the console: status,
-//! power off and restart, and what services tell PID 1. What a console
-//! does not do yet (a service dump, a code update's slots) is refused
-//! with the reason.
+//! power off and restart, what services tell PID 1, a console dump, and
+//! the update service's slots: a slot installed, cancelled, activated.
 
 use std::os::unix::net::UnixListener;
 use std::time::{Duration, Instant};
@@ -19,8 +18,6 @@ use super::{Host, Kind};
 /// How long a request waits for a state file to be written: less than
 /// a client of the control socket waits for its answer.
 const WRITE_WAIT: Duration = Duration::from_millis(1500);
-/// Why a code update's request is refused.
-const NO_UPDATE: &str = "the console has no code update yet";
 
 impl Control for Host {
     fn status(&mut self) -> HostStatus {
@@ -131,8 +128,9 @@ impl Control for Host {
         Ok(())
     }
 
-    fn take_dump(&mut self, _by: String) -> Result<String, String> {
-        Err("the console takes no service dump yet".into())
+    fn take_dump(&mut self, by: String) -> Result<String, String> {
+        let by: String = by.chars().filter(|c| !c.is_control()).take(128).collect();
+        Host::take_dump(self, &by)
     }
 
     fn slots(&mut self) -> supervise::control::SlotState {
@@ -142,16 +140,36 @@ impl Control for Host {
             .unwrap_or_default()
     }
 
-    fn install_slot(&mut self, _slot: String) -> Result<(), String> {
-        Err(NO_UPDATE.into())
+    fn install_slot(&mut self, slot: String) -> Result<(), String> {
+        let slot = match slot.as_str() {
+            "A" => abrec::Slot::A,
+            "B" => abrec::Slot::B,
+            _ => return Err(format!("{slot} is no slot")),
+        };
+        let slots = self.slots.as_mut().ok_or("this IPL has no A/B record")?;
+        slots.install(slot)
     }
 
     fn cancel_slot(&mut self) -> Result<(), String> {
-        Err(NO_UPDATE.into())
+        let slots = self.slots.as_mut().ok_or("this IPL has no A/B record")?;
+        slots.cancel()
     }
 
-    fn activate_slot(&mut self, _by: String) -> Result<(), String> {
-        Err(NO_UPDATE.into())
+    fn activate_slot(&mut self, by: String) -> Result<(), String> {
+        if self.shutdown.is_some() {
+            return Err("the console is shutting down".into());
+        }
+        let by: String = by.chars().filter(|c| !c.is_control()).take(128).collect();
+        let slots = self.slots.as_mut().ok_or("this IPL has no A/B record")?;
+        let slot = slots.activate()?;
+        let letter = loadsource::record::letter(slot).to_string();
+        self.post_about(
+            &refcode::UPDATE_ACTIVATING,
+            &format!("slot {letter}, by {by}"),
+            &[refcode::event::slot(&letter)],
+        );
+        self.begin_shutdown(Kind::Restart, &format!("an update's activation, by {by}"));
+        Ok(())
     }
 }
 

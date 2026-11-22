@@ -7,6 +7,7 @@
 //! longer than a client of the control socket is given.
 
 mod control;
+mod dump;
 mod shutdown;
 pub mod storage;
 pub mod table;
@@ -128,6 +129,9 @@ pub struct Host {
     /// The serial port is the local console's: PID 1 writes nothing
     /// there until it is given back.
     serial_lent: bool,
+    /// Why a dump is to be taken once every service is ready: a slot
+    /// that did not confirm, a kernel panic.
+    pub dump_when_ready: Vec<String>,
 }
 
 impl Host {
@@ -170,6 +174,7 @@ impl Host {
             drawn: Vec::new(),
             drawn_date: String::new(),
             serial_lent: false,
+            dump_when_ready: Vec::new(),
         }
     }
 
@@ -293,6 +298,7 @@ impl Host {
                         service,
                         &[refcode::event::service(service)],
                     );
+                    self.dump_for(&format!("{service} stopped after its retries"));
                 }
                 Occurrence::Output {
                     service,
@@ -354,6 +360,10 @@ impl Host {
         if Self::rule().due(None) {
             self.confirm_slot();
         }
+        let why = std::mem::take(&mut self.dump_when_ready);
+        if !why.is_empty() {
+            self.dump_for(&why.join(", "));
+        }
         // A button that appeared after the IPL looked.
         if self.buttons.is_empty() {
             self.buttons = button::open();
@@ -378,8 +388,11 @@ impl Host {
             );
         }
         if let Some(mut slots) = self.slots.take() {
+            let trial = slots.on_trial();
             let mut posted = Vec::new();
             slots.confirm(|code, detail| posted.push(posting(code, &detail)));
+            let confirmed = trial && !slots.on_trial();
+            let booted = loadsource::record::letter(slots.booted).to_string();
             if slots.ipl == loadsource::record::Ipl::Normal {
                 self.trial_until = None;
             }
@@ -387,7 +400,34 @@ impl Host {
             for p in posted {
                 self.take(p);
             }
+            if confirmed {
+                self.updated(&booted);
+            }
         }
+    }
+
+    /// A pending slot confirmed: said, and the copies of state kept for
+    /// its trial dropped by a thread, since the loop never waits on
+    /// `/data`.
+    fn updated(&mut self, slot: &str) {
+        self.post_about(
+            &refcode::UPDATE_CONFIRMED,
+            &format!(
+                "{} build {} in slot {slot}",
+                release::RELEASE,
+                release::BUILD_ID
+            ),
+            &[refcode::event::slot(slot)],
+        );
+        std::thread::spawn(|| {
+            let data = std::path::Path::new(release::DATA_DIR);
+            if let Err(e) = ::update::state_copy::confirmed(data) {
+                eprintln!("the copy of state was not dropped: {e}");
+            }
+            if let Err(e) = crate::ipl::carry::confirmed(data) {
+                eprintln!("the copies of the console's folders were not dropped: {e}");
+            }
+        });
     }
 
     /// The status: the facts in the screen's order, then the services.

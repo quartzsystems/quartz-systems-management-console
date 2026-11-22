@@ -24,6 +24,9 @@ qmcbackup = { path = "../../web/backup", version = "0.1.0", default-features = f
 webusers = { path = "../../web/users", version = "0.1.0" }
 abrec.workspace = true
 diskimg.workspace = true
+update.workspace = true
+servicedump.workspace = true
+consdump = { path = "../consdump", version = "0.1.0" }
 
 # PID 1 is a Linux program; other hosts build a stub so the workspace checks.
 [target.'cfg(target_os = "linux")'.dependencies]

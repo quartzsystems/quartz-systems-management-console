@@ -7,17 +7,20 @@
 //! is mounted from what it names, and it is stopped after `/data` is
 //! unmounted.
 //!
-//! The local console is at 25, after the network service it asks; the
-//! web server at 30 and the managed-systems service at 40, both left
-//! out on a processor that lacks what their cryptography needs. The
-//! place a later phase takes: the scheduler at 50 (Phase 7).
+//! The problem service is at 12, after the log service whose history it
+//! reads; the local console at 25, after the network service it asks;
+//! the web server at 30, the update service at 35, the managed-systems
+//! service at 40, the scheduler at 45 and the download service at 47.
+//! The web server, the managed-systems service and the scheduler are
+//! left out on a processor that lacks what their cryptography needs.
+//! The place a later phase takes: 50 (Phase 7).
 
 use std::time::Duration;
 
 use supervise::Service;
 use supervise::table::Caps;
 use supervise::table::caps::{
-    DAC_OVERRIDE, FOWNER, IPC_LOCK, NET_ADMIN, NET_BIND_SERVICE, NET_RAW, SETGID, SETUID,
+    CHOWN, DAC_OVERRIDE, FOWNER, IPC_LOCK, NET_ADMIN, NET_BIND_SERVICE, NET_RAW, SETGID, SETUID,
     SYS_ADMIN, SYS_RAWIO, SYS_RESOURCE, SYS_TIME, SYS_TTY_CONFIG, SYSLOG,
 };
 
@@ -52,6 +55,42 @@ pub const LOGD: Service = Service {
     needs: &[],
     ready_within: READY_WITHIN,
     caps: Caps::Only(&[SYSLOG]),
+};
+
+/// The console's own problem log (`docs/SERVICE.md`): it reads the
+/// history the log service writes, so it is after it.
+pub const PROBD: Service = Service {
+    name: "probd",
+    binary: release::PROBD,
+    args: &[],
+    order: 12,
+    needs: &[],
+    ready_within: READY_WITHIN,
+    caps: Caps::Only(&[]),
+};
+
+/// The console's own code update (`docs/UPDATES.md`): it writes the
+/// other slot's UKI to the ESP of every load-source disk.
+pub const UPDD: Service = Service {
+    name: "updd",
+    binary: release::UPDD,
+    args: &[],
+    order: 35,
+    needs: &[],
+    ready_within: READY_WITHIN,
+    caps: Caps::Only(&[SYS_ADMIN, SYS_RAWIO, DAC_OVERRIDE]),
+};
+
+/// The download service: it binds its socket and makes its folders its
+/// own as root, then becomes its own user for good (`release::FETCH_ID`).
+pub const FETCHD: Service = Service {
+    name: "fetchd",
+    binary: release::FETCHD,
+    args: &[],
+    order: 47,
+    needs: &[],
+    ready_within: READY_WITHIN,
+    caps: Caps::Only(&[CHOWN, SETUID, SETGID]),
 };
 
 /// The management network and time.
@@ -118,7 +157,9 @@ pub const SCHEDD: Service = Service {
 /// The base services, the local console, the web server, the
 /// managed-systems service and the scheduler.
 #[cfg(not(test_hooks))]
-pub static TABLE: &[Service] = &[STGD, LOGD, NETD, CONSOLE, WEBD, MGMTD, SCHEDD];
+pub static TABLE: &[Service] = &[
+    STGD, LOGD, PROBD, NETD, CONSOLE, WEBD, UPDD, MGMTD, SCHEDD, FETCHD,
+];
 
 /// The same and, in a test image, the test hooks' two.
 #[cfg(test_hooks)]
@@ -126,18 +167,21 @@ pub static TABLE: &[Service] = &[
     crate::hooks::CHANNEL,
     STGD,
     LOGD,
+    PROBD,
     NETD,
     CONSOLE,
     WEBD,
+    UPDD,
     MGMTD,
     SCHEDD,
+    FETCHD,
     crate::hooks::FLAKY,
 ];
 
 /// The table of a processor without what the cryptography needs: no
 /// web server and no managed-systems service.
 #[cfg(not(test_hooks))]
-pub static WITHOUT_WEB: &[Service] = &[STGD, LOGD, NETD, CONSOLE];
+pub static WITHOUT_WEB: &[Service] = &[STGD, LOGD, PROBD, NETD, CONSOLE, UPDD, FETCHD];
 
 /// The same in a test image.
 #[cfg(test_hooks)]
@@ -145,8 +189,11 @@ pub static WITHOUT_WEB: &[Service] = &[
     crate::hooks::CHANNEL,
     STGD,
     LOGD,
+    PROBD,
     NETD,
     CONSOLE,
+    UPDD,
+    FETCHD,
     crate::hooks::FLAKY,
 ];
 
@@ -157,11 +204,14 @@ pub static FAILING_WEB: &[Service] = &[
     crate::hooks::CHANNEL,
     STGD,
     LOGD,
+    PROBD,
     NETD,
     CONSOLE,
     crate::hooks::FAILING_WEBD,
+    UPDD,
     MGMTD,
     SCHEDD,
+    FETCHD,
     crate::hooks::FLAKY,
 ];
 
@@ -188,9 +238,9 @@ mod tests {
         let names: Vec<&str> = supervise::table::start_order(TABLE)
             .into_iter()
             .map(|i| TABLE[i].name)
-            .filter(|n| ["stgd", "logd", "netd", "console"].contains(n))
+            .filter(|n| ["stgd", "logd", "probd", "netd", "console"].contains(n))
             .collect();
-        assert_eq!(names, ["stgd", "logd", "netd", "console"]);
+        assert_eq!(names, ["stgd", "logd", "probd", "netd", "console"]);
         for service in TABLE {
             assert!(service.binary.starts_with(release::BIN_DIR));
         }

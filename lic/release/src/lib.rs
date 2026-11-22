@@ -19,6 +19,7 @@ pub mod fact;
 pub mod names;
 pub mod processor;
 pub mod screen;
+pub mod trial;
 
 pub use appliance::{Appliance, Event, LoadSourceNames};
 pub use names::LOAD_SOURCE;

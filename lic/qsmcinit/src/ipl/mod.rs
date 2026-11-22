@@ -5,11 +5,15 @@
 //! The console's IPL, in order. Each step posts its reference code:
 //! the kernel's file systems and cgroup2, the load-source disks and the
 //! A/B record, the storage service and `QSMCDATA` at `/data`, a restore
-//! waiting for this IPL, the clock from the RTC, the seed, the state, the identity, the services. "Base
+//! waiting for this IPL, a kernel panic before it, the state across an
+//! update, the clock from the RTC, the seed, the state, the identity,
+//! the services. "Base
 //! ready" is posted by the loop when every service has said so, and the
 //! slot confirmed by the rule (`crate::slot::rule`). On installation
 //! media the installer runs after the clock, in place of the rest.
 
+#[cfg(target_os = "linux")]
+pub mod carry;
 #[cfg(target_os = "linux")]
 mod choose;
 #[cfg(target_os = "linux")]
@@ -203,6 +207,81 @@ mod on_console {
         }
     }
 
+    /// A panic before this IPL: what the kernel kept of it moved to
+    /// `/data/log/panics` and posted; a dump is taken once the services
+    /// are ready.
+    fn panics(host: &mut Host) {
+        if !host.data_mounted {
+            return;
+        }
+        let secs = appliance::time::now_secs();
+        let dir = Path::new(release::DATA_DIR).join("log").join("panics");
+        if let Some((why, files)) = logd::panics::take(
+            Path::new(logd::panics::PSTORE),
+            &dir,
+            &format!("{secs:011}"),
+        ) {
+            host.post(
+                &refcode::KERNEL_PANICKED,
+                &format!("{why}; {files} record(s) in {}", dir.display()),
+            );
+            host.dump_when_ready.push("a kernel panic".into());
+        }
+    }
+
+    /// State across an update (`docs/UPDATES.md`): the pending slot's
+    /// first IPL copies it, the slot that comes back after it did not
+    /// confirm puts it back and takes a dump once the services are
+    /// ready. `/data/state` by `update::state_copy`, the console's other
+    /// folders by the same rule (`carry`).
+    fn update_state(host: &mut Host) {
+        use ::update::state_copy::{self, Done, Ipl};
+        use loadsource::record::{Ipl as Record, letter};
+        if !host.data_mounted {
+            return;
+        }
+        let Some(slots) = host.slots.as_ref() else {
+            return;
+        };
+        let (ipl, fell) = match slots.ipl {
+            Record::Trial => (Ipl::Trial, None),
+            Record::FellBack { pending } => (Ipl::FellBack, Some(letter(pending))),
+            Record::Normal => (Ipl::Normal, None),
+        };
+        let data = Path::new(release::DATA_DIR);
+        let state = state_copy::before_state(data, ipl);
+        let others = super::carry::before_state(data, ipl);
+        let mut copied = matches!(state, Ok(Done::Copied));
+        let mut restored = matches!(state, Ok(Done::Restored));
+        if let Err(e) = &state {
+            host.line(&format!("the state across the update: {e}"));
+        }
+        for (folder, done) in others {
+            match done {
+                Ok(Done::Copied) => copied = true,
+                Ok(Done::Restored) => restored = true,
+                Ok(_) => {}
+                Err(e) => host.line(&format!("/data/{folder} across the update: {e}")),
+            }
+        }
+        if copied {
+            host.post(
+                &refcode::UPDATE_STATE_KEPT,
+                &format!("{} and {}", state_copy::COPY, super::carry::COPIES),
+            );
+        }
+        if restored {
+            host.post(
+                &refcode::UPDATE_STATE_RESTORED,
+                "/data/state, mgmt, web and fetch as they were before the update",
+            );
+        }
+        if let Some(slot) = fell {
+            host.dump_when_ready
+                .push(format!("slot {slot} did not confirm"));
+        }
+    }
+
     fn clock(host: &mut Host) {
         match clock::set_from_rtc() {
             Ok(secs) => host.post(&refcode::CLOCK_SET, &Zone::UTC.display(secs)),
@@ -317,6 +396,8 @@ mod on_console {
         storage(&mut host);
         data(&mut host, &sources);
         restore(&mut host);
+        panics(&mut host);
+        update_state(&mut host);
         clock(&mut host);
         let store = Store::at(QSMC.state_dir());
         seed(&mut host, &store);

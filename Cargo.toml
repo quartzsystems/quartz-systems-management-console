@@ -42,6 +42,7 @@ members = [
     "lic/qsmcupdd",
     "upd/fetchd",
     "lic/qsmcfetchd",
+    "lic/consdump",
 ]
 
 [workspace.package]

@@ -1,0 +1,21 @@
+[package]
+name = "consdump"
+description = "The console's service dump: base/servicedump with QS/MC's kind, its own entries and the secret files it leaves out"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+servicedump.workspace = true
+release = { path = "../release", version = "0.1.0" }
+
+[dev-dependencies]
+identity.workspace = true
+users.workspace = true
+webusers = { path = "../../web/users", version = "0.1.0" }
+mgmtd = { path = "../../mgmt/mgmtd", version = "0.1.0" }
+state.workspace = true
+
+[lints]
+workspace = true

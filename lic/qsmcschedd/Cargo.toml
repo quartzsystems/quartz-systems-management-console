@@ -13,6 +13,7 @@ release = { path = "../release", version = "0.1.0" }
 appliance.workspace = true
 state.workspace = true
 supervise.workspace = true
+refcode = { path = "../refcode", version = "0.1.0" }
 
 [lints]
 workspace = true

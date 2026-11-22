@@ -80,6 +80,15 @@ fn run() -> Result<(), String> {
     }
     sys::become_user(release::FETCH_ID, release::MGMT_ID)
         .map_err(|e| format!("becoming its user: {e}"))?;
+    release::trial::migrate_after(
+        PathBuf::from(release::FETCH_DIR),
+        &[(
+            "updates.toml",
+            release::trial::migrate::<fetchd::settings::Settings>,
+        )],
+        |files| refcode::post::remote::code(&refcode::STATE_MIGRATED, files),
+        |line| eprintln!("{line}"),
+    );
     let roots = certs::roots::roots()
         .iter()
         .map(|r| r.der.clone())

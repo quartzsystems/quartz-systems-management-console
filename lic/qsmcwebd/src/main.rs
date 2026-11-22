@@ -7,12 +7,47 @@
 //! it 443 and 80 on the `open` address. Its own socket answers the
 //! local console.
 
+/// Say that state files were written in this release's form.
+#[cfg(target_os = "linux")]
+fn migrated(files: &str) {
+    refcode::post::remote::code(&refcode::STATE_MIGRATED, files);
+}
+
+#[cfg(target_os = "linux")]
+fn said(line: &str) {
+    eprintln!("{line}");
+}
+
+/// The web server's state files, written in this release's form once
+/// the slot that runs is not on trial.
+#[cfg(target_os = "linux")]
+const MIGRATE: &[(&str, release::trial::Step)] = &[
+    (
+        "webusers.toml",
+        release::trial::migrate::<webusers::WebUsers>,
+    ),
+    ("web.toml", release::trial::migrate::<webusers::WebSettings>),
+    (
+        "trusted.toml",
+        release::trial::migrate::<webpages::certs_routes::Trusted>,
+    ),
+    (
+        "backups.toml",
+        release::trial::migrate::<webpages::backup::History>,
+    ),
+    (
+        "groups.toml",
+        release::trial::migrate::<webpages::groups::Groups>,
+    ),
+];
+
 #[cfg(target_os = "linux")]
 fn main() {
     use std::path::Path;
     use std::sync::Arc;
 
     let state = Path::new(release::DATA_DIR).join("state");
+    release::trial::migrate_after(state.clone(), MIGRATE, migrated, said);
     let users_db = state.join(users::FILE);
     let app = webpages::App::open(&state, &users_db, Box::new(webpages::app::live::Live));
     // It returns only when it cannot go on; supervision starts it again.

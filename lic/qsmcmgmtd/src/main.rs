@@ -65,6 +65,17 @@ fn post(code: &str, text: &str) {
     }
 }
 
+/// Say that state files were written in this release's form.
+#[cfg(target_os = "linux")]
+fn migrated(files: &str) {
+    refcode::post::remote::code(&refcode::STATE_MIGRATED, files);
+}
+
+#[cfg(target_os = "linux")]
+fn said(line: &str) {
+    eprintln!("{line}");
+}
+
 #[cfg(target_os = "linux")]
 fn run() -> Result<(), String> {
     use std::path::Path;
@@ -83,6 +94,21 @@ fn run() -> Result<(), String> {
         identity.fingerprint().hex()
     );
     let mgmt = Path::new(release::MGMT_DIR);
+    release::trial::migrate_after(
+        mgmt.to_path_buf(),
+        &[
+            (
+                "systems.toml",
+                release::trial::migrate::<mgmtd::keep::files::Systems>,
+            ),
+            (
+                "mgmt.toml",
+                release::trial::migrate::<mgmtd::keep::files::Limits>,
+            ),
+        ],
+        migrated,
+        said,
+    );
     let svc = mgmtd::Service::start(mgmtd::Config {
         identity,
         name,
