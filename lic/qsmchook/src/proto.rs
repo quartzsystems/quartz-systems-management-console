@@ -61,6 +61,12 @@ pub mod command {
     pub const LOAD: &str = "load";
     /// `sum <path>`: a file's length and the sum of its bytes.
     pub const SUM: &str = "sum";
+    /// `post <code> [<kind>:<name>[:<serial>]] <text>`: a code posted
+    /// through the control socket, about what the second word names
+    /// when it has a colon.
+    pub const POST: &str = "post";
+    /// `dump`: a console dump asked of PID 1: `ok <name>`.
+    pub const DUMP: &str = "dump";
 }
 
 /// The first words of an answer's lines.

@@ -265,6 +265,25 @@ fn sum(path: &str) -> Vec<String> {
     }
 }
 
+/// `post <code> [<kind>:<name>[:<serial>]] <text>`.
+fn post(rest: &str) -> Vec<String> {
+    let (code, rest) = rest.split_once(' ').unwrap_or((rest, ""));
+    let (about, text) = match rest.split_once(' ') {
+        Some((first, text)) if first.contains(':') => {
+            let mut p = first.splitn(3, ':');
+            let about = supervise::control::About {
+                kind: p.next().unwrap_or_default().into(),
+                name: p.next().unwrap_or_default().into(),
+                serial: p.next().unwrap_or_default().into(),
+                ..supervise::control::About::default()
+            };
+            (vec![about], text)
+        }
+        _ => (Vec::new(), rest),
+    };
+    done(control().post_about(code.to_string(), text.to_string(), about))
+}
+
 /// The answer to one command line.
 pub fn answer(line: &str) -> Vec<String> {
     let (verb, rest) = line.split_once(' ').unwrap_or((line, ""));
@@ -294,6 +313,12 @@ pub fn answer(line: &str) -> Vec<String> {
         command::KEEP => keep(rest),
         command::LOAD => load(rest),
         command::SUM => sum(rest),
+        command::POST => post(rest),
+        command::DUMP => match control().take_dump("the test hooks".into()) {
+            Ok(Ok(name)) => vec![format!("{} {name}", word::OK)],
+            Ok(Err(e)) => error(e),
+            Err(e) => error(e),
+        },
         other => error(format!("`{other}` is no command")),
     }
 }

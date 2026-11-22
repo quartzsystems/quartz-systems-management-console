@@ -3162,6 +3162,7 @@ dependencies = [
  "state",
  "supervise",
  "svcusers",
+ "toml",
  "users",
 ]
 

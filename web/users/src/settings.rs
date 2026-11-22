@@ -94,10 +94,24 @@ impl WebSettings {
     }
 }
 
+/// The test release's step from version 1: nothing of the file changes
+/// but its version, which shows when it was written again.
+#[cfg(qsmc_next_schema)]
+#[allow(clippy::unnecessary_wraps, reason = "a migration step's form")]
+fn to_two(_: &mut toml::Table) -> Result<(), String> {
+    Ok(())
+}
+
 impl state::Document for WebSettings {
     const FILE: &'static str = "web.toml";
+    #[cfg(not(qsmc_next_schema))]
     const VERSION: u32 = 1;
+    #[cfg(qsmc_next_schema)]
+    const VERSION: u32 = 2;
+    #[cfg(not(qsmc_next_schema))]
     const MIGRATIONS: &'static [state::Migration] = &[];
+    #[cfg(qsmc_next_schema)]
+    const MIGRATIONS: &'static [state::Migration] = &[to_two];
 
     fn validate(&self) -> Result<(), String> {
         if !(1..=480).contains(&self.idle_minutes) {

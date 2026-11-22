@@ -6,6 +6,7 @@ edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 publish.workspace = true
+build = "build.rs"
 
 [dependencies]
 webd = { path = "../../web/webd", version = "0.1.0" }

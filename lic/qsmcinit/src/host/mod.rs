@@ -47,6 +47,16 @@ const STOP_GRACE: Duration = Duration::from_secs(5);
 /// into the other slot: its services never became ready.
 const TRIAL_WAIT: Duration = Duration::from_mins(15);
 
+/// How long a slot on trial has; a test image's `short-trial` hook
+/// gives it 90 seconds.
+fn trial_wait() -> Duration {
+    #[cfg(test_hooks)]
+    if crate::hooks::has(crate::hooks::SHORT_TRIAL) {
+        return Duration::from_secs(90);
+    }
+    TRIAL_WAIT
+}
+
 /// What a descriptor that became readable is.
 #[derive(Clone, Copy)]
 enum Ready {
@@ -253,7 +263,7 @@ impl Host {
             .as_ref()
             .is_some_and(|s| s.ipl == loadsource::record::Ipl::Trial)
         {
-            self.trial_until = Some(Instant::now() + TRIAL_WAIT);
+            self.trial_until = Some(Instant::now() + trial_wait());
         }
         self.occurred(started);
     }

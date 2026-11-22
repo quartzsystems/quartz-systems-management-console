@@ -25,6 +25,9 @@ pub const REFUSE_CONFIRM: &str = "refuse-confirm";
 /// The hook that runs a web server that fails at once.
 pub const WEBD_FAILS: &str = "webd-fails";
 
+/// A slot on trial is given 90 seconds to confirm, not 15 minutes.
+pub const SHORT_TRIAL: &str = "short-trial";
+
 /// The test hooks' binary.
 const BINARY: &str = "/qsmc/bin/qsmchook";
 

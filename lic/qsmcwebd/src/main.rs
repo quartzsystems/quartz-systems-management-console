@@ -46,6 +46,12 @@ fn main() {
     use std::path::Path;
     use std::sync::Arc;
 
+    #[cfg(webd_broken)]
+    {
+        eprintln!("TEST IMAGE: this web server is built not to start");
+        std::process::exit(1);
+    }
+
     let state = Path::new(release::DATA_DIR).join("state");
     release::trial::migrate_after(state.clone(), MIGRATE, migrated, said);
     let users_db = state.join(users::FILE);
