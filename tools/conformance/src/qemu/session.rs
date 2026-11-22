@@ -167,16 +167,22 @@ impl Session {
     }
 
     /// Write every frame of the NIC to `dump` from now on: QEMU's
-    /// filter, added at the monitor.
+    /// filter, added at the monitor. The monitor does not answer, and
+    /// QEMU 8.2 can drop a command sent as it starts, so it is sent
+    /// again until the filter has made its file.
     fn capture(&mut self, dump: &Path) -> Result<(), String> {
         let command = format!(
             "object_add filter-dump,id=dump0,netdev=net0,file={}",
             dump.display()
         );
-        let give_up = Instant::now() + Duration::from_secs(5);
+        let give_up = Instant::now() + Duration::from_secs(10);
         loop {
             match self.inner.monitor(&command) {
-                Ok(()) => return Ok(()),
+                Ok(()) if dump.exists() => return Ok(()),
+                Ok(()) if Instant::now() >= give_up => {
+                    return Err(format!("QEMU made no {}", dump.display()));
+                }
+                Ok(()) => {}
                 // QEMU makes the socket as it starts.
                 Err(_) if Instant::now() < give_up => {
                     std::thread::sleep(Duration::from_millis(20));
