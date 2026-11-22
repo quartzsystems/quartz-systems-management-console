@@ -16,6 +16,7 @@ mod initramfs;
 pub mod kernel;
 pub mod keys;
 mod media;
+pub mod variant;
 
 use std::path::Path;
 

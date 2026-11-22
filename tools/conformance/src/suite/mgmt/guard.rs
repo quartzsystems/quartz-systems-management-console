@@ -164,7 +164,10 @@ fn connected(conn: &str) -> bool {
 }
 
 /// The socket inodes `pid` holds.
-fn sockets(ch: &mut crate::qemu::channel::Channel, pid: u32) -> Result<Vec<String>, String> {
+pub(crate) fn sockets(
+    ch: &mut crate::qemu::channel::Channel,
+    pid: u32,
+) -> Result<Vec<String>, String> {
     let mut v = Vec::new();
     for fd in ch.ls(&format!("/proc/{pid}/fd"))? {
         if let Ok(t) = ch.readlink(&format!("/proc/{pid}/fd/{fd}"))
@@ -178,7 +181,7 @@ fn sockets(ch: &mut crate::qemu::channel::Channel, pid: u32) -> Result<Vec<Strin
 
 /// The TCP connections (local port, remote address, remote port) of
 /// `inodes`.
-fn connections(tcp: &str, inodes: &[String]) -> Vec<(u16, String, u16)> {
+pub(crate) fn connections(tcp: &str, inodes: &[String]) -> Vec<(u16, String, u16)> {
     tcp.lines()
         .skip(1)
         .filter_map(|l| {

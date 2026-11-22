@@ -321,7 +321,7 @@ const PANELS: [(u8, &str, &str); 9] = [
 ];
 
 /// Suite 14: every menu panel and its help against its golden file,
-/// the service functions' placeholder among them, and option 4's three.
+/// and option 4's three.
 pub fn panels(run: &Run<'_>) -> Result<String, String> {
     let disk = installed(run, Kind::Single, "panels")?;
     let mut guest = boot_installed(run, &installed_machine(run, &disk), run.launch.timeout)?;

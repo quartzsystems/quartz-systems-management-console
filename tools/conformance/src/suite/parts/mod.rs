@@ -12,7 +12,7 @@ mod audit;
 mod confirm;
 pub(crate) mod pages;
 mod requests;
-mod sched;
+pub(crate) mod sched;
 mod upload;
 mod wizard;
 

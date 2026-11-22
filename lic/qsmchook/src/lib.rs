@@ -34,6 +34,10 @@ pub const CHURN: &str = "churn";
 /// a slot whose web server cannot start.
 pub const WEBD_FAILS: &str = "webd-fails";
 
+/// The hook that gives a slot on trial 90 seconds to confirm, not 15
+/// minutes: the update that rolls back (`docs/UPDATES.md`).
+pub const SHORT_TRIAL: &str = "short-trial";
+
 /// The SMBIOS OEM string that switches the hook `name` on:
 /// `qsmc.hook=<name>`.
 pub fn oem_string(name: &str) -> String {

@@ -13,6 +13,8 @@
 //!
 //! `--test-image` builds the test image: the same sources with the test
 //! hooks, under `test-image/` in the target root, a target of its own.
+//! `--variant` builds one of the test image's variants under it, as far
+//! as its update image (`product::variant`).
 
 mod host;
 mod image;
@@ -25,6 +27,7 @@ use anyhow::{Context, Result};
 use buildkit::{Ctx, kernel, notices};
 use clap::{Parser, Subcommand};
 use product::Image;
+use product::variant::Variant;
 use tracing_subscriber::EnvFilter;
 
 #[derive(Parser)]
@@ -37,6 +40,12 @@ struct Cli {
     /// hooks, under `test-image/` in the target root. Never shipped.
     #[arg(long, global = true)]
     test_image: bool,
+    /// With `--test-image`: a variant of the test image, the update a
+    /// suite installs (`next`: V1R0M1 with a newer state schema;
+    /// `broken`: one whose web server cannot start), under
+    /// `test-image/<variant>/`.
+    #[arg(long, global = true, requires = "test_image")]
+    variant: Option<Variant>,
     #[command(subcommand)]
     command: Command,
 }
@@ -118,7 +127,7 @@ enum Command {
 /// The context of one image kind. A test image is built in its own
 /// directory of the target root, so nothing of it is ever among the
 /// release artifacts.
-fn context(image: Image, verbose: bool) -> Result<Ctx> {
+fn context(image: Image, verbose: bool, variant: Option<Variant>) -> Result<Ctx> {
     let mut ctx = Ctx::new(product::qsmc(image)?, verbose)?;
     if image == Image::Test {
         let release = ctx.paths.target.clone();
@@ -132,19 +141,29 @@ fn context(image: Image, verbose: bool) -> Result<Ctx> {
             fs::copy(&from, to.join(&tarball))
                 .with_context(|| format!("cannot copy {}", from.display()))?;
         }
+        if let Some(v) = variant {
+            let test = ctx.paths.target.clone();
+            ctx.paths.target = test.join(v.dir());
+            v.prepare(&test, &ctx.paths.target)?;
+        }
     }
     Ok(ctx)
 }
 
 /// The pipeline in order. The userland, disk and manifest steps are
 /// QS/MC's own.
-fn all(ctx: &Ctx, image: Image) -> Result<()> {
+fn all(ctx: &Ctx, image: Image, variant: Option<Variant>) -> Result<()> {
     tracing::info!("building {} {}", ctx.product.name, ctx.product.full());
     kernel::fetch::fetch(ctx)?;
     kernel::kernel(ctx)?;
     image::userland::userland(ctx, image)?;
     buildkit::image::initramfs::initramfs(ctx)?;
     kernel::uki(ctx, false)?;
+    // A variant is only ever an update a suite installs.
+    if variant.is_some() {
+        image::update::update(ctx)?;
+        return Ok(());
+    }
     image::disk::disk(ctx, None)?;
     buildkit::image::iso::iso(ctx)?;
     image::update::update(ctx)?;
@@ -165,7 +184,7 @@ fn main() -> Result<()> {
     } else {
         Image::Release
     };
-    let ctx = context(image, cli.verbose)?;
+    let ctx = context(image, cli.verbose, cli.variant)?;
     if !cfg!(target_os = "linux")
         && !matches!(
             cli.command,
@@ -201,10 +220,10 @@ fn main() -> Result<()> {
         Command::Manifest => {
             image::manifest::manifest(&ctx, image)?;
         }
-        Command::All => all(&ctx, image)?,
+        Command::All => all(&ctx, image, cli.variant)?,
         Command::Test { media, suite } => {
-            let release = context(Image::Release, cli.verbose)?;
-            let test = context(Image::Test, cli.verbose)?;
+            let release = context(Image::Release, cli.verbose, None)?;
+            let test = context(Image::Test, cli.verbose, None)?;
             host::testrun::test(&release, &test, media, suite.as_deref())?;
         }
         Command::Fuzz { target, secs } => host::fuzz::fuzz(&ctx, target.as_deref(), secs)?,

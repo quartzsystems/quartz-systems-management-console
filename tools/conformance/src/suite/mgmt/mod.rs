@@ -9,7 +9,7 @@
 
 mod act;
 mod beside;
-mod guard;
+pub(crate) mod guard;
 pub mod host;
 mod host_pages;
 mod pair;

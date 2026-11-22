@@ -202,6 +202,103 @@ impl Browser {
     }
 }
 
+/// What a streamed GET read.
+#[derive(Clone, Debug, Default)]
+pub struct Got {
+    /// The status.
+    pub status: u16,
+    /// The headers, names in lower case.
+    pub headers: Vec<(String, String)>,
+    /// The body's length its headers gave.
+    pub length: u64,
+    /// The body's bytes read.
+    pub read: u64,
+}
+
+impl Browser {
+    /// GET `path`, its body handed to `sink` a block at a time and none
+    /// of it held; after `stop` bytes of it the connection is closed, as
+    /// a browser that went away closes it.
+    pub fn stream_get(
+        &self,
+        path: &str,
+        stop: Option<u64>,
+        mut sink: impl FnMut(&[u8]),
+    ) -> Result<Got, String> {
+        let mut req = format!(
+            "GET {path} HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n",
+            self.host
+        );
+        if let Some(c) = &self.cookie {
+            let _ = write!(req, "Cookie: QSMCSID={c}\r\n");
+        }
+        req.push_str("\r\n");
+        let sock = Self::connect(self.https)?;
+        sock.set_read_timeout(Some(Duration::from_secs(300)))
+            .map_err(|e| e.to_string())?;
+        let name = ServerName::try_from(GUEST).map_err(|e| e.to_string())?;
+        let conn = ClientConnection::new(self.tls.clone(), name).map_err(|e| e.to_string())?;
+        let mut tls = StreamOwned::new(conn, sock);
+        tls.write_all(req.as_bytes())
+            .map_err(|e| format!("GET {path}: {e}"))?;
+        let mut buf = vec![0u8; BLOCK];
+        let mut head = Vec::new();
+        let rest = loop {
+            let n = tls.read(&mut buf).map_err(|e| format!("GET {path}: {e}"))?;
+            if n == 0 {
+                return Err(format!("GET {path}: closed before its headers"));
+            }
+            head.extend_from_slice(&buf[..n]);
+            if let Some(i) = head.windows(4).position(|w| w == b"\r\n\r\n") {
+                break head.split_off(i + 4);
+            }
+            if head.len() > 64 * 1024 {
+                return Err(format!("GET {path}: headers past 64 KiB"));
+            }
+        };
+        let text = String::from_utf8_lossy(&head).into_owned();
+        let mut lines = text.split("\r\n");
+        let status = lines
+            .next()
+            .and_then(|l| l.split_whitespace().nth(1))
+            .and_then(|s| s.parse().ok())
+            .ok_or_else(|| format!("GET {path}: no status"))?;
+        let headers: Vec<(String, String)> = lines
+            .filter_map(|l| l.split_once(':'))
+            .map(|(k, v)| (k.trim().to_ascii_lowercase(), v.trim().to_string()))
+            .collect();
+        let length = headers
+            .iter()
+            .find(|(k, _)| k == "content-length")
+            .and_then(|(_, v)| v.parse().ok())
+            .unwrap_or(0);
+        let mut got = Got {
+            status,
+            headers,
+            length,
+            read: 0,
+        };
+        let limit = stop.unwrap_or(u64::MAX).min(length);
+        let mut give = |bytes: &[u8], got: &mut Got| {
+            let room = usize::try_from(limit - got.read).unwrap_or(usize::MAX);
+            let n = bytes.len().min(room);
+            sink(&bytes[..n]);
+            got.read += n as u64;
+        };
+        give(&rest, &mut got);
+        while got.read < limit {
+            match tls.read(&mut buf) {
+                Ok(0) | Err(_) => break,
+                Ok(n) => give(&buf[..n], &mut got),
+            }
+        }
+        if stop.is_some_and(|s| s < length) {
+            let _ = tls.sock.shutdown(std::net::Shutdown::Both);
+        }
+        Ok(got)
+    }
+}
+
 /// Write the request `req` and `u`'s body: whether it was cut.
 fn body(
     tls: &mut StreamOwned<ClientConnection, std::net::TcpStream>,

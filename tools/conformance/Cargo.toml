@@ -29,6 +29,12 @@ uuid.workspace = true
 webd = { path = "../../web/webd", version = "0.1.0" }
 webpages = { path = "../../web/pages", version = "0.1.0" }
 webusers = { path = "../../web/users", version = "0.1.0" }
+qmcmsg = { path = "../../web/msgs", version = "0.1.0" }
+update.workspace = true
+qsmcupdd = { path = "../../lic/qsmcupdd", version = "0.1.0" }
+consdump = { path = "../../lic/consdump", version = "0.1.0" }
+servicedump.workspace = true
+fetchd = { path = "../../upd/fetchd", version = "0.1.0" }
 qmcbackup = { path = "../../web/backup", version = "0.1.0" }
 qsweb.workspace = true
 httpc.workspace = true

@@ -230,7 +230,12 @@ fn answer(served: &Mutex<Served>, mut c: TcpStream) {
     }
     let (body, mode) = {
         let mut s = lock(served);
-        s.asked.push((peer, line.trim().to_string()));
+        let asked = if from > 0 {
+            format!("{} range {from}-", line.trim())
+        } else {
+            line.trim().to_string()
+        };
+        s.asked.push((peer, asked));
         let path = line.split_whitespace().nth(1).unwrap_or("").to_string();
         let body = s.files.get(&path).cloned();
         let mode = s.mode.clone();

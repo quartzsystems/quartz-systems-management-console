@@ -27,7 +27,7 @@ const ENTRY_A: u16 = 0;
 const ENTRY_B: u16 = 1;
 
 /// Where the ESP is on the image, by its table.
-fn esp(image: &Path) -> Result<EspLocation, String> {
+pub(crate) fn esp(image: &Path) -> Result<EspLocation, String> {
     let mut file = File::open(image).map_err(|e| e.to_string())?;
     let entry = loadsource::gpt::entries(&mut file)
         .map_err(|e| e.to_string())?

@@ -225,6 +225,15 @@ fn view(rq: &Rq<'_>, mut messages: Vec<Message>) -> Updates {
         messages.push(m);
         fetchd::proto::Status::default()
     });
+    // A download that stopped says why, until it is asked for again.
+    for e in f
+        .files
+        .iter()
+        .filter(|x| x.state == fetchd::proto::FileState::Stopped)
+        .filter_map(|x| x.error.as_ref())
+    {
+        messages.push(Message::new(Kind::Error, &e.id, &e.text));
+    }
     let mine = super::known(&f, Stream::Qsmc);
     let running = release::RELEASE.to_string();
     let newest = offered(&f, Stream::Qsmc, &running);

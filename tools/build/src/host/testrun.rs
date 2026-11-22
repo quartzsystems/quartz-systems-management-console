@@ -12,14 +12,22 @@ use buildkit::{Ctx, UkiKind};
 use conformance::{Images, TestImage};
 use tracing::{error, info};
 
-/// The test image, when it is built.
+/// The test image, when it is built, with its variants' update images
+/// when they are.
 fn test_image(test: &Ctx) -> Option<TestImage> {
     let read = |p: std::path::PathBuf| paths::read_pointer(&p).ok();
+    let update = |root: &std::path::Path| read(root.join("images").join("update.path"));
+    let target = &test.paths.target;
+    let key = target.join("keys").join("dev.ed25519");
     Some(TestImage {
         disk: read(test.paths.disk_pointer())?,
         slot_a: read(test.paths.uki_pointer(UkiKind::SlotA))?,
         slot_b: read(test.paths.uki_pointer(UkiKind::SlotB))?,
         iso: read(test.paths.iso_pointer()),
+        update: update(target),
+        next: update(&target.join(crate::product::variant::Variant::Next.dir())),
+        broken: update(&target.join(crate::product::variant::Variant::Broken.dir())),
+        key: key.is_file().then_some(key),
     })
 }
 

@@ -38,7 +38,7 @@ fn set_clock(lab: &mut Lab<'_>, secs: i64) -> Result<(), String> {
 }
 
 /// The console's display offset, minutes, as the add form names it.
-fn offset(add: &str) -> i64 {
+pub(crate) fn offset(add: &str) -> i64 {
     let Some(z) = add
         .split("console time zone, ")
         .nth(1)
@@ -54,7 +54,7 @@ fn offset(add: &str) -> i64 {
 }
 
 /// A date as the console writes them, its format taken from `sample`.
-fn date((y, m, d): (i64, i64, i64), sample: &str) -> String {
+pub(crate) fn date((y, m, d): (i64, i64, i64), sample: &str) -> String {
     if sample.contains('.') {
         format!("{d:02}.{m:02}.{:02}", y % 100)
     } else if sample.contains('-') {
@@ -65,7 +65,7 @@ fn date((y, m, d): (i64, i64, i64), sample: &str) -> String {
 }
 
 /// The schedule list's rows: each operation's ID and its cells' text.
-fn rows(page: &str) -> Vec<(u32, Vec<String>)> {
+pub(crate) fn rows(page: &str) -> Vec<(u32, Vec<String>)> {
     use qsweb::golden::Tok;
     let mut out = Vec::new();
     let (mut id, mut cells, mut cell): (Option<u32>, Vec<String>, Option<String>) =
@@ -106,7 +106,7 @@ fn rows(page: &str) -> Vec<(u32, Vec<String>)> {
 }
 
 /// Operation `id`'s runs' statuses, newest first, and its next time.
-fn runs_of(b: &mut Browser, id: u32) -> Result<(Vec<String>, Option<String>), String> {
+pub(crate) fn runs_of(b: &mut Browser, id: u32) -> Result<(Vec<String>, Option<String>), String> {
     let p = page(b, "/qsmc/schedule")?;
     let mut runs = Vec::new();
     let mut next = None;

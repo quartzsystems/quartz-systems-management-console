@@ -398,7 +398,12 @@ pub fn add_page(ctx: &Ctx, v: &Add) -> Page {
     }
 }
 
-/// Every target: each partition of each host, then each system.
+/// The console as a target: Install code update's alone, named as the
+/// scheduler names it.
+pub const CONSOLE_TARGET: &str = "the console";
+
+/// Every target: each partition of each host, then each system, then
+/// the console.
 fn targets(kept: &[Kept]) -> Vec<(String, String, u32, String)> {
     let mut out = Vec::new();
     for k in kept.iter().filter(|k| k.kind == SystemKind::Host) {
@@ -414,6 +419,7 @@ fn targets(kept: &[Kept]) -> Vec<(String, String, u32, String)> {
     for k in kept {
         out.push((k.name.clone(), k.name.clone(), 0, String::new()));
     }
+    out.push((CONSOLE_TARGET.into(), String::new(), 0, String::new()));
     out
 }
 
@@ -432,6 +438,17 @@ fn schedule_of(rq: &Rq<'_>, kept: &[Kept], f: &Form) -> Result<Schedule, String>
     }
     if !op.on_partition() && partition != 0 {
         return Err("A managed system's operation needs a managed system as its target.".into());
+    }
+    if system.is_empty() && op != Op::Update {
+        return Err("Only Install code update has the console as its target.".into());
+    }
+    if op == Op::Update
+        && !system.is_empty()
+        && !kept
+            .iter()
+            .any(|k| k.name == system && k.kind == SystemKind::Host)
+    {
+        return Err("Install code update is for the console or a QS/VS host.".into());
     }
     let date = crate::fmt::parse_date(f.str("d"), &s.date_format)
         .ok_or("Type the date as the console writes dates.")?;
@@ -589,14 +606,19 @@ pub fn add(rq: &Rq<'_>) -> Response {
         profiles.push("default".into());
     }
     let posted = |n: &str, d: String| if rq.post() { f.str(n).to_string() } else { d };
+    // Code updates' Schedule: the install of its row.
+    let update = had.is_none() && rq.q("op") == "update";
+    let ms = rq.q("ms");
     let v = Add {
         date: posted("d", crate::fmt::date(start, zone, &set.date_format)),
         time: posted("t", crate::fmt::time(start, zone, &set.time_format, false)),
         zone: zone.to_string(),
         every: posted(
             "r",
-            had.as_ref()
-                .map_or_else(|| "daily".into(), |x| x.repeat.every.clone()),
+            had.as_ref().map_or_else(
+                || if update { "once" } else { "daily" }.into(),
+                |x| x.repeat.every.clone(),
+            ),
         ),
         days: had
             .as_ref()
@@ -610,15 +632,28 @@ pub fn add(rq: &Rq<'_>) -> Response {
         until: posted("u", String::new()),
         op: posted(
             "op",
-            had.as_ref()
-                .map_or_else(String::new, |x| x.op.words().into()),
+            had.as_ref().map_or_else(
+                || {
+                    if update {
+                        Op::Update.words().into()
+                    } else {
+                        String::new()
+                    }
+                },
+                |x| x.op.words().into(),
+            ),
         ),
         targets: all.iter().map(|t| t.0.clone()).collect(),
         target: posted(
             "tg",
-            had.as_ref()
-                .map(schedd::service::target)
-                .unwrap_or_default(),
+            had.as_ref().map_or_else(
+                || match (update, ms.is_empty()) {
+                    (true, true) => CONSOLE_TARGET.into(),
+                    (true, false) => ms.clone(),
+                    _ => String::new(),
+                },
+                schedd::service::target,
+            ),
         ),
         profiles,
         profile: posted(

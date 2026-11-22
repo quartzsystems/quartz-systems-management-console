@@ -69,6 +69,17 @@ pub struct TestImage {
     /// Its installation ISO, when it is built: the installer's suites
     /// install the test image from it.
     pub iso: Option<PathBuf>,
+    /// Its own update image, when it is built.
+    pub update: Option<PathBuf>,
+    /// The update images of its variants, when they are built
+    /// (`--variant next`, `--variant broken`): what Phase 6's suites
+    /// install.
+    pub next: Option<PathBuf>,
+    /// The variant whose web server cannot start.
+    pub broken: Option<PathBuf>,
+    /// The development key it is signed with, which it trusts: the
+    /// refusals' images are made with it.
+    pub key: Option<PathBuf>,
 }
 
 /// What a suite is run with.

@@ -119,7 +119,13 @@ impl Transfers {
             let s = self.stages.remove(i);
             lock(sys).staged(&s.name, s.got, closed && s.got == s.bytes, &s.head);
         }
-        // A console that went: the download ends.
+        // A console that went: the download ends, and is said.
+        for d in self.downloads.iter().filter(|d| d.stream == stream) {
+            lock(sys).lines.push(format!(
+                "download {} ended by the console after {} of {} bytes",
+                d.name, d.sent, d.bytes
+            ));
+        }
         self.downloads.retain(|d| d.stream != stream);
     }
 

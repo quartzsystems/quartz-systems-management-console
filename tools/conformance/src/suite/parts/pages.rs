@@ -118,7 +118,7 @@ fn ours(path: &str) -> bool {
 }
 
 /// Whether `path` is a terminal window, the one page with a script.
-fn window(path: &str) -> bool {
+pub(crate) fn window(path: &str) -> bool {
     let p = path.split('?').next().unwrap_or("");
     p.starts_with("/qsmc/terminal/") && p.matches('/').count() == 4
 }
@@ -142,7 +142,7 @@ pub(crate) fn key(path: &str) -> String {
 }
 
 /// The links of a page: `<a href>`, `<img src>`, `formaction`.
-fn links(html: &str) -> Vec<String> {
+pub(crate) fn links(html: &str) -> Vec<String> {
     qsweb::golden::tokens(html)
         .into_iter()
         .filter_map(|t| match t {
@@ -160,17 +160,22 @@ fn links(html: &str) -> Vec<String> {
 
 /// What the crawl saw.
 #[derive(Default)]
-struct Crawl {
-    pages: usize,
-    other: usize,
-    forms: usize,
-    posted: usize,
-    windows: usize,
+pub(crate) struct Crawl {
+    pub(crate) pages: usize,
+    pub(crate) other: usize,
+    pub(crate) forms: usize,
+    pub(crate) posted: usize,
+    pub(crate) windows: usize,
 }
 
 /// Check `html`'s forms, served at `here`: each posts with the token, has
 /// a button, and an action that answers; one with Cancel is posted.
-fn check_forms(b: &mut Browser, html: &str, here: &str, c: &mut Crawl) -> Result<(), String> {
+pub(crate) fn check_forms(
+    b: &mut Browser,
+    html: &str,
+    here: &str,
+    c: &mut Crawl,
+) -> Result<(), String> {
     for f in forms(html, here) {
         c.forms += 1;
         // The frame's own search is a GET, which needs no token.

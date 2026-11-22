@@ -17,6 +17,7 @@ diskimg.workspace = true
 loadsource.workspace = true
 appliance.workspace = true
 release = { path = "../../lic/release", version = "0.1.0" }
+vrm.workspace = true
 conformance = { path = "../conformance", version = "0.1.0" }
 driver.workspace = true
 anyhow.workspace = true
