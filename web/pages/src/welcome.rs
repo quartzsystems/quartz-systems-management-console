@@ -2,9 +2,10 @@
 // licensed under the terms of the MIT license which can be found in the
 // root directory of this project.
 
-//! Welcome (`welcome.html`): the sections and the status strip. In
-//! this phase the managed systems, partitions and service counts are
-//! zero; the console's own version and uptime are real.
+//! Welcome (`welcome.html`): the sections and the status strip. The
+//! managed systems and partitions are counted from what `mgmtd` keeps,
+//! a standalone system as one partition as the Partitions list has it;
+//! the service counts are zero until Phase 6.
 
 use std::fmt::Write as _;
 
