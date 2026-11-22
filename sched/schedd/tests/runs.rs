@@ -71,6 +71,10 @@ fn service(d: &std::path::Path, clock: &Arc<AtomicI64>, asked: &Asked) -> schedd
     schedd::Service::start(schedd::Config {
         store: state::Store::at(d),
         mgmt: Box::new(move || Box::new(Fake(a.clone()))),
+        fetch: Box::new(|| Box::new(fetchd::proto::Client::new("/nonexistent/fetchd.sock"))),
+        updd: Box::new(|| Box::new(update::proto::Client::new("/nonexistent/updd.sock"))),
+        console: "QSHQMC1".into(),
+        look: schedd::update::NOW,
         clock: Box::new(move || c.load(Ordering::Relaxed)),
         log: Box::new(|l| eprintln!("schedd: {l}")),
     })

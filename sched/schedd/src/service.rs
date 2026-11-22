@@ -26,6 +26,10 @@ pub const GRACE: i64 = 60;
 
 /// A way to `mgmtd`, made for each run.
 pub type MakeMgmt = Box<dyn Fn() -> Box<dyn mgmtproto::Calls + Send> + Send + Sync>;
+/// A way to the download service, made for each run.
+pub type MakeFetch = Box<dyn Fn() -> Box<dyn fetchd::proto::Calls + Send> + Send + Sync>;
+/// A way to the console's update service, made for each run.
+pub type MakeUpdd = Box<dyn Fn() -> Box<dyn update::proto::Calls + Send> + Send + Sync>;
 
 /// What the service is given.
 pub struct Config {
@@ -34,6 +38,14 @@ pub struct Config {
     pub store: Store,
     /// `mgmtd`.
     pub mgmt: MakeMgmt,
+    /// The download service: what is downloaded, for an install.
+    pub fetch: MakeFetch,
+    /// The console's update service, for its own install.
+    pub updd: MakeUpdd,
+    /// The console's name, which an install of its own update is on.
+    pub console: String,
+    /// How long an install waits between looks at a step.
+    pub look: std::time::Duration,
     /// The wall clock, Unix seconds.
     pub clock: Box<dyn Fn() -> i64 + Send + Sync>,
     /// Its log.
@@ -69,7 +81,6 @@ pub fn not_scheduled(op: Op) -> Option<(&'static str, &'static str)> {
     let d = match op {
         Op::PowerOn => qmcmsg::POWER_ON_NOT_HERE,
         Op::Backup => qmcmsg::NO_SCHEDULED_BACKUP,
-        Op::Update => qmcmsg::NO_SCHEDULED_UPDATE,
         _ => return None,
     };
     Some((d.id, d.text))
@@ -216,6 +227,34 @@ impl Service {
             return run;
         }
         let mut mgmt = (self.0.cfg.mgmt)();
+        if s.op == Op::Update {
+            let mut fetch = (self.0.cfg.fetch)();
+            let mut updd = (self.0.cfg.updd)();
+            let mut reach = crate::update::Reach {
+                mgmt: &mut *mgmt,
+                fetch: &mut *fetch,
+                updd: &mut *updd,
+                look: self.0.cfg.look,
+            };
+            // The same checks as the page's, at the run's time.
+            let done = if s.system.is_empty() {
+                crate::update::install_console(&mut reach, &self.0.cfg.console, &s.owner)
+            } else {
+                crate::update::install_host(&mut reach, &s.system, &s.owner, s.delay)
+            };
+            match done {
+                Ok(what) => {
+                    run.text.clone_from(&what);
+                    Self::audit(s, "done");
+                    self.log(&format!("scheduled operation {} ran: {what}", s.id));
+                }
+                Err(no) => {
+                    fail(&mut run, Outcome::Failed, &no.id, &no.text);
+                    Self::audit(s, &format!("refused: {} {}", no.id, no.text));
+                }
+            }
+            return run;
+        }
         let answer = if s.op == Op::PowerOff {
             mgmt.power(s.system.clone(), false, false, s.delay, s.owner.clone())
         } else {
@@ -247,9 +286,12 @@ impl Service {
     }
 }
 
-/// What an operation is done on: `QSTEST01 on QSHQVS1`, `QSHQ400`.
+/// What an operation is done on: `QSTEST01 on QSHQVS1`, `QSHQ400`, and
+/// `the console` for an install of its own update (no system named).
 pub fn target(s: &Schedule) -> String {
-    if s.op.on_partition() {
+    if s.op == Op::Update && s.system.is_empty() {
+        "the console".into()
+    } else if s.op.on_partition() {
         format!("{} on {}", s.partition_name, s.system)
     } else {
         s.system.clone()

@@ -59,6 +59,17 @@ fn run() -> Result<(), String> {
     let svc = schedd::Service::start(schedd::Config {
         store: state::Store::at(&state),
         mgmt: Box::new(|| Box::new(mgmtproto::calls::Client::new(release::MGMTD_SOCKET))),
+        fetch: Box::new(|| Box::new(fetchd::proto::Client::new(release::FETCHD_SOCKET))),
+        updd: Box::new(|| {
+            Box::new(update::proto::Client::new(update::proto::socket(
+                release::ID,
+                release::RUN_DIR,
+            )))
+        }),
+        // PID 1 set the host name at the IPL, from host.toml or the default.
+        console: std::fs::read_to_string("/proc/sys/kernel/hostname")
+            .map_or_else(|_| "QSMC".into(), |n| n.trim().to_uppercase()),
+        look: schedd::update::USUAL,
         clock: Box::new(appliance::time::now_secs),
         log: Box::new(|l| eprintln!("{l}")),
     });

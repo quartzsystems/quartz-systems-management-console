@@ -11,6 +11,8 @@
 //! - [`model`]: what is kept, `schedules.toml`.
 //! - [`when`]: the next time an operation is due.
 //! - [`service`]: the runs.
+//! - [`update`]: an install of a code update, its checks shared with
+//!   the Code updates page.
 //! - [`calls`]: the web server's requests on its socket.
 
 #![forbid(unsafe_code)]
@@ -18,6 +20,7 @@
 pub mod calls;
 pub mod model;
 pub mod service;
+pub mod update;
 pub mod when;
 
 pub use calls::{Calls, Request, Sched};

@@ -23,7 +23,7 @@ request refused.
 | `QMC3101`-`QMC3133` | partitions: activated, shut down, changed, made, deleted, and what a host refuses of them |
 | `QMC3201`-`QMC3205` | partition profiles |
 | `QMC3301`-`QMC3303` | custom groups |
-| `QMC3401`-`QMC3409` | scheduled operations |
+| `QMC3401`-`QMC3409` | scheduled operations (`QMC3408` is no more: an install is scheduled) |
 | `QMC3002` | 0 | Partition &1 is waiting for a console (&2). Open a terminal window to continue the IPL. | The partition's IPL stopped until a console connects to it. | Open a terminal window to the partition. |
 | `QMC3101` | 0 | Activation of partition &1 started. | The host took the request; the partition's codes follow its IPL. | None. |
 | `QMC3102` | 0 | Shut down of partition &1 started. | The host, or the partition's system, took the request. | None. |
@@ -58,10 +58,10 @@ request refused.
 | `QMC3405` | 30 | The operation was not scheduled: &1 | The scheduler refused it. | Correct the operation and add it again. |
 | `QMC3406` | 30 | User &1 may no longer &2: the scheduled run was refused. | A scheduled operation runs in its owner's name, and the owner's role is checked when it runs: it no longer has the task, or the user is disabled or gone. | Change the operation to an owner who may do it, or give the role the task. |
 | `QMC3407` | 20 | A backup of the console's data is not scheduled: it leaves the console through a browser, under a passphrase. | A backup is downloaded from Backup and restore, sealed under a passphrase typed there; the console sends it nowhere by itself. | Take the backup from Backup and restore. |
-| `QMC3408` | 20 | Installing a code update is not scheduled in this release. | Code updates arrive with a later release of this console. | None. |
 | `QMC3409` | 30 | The scheduler did not answer: &1. | The console's service that keeps and runs scheduled operations is not running, or is starting. | Wait a moment and show the page again. If it goes on, see the reference code history of the console. |
 | `QMC4001`-`QMC4002` | a terminal window's console closed or disconnected |
 | `QMC5003`, `QMC5010` | control panel functions carried out and refused |
+| `QMC7001`-`QMC7019` | Code updates and Updates: checks, downloads, installs, how each ended |
 | `QMC7101`-`QMC7117` | the console's own code update: what `base/update` refuses, in the console's words |
 | `QMC7201`-`QMC7210` | product streams, the download service `fetchd`, and a downloaded host update |
 | `QMC7301`-`QMC7305` | the console's own problem log: what `base/problem` refuses |
@@ -82,6 +82,25 @@ request refused.
 | `QMC4002` | 0 | Terminal window to &1 disconnected. | You disconnected the window; the console stays with the managed system and any other window that has it open. | Choose Connect to open it again. |
 | `QMC5003` | 0 | Function &1 selected for partition &2; the managed system accepted the request. | The host carried out the control panel function; the result shows what it displays and the code before and after. | None. |
 | `QMC5010` | 30 | Function &1 for partition &2 not performed. The managed system's own messages follow. | The host refused the control panel function: it does not have it, or its keylock or the partition's state does not allow it. | Act on the system's messages below this one and try again. |
+| `QMC7001` | 0 | Checked &1 at &2. &3 | The console read each product stream's index or catalog from the update server and verified it against the keys built into its image. | None. |
+| `QMC7002` | 10 | The &2 stream offers nothing newer than &1. | The newest release the stream names, that updates from what runs, is what runs. | None; check again later. |
+| `QMC7003` | 30 | Download &1 before it is installed: it is not on the console. | An update is installed from the image the console downloaded and checked against the stream's index. | Choose Download, then Install when its status says it is downloaded. |
+| `QMC7004` | 30 | Partitions run on &1: &2. Shut them down, or install saying they are to be shut down. | Activating a host's update restarts the host, which ends every partition. | Shut the partitions down, or choose on the confirmation that they are shut down through their operating systems first. |
+| `QMC7005` | 30 | The &1 stream has not been checked, or nothing of it verified. | The console knows what a stream offers only from an index that verified. | Choose Check now on Code updates. |
+| `QMC7006` | 20 | &1 takes its fixes by its own means: the console updates no standalone system. | A standalone QS/400 is fixed by its own PTF commands; QSI gives it no code update. | Use the system's own fixes page; Updates links to it. |
+| `QMC7007` | 0 | Download of &1 begun. | The download service fetches the file and checks it against the stream's index before anything may read it. | Show the page again to see when it is downloaded. |
+| `QMC7008` | 0 | &1 removed from the console. | The downloaded file was deleted. | None. |
+| `QMC7009` | 0 | Update settings changed: server &1, check &2, download &3. | The download service keeps the settings and uses them from now on. | None. |
+| `QMC7010` | 0 | Installing &1 on &2. This page reloads every 10 seconds. | The image is brought to the system, verified there, written to its other slot and activated. | Wait for the steps to end; the page shows each. |
+| `QMC7011` | 0 | &1 confirmed &2. | The system restarted into its other slot, which started and became its default. | None. |
+| `QMC7012` | 30 | &1 rolled back to its other slot: &2. | The slot the update was written to did not confirm; the system came back on the slot it ran before, as it was. | See the system's serviceable events and its dump; install the update again when the cause is known. |
+| `QMC7013` | 20 | No system plan is saved before the install: system plans come with a later release. | The design saves a plan of the host first; this release has no system plans. | None. |
+| `QMC7014` | 0 | The console is restarting into &1. Sign on again when it is back. | The update is installed in the console's other slot; it confirms when its web server answers, or the console comes back as it was. | Sign on again in a few minutes; Code updates then says how the update ended. |
+| `QMC7015` | 30 | &1 does not answer: &2. | A service of the console that the page or the schedule needs is not running, or is starting. | Wait a moment and try again; if it goes on, see the console's serviceable events. |
+| `QMC7016` | 30 | The release notes of &1 are not on the console. | The notes are fetched when a stream is checked and its index names them. | Choose Check now on Code updates. |
+| `QMC7017` | 0 | Install of &1 on &2 begun. | The image is on its way to the system's other slot. | Follow it on the progress page. |
+| `QMC7018` | 0 | &1 is restarting into &2. | The update was activated: the system restarts into its other slot. | Follow it on the progress page; it confirms or rolls back by itself. |
+| `QMC7019` | 0 | The pending update of &1 was cancelled. | The slot it was written to is no longer pending; nothing else changed. | None. |
 | `QMC7101` | 30 | Update image &1 is not signed by a key this console trusts. | An image is installed only if its manifest is signed by a key the running release trusts, and nothing turns that off. | Get the image from the qsmc product stream again, or from media of a QS/MC build. |
 | `QMC7102` | 30 | Update image &1 is damaged: &2. | The image does not read, or a size or a hash in it is not its manifest's. | Download or copy it again; if it is refused again, get it from the product stream again. |
 | `QMC7103` | 30 | Update image &1 is for &2, and this console is &3. | An update image updates the product it was built for; a test image is updated only by a test image. | Use an update image of QS/MC. |

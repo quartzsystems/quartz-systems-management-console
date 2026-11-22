@@ -1885,12 +1885,14 @@ name = "qsmcschedd"
 version = "0.1.0"
 dependencies = [
  "appliance",
+ "fetchd",
  "mgmtproto",
  "refcode",
  "release",
  "schedd",
  "state",
  "supervise",
+ "update",
 ]
 
 [[package]]
@@ -2214,13 +2216,18 @@ name = "schedd"
 version = "0.1.0"
 dependencies = [
  "appliance",
+ "fetchd",
  "ipc",
  "mgmtproto",
+ "msg",
  "qmcmsg",
  "qsi",
  "qsweb",
+ "release",
  "serde",
  "state",
+ "update",
+ "vrm",
  "webusers",
 ]
 

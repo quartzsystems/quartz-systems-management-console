@@ -236,9 +236,6 @@ catalogue! {
     NO_SCHEDULED_BACKUP = "QMC3407", 20, "A backup of the console's data is not scheduled: it leaves the console through a browser, under a passphrase.",
         "A backup is downloaded from Backup and restore, sealed under a passphrase typed there; the console sends it nowhere by itself.",
         "Take the backup from Backup and restore.";
-    NO_SCHEDULED_UPDATE = "QMC3408", 20, "Installing a code update is not scheduled in this release.",
-        "Code updates arrive with a later release of this console.",
-        "None.";
     SCHEDD_DOWN = "QMC3409", 30, "The scheduler did not answer: &1.",
         "The console's service that keeps and runs scheduled operations is not running, or is starting.",
         "Wait a moment and show the page again. If it goes on, see the reference code history of the console.";
@@ -490,6 +487,65 @@ catalogue! {
     NOT_IN_V1 = "QMC8700", 20, "&1 is not in this release.",
         "The function is shown by the design but not provided by this release of the console.",
         "See the console's documentation for what this release does.";
+
+    // Code updates: the console's and its hosts', and the fleet's levels.
+    CHECKED = "QMC7001", 0, "Checked &1 at &2. &3",
+        "The console read each product stream's index or catalog from the update server and verified it against the keys built into its image.",
+        "None.";
+    AT_NEWEST = "QMC7002", 10, "The &2 stream offers nothing newer than &1.",
+        "The newest release the stream names, that updates from what runs, is what runs.",
+        "None; check again later.";
+    DOWNLOAD_FIRST = "QMC7003", 30, "Download &1 before it is installed: it is not on the console.",
+        "An update is installed from the image the console downloaded and checked against the stream's index.",
+        "Choose Download, then Install when its status says it is downloaded.";
+    PARTITIONS_RUN = "QMC7004", 30, "Partitions run on &1: &2. Shut them down, or install saying they are to be shut down.",
+        "Activating a host's update restarts the host, which ends every partition.",
+        "Shut the partitions down, or choose on the confirmation that they are shut down through their operating systems first.";
+    NOT_CHECKED = "QMC7005", 30, "The &1 stream has not been checked, or nothing of it verified.",
+        "The console knows what a stream offers only from an index that verified.",
+        "Choose Check now on Code updates.";
+    NO_QSI_UPDATE = "QMC7006", 20, "&1 takes its fixes by its own means: the console updates no standalone system.",
+        "A standalone QS/400 is fixed by its own PTF commands; QSI gives it no code update.",
+        "Use the system's own fixes page; Updates links to it.";
+    DOWNLOAD_BEGUN = "QMC7007", 0, "Download of &1 begun.",
+        "The download service fetches the file and checks it against the stream's index before anything may read it.",
+        "Show the page again to see when it is downloaded.";
+    DOWNLOAD_GONE = "QMC7008", 0, "&1 removed from the console.",
+        "The downloaded file was deleted.",
+        "None.";
+    UPDATE_SETTINGS = "QMC7009", 0, "Update settings changed: server &1, check &2, download &3.",
+        "The download service keeps the settings and uses them from now on.",
+        "None.";
+    INSTALLING = "QMC7010", 0, "Installing &1 on &2. This page reloads every 10 seconds.",
+        "The image is brought to the system, verified there, written to its other slot and activated.",
+        "Wait for the steps to end; the page shows each.";
+    UPDATE_CONFIRMED = "QMC7011", 0, "&1 confirmed &2.",
+        "The system restarted into its other slot, which started and became its default.",
+        "None.";
+    UPDATE_ROLLED_BACK = "QMC7012", 30, "&1 rolled back to its other slot: &2.",
+        "The slot the update was written to did not confirm; the system came back on the slot it ran before, as it was.",
+        "See the system's serviceable events and its dump; install the update again when the cause is known.";
+    NO_PLAN_SAVED = "QMC7013", 20, "No system plan is saved before the install: system plans come with a later release.",
+        "The design saves a plan of the host first; this release has no system plans.",
+        "None.";
+    CONSOLE_RESTARTING = "QMC7014", 0, "The console is restarting into &1. Sign on again when it is back.",
+        "The update is installed in the console's other slot; it confirms when its web server answers, or the console comes back as it was.",
+        "Sign on again in a few minutes; Code updates then says how the update ended.";
+    SERVICE_DOWN = "QMC7015", 30, "&1 does not answer: &2.",
+        "A service of the console that the page or the schedule needs is not running, or is starting.",
+        "Wait a moment and try again; if it goes on, see the console's serviceable events.";
+    NO_NOTES = "QMC7016", 30, "The release notes of &1 are not on the console.",
+        "The notes are fetched when a stream is checked and its index names them.",
+        "Choose Check now on Code updates.";
+    INSTALL_BEGUN = "QMC7017", 0, "Install of &1 on &2 begun.",
+        "The image is on its way to the system's other slot.",
+        "Follow it on the progress page.";
+    UPDATE_ACTIVATED = "QMC7018", 0, "&1 is restarting into &2.",
+        "The update was activated: the system restarts into its other slot.",
+        "Follow it on the progress page; it confirms or rolls back by itself.";
+    UPDATE_CANCELLED = "QMC7019", 0, "The pending update of &1 was cancelled.",
+        "The slot it was written to is no longer pending; nothing else changed.",
+        "None.";
 
     // The console's own code update (`base/update`'s refusals).
     UPD_SIGNATURE = "QMC7101", 30, "Update image &1 is not signed by a key this console trusts.",

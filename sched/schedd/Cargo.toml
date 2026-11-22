@@ -16,6 +16,11 @@ qsi.workspace = true
 qsweb.workspace = true
 serde.workspace = true
 state.workspace = true
+msg.workspace = true
+vrm.workspace = true
+update.workspace = true
+fetchd = { path = "../../upd/fetchd", version = "0.1.0" }
+release = { path = "../../lic/release", version = "0.1.0" }
 
 [lints]
 workspace = true
