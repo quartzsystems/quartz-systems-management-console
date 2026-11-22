@@ -1,15 +1,13 @@
                                Service Functions
                                                                  System:  mc-01
 
- Service functions are not available yet. They arrive in Phase 6.
+ Select one of the following:
 
- This option will then hold the console's own dumps and its code
- updates.
-
-
-
-
-
+      1. Work with problems
+      2. Take a console dump
+      3. Work with dumps
+      4. Install an update from a removable volume
+      5. Display code levels
 
 
 
@@ -19,6 +17,8 @@
 
 
 
+ Selection
 
- Enter=Continue   F1=Help   F3=Exit   F12=Cancel
+
+ F1=Help   F3=Exit   F12=Cancel
 

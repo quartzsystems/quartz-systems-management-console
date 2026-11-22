@@ -1,0 +1,24 @@
+                   Install an Update from a Removable Volume
+                                                                 System:  mc-01
+
+ Device  . . . . . . :
+
+
+ Type the device of the volume that holds the update image,
+ as sdb1, and press Enter.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ F1=Help   F3=Exit   F12=Cancel
+

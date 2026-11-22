@@ -194,7 +194,13 @@ pub fn boot_installed<'a>(
 ) -> Result<Guest<'a>, String> {
     let mut guest = run.boot(machine)?;
     let deadline = Instant::now() + within;
-    super::base::base_ready(&mut guest, deadline)?;
+    if let Err(e) = super::base::base_ready(&mut guest, deadline) {
+        // The hooks' channel is up before the base is ready: what the
+        // services said of why not.
+        let said =
+            crate::suite::mgmt::logs(&mut guest, &["stopped", "error", "panicked", "failed"]);
+        return Err(format!("{e}\nthe console's logs:\n{said}"));
+    }
     guest.channel(deadline)?;
     Ok(guest)
 }

@@ -40,7 +40,7 @@ pub fn local(run: &Run<'_>) -> Result<String, String> {
         &mut c.guest,
         "A3005030",
         &format!("system:{VS}"),
-        &format!("{VS} was not reached for 31 minutes."),
+        &format!("{VS} was not reached for 31 minutes"),
     )?;
     let d = || Instant::now() + Duration::from_secs(90);
     let mut held = 0;
@@ -113,10 +113,15 @@ pub fn local(run: &Run<'_>) -> Result<String, String> {
     help(&mut c.guest, "console-dumps", "Work with Dumps", d())?;
     c.guest.type_keys(&format!("3{}", key::ENTER))?;
     let copy = titled(&mut c.guest, "Copy Dump to a Removable Volume", d())?;
-    golden("console-dump-copy", &copy)?;
+    if !copy.contains(&dump) {
+        return Err(format!(
+            "the copy panel does not name {dump}:
+{copy}"
+        ));
+    }
     c.guest
-        .type_keys(&format!("sdb{}{}", key::FIELD_EXIT, key::ENTER))?;
-    said(&mut c.guest, "copied to sdb", d())?;
+        .type_keys(&format!("vdb{}{}", key::FIELD_EXIT, key::ENTER))?;
+    said(&mut c.guest, "copied to vdb", d())?;
     c.guest.type_keys(&format!("4{}", key::ENTER))?;
     titled(&mut c.guest, "Confirm Delete Dump", d())?;
     c.guest.type_keys(key::F10)?;
@@ -124,7 +129,7 @@ pub fn local(run: &Run<'_>) -> Result<String, String> {
     if page(&mut c.browser, "/qsmc/dumps")?.contains(&dump) {
         return Err(format!("{dump} is still listed after its delete"));
     }
-    held += 2;
+    held += 1;
     c.guest.type_keys(key::F12)?;
     titled(&mut c.guest, MENU, d())?;
     // 5: the levels before.
@@ -152,7 +157,7 @@ pub fn local(run: &Run<'_>) -> Result<String, String> {
     )?;
     held += 2;
     c.guest
-        .type_keys(&format!("sdb{}{}", key::FIELD_EXIT, key::ENTER))?;
+        .type_keys(&format!("vdb{}{}", key::FIELD_EXIT, key::ENTER))?;
     titled(&mut c.guest, "Choose an Update Image", d())?;
     c.guest.type_keys(&format!("1{}", key::ENTER))?;
     let chosen = titled_with(

@@ -1,0 +1,24 @@
+                             Confirm Close Problem
+                                                                 System:  mc-01
+
+ Problem 1 is closed, with your user ID.
+
+ Its condition still holds: it is closed only because you
+ say so. Seen again, the condition opens a new problem.
+
+ Press F10 to close it, or F12 to return.
+
+
+
+
+
+
+
+
+
+
+
+
+
+ F1=Help   F10=Close problem   F12=Cancel
+

@@ -278,6 +278,11 @@ pub fn set_clock(guest: &mut crate::qemu::session::Session, secs: i64) -> Result
 
 /// Kill service `name`; supervision starts it again.
 pub fn kill(guest: &mut crate::qemu::session::Session, name: &str) -> Result<(), String> {
+    // One killed a moment ago is started again first.
+    until(&format!("{name} running"), Duration::from_secs(60), || {
+        let st = super::base::channel(guest)?.status()?;
+        Ok(st.service(name).is_some_and(|s| s.pid != 0))
+    })?;
     super::base::channel(guest)?
         .ask(&format!("{} {name}", qsmchook::proto::command::KILL))
         .map(|_| ())

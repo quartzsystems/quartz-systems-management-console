@@ -1,0 +1,24 @@
+                               Work with Problems
+                                                                 System:  mc-01
+
+ 4=Close  5=Display
+
+ Opt Number  Status   Last seen         Code      Description
+          1  Open     yyyy-mm-dd hh:mm  A3005030  Managed system QSHQVS1 has not
+
+
+
+
+
+
+
+
+
+
+
+ Bottom
+
+
+
+ F1=Help  F3=Exit  F5=Refresh  F11=Show all  F12=Cancel
+

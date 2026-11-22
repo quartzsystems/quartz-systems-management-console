@@ -1,0 +1,24 @@
+                           Help: Display Code Levels
+                                                                 System:  mc-01
+
+ Both code slots: what each holds, which runs, which is the
+ default, and how its last activation ended, with why it
+ rolled back when it did. A pending slot is activated by F10,
+ a restart into it, or cancelled by F9.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

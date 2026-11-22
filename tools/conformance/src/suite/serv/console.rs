@@ -107,7 +107,7 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
     let (next, broken) = images(run)?;
     let mut lab = lab(run, "serv-console", &[qsmc_release(broken)?])?;
     let mut said = Vec::new();
-    user(&mut lab.c.browser, "witness", "Operator", "Witness-pass-42")?;
+    user(&mut lab.c.browser, "witness", "Operator", "Observe-pass-42")?;
     // The image whose web server cannot start.
     download(&mut lab.c.browser, CONSOLE_ROW, "qsmc", &file_name(broken))?;
     let before = state_sums(&mut lab.c.guest)?;
@@ -159,7 +159,7 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
     if installed_level(b)? != "V1R0M0" {
         return Err("after the roll back the console does not run V1R0M0".into());
     }
-    let events = page(b, "/qsmc/events?rows=200")?;
+    let events = page(b, "/qsmc/events?rows=100")?;
     let fell = refcode::SLOT_FELL_BACK.code;
     if !events.contains(fell) {
         return Err(format!(
@@ -244,7 +244,7 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
         },
     )?;
     let mut w = b.fresh();
-    signed_on(&mut w, "witness", "Witness-pass-42")?;
+    signed_on(&mut w, "witness", "Observe-pass-42")?;
     said.push(
         "V1R0M1 found on the stream, downloaded, installed and activated: slot B confirmed when \
          its web server answered, Code updates says V1R0M1, web.toml migrated to schema 2 after \
@@ -338,7 +338,7 @@ pub(super) fn with_disks(
     Ok(m)
 }
 
-/// Option 8, 4 for the image `file` on device `sdb`: the message it
+/// Option 8, 4 for the image `file` on device `vdb`: the message it
 /// ends with, or the confirmation shown.
 fn stage_from_volume(guest: &mut Guest<'_>, file: &str) -> Result<String, String> {
     let deadline = Instant::now() + Duration::from_secs(60);
@@ -348,7 +348,7 @@ fn stage_from_volume(guest: &mut Guest<'_>, file: &str) -> Result<String, String
         "Install an Update from a Removable Volume",
         deadline,
     )?;
-    guest.type_keys(&format!("sdb{}{}", key::FIELD_EXIT, key::ENTER))?;
+    guest.type_keys(&format!("vdb{}{}", key::FIELD_EXIT, key::ENTER))?;
     let list = titled(guest, "Choose an Update Image", deadline)?;
     let at = list
         .lines()
@@ -480,7 +480,7 @@ pub fn refusals(run: &Run<'_>) -> Result<String, String> {
     // Nothing was installed: no slot pending, the console as it was.
     let status = channel(&mut c.guest)?.status()?;
     let record = crate::suite::base::fact_of(&status, release::fact::RECORD)?.to_string();
-    if record.contains("pending") {
+    if record.contains("pending A") || record.contains("pending B") {
         return Err(format!("a refused image left a slot pending: {record}"));
     }
     c.guest.kill();
@@ -498,7 +498,7 @@ const F9: &str = "\x1b[20~";
 fn cancel_pending(c: &mut Console<'_>) -> Result<bool, String> {
     let st = channel(&mut c.guest)?.status()?;
     let record = crate::suite::base::fact_of(&st, release::fact::RECORD)?.to_string();
-    if !record.contains("pending") {
+    if !(record.contains("pending A") || record.contains("pending B")) {
         return Ok(false);
     }
     let d = Instant::now() + Duration::from_secs(60);
@@ -538,7 +538,7 @@ fn fresh<'a>(
     let m = with_disks(run, &format!("serv-power-{n}"), Kind::Mirrored, Vec::new())?;
     let mut c = boot(run, m)?;
     signed_on(&mut c.browser, ADMIN, PASSWORD)?;
-    user(&mut c.browser, "witness", "Operator", "Witness-pass-42")?;
+    user(&mut c.browser, "witness", "Operator", "Observe-pass-42")?;
     super::point(&mut c.browser, &super::server_url(streams))?;
     super::check(&mut c.browser)?;
     download(&mut c.browser, CONSOLE_ROW, "qsmc", &file_name(next))?;
@@ -552,7 +552,7 @@ fn whole<'a>(run: &Run<'a>, machine: Machine) -> Result<(Console<'a>, String), S
     crate::suite::base::all_ready(&channel(&mut c.guest)?.status()?)?;
     signed_on(&mut c.browser, ADMIN, PASSWORD)?;
     let mut w = c.browser.fresh();
-    signed_on(&mut w, "witness", "Witness-pass-42")?;
+    signed_on(&mut w, "witness", "Observe-pass-42")?;
     let level = installed_level(&mut c.browser)?;
     Ok((c, level))
 }

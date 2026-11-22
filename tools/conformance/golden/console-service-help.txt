@@ -1,18 +1,18 @@
                             Help: Service Functions
                                                                  System:  mc-01
 
- Service functions are what a service provider asks for: the
- console's dumps, and its code updates from the product stream
- or a removable volume. They arrive in Phase 6.
+ Service functions are the console's own: what a service
+ provider asks for when the console itself has a problem.
 
- Enter, F3 or F12 goes back.
+ 1 lists the console's problems, shows one whole and closes it.
+ 2 takes a console dump: logs, problems, state and the services'
+ status, every secret left out. 3 copies a dump to a removable
+ volume, or deletes it. 4 installs an update from a removable
+ volume into the other code slot, then restarts now or later.
+ 5 shows both code slots and how the last update ended.
 
-
-
-
-
-
-
+ The systems the console manages are serviced from the web
+ interface, not here.
 
 
 

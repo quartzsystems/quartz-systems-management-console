@@ -1,0 +1,24 @@
+                              Take a Console Dump
+                                                                 System:  mc-01
+
+ A console dump holds the logs, the problem log, the state
+ and each service's status, every secret left out: the
+ console's keys, the users' password hashes and the managed
+ systems' pins. It is written in the background; option 3
+ lists it.
+
+ Press F10 to take it, or F12 to return without it.
+
+
+
+
+
+
+
+
+
+
+
+
+ F1=Help   F10=Take dump   F12=Cancel
+

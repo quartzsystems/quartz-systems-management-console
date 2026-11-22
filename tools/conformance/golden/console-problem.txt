@@ -1,0 +1,24 @@
+                                Display Problem
+                                                                 System:  mc-01
+
+ Problem . . . . . . : 1
+ Status  . . . . . . : Open; its condition holds
+ Severity  . . . . . : attention
+ Reference code  . . : <now>
+ First seen  . . . . : yyyy-mm-dd hh:mm UTC
+ Last seen . . . . . : yyyy-mm-dd hh:mm UTC
+ Seen  . . . . . . . : once
+
+ Managed system QSHQVS1 has not been reached for longer than its setting:
+ QSHQVS1 was not reached for # minutes.
+
+ What to do: Check the system and the network between it and the console;
+ Connectivity shows why the connection fails.
+
+ More...
+
+
+
+
+ F1=Help   F3=Exit   F4=Close problem   F12=Cancel
+

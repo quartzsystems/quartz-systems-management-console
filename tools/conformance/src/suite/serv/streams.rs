@@ -199,7 +199,7 @@ pub fn streams(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     if downloaded(&mut lab.c.guest)? {
         return Err("a file of the wrong size was kept".into());
     }
-    let problems = page(&mut lab.c.browser, "/qsmc/events?rows=200")?;
+    let problems = page(&mut lab.c.browser, "/qsmc/events?rows=100")?;
     if !problems.contains("A3007110") {
         return Err("a bad download opened no problem of the console's".into());
     }

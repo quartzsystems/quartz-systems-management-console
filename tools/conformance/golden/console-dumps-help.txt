@@ -1,0 +1,24 @@
+                             Help: Work with Dumps
+                                                                 System:  mc-01
+
+ The console's dumps, newest first: each a ZIP archive a
+ standard tool opens. Type 3 by one to copy it to a removable
+ volume, 4 to delete it. The managed systems' dumps are on the
+ web interface's Manage dumps.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

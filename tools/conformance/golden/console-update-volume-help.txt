@@ -1,0 +1,24 @@
+                Help: Install an Update from a Removable Volume
+                                                                 System:  mc-01
+
+ Type the kernel's name of the volume (sdb1) and press Enter;
+ it is mounted read-only and its update images listed. The
+ image is verified against the keys built into this release
+ before anything is written, and installed into the code slot
+ that does not run. Nothing changes until you restart into it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

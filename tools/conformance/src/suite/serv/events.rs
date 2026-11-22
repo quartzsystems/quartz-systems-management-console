@@ -248,7 +248,7 @@ pub fn events(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
 /// The console's own events listed whose row holds `what`, with all
 /// statuses: their numbers.
 fn own_rows(b: &mut Browser, what: &str) -> Result<Vec<u64>, String> {
-    let t = page(b, "/qsmc/events?s=All&rows=200")?;
+    let t = page(b, "/qsmc/events?s=All&rows=100")?;
     Ok(t.split("<tr")
         .filter(|r| r.contains(what) && r.contains("/qsmc/event/console/"))
         .filter_map(|r| {
@@ -271,7 +271,7 @@ fn own_event(b: &mut Browser, code: &str, what: &str, within: Duration) -> Resul
         within,
         || {
             n = own_rows(b, what)?.into_iter().collect();
-            let t = page(b, "/qsmc/events?s=All&rows=200")?;
+            let t = page(b, "/qsmc/events?s=All&rows=100")?;
             Ok(!n.is_empty() && row(&t, &format!("/qsmc/event/console/{}\"", n[0])).contains(code))
         },
     )?;
@@ -391,7 +391,7 @@ pub fn own(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         "every posted code's problem",
         Duration::from_secs(120),
         || {
-            let t = page(&mut lab.c.browser, "/qsmc/events?s=All&rows=200")?;
+            let t = page(&mut lab.c.browser, "/qsmc/events?s=All&rows=100")?;
             counts = (0..MANY)
                 .map(|i| {
                     let name = format!("LOST{i:02}");

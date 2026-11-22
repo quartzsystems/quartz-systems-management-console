@@ -1,0 +1,24 @@
+                           Help: Take a Console Dump
+                                                                 System:  mc-01
+
+ F10 asks PID 1 for a dump of the console's service data. One
+ is taken at a time; the oldest is put out when four are kept
+ or they take 1 GiB together.
+
+ F12 goes back and nothing is taken.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+

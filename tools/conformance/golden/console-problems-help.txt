@@ -1,0 +1,24 @@
+                            Help: Work with Problems
+                                                                 System:  mc-01
+
+ Each problem is a condition of the console a person should
+ look at, opened from a reference code it posted: newest first,
+ the open ones unless F11 shows all. Cleared means its condition
+ no longer holds; a person still closes it.
+
+ Type 5 by a problem to see it whole: what it is about, what to
+ do, and its analysis log. Type 4 to close it. F7 and F8 page.
+ The managed systems' problems are on the web interface.
+
+
+
+
+
+
+
+
+
+
+
+ Enter=Continue   F12=Cancel
+
