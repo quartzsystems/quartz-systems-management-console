@@ -22,7 +22,16 @@ const BEFORE: &str = "Before QS/VS update 26300";
 /// given 30 s; the progress page once it says `done`.
 fn install(b: &mut Browser, done: &str) -> Result<String, String> {
     let path = format!("/qsmc/confirm/update-install?t={VS1}");
-    let html = page(b, &path)?;
+    let a = b.get(&path)?;
+    if a.status != 200 {
+        let t = crate::suite::web::follow(b, &a)?.text();
+        return Err(format!(
+            "the confirmation answered {}: {}",
+            a.status,
+            message_of(&t)
+        ));
+    }
+    let html = a.text();
     if !html.contains("Saved first") {
         return Err("the confirmation does not say a plan is saved first".into());
     }
@@ -47,6 +56,20 @@ fn install(b: &mut Browser, done: &str) -> Result<String, String> {
     Ok(last)
 }
 
+/// How many update activations `QSHQVS1` was asked for.
+fn activations(fleet: &crate::suite::mgmt::Fleet) -> usize {
+    let want = format!(
+        "request {:04X}/{:04X} ",
+        qsi::family::UPDATE,
+        qsi::update::op::ACTIVATE
+    );
+    sim::lock(&fleet.systems[0])
+        .lines
+        .iter()
+        .filter(|l| l.contains(&want))
+        .count()
+}
+
 /// The automatic plans of the host on System plans, by name.
 fn automatic(b: &mut Browser) -> Result<Vec<String>, String> {
     let t = page(b, "/qsmc/plans?sort=n")?;
@@ -68,8 +91,25 @@ pub fn before_update(run: &crate::suite::base::Run<'_>) -> Result<String, String
     for n in 1..=11 {
         lab.fleet
             .tell(0, &format!("outcome rollback A2001035 {reason}"));
-        let t = install(&mut lab.c.browser, &format!("rolled back: {reason}"))?;
+        let before = activations(&lab.fleet);
+        install(&mut lab.c.browser, &format!("rolled back: {reason}"))?;
+        // The page's roll back may be the last install's (the host's
+        // clock is not the console's): the host's own count says this
+        // one activated, and the host is back before the next.
+        until("the host activated", Duration::from_secs(420), || {
+            Ok(activations(&lab.fleet) > before)
+        })?;
+        // It restarts into the other slot and comes back on its own; the
+        // console sees it go, then come back, then may install again.
+        std::thread::sleep(Duration::from_secs(10));
         let b = &mut lab.c.browser;
+        let confirm = format!("/qsmc/confirm/update-install?t={VS1}");
+        until(
+            "the host back to install again",
+            Duration::from_secs(180),
+            || Ok(b.get(&confirm)?.status == 200),
+        )?;
+        let t = page(b, &format!("/qsmc/updates/code/{VS1}/progress"))?;
         let steps = table(&t, "Step");
         let saved = steps
             .iter()

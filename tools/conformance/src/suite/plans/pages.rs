@@ -18,7 +18,7 @@ use super::{VS1, VS2, create, deploy, ended, export, import, lab};
 use crate::suite::mgmt::page;
 use crate::suite::parts::pages::{Crawl, check_forms, key, links};
 use crate::suite::parts::{all_logs, user};
-use crate::suite::web::{message_of, shows};
+use crate::suite::web::{ADMIN, message_of, shows};
 use crate::web::Browser;
 
 /// Whether `path` is a page of this phase, whose links are followed.
@@ -255,7 +255,7 @@ pub fn roles(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     lab.c.guest.kill();
     let audit: Vec<&str> = logs
         .lines()
-        .filter(|l| l.contains("audit: user qsadmin"))
+        .filter(|l| l.contains(&format!("audit: user {ADMIN} ")))
         .collect();
     let has = |what: &str| audit.iter().any(|l| l.contains(what));
     let mut lacking = Vec::new();
@@ -291,7 +291,7 @@ pub fn roles(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         "{pairs} route, method and role pairs as the matrix says ({refused} Not authorized, \
          QMC9010); Deploy and Delete without their token refused (QMC9011), step 3's Deploy led \
          to its confirmation, nothing deployed or deleted until confirmed; the capture, export, \
-         delete, import and each of {made} steps audited with qsadmin ({} lines)",
+         delete, import and each of {made} steps audited with {ADMIN} ({} lines)",
         audit.len()
     ))
 }
