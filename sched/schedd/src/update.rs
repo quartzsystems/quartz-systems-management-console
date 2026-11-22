@@ -278,6 +278,9 @@ pub fn install_host(
 pub fn install_console(r: &mut Reach<'_>, name: &str, owner: &str) -> Result<String, Issued> {
     let f = fetchd::proto::Calls::status(r.fetch).map_err(|e| down("the download service", &e))?;
     let plan = console_plan(name, &f, release::RELEASE)?;
+    // An image left staged by an install that never ended (the power
+    // lost) is put out: this one is staged again from its download.
+    let _ = r.updd.discard();
     let staged = r
         .updd
         .stage_file(plan.path.clone(), false)
