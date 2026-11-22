@@ -72,8 +72,7 @@ impl Answered {
 }
 
 /// What the console says in its hello: every family and later version
-/// whose requests its pages send or whose events it keeps. Problems'
-/// notes, dump space and the fix level are Phase 6's.
+/// whose requests its pages send or whose events it keeps.
 pub const CONSOLE_CAPS: u64 = caps::HOST_V1
     | caps::SERVICING
     | caps::PHYSICAL_IO
@@ -83,7 +82,10 @@ pub const CONSOLE_CAPS: u64 = caps::HOST_V1
     | caps::PARTITION_V3
     | caps::ACTIVATIONS
     | caps::POWER_ON
-    | caps::PANEL_FUNCTIONS;
+    | caps::PANEL_FUNCTIONS
+    | caps::PROBLEM_NOTES
+    | caps::DUMP_SPACE
+    | caps::FIX_LEVEL;
 
 /// Each capability, in an operator's words: what a system without it
 /// does not offer.

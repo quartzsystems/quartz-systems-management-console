@@ -63,7 +63,7 @@ request refused.
 | `QMC4001`-`QMC4002` | a terminal window's console closed or disconnected |
 | `QMC5003`, `QMC5010` | control panel functions carried out and refused |
 | `QMC7101`-`QMC7117` | the console's own code update: what `base/update` refuses, in the console's words |
-| `QMC7201`-`QMC7209` | product streams and the download service, `fetchd` |
+| `QMC7201`-`QMC7210` | product streams, the download service `fetchd`, and a downloaded host update |
 | `QMC7301`-`QMC7305` | the console's own problem log: what `base/problem` refuses |
 | `QMC7311`-`QMC7341` | the console's own problems: each condition's description, what to do its second level (`docs/SERVICE.md`) |
 | `QMC8001`-`QMC8011` | users, roles and form values |
@@ -108,6 +108,7 @@ request refused.
 | `QMC7207` | 30 | The download service does not answer: &1. | fetchd, the only service that reaches the update server, is not running. | Restart the console; if it does not answer again, report this with a console dump. |
 | `QMC7208` | 30 | &1 is not an update server's address. | The address is https:// or http:// with a host name or address, and a path. | Type the server's address, for example https://updates.quartz.systems. |
 | `QMC7209` | 30 | &1 is not in the &2 stream's index. | Only a file the signed index names is downloaded. | Check now, then download what the stream offers. |
+| `QMC7210` | 30 | &1 is not a host update the console downloaded. | A host is brought an update image the download service fetched from the qsvs stream and checked against its index. | Download the update on Code updates first. |
 | `QMC7301` | 30 | There is no problem &1. | The console's problems are numbered from 1 and no number is used twice; the log keeps 500. | Choose a problem from Serviceable events. |
 | `QMC7302` | 30 | Problem &1 was closed already, by &2. | A closed problem stays closed. When its condition is seen again a new problem is opened. | None. |
 | `QMC7303` | 30 | The condition of problem &1 still holds. | A problem is closed once its condition no longer holds, which its analysis log says. | Close it anyway, through the confirmation, when the condition is understood and will be dealt with later. |

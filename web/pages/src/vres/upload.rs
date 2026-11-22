@@ -258,6 +258,7 @@ fn send(
             bytes,
             user: rq.user().into(),
         }),
+        fetch: None,
     };
     ipc::frame::write_frame(&mut s, &ipc::encode(&open)).map_err(|e| down(&e))?;
     let answer = |s: &mut UnixStream| -> Result<(), Vec<Message>> {

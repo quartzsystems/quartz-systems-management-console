@@ -9,6 +9,7 @@
 
 use ipc::wire_struct;
 use qsi::host::refcodes::Posted;
+use qsi::service::{Line, ProblemStatus, Resource, Severity, Summary};
 use qsipart::console::Frame;
 
 use crate::ask::{Answered, Asked};
@@ -129,6 +130,74 @@ pub struct File {
 }
 wire_struct!(File { path, mode, bytes });
 
+/// A managed system's problem as the console keeps it: the system's
+/// summary, and the number the console gave it, kept across restarts and
+/// reconnections.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ProblemRow {
+    /// The console's number for it.
+    pub number: u64,
+    /// The managed system that owns it.
+    pub system: String,
+    /// How grave the system says it is; a system without notes and
+    /// severity (QSI's service version 1) says none.
+    pub severity: Option<Severity>,
+    /// The system's summary, its own number in it.
+    pub summary: Summary,
+}
+wire_struct!(ProblemRow {
+    number,
+    system,
+    severity,
+    summary
+});
+
+/// Which problems a page shows.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct ProblemFilter {
+    /// Open or closed; every one when none.
+    pub status: Option<ProblemStatus>,
+    /// One managed system; every one when empty.
+    pub system: String,
+    /// Last seen at or after, Unix seconds; 0 for no bound.
+    pub from: u64,
+    /// Last seen before, Unix seconds; 0 for no bound.
+    pub to: u64,
+}
+wire_struct!(ProblemFilter {
+    status,
+    system,
+    from,
+    to
+});
+
+/// A page of problems, newest first.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct ProblemPage {
+    /// Its rows.
+    pub rows: Vec<ProblemRow>,
+    /// How many the filter matches.
+    pub total: u32,
+}
+wire_struct!(ProblemPage { rows, total });
+
+/// One problem read from its system now: the row, what it is about and
+/// its analysis log, oldest first.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ProblemDetail {
+    /// The row, as the system said it now.
+    pub row: ProblemRow,
+    /// Each resource it is about.
+    pub resources: Vec<Resource>,
+    /// Its analysis log.
+    pub log: Vec<Line>,
+}
+wire_struct!(ProblemDetail {
+    row,
+    resources,
+    log
+});
+
 ipc::rpc! {
     request Request, service Mgmt, client Calls, dispatch dispatch;
     /// Every managed system as kept, by name.
@@ -165,6 +234,14 @@ ipc::rpc! {
     /// (`ask`): refused when the pages may not send it or the system's
     /// hello does not offer it, else its reply or the system's refusal.
     14 => fn ask / Ask (name: String, req: Asked, user: String) -> Result<Answered, Refusal>;
+    /// A page of every managed system's problems as kept, newest first.
+    15 => fn problems / Problems (filter: ProblemFilter, skip: u32, rows: u32) -> ProblemPage;
+    /// One problem by the console's number, read from its system now.
+    16 => fn problem / Problem (number: u64, user: String) -> Result<ProblemDetail, Refusal>;
+    /// Bring the downloaded update image at `path` (under
+    /// `release::UPDATES_DIR`) to host `name`, for `user`: begun; its
+    /// progress is in what is kept of the host.
+    17 => fn stage / Stage (name: String, path: String, user: String) -> Result<(), Refusal>;
 }
 
 /// The largest request or answer on the socket.

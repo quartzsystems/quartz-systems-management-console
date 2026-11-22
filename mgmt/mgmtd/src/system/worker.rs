@@ -66,6 +66,15 @@ pub(super) enum Mine {
     Upload(String),
     ProfileBody(u32, String),
     ProfileUses(u32),
+    Problems,
+    SystemDumps,
+    SystemSpace,
+    PartDumps(u32),
+    PartSpace,
+    UpdateStatus,
+    FixLevel,
+    Stage(String),
+    Download(u64),
 }
 
 /// A request outstanding.
@@ -73,6 +82,15 @@ pub(super) enum Mine {
 pub(super) enum Pending {
     Mine(Mine),
     Theirs(Sender<Result<Reply, Refusal>>, Instant),
+}
+
+/// A managed system, as a posting says what it is about.
+fn system_about(name: &str) -> supervise::control::About {
+    supervise::control::About {
+        kind: supervise::control::about::SYSTEM.into(),
+        name: name.into(),
+        ..supervise::control::About::default()
+    }
 }
 
 /// One system's thread.
@@ -83,6 +101,13 @@ pub(super) struct Worker {
     pub(super) pending: HashMap<u32, Pending>,
     pub(super) consoles: Consoles,
     pub(super) uploads: super::upload::Uploads,
+    pub(super) stages: super::transfer::Stages,
+    pub(super) downloads: super::transfer::Downloads,
+    /// The next download's number on this thread.
+    next_download: u64,
+    /// When the system was last reached, for the console's problem when
+    /// it is not for long; whether that problem was posted.
+    unreached: (u64, bool),
     /// Partitions whose history gained codes while a read of it was
     /// out: read again when it ends.
     pub(super) stale: HashSet<u32>,
@@ -97,6 +122,10 @@ impl Worker {
             pending: HashMap::new(),
             consoles: Consoles::default(),
             uploads: super::upload::Uploads::default(),
+            stages: super::transfer::Stages::default(),
+            downloads: super::transfer::Downloads::default(),
+            next_download: 1,
+            unreached: (now_s(), false),
             stale: HashSet::new(),
         }
     }
@@ -118,6 +147,12 @@ impl Worker {
             }
             Cmd::Watch { tx, .. } => {
                 let _ = tx.send(super::Seen::Start(Err(r)));
+            }
+            Cmd::Stage { started, .. } => {
+                let _ = started.send(Err(r));
+            }
+            Cmd::Download { to, .. } => {
+                let _ = to.send(super::Piece::Start(Err(r)));
             }
             _ => {}
         }
@@ -174,6 +209,7 @@ impl Worker {
             if self.stopped() {
                 break;
             }
+            self.not_reached(&why);
             self.inner.log(&format!("{}: {why}", self.name()));
             self.wait(backoff, &why);
             backoff = (backoff * 2).min(LONGEST);
@@ -196,8 +232,29 @@ impl Worker {
     }
 
     /// The session, until it ends: why.
+    /// Not reached for longer than the setting: the console's own
+    /// problem, once.
+    fn not_reached(&mut self, why: &str) {
+        let (since, said) = self.unreached;
+        let after = u64::from(self.inner.limits.unreached_minutes) * 60;
+        if !said && now_s().saturating_sub(since) >= after {
+            let name = self.name();
+            self.inner.post_about(
+                &refcode::SYSTEM_NOT_REACHED,
+                &format!("{name}: {why}"),
+                &[system_about(&name)],
+            );
+            self.unreached.1 = true;
+        }
+    }
+
     fn session(&mut self, mut link: Link) -> String {
         let name = self.name();
+        if self.unreached.1 {
+            self.inner
+                .post_about(&refcode::SYSTEM_REACHED, &name, &[system_about(&name)]);
+        }
+        self.unreached = (now_s(), false);
         {
             let mut k = self.entry.kept();
             k.link = State::Connected;
@@ -248,6 +305,20 @@ impl Worker {
             }
             self.consoles.pump(&mut link.session);
             self.uploads.pump(&mut link.session);
+            self.downloads.pump(&mut link.session);
+            for (img, sent, stopped) in self.stages.pump(&mut link.session) {
+                let mut k = self.entry.kept();
+                if let Some(g) = k.staging.as_mut().filter(|g| g.name == img) {
+                    g.sent = sent;
+                    if let Some(why) = stopped {
+                        g.error = Some(mgmtproto::kept::Note {
+                            msgid: "QSI1110".into(),
+                            text: why,
+                            help: String::new(),
+                        });
+                    }
+                }
+            }
             self.expire();
             if let Some(n) = link.session.last_event() {
                 self.entry.kept().last_seq = n;
@@ -277,6 +348,9 @@ impl Worker {
         }
         self.consoles.lost(&name, why);
         self.uploads.lost(&name, why);
+        self.stages.lost(&name, why);
+        self.downloads.lost(&name, why);
+        self.unreached.0 = now_s();
         let mut k = self.entry.kept();
         k.link = State::Lost;
         k.reason = format!("the connection was lost: {why}");
@@ -321,6 +395,7 @@ impl Worker {
             .any(|p| matches!(p, Pending::Mine(m) if m == what))
     }
 
+    #[allow(clippy::too_many_lines, reason = "one arm a command")]
     fn command(&mut self, link: &mut Link, cmd: Cmd) {
         match cmd {
             Cmd::Upload {
@@ -380,6 +455,67 @@ impl Worker {
                     }
                 }
             }
+            Cmd::Stage {
+                name,
+                file,
+                bytes,
+                user,
+                started,
+            } => {
+                let req = AnyRequest::Update(qsi::update::Request::Stage(qsi::update::Stage {
+                    name: name.clone(),
+                    bytes,
+                    allow_older: false,
+                }));
+                match link.session.request_any(&user, &req) {
+                    Ok(id) => {
+                        self.pending
+                            .insert(id, Pending::Mine(Mine::Stage(name.clone())));
+                        self.entry.kept().staging = Some(mgmtproto::kept::Staging {
+                            name: name.clone(),
+                            bytes,
+                            sent: 0,
+                            user,
+                            began: now_s(),
+                            done: false,
+                            error: None,
+                        });
+                        self.stages.add(name, file, bytes, started);
+                    }
+                    Err(e) => {
+                        let _ = started.send(Err(Refusal::new(e.msgid(), &e.to_string())));
+                    }
+                }
+            }
+            Cmd::Download {
+                id,
+                name,
+                user,
+                to,
+                taken,
+            } => {
+                let req = if id == 0 {
+                    AnyRequest::Base(base::Request::DownloadDump(base::DownloadDump { name }))
+                } else {
+                    AnyRequest::Dumps(qsi::host::dumps::Request::Download(
+                        qsi::host::dumps::Download { id, name },
+                    ))
+                };
+                match link.session.request_any(&user, &req) {
+                    Ok(r) => {
+                        let key = self.next_download;
+                        self.next_download += 1;
+                        self.pending.insert(r, Pending::Mine(Mine::Download(key)));
+                        self.downloads.add(key, to, taken);
+                    }
+                    Err(e) => {
+                        let _ = to.send(super::Piece::Start(Err(Refusal::new(
+                            e.msgid(),
+                            &e.to_string(),
+                        ))));
+                    }
+                }
+            }
             Cmd::Input { id, wid, input } => self.consoles.input(id, wid, &input),
             Cmd::Unwatch { id, wid } => self.consoles.unwatch(&mut link.session, id, wid),
             Cmd::Wake => {}
@@ -397,12 +533,21 @@ impl Worker {
                 None => {}
             },
             Incoming::Event(e) => self.event(s, &e),
+            Incoming::Data { stream, bytes } if self.downloads.has(stream) => {
+                self.downloads.data(s, stream, &bytes);
+            }
             Incoming::Data { stream, bytes } => {
                 self.consoles.data(s, stream, &bytes);
+            }
+            Incoming::StreamClosed { stream } if self.downloads.has(stream) => {
+                self.downloads.closed(stream);
             }
             Incoming::StreamClosed { stream } => {
                 self.consoles
                     .ended(stream, "the managed system closed the console");
+            }
+            Incoming::StreamReset { stream, text, .. } if self.downloads.has(stream) => {
+                self.downloads.reset(stream, &text);
             }
             Incoming::StreamReset { stream, text, .. } => self.consoles.ended(stream, &text),
             Incoming::Closed {

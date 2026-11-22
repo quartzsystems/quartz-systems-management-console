@@ -76,6 +76,9 @@ fn consoles() -> u32 {
 fn history() -> u32 {
     4096
 }
+fn unreached() -> u32 {
+    30
+}
 
 /// `mgmt.toml`: the service's limits.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -93,6 +96,10 @@ pub struct Limits {
     /// The reference codes kept for each system.
     #[serde(default = "history")]
     pub history: u32,
+    /// Minutes a system may go unreached before the console opens a
+    /// problem of its own for it (`A3005030`).
+    #[serde(default = "unreached")]
+    pub unreached_minutes: u32,
 }
 
 impl Default for Limits {
@@ -102,6 +109,7 @@ impl Default for Limits {
             max_setups: setups(),
             max_consoles: consoles(),
             history: history(),
+            unreached_minutes: unreached(),
         }
     }
 }
@@ -123,6 +131,9 @@ impl state::Document for Limits {
         }
         if !(64..=65_536).contains(&self.history) {
             return Err("history is 64 to 65536".into());
+        }
+        if !(1..=10_080).contains(&self.unreached_minutes) {
+            return Err("unreached_minutes is 1 to 10080".into());
         }
         Ok(())
     }

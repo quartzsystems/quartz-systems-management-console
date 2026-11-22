@@ -10,8 +10,12 @@ mod apply;
 pub mod console;
 pub mod fuzzing;
 mod resources;
+mod servicing;
+mod transfer;
 mod upload;
 mod worker;
+
+pub use transfer::Piece;
 
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::{Sender, channel};
@@ -88,6 +92,35 @@ pub enum Cmd {
         started: Sender<Result<(), Refusal>>,
         /// The host's word on it.
         ended: Sender<Result<(), Refusal>>,
+    },
+    /// Bring the downloaded update image `file` (`bytes` long) to the
+    /// host as `name`, for `user`; told on `started` when the host opened
+    /// its stream, or refused.
+    Stage {
+        /// The image's name.
+        name: String,
+        /// Its file, open.
+        file: std::fs::File,
+        /// Its length.
+        bytes: u64,
+        /// The signed-on user.
+        user: String,
+        /// The host opened its stream, or refused.
+        started: Sender<Result<(), Refusal>>,
+    },
+    /// Download dump `name` of partition `id` (0 for the system's own)
+    /// for `user`: its pieces on `to`, the credit following `taken`.
+    Download {
+        /// The partition; 0 for the system.
+        id: u32,
+        /// The dump.
+        name: String,
+        /// The signed-on user.
+        user: String,
+        /// Where its pieces go.
+        to: Sender<Piece>,
+        /// What the web server has taken of them.
+        taken: std::sync::Arc<std::sync::atomic::AtomicU64>,
     },
     /// A window closed.
     Unwatch {

@@ -19,6 +19,8 @@ qsipart.workspace = true
 rustls.workspace = true
 serde.workspace = true
 state.workspace = true
+supervise.workspace = true
+release = { path = "../../lic/release", version = "0.1.0" }
 
 [dev-dependencies]
 sim = { path = "../../tools/sim", version = "0.1.0" }

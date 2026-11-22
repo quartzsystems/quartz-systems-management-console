@@ -11,6 +11,9 @@ mod ask;
 mod calls;
 #[cfg(unix)]
 pub mod consoles;
+#[cfg(unix)]
+mod download;
+mod servicing;
 mod upload;
 
 use std::path::PathBuf;
@@ -26,6 +29,10 @@ use state::Store;
 
 use crate::keep::files::{Limits, Paired, Systems};
 use crate::keep::history::History;
+use crate::keep::problems::Problems;
+
+/// The most problems kept across every system.
+const PROBLEMS: usize = 5000;
 use crate::peer::link::hello;
 use crate::system::{self, Entry};
 
@@ -40,8 +47,9 @@ fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
     m.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
-/// How the console's own codes are posted: the code and its text.
-pub type Poster = Box<dyn Fn(&str, &str) + Send + Sync>;
+/// How the console's own codes are posted: the code, its text and what
+/// it is about.
+pub type Poster = Box<dyn Fn(&str, &str, &[supervise::control::About]) + Send + Sync>;
 
 /// How the service is started.
 pub struct Config {
@@ -76,6 +84,7 @@ pub struct Inner {
     identity_dir: Option<PathBuf>,
     paired: Mutex<Systems>,
     history: Mutex<History>,
+    problems: Mutex<Problems>,
     entries: Mutex<Vec<Entry>>,
     setups: (Mutex<u32>, Condvar),
     log: Box<dyn Fn(&str) + Send + Sync>,
@@ -108,10 +117,11 @@ impl Inner {
             identity_dir: None,
             paired: Mutex::new(Systems::default()),
             history: Mutex::new(History::open(None, 4096)),
+            problems: Mutex::new(Problems::open(None, PROBLEMS)),
             entries: Mutex::new(Vec::new()),
             setups: (Mutex::new(0), Condvar::new()),
             log: Box::new(|_| {}),
-            post: Box::new(|_, _| {}),
+            post: Box::new(|_, _, _| {}),
             windows: AtomicU32::new(0),
             next_window: AtomicU64::new(1),
         })
@@ -136,6 +146,11 @@ impl Inner {
         lock(&self.history)
     }
 
+    /// The problems, locked.
+    pub fn problems(&self) -> MutexGuard<'_, Problems> {
+        lock(&self.problems)
+    }
+
     /// A line for the log.
     pub fn log(&self, line: &str) {
         (self.log)(line);
@@ -143,9 +158,19 @@ impl Inner {
 
     /// Post `code` with `detail`, and say it in the log.
     pub fn post(&self, code: &refcode::RefCode, detail: &str) {
+        self.post_about(code, detail, &[]);
+    }
+
+    /// Post `code` with `detail` about `about`, and say it in the log.
+    pub fn post_about(
+        &self,
+        code: &refcode::RefCode,
+        detail: &str,
+        about: &[supervise::control::About],
+    ) {
         let text = code.text_with(detail);
         self.log(&format!("{} {text}", code.code));
-        (self.post)(code.code, &text);
+        (self.post)(code.code, &text, about);
     }
 
     /// Note the last event seen of `name`, so a new session resumes
@@ -217,6 +242,7 @@ impl Service {
             (c.post)(
                 refcode::MGMT_STATE_INVALID.code,
                 &refcode::MGMT_STATE_INVALID.text_with(&format!("{what}: {e}")),
+                &[],
             );
         };
         let limits = match store.as_ref().map(Store::load::<Limits>) {
@@ -236,6 +262,7 @@ impl Service {
             _ => Systems::default(),
         };
         let history = History::open(c.history_dir.as_deref(), limits.history as usize);
+        let problems = Problems::open(c.state_dir.as_deref(), PROBLEMS);
         let inner = Arc::new(Inner {
             me: hello(&c.name, &c.release),
             identity: c.identity,
@@ -244,6 +271,7 @@ impl Service {
             identity_dir: c.identity_dir,
             paired: Mutex::new(systems.clone()),
             history: Mutex::new(history),
+            problems: Mutex::new(problems),
             entries: Mutex::new(Vec::new()),
             setups: (Mutex::new(0), Condvar::new()),
             log: c.log,

@@ -67,6 +67,7 @@ pub fn connect(
     let open = mgmtproto::console::Open {
         watch: Some(w.clone()),
         upload: None,
+        fetch: None,
     };
     let sent = ipc::frame::write_frame(&mut s, &ipc::encode(&open));
     let answer: Result<Result<Watching, Refusal>, ipc::WireError> = sent

@@ -54,11 +54,13 @@ fn identity(state: &std::path::Path) -> qsitrust::Identity {
 /// Post a code through PID 1, whose socket is shared with the service's
 /// group; a busy PID 1 is tried again a few times.
 #[cfg(target_os = "linux")]
-fn post(code: &str, text: &str) {
+fn post(code: &str, text: &str, about: &[supervise::control::About]) {
     use supervise::control::{Calls as _, Client};
     let mut c = Client::new(release::CONTROL_SOCKET);
     for _ in 0..5 {
-        if c.post(code.to_string(), text.to_string()).is_ok() {
+        if c.post_about(code.to_string(), text.to_string(), about.to_vec())
+            .is_ok()
+        {
             return;
         }
         std::thread::sleep(std::time::Duration::from_millis(200));

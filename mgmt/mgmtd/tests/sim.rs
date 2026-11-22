@@ -43,7 +43,7 @@ fn service(name: &str) -> (Service, PathBuf) {
         identity_dir: None,
         history_dir: Some(d.join("mgmt")),
         log: Box::new(|l| eprintln!("mgmtd: {l}")),
-        post: Box::new(|_, _| {}),
+        post: Box::new(|_, _, _| {}),
     });
     (svc, d)
 }
@@ -239,6 +239,7 @@ fn a_console_shared_by_two_windows() {
         let first = mgmtproto::console::Open {
             watch: Some(w),
             upload: None,
+            fetch: None,
         };
         ipc::frame::write_frame(&mut s, &ipc::encode(&first)).unwrap();
         let a: Result<Watching, mgmtproto::Refusal> =

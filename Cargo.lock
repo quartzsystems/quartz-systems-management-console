@@ -1449,10 +1449,12 @@ dependencies = [
  "qsisess",
  "qsitrust",
  "refcode",
+ "release",
  "rustls",
  "serde",
  "sim",
  "state",
+ "supervise",
 ]
 
 [[package]]

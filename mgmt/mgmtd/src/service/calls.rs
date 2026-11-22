@@ -136,6 +136,27 @@ fn reply_of(r: &Reply) -> Option<AnyReply> {
 }
 
 impl Mgmt for Service {
+    fn problems(
+        &mut self,
+        filter: mgmtproto::calls::ProblemFilter,
+        skip: u32,
+        rows: u32,
+    ) -> mgmtproto::calls::ProblemPage {
+        self.0.problems_page(&filter, skip, rows)
+    }
+
+    fn problem(
+        &mut self,
+        number: u64,
+        user: String,
+    ) -> Result<mgmtproto::calls::ProblemDetail, Refusal> {
+        self.0.problem_now(number, &user)
+    }
+
+    fn stage(&mut self, name: String, path: String, user: String) -> Result<(), Refusal> {
+        self.0.stage_image(&name, &path, &user)
+    }
+
     fn systems(&mut self) -> Vec<Kept> {
         let mut v: Vec<Kept> = self.0.entries().iter().map(|e| e.kept().clone()).collect();
         v.sort_by(|a, b| a.name.cmp(&b.name));
@@ -269,6 +290,7 @@ impl Mgmt for Service {
         };
         inner.save(&next);
         inner.history().remove(&e.name);
+        inner.problems().forget(&e.name);
         inner.post(
             &refcode::SYSTEM_REMOVED,
             &format!("{}, by user {user}", e.name),

@@ -79,7 +79,7 @@ impl Console for Fixed {
             identity_dir: Some(self.2.clone()),
             history_dir: None,
             log: Box::new(|_| {}),
-            post: Box::new(|_, _| {}),
+            post: Box::new(|_, _, _| {}),
         });
         Box::new(webpages::app::mgmt::Local(svc))
     }

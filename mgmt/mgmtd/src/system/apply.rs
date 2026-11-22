@@ -60,6 +60,7 @@ impl Worker {
             );
         }
         self.read_resources(s);
+        self.read_servicing(s);
     }
 
     fn read_list(&mut self, s: &mut Session) {
@@ -126,6 +127,42 @@ impl Worker {
             self.consoles.attached(id, answer);
             return;
         }
+        if let Mine::Stage(name) = &what {
+            let answer = match refusal(r) {
+                Some(no) => Err(no),
+                None => r
+                    .stream
+                    .ok_or_else(|| mgmtproto::Refusal::new("QSI0106", "no stream was opened")),
+            };
+            if let Err(no) = &answer
+                && let Some(g) = self
+                    .entry
+                    .kept()
+                    .staging
+                    .as_mut()
+                    .filter(|g| &g.name == name)
+            {
+                g.error = Some(no.main.clone());
+            }
+            self.stages.opened(name, answer);
+            return;
+        }
+        if let Mine::Download(key) = what {
+            let bytes = match r.decode() {
+                Ok(Some(AnyReply::Base(base::Reply::DownloadDump(d)))) => d.bytes,
+                Ok(Some(AnyReply::Dumps(qsi::host::dumps::Reply::Download(d)))) => d.bytes,
+                _ => 0,
+            };
+            let answer = match refusal(r) {
+                Some(no) => Err(no),
+                None => r
+                    .stream
+                    .map(|s| (s, bytes))
+                    .ok_or_else(|| mgmtproto::Refusal::new("QSI0106", "no stream was opened")),
+            };
+            self.downloads.opened(key, answer);
+            return;
+        }
         if let Mine::Upload(name) = &what {
             let answer = match refusal(r) {
                 Some(no) => Err(no),
@@ -190,6 +227,9 @@ impl Worker {
                     }
                 }
                 self.read_parts(s, &list);
+                for p in &list {
+                    self.read_part_dumps(s, p.id);
+                }
                 let mut k = self.entry.kept();
                 k.profiles.retain(|pp| list.iter().any(|p| p.id == pp.id));
                 k.partitions = list;
@@ -252,6 +292,18 @@ impl Worker {
                     self.part_codes(s, id);
                 }
             }
+            (
+                what @ (Mine::Problems
+                | Mine::SystemDumps
+                | Mine::SystemSpace
+                | Mine::PartDumps(_)
+                | Mine::PartSpace
+                | Mine::UpdateStatus
+                | Mine::FixLevel),
+                any,
+            ) => {
+                self.servicing_reply(s, &what, any);
+            }
             (what, any) => {
                 self.resources_reply(s, &what, any);
             }
@@ -263,7 +315,7 @@ impl Worker {
         let Ok(Some(any)) = e.decode() else {
             return;
         };
-        if self.resources_event(s, &any) {
+        if self.servicing_event(s, &any) || self.resources_event(s, &any) {
             return;
         }
         match any {

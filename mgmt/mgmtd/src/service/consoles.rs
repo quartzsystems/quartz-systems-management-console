@@ -50,11 +50,18 @@ fn opened(svc: &Service, mut s: UnixStream) {
         Open {
             watch: Some(w),
             upload: None,
+            fetch: None,
         } => window(svc, s, &w),
         Open {
             watch: None,
             upload: Some(u),
+            fetch: None,
         } => super::upload::upload(svc, s, &u),
+        Open {
+            watch: None,
+            upload: None,
+            fetch: Some(f),
+        } => super::download::download(svc, s, &f),
         _ => {}
     }
 }

@@ -4,14 +4,16 @@
 
 //! The pages' requests carried as QSI encodes them (`mgmtproto::ask`):
 //! only those the pages send, and only what the system's hello offers.
-//! Pairing, problems, code update, dumps, a console's stream and an
-//! upload are not carried here: each has a call of its own, or is a
-//! later phase's.
+//! Pairing, a list of problems, a stage, a dump's download, a console's
+//! stream and an upload are not carried here: each has a call of its
+//! own.
 
 use mgmtproto::ask::lacks_for;
 use mgmtproto::{Answered, Asked, Refusal};
 use qsi::any::AnyRequest;
-use qsi::host::{panel, vres};
+use qsi::base;
+use qsi::host::{dumps, panel, vres};
+use qsi::{service, update};
 
 use super::Inner;
 use crate::words::qmc;
@@ -23,8 +25,26 @@ pub fn carried(req: &AnyRequest) -> bool {
         | AnyRequest::Partitions(_)
         | AnyRequest::Partition(_)
         | AnyRequest::Profiles(_)
-        | AnyRequest::Panel(panel::Request::Functions(_)) => true,
+        | AnyRequest::Panel(panel::Request::Functions(_))
+        // A system's own dumps listed, taken, deleted, their space; its
+        // fix level.
+        | AnyRequest::Base(
+            base::Request::Dumps(_)
+            | base::Request::TakeDump(_)
+            | base::Request::DeleteDump(_)
+            | base::Request::DumpSpace(_)
+            | base::Request::FixLevel(_),
+        ) => true,
         AnyRequest::Vres(v) => !matches!(v, vres::Request::ImageUpload(_)),
+        // A problem closed, noted or read; the pages' lists are kept.
+        AnyRequest::Service(s) => !matches!(
+            s,
+            service::Request::List(_) | service::Request::ListRated(_)
+        ),
+        // A host's update but the stage, which is a stream from a file.
+        AnyRequest::Update(u) => !matches!(u, update::Request::Stage(_)),
+        // Dumps listed, taken, deleted, their space; not downloaded.
+        AnyRequest::Dumps(d) => !matches!(d, dumps::Request::Download(_)),
         _ => false,
     }
 }

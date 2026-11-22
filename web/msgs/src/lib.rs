@@ -685,6 +685,9 @@ catalogue! {
     NOT_IN_STREAM = "QMC7209", 30, "&1 is not in the &2 stream's index.",
         "Only a file the signed index names is downloaded.",
         "Check now, then download what the stream offers.";
+    NOT_DOWNLOADED = "QMC7210", 30, "&1 is not a host update the console downloaded.",
+        "A host is brought an update image the download service fetched from the qsvs stream and checked against its index.",
+        "Download the update on Code updates first.";
 }
 
 /// `d` in `base/msg`'s form: its first-level text, and what to do as

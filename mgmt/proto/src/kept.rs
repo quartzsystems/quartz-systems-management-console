@@ -8,13 +8,15 @@
 
 use ipc::{wire_enum, wire_struct};
 use qsi::PeerKind;
-use qsi::base::{Identity, PowerState, Refcode, State};
+use qsi::base::{Identity, Level, PowerState, Refcode, Space, State, SystemDump};
+use qsi::host::dumps::{DumpInfo, PartitionSpace};
 use qsi::host::host::{Device, Hardware, Host, PowerOn};
 use qsi::host::model::Profile;
 use qsi::host::panel::FunctionInfo;
 use qsi::host::partitions::{Activation, Status};
 use qsi::host::profiles::{Entry, ProfileUse};
 use qsi::host::vres::{Drive, Image, Port, StoragePool, Switch, TapeDrive, Vdisk, Volume};
+use qsi::update::Status as UpdateStatus;
 
 /// The connection to a managed system.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -246,6 +248,24 @@ pub struct Kept {
     pub profile_bodies: Vec<PartProfileBody>,
     /// When each partition's profiles were last activated.
     pub profile_uses: Vec<PartUses>,
+    /// The system's own dumps (base's bit 4), oldest first.
+    pub dumps: Vec<SystemDump>,
+    /// The space they take (bit 26).
+    pub dump_space: Option<Space>,
+    /// Each partition's dumps (the dumps family).
+    pub part_dumps: Vec<PartDumps>,
+    /// The space each partition's dumps take (bit 26).
+    pub part_space: Vec<PartitionSpace>,
+    /// A host's code slots and what is staged (the update family).
+    pub update: Option<UpdateStatus>,
+    /// What its update did, as its events said, oldest first.
+    pub update_log: Vec<UpdateLine>,
+    /// How its last activation ended, after the restart.
+    pub update_end: Option<UpdateEnd>,
+    /// An image being brought to it by the console.
+    pub staging: Option<Staging>,
+    /// Its cumulative fix level (bit 27).
+    pub fix_level: Option<Level>,
 }
 wire_struct!(Kept {
     name,
@@ -275,7 +295,102 @@ wire_struct!(Kept {
     power_on,
     functions,
     profile_bodies,
-    profile_uses
+    profile_uses,
+    dumps,
+    dump_space,
+    part_dumps,
+    part_space,
+    update,
+    update_log,
+    update_end,
+    staging,
+    fix_level
+});
+
+/// A partition's dumps.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct PartDumps {
+    /// The partition.
+    pub id: u32,
+    /// Its dumps, oldest first.
+    pub dumps: Vec<DumpInfo>,
+}
+wire_struct!(PartDumps { id, dumps });
+
+/// A line of what an update did: the console's words of an event.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct UpdateLine {
+    /// When, Unix seconds.
+    pub time: u64,
+    /// The step it is of: `stage`, `verify`, `install`, `activate`,
+    /// `restart`, `confirm`.
+    pub step: String,
+    /// What happened.
+    pub text: String,
+    /// The step ended badly.
+    pub failed: bool,
+}
+wire_struct!(UpdateLine {
+    time,
+    step,
+    text,
+    failed
+});
+
+/// How a host's last activation ended, after its restart.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct UpdateEnd {
+    /// The slot it was of.
+    pub slot: String,
+    /// It confirmed; it rolled back when not.
+    pub confirmed: bool,
+    /// The release that runs after it.
+    pub release: String,
+    /// Its build.
+    pub build: String,
+    /// Why it rolled back, the host's words.
+    pub reason: String,
+    /// The reference code that says why, where there is one.
+    pub code: String,
+    /// When, Unix seconds.
+    pub time: u64,
+}
+wire_struct!(UpdateEnd {
+    slot,
+    confirmed,
+    release,
+    build,
+    reason,
+    code,
+    time
+});
+
+/// An image the console brings to a host.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Staging {
+    /// Its name.
+    pub name: String,
+    /// Its size.
+    pub bytes: u64,
+    /// What has gone to the host.
+    pub sent: u64,
+    /// Who asked.
+    pub user: String,
+    /// When it began, Unix seconds.
+    pub began: u64,
+    /// All of it went.
+    pub done: bool,
+    /// Why it stopped, when it did.
+    pub error: Option<Note>,
+}
+wire_struct!(Staging {
+    name,
+    bytes,
+    sent,
+    user,
+    began,
+    done,
+    error
 });
 
 /// What a managed system is.
