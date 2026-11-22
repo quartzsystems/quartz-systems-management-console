@@ -28,6 +28,14 @@ pub fn audit(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     )?;
     expect(b, &r, "QMC2414")?;
     wants.push("delete virtual disk POOL1/VD06 on QSHQVS1".into());
+    // The new partition's load source: a disk of its own.
+    let r = post_form(
+        b,
+        "/qsmc/server/QSHQVS1/virtual/storage/create",
+        ("ok", "OK"),
+        &[("n", "VD08"), ("s", "10"), ("p", "POOL1"), ("t", "thin")],
+    )?;
+    expect(b, &r, "QMC2410")?;
     let mut html = page(b, "/qsmc/partitions/create/step/1?ms=QSHQVS1")?;
     let mut here = "/qsmc/partitions/create/step/1?ms=QSHQVS1".to_string();
     for n in 1..=8 {
@@ -36,6 +44,26 @@ pub fn audit(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         } else {
             &[]
         };
+        if n == 6 {
+            let add = post_on(
+                b,
+                &html,
+                &here,
+                ("add", "Add..."),
+                &[("t", "SCSI client (virtual disk)")],
+            )?;
+            let r = post_on(
+                b,
+                &add.text(),
+                &here,
+                ("keep", "OK"),
+                &[("disk", "POOL1/VD08"), ("req", "on")],
+            )?;
+            if r.status != 303 {
+                return Err(format!("step 6's adapter: {}", r.status));
+            }
+            html = page(b, &here)?;
+        }
         post_on(b, &html, &here, ("next", "Next >"), set)?;
         here = format!("/qsmc/partitions/create/step/{}", n + 1);
         html = page(b, &here)?;

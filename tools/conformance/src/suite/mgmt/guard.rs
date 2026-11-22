@@ -381,7 +381,7 @@ pub fn audit(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         "reset connection QSHQVS1: paired again",
         "test connection QSHQVS1",
         "describe QSHQVS1",
-        "power-on parameters of QSHQVS1",
+        "IPL side, keylock or boot mode of QSHQVS1",
         "power off QSHQVS1",
         "refused: QVS1011",
         "control panel function 11 of QSHQVS1 partition 1",
