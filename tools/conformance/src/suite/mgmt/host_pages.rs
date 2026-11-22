@@ -7,11 +7,14 @@
 //! the Add page, a storage pool made on that disk and made the media
 //! repository, a virtual disk made in it, QS/400's installation ISO
 //! (`QSMC_QS400_ISO`) uploaded through Virtual Optical, and a partition
-//! made by the wizard with the disk and an optical device holding the
-//! image, then activated from Activate with IPL source D. Its codes
-//! come into the history and the terminal window shows QS/400's
-//! installer's first screen, or, from an ISO that installs by itself,
-//! the installed system's Sign On, where QSECOFR is signed on.
+//! made by the wizard, shared, with the disk, an Ethernet adapter and an
+//! optical device holding the image, shown before it activates, then
+//! activated from Activate with IPL source D. Its codes come into the
+//! history and the terminal window shows the installed system's Sign On
+//! (the ISO installs by itself), where QSECOFR is signed on. Then: its
+//! entitlement changed, a shut down through its operating system, its
+//! activation from its disk scheduled, its configuration saved, its
+//! end, and its delete with its disk.
 
 use std::time::{Duration, Instant};
 
@@ -34,6 +37,9 @@ const PART: &str = "MCINST";
 const PROFILE: &str = "INSTALL";
 const POOL: &str = "MCPOOL";
 const VDISK: &str = "MCLS01";
+const SWITCH: &str = "MCSW1";
+const SAVED: &str = "SAVED1";
+const IPL_COMPLETE: &str = "C6001090";
 /// The image's name in the media library: a store name has no dot.
 const IMAGE: &str = "QS400";
 /// The blank further disk.
@@ -266,6 +272,30 @@ pub fn host_pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     })?;
     // 4. The partition by the wizard: the virtual disk, an optical
     // device holding the image; activated with IPL source D.
+    // A switch for its Ethernet adapter: the host's first, or one made.
+    let eth = page(b, &v("ethernet"))?;
+    let (sw, sw_how) = if let Some(n) = eth
+        .split("virtual/ethernet/switch?n=")
+        .nth(1)
+        .and_then(|s| s.split(['"', '&']).next())
+        .filter(|n| !n.is_empty())
+    {
+        (n.to_string(), "the host's")
+    } else {
+        let r = post_form(
+            b,
+            &v("ethernet/switch"),
+            ("ok", "OK"),
+            &[("to", SWITCH), ("v", "1"), ("mtu", "1500")],
+        )?;
+        expect(b, &r, "QMC2425")?;
+        until(
+            "the switch on Virtual Ethernet",
+            Duration::from_mins(1),
+            || Ok(page(b, &v("ethernet"))?.contains(SWITCH)),
+        )?;
+        (SWITCH.to_string(), "made from Virtual Ethernet")
+    };
     let first = page(b, &format!("{}?ms={name}", step(1)))?;
     let id = field(&first, &step(1), "id");
     next(b, 1, &[("id", &id), ("n", PART), ("d", "Made by suite 13")])?;
@@ -273,10 +303,33 @@ pub fn host_pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     next(
         b,
         3,
-        &[("m", "ded"), ("vmin", "1"), ("vdes", "1"), ("vmax", "1")],
+        &[
+            ("m", "shared"),
+            ("min", "0.50"),
+            ("des", "1.00"),
+            ("max", "2.00"),
+            ("vmin", "1"),
+            ("vdes", "1"),
+            ("vmax", "2"),
+        ],
     )?;
     next(b, 4, &[("min", "2048"), ("des", "2048"), ("max", "2048")])?;
     next(b, 5, &[])?;
+    let s6 = page(b, &step(6))?;
+    let add = post_on(b, &s6, &step(6), ("add", "Add..."), &[("t", "Ethernet")])?;
+    let r = post_on(
+        b,
+        &add.text(),
+        &step(6),
+        ("keep", "OK"),
+        &[("sw", &sw), ("vlan", "1")],
+    )?;
+    if r.status != 303 {
+        return Err(format!(
+            "the Ethernet adapter's OK: {}",
+            message_of(&r.text())
+        ));
+    }
     let s6 = page(b, &step(6))?;
     let add = post_on(
         b,
@@ -318,10 +371,9 @@ pub fn host_pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     )?;
     let r = post_form(b, &step(9), ("finish", "Finish"), &[])?;
     let made = message_of(&expect(b, &r, "QMC3130")?);
-    // What the console shows of the drive: a finding when it lacks it.
-    let mut findings: Vec<String> = Vec::new();
+    // The drive and its image on Virtual Optical before any activation.
     let mut drives = String::new();
-    let shows_drive = until(
+    until(
         "the partition's drive on Virtual Optical",
         Duration::from_mins(2),
         || {
@@ -332,15 +384,12 @@ pub fn host_pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
                 .and_then(|s| s.split("<form").next())
                 .unwrap_or("")
                 .to_string();
-            Ok(drives.contains(&format!(">{PART}<")) && drives.contains(&format!(">{IMAGE}<")))
+            Ok(drives.contains(&format!(">{PART}<"))
+                && drives.contains(">OPT01<")
+                && drives.contains(&format!(">{IMAGE}<")))
         },
-    );
-    if let Err(e) = shows_drive {
-        findings.push(format!(
-            "{e}: Virtual optical drives shows `{}`",
-            text_of(&drives)
-        ));
-    }
+    )
+    .map_err(|e| format!("{e}: Virtual optical drives shows `{}`", text_of(&drives)))?;
     let activate = format!("/qsmc/partition/{name}/{id}/activate");
     until(
         "the partition at the console",
@@ -369,9 +418,17 @@ pub fn host_pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         })?
         .to_string();
     let confirm = page(b, &to)?;
-    if !confirm.contains(IMAGE) {
-        findings.push(format!(
-            "the activation's confirmation does not list {IMAGE}: `{}`",
+    // The table's last column, its one row after the heads.
+    let row = confirm
+        .split("Virtual optical</th>")
+        .nth(1)
+        .and_then(|s| s.split("</table>").next())
+        .and_then(|s| s.rsplit("<td").next())
+        .unwrap_or("");
+    if !row.contains("OPT01") || !row.contains(IMAGE) {
+        return Err(format!(
+            "the confirmation's Virtual optical row is `{}`: {}",
+            text_of(row),
             text_of(&confirm)
         ));
     }
@@ -409,36 +466,294 @@ pub fn host_pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             seen.push(code);
         }
     }
-    // An ISO that installs by itself comes to the installed system's
-    // Sign On: QSECOFR signed on from the window.
-    let signed = if shown_first == "Sign On" {
-        let after = super::host::signed_on_with(b, &window, &SECOFR)
-            .map_err(|e| format!("{e}:\n{}", shown(b, &window).unwrap_or_default()))?;
-        if !after.contains("===>") {
-            return Err("no command line after the sign-on".into());
-        }
-        "; QSECOFR signed on from the window to a command line"
-    } else {
-        ""
-    };
-    c.guest.kill();
-    host.kill();
     if seen.is_empty() {
         return Err("no code of the IPL in the history".into());
     }
-    Ok(format!(
+    let done = format!(
         "QS/VS host {name} paired from the Add page; pool {POOL} made on its blank disk {d} \
          ({made_pool}) and made the media repository ({designated}); virtual disk {VDISK} made in \
-         it; QS/400's ISO streamed through Virtual Optical in {took} s and in the library as \
-         {IMAGE}; partition {PART} (ID {id}) made by the wizard with {backing} and OPT01 holding \
-         {IMAGE} ({made}), activated from Activate with IPL source D; {} codes in its history \
-         ({}); the terminal window showed `{shown_first}`{signed}; findings: {}",
+         it; switch {sw} {sw_how}; QS/400's ISO streamed through Virtual Optical in {took} s and \
+         in the library as {IMAGE}; partition {PART} (ID {id}) made by the wizard, shared, with \
+         {backing}, an Ethernet adapter on {sw} and OPT01 holding {IMAGE} ({made}), shown on \
+         Virtual Optical and on Activate's confirmation before its first activation, activated \
+         with IPL source D; {} codes in its history ({}); the terminal window showed \
+         `{shown_first}`",
         seen.len(),
-        seen.join(" "),
-        if findings.is_empty() {
-            "none".to_string()
-        } else {
-            findings.join("; ")
-        }
+        seen.join(" ")
+    );
+    // The rest needs the installed system: an ISO that installs by itself
+    // comes to its Sign On.
+    if shown_first != "Sign On" {
+        c.guest.kill();
+        host.kill();
+        return Err(format!(
+            "{done}; the installer waits for an operator, so the rest of the suite cannot run"
+        ));
+    }
+    let after = super::host::signed_on_with(b, &window, &SECOFR)
+        .map_err(|e| format!("{e}:\n{}", shown(b, &window).unwrap_or_default()))?;
+    if !after.contains("===>") {
+        return Err("no command line after the sign-on".into());
+    }
+    let p = Part {
+        host: name.clone(),
+        id: id.clone(),
+    };
+    let rest = life(b, &p, &window, &history)?;
+    c.guest.kill();
+    host.kill();
+    Ok(format!(
+        "{done}; QSECOFR signed on from the window to a command line; {}",
+        rest.join("; ")
     ))
+}
+
+/// The partition under test, at its host.
+struct Part {
+    host: String,
+    id: String,
+}
+
+impl Part {
+    fn at(&self, tab: &str) -> String {
+        format!("/qsmc/partition/{}/{}/{tab}", self.host, self.id)
+    }
+
+    /// Its state as General shows it.
+    fn state(&self, b: &mut Browser) -> Result<String, String> {
+        let g = page(b, &self.at("general"))?;
+        Ok(g.split("<th>State</th>")
+            .nth(1)
+            .and_then(|s| s.split("</tr>").next())
+            .map(text_of)
+            .unwrap_or_default())
+    }
+
+    /// Wait until its state is `want`.
+    fn reaches(&self, b: &mut Browser, want: &str, within: Duration) -> Result<(), String> {
+        let mut last = String::new();
+        until(&format!("{PART} {want}"), within, || {
+            last = self.state(b)?;
+            if last != want {
+                std::thread::sleep(Duration::from_secs(3));
+            }
+            Ok(last == want)
+        })
+        .map_err(|e| format!("{e}: it is `{last}`"))
+    }
+}
+
+/// A form with a confirmation (shut down): the form's OK, then the
+/// confirmation's; message `id` shown.
+fn confirmed(
+    b: &mut Browser,
+    path: &str,
+    set: &[(&str, &str)],
+    id: &str,
+) -> Result<String, String> {
+    let r = post_form(b, path, ("ok", "OK"), set)?;
+    let to = r
+        .header("location")
+        .ok_or_else(|| {
+            format!(
+                "{path} did not lead to its confirmation: {}",
+                message_of(&r.text())
+            )
+        })?
+        .to_string();
+    let html = page(b, &to)?;
+    let r = post_on(b, &html, &to, ("ok", "OK"), &[])?;
+    expect(b, &r, id).map(|t| message_of(&t))
+}
+
+/// A date as the console writes them, its format taken from `sample`.
+fn date_as(y: i64, m: u32, d: u32, sample: &str) -> String {
+    if sample.contains('.') {
+        format!("{d:02}.{m:02}.{:02}", y % 100)
+    } else if sample.contains('-') {
+        format!("{y:04}-{m:02}-{d:02}")
+    } else {
+        format!("{m:02}/{d:02}/{:02}", y % 100)
+    }
+}
+
+/// The console's display offset in minutes, from the add form's words.
+fn offset(add: &str) -> i64 {
+    let Some(z) = add
+        .split("console time zone, ")
+        .nth(1)
+        .and_then(|r| r.split(')').next())
+    else {
+        return 0;
+    };
+    let rest = z.trim().trim_start_matches("UTC");
+    let sign = if rest.starts_with('-') { -1 } else { 1 };
+    let hm = rest.trim_start_matches(['+', '-']);
+    let (h, m) = hm.split_once(':').unwrap_or((hm, "0"));
+    sign * (h.parse::<i64>().unwrap_or(0) * 60 + m.parse::<i64>().unwrap_or(0))
+}
+
+/// The installed partition's life from the pages: its entitlement, an
+/// operating system's shut down, a scheduled activation from its disk,
+/// its configuration saved, its end and its delete with its disk.
+#[allow(
+    clippy::too_many_lines,
+    clippy::many_single_char_names,
+    clippy::similar_names
+)] // one partition's life, a page at a time
+fn life(b: &mut Browser, p: &Part, window: &str, history: &str) -> Result<Vec<String>, String> {
+    let mut said = Vec::new();
+    // Its entitlement changed now from the Processors tab.
+    let r = post_form(
+        b,
+        &p.at("processors"),
+        ("apply", "Apply"),
+        &[("des", "0.75")],
+    )?;
+    let t = follow(b, &r)?.text();
+    if !shows(&t, "QMC3122") {
+        return Err(format!(
+            "the running partition's entitlement: {}",
+            message_of(&t)
+        ));
+    }
+    said.push(format!(
+        "its entitlement changed to 0.75 units from Processors ({})",
+        message_of(&t)
+    ));
+    // Through its operating system, to Not activated.
+    let m = confirmed(
+        b,
+        &p.at("shutdown"),
+        &[("how", "os"), ("delay", "60")],
+        "QMC3102",
+    )?;
+    p.reaches(b, "Not activated", Duration::from_mins(15))?;
+    said.push(format!(
+        "shut down through its operating system ({m}) to Not activated"
+    ));
+    // From its disk next time, unattended.
+    let r = post_form(
+        b,
+        &p.at("settings"),
+        ("ok", "OK"),
+        &[("src", "A"), ("bm", "Normal"), ("key", "Normal")],
+    )?;
+    let t = follow(b, &r)?.text();
+    let s = page(b, &p.at("settings"))?;
+    let src = field(&s, &p.at("settings"), "src");
+    if src != "A" {
+        return Err(format!(
+            "the IPL source is `{src}` after Settings: {}",
+            message_of(&t)
+        ));
+    }
+    // Its activation scheduled a minute or so ahead, nothing moved.
+    let add = "/qsmc/schedule/add";
+    let form = page(b, add)?;
+    let off = offset(&form);
+    let sample = field(&form, add, "d");
+    let now = appliance::time::now_secs();
+    let due = (now + 90 + 59) / 60 * 60;
+    let c = appliance::time::civil(due + off * 60);
+    let (d, t) = (
+        date_as(c.year, c.month, c.day, &sample),
+        format!("{:02}:{:02}", c.hour, c.minute),
+    );
+    let target = format!("{PART} on {}", p.host);
+    let r = post_on(
+        b,
+        &form,
+        add,
+        ("ok", "OK"),
+        &[
+            ("d", &d),
+            ("t", &t),
+            ("r", "once"),
+            ("op", "Activate partition"),
+            ("tg", &target),
+            ("p", PROFILE),
+        ],
+    )?;
+    expect(b, &r, "QMC3401")?;
+    let before = codes(&page(b, history)?);
+    let wait = u64::try_from(due - now).unwrap_or(0) + 120;
+    let mut list = text_of(&page(b, "/qsmc/schedule")?);
+    let had = list.matches("Completed").count();
+    until(
+        "the scheduled run Completed",
+        Duration::from_secs(wait),
+        || {
+            list = text_of(&page(b, "/qsmc/schedule")?);
+            let done = list.matches("Completed").count() > had;
+            if !done {
+                std::thread::sleep(Duration::from_secs(5));
+            }
+            Ok(done)
+        },
+    )
+    .map_err(|e| format!("{e}: the schedule shows `{list}`"))?;
+    // New codes, the newest IPL complete.
+    let mut newest = Vec::new();
+    until("the IPL complete from its disk", IPL, || {
+        newest = codes(&page(b, history)?);
+        let done = newest != before && newest.first().is_some_and(|c| c == IPL_COMPLETE);
+        if !done {
+            std::thread::sleep(Duration::from_secs(5));
+        }
+        Ok(done)
+    })
+    .map_err(|e| {
+        format!(
+            "{e}: the newest codes are {:?}",
+            &newest[..newest.len().min(8)]
+        )
+    })?;
+    let mut last = String::new();
+    until("Sign On in the window", Duration::from_mins(10), || {
+        last = shown(b, window).unwrap_or_default();
+        if !last.contains("Sign On") {
+            std::thread::sleep(Duration::from_secs(5));
+        }
+        Ok(last.contains("Sign On"))
+    })
+    .map_err(|e| format!("{e}:\n{last}"))?;
+    let after = super::host::signed_on_with(b, window, &SECOFR)?;
+    if !after.contains("===>") {
+        return Err("no command line after the second sign-on".into());
+    }
+    said.push(format!(
+        "its activation scheduled at {d} {t} on Schedule operations: Completed, IPL source A, \
+         to {IPL_COMPLETE} and Sign On, QSECOFR signed on again"
+    ));
+    // Its configuration saved as a profile.
+    let r = post_form(b, &p.at("profiles?save=1"), ("ok", "OK"), &[("n", SAVED)])?;
+    expect(b, &r, "QMC3202")?;
+    until("the saved profile listed", Duration::from_mins(1), || {
+        Ok(page(b, &p.at("profiles"))?.contains(SAVED))
+    })?;
+    said.push(format!(
+        "its configuration saved as {SAVED} (QMC3202) and in Manage profiles"
+    ));
+    // Ended, then deleted with its disk.
+    confirmed(b, &p.at("shutdown"), &[("how", "imm")], "QMC3102")?;
+    p.reaches(b, "Not activated", Duration::from_mins(5))?;
+    let del = format!("/qsmc/confirm/partition-delete?ms={}&p={}", p.host, p.id);
+    let html = page(b, &del)?;
+    let r = post_on(b, &html, &del, ("ok", "OK"), &[("disks", "on")])?;
+    expect(b, &r, "QMC3133")?;
+    let storage = format!("/qsmc/server/{}/virtual/storage", p.host);
+    until(
+        "the partition and its disk gone",
+        Duration::from_mins(2),
+        || {
+            let list = page(b, "/qsmc/partitions")?;
+            let st = page(b, &storage)?;
+            Ok(!list.contains(&format!(">{PART}<")) && !st.contains(VDISK))
+        },
+    )?;
+    said.push(format!(
+        "ended immediately and deleted with its disk (QMC3133): {PART} and {VDISK} gone at the host"
+    ));
+    Ok(said)
 }
