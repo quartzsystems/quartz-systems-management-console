@@ -35,14 +35,14 @@ pub const DISK: &str = "QSMC_QSVS_DISK";
 pub const QS400: &str = "QSMC_QS400_IMAGE";
 
 /// QS/VS's Service Tools, as its own suites name them.
-const SIGN_ON: &str = "Service Tools Sign On";
-const MAIN_MENU: &str = "QS/VS Service Tools";
-const PAIRING: &str = "Management Console Pairing";
+pub(super) const SIGN_ON: &str = "Service Tools Sign On";
+pub(super) const MAIN_MENU: &str = "QS/VS Service Tools";
+pub(super) const PAIRING: &str = "Management Console Pairing";
 /// The Service Tools user QS/VS's test installation makes.
-const USER: &str = "ADMIN";
-const USER_PASSWORD: &str = "service tools 1";
+pub(super) const USER: &str = "ADMIN";
+pub(super) const USER_PASSWORD: &str = "service tools 1";
 /// QS/VS's own harness's NIC.
-const MAC: &str = "52:54:00:12:34:56";
+pub(super) const MAC: &str = "52:54:00:12:34:56";
 /// The partition's name.
 const PART: &str = "MCTEST";
 /// QSECOFR's password in QS/400's image, and the one it ships with.
@@ -52,7 +52,7 @@ const IPL_COMPLETE: &str = "C6001090";
 /// How long an IPL may take, three levels deep.
 const IPL: Duration = Duration::from_mins(40);
 
-fn password_of(screen: &str) -> Option<String> {
+pub(super) fn password_of(screen: &str) -> Option<String> {
     screen
         .split_whitespace()
         .find(|w| {
@@ -64,14 +64,14 @@ fn password_of(screen: &str) -> Option<String> {
         .map(ToString::to_string)
 }
 
-fn env(name: &str, how: &str) -> Result<PathBuf, String> {
+pub(super) fn env(name: &str, how: &str) -> Result<PathBuf, String> {
     std::env::var_os(name)
         .map(PathBuf::from)
         .ok_or_else(|| format!("{name} is not set: {how}"))
 }
 
 /// The screen a new window's socket is sent first: its rows' text.
-fn shown(b: &Browser, window: &str) -> Result<String, String> {
+pub(super) fn shown(b: &Browser, window: &str) -> Result<String, String> {
     let mut ws = b.websocket(&format!("{window}/ws"))?;
     let end = Instant::now() + Duration::from_secs(15);
     while Instant::now() < end && !ws.closed {
@@ -138,13 +138,23 @@ fn typed_once(b: &Browser, window: &str, keys: &[(&str, &str)]) -> Result<(), St
 /// QSECOFR signed on in the window, as QS/VS's suites do it at the
 /// host: the screen after.
 fn signed_on_400(b: &Browser, window: &str) -> Result<String, String> {
+    signed_on_with(b, window, &SECOFR)
+}
+
+/// QSECOFR signed on in the window with the first of `passwords` that
+/// it takes: the screen after.
+pub(super) fn signed_on_with(
+    b: &Browser,
+    window: &str,
+    passwords: &[&str],
+) -> Result<String, String> {
     let wanted = [
         "===>",
         "Change Password",
         "not correct",
         "Sign-on Information",
     ];
-    for pw in SECOFR {
+    for &pw in passwords {
         typed(
             b,
             window,
@@ -221,7 +231,7 @@ fn connected(conn: &str, name: &str) -> bool {
 }
 
 /// The codes on the first page of the partition's history.
-fn codes(page: &str) -> Vec<String> {
+pub(super) fn codes(page: &str) -> Vec<String> {
     page.split("/qsmc/refcode/")
         .skip(1)
         .filter_map(|s| s.get(..8))

@@ -11,6 +11,7 @@ mod act;
 mod beside;
 mod guard;
 pub mod host;
+mod host_pages;
 mod pair;
 mod standalone;
 mod terminal;
@@ -42,6 +43,7 @@ pub const SUITES: &[(&str, SuiteFn)] = &[
 pub const NAMED: &[(&str, SuiteFn)] = &[
     ("mgmt-host", host::host),
     ("mgmt-standalone", standalone::standalone),
+    ("mgmt-host-pages", host_pages::host_pages),
 ];
 
 /// The build machine as the guest reaches it on QEMU's user network.
