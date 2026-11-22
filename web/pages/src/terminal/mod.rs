@@ -38,6 +38,10 @@ use crate::systems::{refused, system, unreached};
 /// socket, and the style attributes the window is drawn with.
 pub const CSP: &str = "default-src 'none'; script-src 'self'; connect-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
 
+/// The window's policy while it carries no script (not connected): the
+/// same without the script and its socket.
+pub const CSP_NO_SCRIPT: &str = "default-src 'none'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
+
 /// The options a window keeps in its address.
 #[derive(Clone, Debug)]
 struct Options {
@@ -120,8 +124,8 @@ fn watch(rq: &Rq<'_>, host: &str, id: u32, take_over: bool) -> Watch {
 }
 
 /// The window's page as an answer: without the navigation column, with
-/// this page's policy.
-fn answer(rq: &Rq<'_>, p: &qsweb::frame::Page) -> Response {
+/// its policy, with the script only when it carries it.
+fn answer(rq: &Rq<'_>, p: &qsweb::frame::Page, script: bool) -> Response {
     let mut p = p.clone();
     p.generic = false;
     let more = rq
@@ -137,8 +141,10 @@ fn answer(rq: &Rq<'_>, p: &qsweb::frame::Page) -> Response {
     if let Some(m) = rq.app.sessions.take_flash(&rq.session.id) {
         p.messages.insert(0, m);
     }
-    Response::html(200, window::without_nav(&render(&rq.ctx, &p)))
-        .with("Content-Security-Policy", CSP)
+    Response::html(200, window::without_nav(&render(&rq.ctx, &p))).with(
+        "Content-Security-Policy",
+        if script { CSP } else { CSP_NO_SCRIPT },
+    )
 }
 
 /// The window, attached or not.
@@ -190,7 +196,8 @@ fn show(rq: &Rq<'_>, k: &Kept, id: u32, o: &Options, mut messages: Vec<Message>)
         bw: o.bw,
         messages,
     };
-    answer(rq, &window::page(&rq.ctx, &v))
+    let script = v.script && v.connected;
+    answer(rq, &window::page(&rq.ctx, &v), script)
 }
 
 /// Open the window this session holds on the partition.

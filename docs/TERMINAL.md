@@ -67,7 +67,9 @@ The script is served from the console; the socket is the console's.
 `style-src-attr 'unsafe-inline'` is for the style attributes the window
 is drawn with, as the prototype draws it; no other page's policy
 changes (`webd::serve::secured` keeps a page's own policy and gives
-every other answer the server's).
+every other answer the server's). A window that is not connected
+carries no script, and its policy is the same without `script-src` and
+`connect-src`.
 
 ## Roles
 
