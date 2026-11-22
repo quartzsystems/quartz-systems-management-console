@@ -18,6 +18,7 @@ pub mod backup;
 pub mod backup_routes;
 pub mod certs;
 pub mod certs_routes;
+pub mod certwatch;
 pub mod components;
 pub mod console;
 pub mod datetime;

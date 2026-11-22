@@ -52,6 +52,8 @@ fn main() {
     let app = webpages::App::open(&state, &users_db, Box::new(webpages::app::live::Live));
     // It returns only when it cannot go on; supervision starts it again.
     let stopped = app.map(Arc::new).and_then(|app| {
+        // The certificate's end, watched for as long as the server runs.
+        webpages::certwatch::watch(Arc::clone(&app));
         // The local console's requests (option 4), on their own socket.
         webpages::app::control::serve(Arc::clone(&app))
             .map_err(|e| format!("{}: {e}", release::WEBD_SOCKET))?;
