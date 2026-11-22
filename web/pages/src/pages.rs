@@ -81,9 +81,9 @@ fn welcome(rq: &Rq<'_>) -> Response {
         from: rq.from(),
         systems,
         partitions,
-        events: 0,
-        dumps: 0,
-        updates: "0".into(),
+        events: u32::try_from(crate::service::open_count(rq)).unwrap_or(u32::MAX),
+        dumps: dumps(rq),
+        updates: crate::updates::fleet::available(rq),
         version: release::RELEASE.to_string(),
         build: release::BUILD_ID.into(),
         uptime: uptime(rq.app.console.uptime()),
@@ -95,6 +95,19 @@ fn welcome(rq: &Rq<'_>) -> Response {
         messages,
     };
     rq.page(crate::welcome::page(&rq.ctx, &v))
+}
+
+/// How many dumps every system and the console hold.
+fn dumps(rq: &Rq<'_>) -> u32 {
+    let kept = crate::systems::systems(rq).unwrap_or_default();
+    let fleet: usize = kept
+        .iter()
+        .map(|k| k.dumps.len() + k.part_dumps.iter().map(|p| p.dumps.len()).sum::<usize>())
+        .sum();
+    let own = rq.app.console.dumps().map_or(0, |d| {
+        servicedump::Store::at(d, &consdump::KIND).list().len()
+    });
+    u32::try_from(fleet + own).unwrap_or(u32::MAX)
 }
 
 /// The first word of a status line (`10.0.2.15/24 on eth0, ...`), or
@@ -234,6 +247,28 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
             crate::partitions::confirm::route(rq, r)
         }
         "/refcodes" => crate::refcodes::history::route(rq),
+        "/events" => crate::service::events::route(rq),
+        r if r.starts_with("/event/") => crate::service::event::route(rq, r),
+        "/confirm/event-close" => crate::service::event::close(rq),
+        "/dumps" => crate::service::dumps::route(rq),
+        "/dumps/download" => crate::service::dumps::download(rq),
+        "/dumps/take" => crate::service::dumps::take(rq),
+        "/confirm/dump-delete" => crate::service::dumps::delete(rq),
+        "/updates" => crate::updates::fleet::route(rq),
+        "/updates/code" => crate::updates::code::route(rq),
+        "/updates/code/download" => crate::updates::code::download(rq),
+        "/confirm/update-install" => crate::updates::code::confirm(rq),
+        r if r.starts_with("/updates/notes/") => {
+            crate::updates::code::notes(rq, r.trim_start_matches("/updates/notes/"))
+        }
+        r if r.starts_with("/updates/code/") => {
+            let rest = r.trim_start_matches("/updates/code/");
+            match rest.rsplit_once('/') {
+                Some((t, "progress")) => crate::updates::progress::route(rq, t),
+                Some((t, "log")) => crate::updates::progress::log(rq, t),
+                _ => return None,
+            }
+        }
         r if r.starts_with("/refcode/") => {
             crate::refcodes::page::route(rq, r.trim_start_matches("/refcode/"))
         }

@@ -24,6 +24,36 @@ impl schedd::Calls for Nothing {
     }
 }
 
+impl problem::proto::Calls for Nothing {
+    fn call(&mut self, _req: &problem::proto::Request) -> Result<Vec<u8>, ipc::WireError> {
+        Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "the problem service is not running",
+        )
+        .into())
+    }
+}
+
+impl update::proto::Calls for Nothing {
+    fn call(&mut self, _req: &update::proto::Request) -> Result<Vec<u8>, ipc::WireError> {
+        Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "the update service is not running",
+        )
+        .into())
+    }
+}
+
+impl fetchd::proto::Calls for Nothing {
+    fn call(&mut self, _req: &fetchd::proto::Request) -> Result<Vec<u8>, ipc::WireError> {
+        Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "the download service is not running",
+        )
+        .into())
+    }
+}
+
 impl Calls for Nothing {
     fn call(&mut self, _req: &Request) -> Result<Vec<u8>, ipc::WireError> {
         Err(std::io::Error::new(

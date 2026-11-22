@@ -547,6 +547,32 @@ catalogue! {
         "The slot it was written to is no longer pending; nothing else changed.",
         "None.";
 
+    // Serviceable events and dumps.
+    EVENT_CLOSED = "QMC7401", 0, "Serviceable event &1 closed.",
+        "The system that owns the problem closed it, with your user name.",
+        "None.";
+    EVENT_NOTED = "QMC7402", 0, "Note added to serviceable event &1.",
+        "The system that owns the problem added it to the analysis log, with your user name.",
+        "None.";
+    DUMP_DELETED = "QMC7501", 0, "Dump &1 deleted from &2.",
+        "The system that held the dump deleted it.",
+        "None.";
+    SELECT_DUMP = "QMC7502", 30, "Select a dump for &1.",
+        "The action needs a dump and none was chosen.",
+        "Check the box of a dump and choose the action again.";
+    NO_REMOTE_COPY = "QMC7503", 20, "Copying a dump to a remote host is not in this release. Download the dump instead.",
+        "The console sends nothing to a host it does not manage; a dump leaves it through a browser.",
+        "Download the dump and copy it where it is needed.";
+    NO_SUCH_DUMP = "QMC7504", 30, "No dump &1 on &2.",
+        "The dump is not in what the console keeps of the system: it was deleted, or put out for the system's limits.",
+        "Show Manage dumps again.";
+    DUMP_TAKEN = "QMC7505", 0, "Console dump &1 begun.",
+        "PID 1 is writing the dump of the console's service data.",
+        "Show the page again to see it listed.";
+    ONE_DUMP = "QMC7506", 30, "Select one dump to download.",
+        "A download is one file.",
+        "Check the box of one dump and choose Download again.";
+
     // The console's own code update (`base/update`'s refusals).
     UPD_SIGNATURE = "QMC7101", 30, "Update image &1 is not signed by a key this console trusts.",
         "An image is installed only if its manifest is signed by a key the running release trusts, and nothing turns that off.",

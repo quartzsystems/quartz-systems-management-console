@@ -50,6 +50,36 @@ impl super::Console for Live {
         Box::new(mgmtproto::calls::Client::new(release::MGMTD_SOCKET))
     }
 
+    fn problems(&self) -> Box<dyn problem::proto::Calls + Send> {
+        Box::new(problem::proto::Client::new(problem::proto::socket(
+            release::ID,
+            release::RUN_DIR,
+        )))
+    }
+
+    fn updd(&self) -> Box<dyn update::proto::Calls + Send> {
+        Box::new(update::proto::Client::new(update::proto::socket(
+            release::ID,
+            release::RUN_DIR,
+        )))
+    }
+
+    fn fetch(&self) -> Box<dyn fetchd::proto::Calls + Send> {
+        Box::new(fetchd::proto::Client::new(release::FETCHD_SOCKET))
+    }
+
+    fn dumps(&self) -> Option<std::path::PathBuf> {
+        Some(release::DUMPS_DIR.into())
+    }
+
+    fn downloads(&self) -> Option<std::path::PathBuf> {
+        Some(release::UPDATES_DIR.into())
+    }
+
+    fn take_dump(&self, by: &str) -> Result<String, String> {
+        pid1().take_dump(by.into()).map_err(|e| e.to_string())?
+    }
+
     fn sched(&self) -> Box<dyn schedd::Calls + Send> {
         Box::new(schedd::calls::Client::new(release::SCHEDD_SOCKET))
     }

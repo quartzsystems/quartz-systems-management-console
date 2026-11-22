@@ -94,6 +94,20 @@ pub fn proto(url: &str) -> Option<String> {
         }
         return Some(format!("system-{tab}.html"));
     }
+    // A serviceable event and the pages of it built from the patterns.
+    if route.starts_with("/event/") {
+        return Some("event-detail.html".into());
+    }
+    // An install's progress and its log.
+    if let Some(rest) = route.strip_prefix("/updates/code/")
+        && (rest.ends_with("/progress") || rest.ends_with("/log"))
+    {
+        return Some("code-update-progress.html".into());
+    }
+    // A release's notes: the design has none, and links `#`.
+    if route.starts_with("/updates/notes/") {
+        return Some("#".into());
+    }
     if route.starts_with("/help/") || route.starts_with("/msg/") || route == "/help" {
         return Some("../shared/help.html".into());
     }

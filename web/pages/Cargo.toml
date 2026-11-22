@@ -31,6 +31,14 @@ termlook.workspace = true
 srcdata.workspace = true
 serde_json.workspace = true
 refcode = { path = "../../lic/refcode", version = "0.1.0" }
+problem.workspace = true
+update.workspace = true
+servicedump.workspace = true
+msg.workspace = true
+vrm.workspace = true
+fetchd = { path = "../../upd/fetchd", version = "0.1.0" }
+consdump = { path = "../../lic/consdump", version = "0.1.0" }
+updcat.workspace = true
 
 # The data file system's space, for Console version.
 [target.'cfg(target_os = "linux")'.dependencies]

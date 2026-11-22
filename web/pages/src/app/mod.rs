@@ -103,6 +103,36 @@ pub trait Console: Send + Sync {
     fn catalogue(&self) -> String {
         String::new()
     }
+
+    /// The console's own problem log (`lic/qsmcprobd`).
+    fn problems(&self) -> Box<dyn problem::proto::Calls + Send> {
+        Box::new(mgmt::Nothing)
+    }
+
+    /// The console's own update service (`lic/qsmcupdd`).
+    fn updd(&self) -> Box<dyn update::proto::Calls + Send> {
+        Box::new(mgmt::Nothing)
+    }
+
+    /// The download service (`lic/qsmcfetchd`).
+    fn fetch(&self) -> Box<dyn fetchd::proto::Calls + Send> {
+        Box::new(mgmt::Nothing)
+    }
+
+    /// Where the console's own dumps are; none when it keeps none.
+    fn dumps(&self) -> Option<std::path::PathBuf> {
+        None
+    }
+
+    /// Where the download service's files are, readable by all.
+    fn downloads(&self) -> Option<std::path::PathBuf> {
+        None
+    }
+
+    /// Ask PID 1 for a console dump for `by`: its name, or why not.
+    fn take_dump(&self, _by: &str) -> Result<String, String> {
+        Err("this console takes no dump".into())
+    }
 }
 
 /// The web server's pages and what they keep.
@@ -131,6 +161,8 @@ pub struct App {
     /// system's refusal gives every message that applies.
     pub more: Mutex<std::collections::HashMap<String, Vec<qsweb::msg::Message>>>,
     catalogue: std::sync::OnceLock<crate::refcodes::explain::Catalogue>,
+    /// The code updates begun from the pages, by what they update.
+    pub installs: std::sync::Arc<crate::updates::Runs>,
 }
 
 fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
@@ -194,6 +226,7 @@ impl App {
             windows: crate::terminal::relay::Windows::default(),
             more: Mutex::new(std::collections::HashMap::new()),
             catalogue: std::sync::OnceLock::new(),
+            installs: std::sync::Arc::default(),
         })
     }
 

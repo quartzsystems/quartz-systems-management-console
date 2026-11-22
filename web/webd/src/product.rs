@@ -94,10 +94,6 @@ pub static PRODUCT: Product = Product {
 /// The routes of the tree that later phases bring, and the phase.
 /// Each answers with a page saying the function arrives later.
 pub const LATER: &[(&str, u8)] = &[
-    ("/events", 6),
-    ("/dumps", 6),
-    ("/updates/code", 6),
-    ("/updates", 6),
     ("/plans", 7),
 ];
 
@@ -122,6 +118,10 @@ mod tests {
             "/groups",
             "/refcodes",
             "/connectivity",
+            "/events",
+            "/dumps",
+            "/updates/code",
+            "/updates",
         ];
         for g in NAV {
             for (_, route) in g.items {

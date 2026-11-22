@@ -66,6 +66,8 @@ request refused.
 | `QMC7201`-`QMC7210` | product streams, the download service `fetchd`, and a downloaded host update |
 | `QMC7301`-`QMC7305` | the console's own problem log: what `base/problem` refuses |
 | `QMC7311`-`QMC7341` | the console's own problems: each condition's description, what to do its second level (`docs/SERVICE.md`) |
+| `QMC7401`-`QMC7402` | serviceable events closed and noted |
+| `QMC7501`-`QMC7506` | Manage dumps: deleted, chosen, copied, taken |
 | `QMC8001`-`QMC8011` | users, roles and form values |
 | `QMC8100`-`QMC8103` | Network settings |
 | `QMC8200`-`QMC8201` | Date and time |
@@ -164,6 +166,14 @@ request refused.
 | `QMC7339` | 30 | A downloaded file did not match its product stream's index: &1. | Its size or SHA-256 is not the one the signed index names; it was removed. | Download it again; if it fails again, the server or the path to it changes what it sends. |
 | `QMC7340` | 30 | The console's first process failed: &1. | PID 1 panicked and the console parked. | Report this problem with the text after it and a console dump. |
 | `QMC7341` | 30 | The storage service of the mirrored load source stopped: &1. | The data file system has no server and nothing more was written. | Restart the console, then report this problem with a console dump. |
+| `QMC7401` | 0 | Serviceable event &1 closed. | The system that owns the problem closed it, with your user name. | None. |
+| `QMC7402` | 0 | Note added to serviceable event &1. | The system that owns the problem added it to the analysis log, with your user name. | None. |
+| `QMC7501` | 0 | Dump &1 deleted from &2. | The system that held the dump deleted it. | None. |
+| `QMC7502` | 30 | Select a dump for &1. | The action needs a dump and none was chosen. | Check the box of a dump and choose the action again. |
+| `QMC7503` | 20 | Copying a dump to a remote host is not in this release. Download the dump instead. | The console sends nothing to a host it does not manage; a dump leaves it through a browser. | Download the dump and copy it where it is needed. |
+| `QMC7504` | 30 | No dump &1 on &2. | The dump is not in what the console keeps of the system: it was deleted, or put out for the system's limits. | Show Manage dumps again. |
+| `QMC7505` | 0 | Console dump &1 begun. | PID 1 is writing the dump of the console's service data. | Show the page again to see it listed. |
+| `QMC7506` | 30 | Select one dump to download. | A download is one file. | Check the box of one dump and choose Download again. |
 | `QMC1201` | 10 | This release has no explanation for reference code &1. Its text is shown as the system posted it. | The code is in neither the QS/VS catalogue nor the QS/400 table this console was built with: a system of a later release may post codes this console does not know. | See the system's own documentation for the code, or update the console. |
 | `QMC1202` | 30 | &1 is not a date in this console's format. | A date filter was typed in another format than the one on Language, locale and session. | Type the date as the console shows dates, or leave the field empty. |
 | `QMC2201` | 20 | Power on of &1 is not in this release: a powered-off machine does not answer QSI, and this console has no way to its BMC. | A managed system answers QSI only while it runs; powering one on takes its BMC, which this console is not given. | Power the machine on at its BMC or at the machine. The console reconnects when it answers. |

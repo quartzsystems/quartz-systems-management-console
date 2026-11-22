@@ -139,6 +139,10 @@ Golden corrections, each the only difference allowed:
 | `qsmc/partition-io.html`, `manage-profiles.html`, `create-6.html` | the buttons named (`add`, `remove`; `create`, `save`, `default`; `add`) | the page tells which was pressed |
 | `qsmc/confirm-activate.html`, `confirm-shutdown.html` | the form carries the choices of the page before as hidden fields | as drawn, the confirmation's OK would send nothing of what was chosen |
 | `qsmc/schedule.html` | the buttons named (`add`, `refresh`) | the page tells which was pressed |
+| `qsmc/event-detail.html` | a row `Managed system's number` after Problem number | the console numbers the fleet's problems; the system's own number is shown beside it (`docs/SERVICE.md`) |
+| `qsmc/dumps.html` | the form begins before the list, not after it; each box has the dump's key as its value; the buttons named (`download`, `copy`, `delete`) | as drawn, the boxes are outside the form and would not be sent |
+| `qsmc/code-updates.html` | the note under the hosts says what activating a QS/VS update does: the host restarts into its other slot and its running partitions are shut down first | the design's note (the management layer restarts, partitions keep running) is not what QS/VS does (`docs/UPDATES.md`) |
+| `qsmc/code-update-progress.html` | View log named (`log`) | the page tells which was pressed |
 
 ## Time
 

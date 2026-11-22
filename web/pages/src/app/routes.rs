@@ -349,6 +349,12 @@ pub fn task_of(route: &str) -> Option<Task> {
     if crate::vres::confirm::ROUTES.contains(&route) {
         return Some(Task::VirtualResources);
     }
+    if route == "/confirm/event-close" || route == "/confirm/dump-delete" {
+        return Some(Task::Events);
+    }
+    if route == "/confirm/update-install" {
+        return Some(Task::CodeUpdates);
+    }
     if route.starts_with("/console") || route.starts_with("/confirm/") {
         return Some(Task::Settings);
     }
@@ -366,7 +372,9 @@ pub fn task_of(route: &str) -> Option<Task> {
         "/plans" => Some(Task::Plans),
         "/events" | "/refcodes" | "/dumps" | "/connectivity" => Some(Task::Events),
         r if r.starts_with("/refcode/") => Some(Task::Events),
+        r if r.starts_with("/event/") || r.starts_with("/dumps/") => Some(Task::Events),
         "/updates" | "/updates/code" => Some(Task::CodeUpdates),
+        r if r.starts_with("/updates/") => Some(Task::CodeUpdates),
         r if r.starts_with("/dev/") => Some(Task::View),
         _ => None,
     }

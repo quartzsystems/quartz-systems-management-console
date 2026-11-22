@@ -2529,3 +2529,454 @@ fn schedule_add() {
         &[],
     );
 }
+
+// Phase 6: service management and updates.
+
+#[test]
+fn events() {
+    use webpages::service::events::{Events, Row, page};
+    let row = |n: &str, open: bool, date: &str, code: &str, ms: &str, pt: &str, d: &str| Row {
+        actions: if open {
+            vec![
+                (format!("/event/{n}"), "View details"),
+                (format!("/confirm/event-close?n={n}"), "Close"),
+                (format!("/event/{n}/repair"), "Repair"),
+            ]
+        } else {
+            vec![(format!("/event/{n}"), "View details")]
+        },
+        number: n.into(),
+        open,
+        date: date.into(),
+        code: code.into(),
+        code_link: format!("/refcode/{code}"),
+        system: ms.into(),
+        partition: pt.into(),
+        description: d.into(),
+    };
+    let v = Events {
+        status: "Open".into(),
+        from: "10/01/26".into(),
+        to: "10/30/26".into(),
+        system: "All".into(),
+        systems: vec!["All".into(), "QSHQVS1".into(), "QSHQ400".into()],
+        rows: vec![
+            row(
+                "1042",
+                true,
+                "10/29/26 22:14:05",
+                "B6000100",
+                "QSHQVS1",
+                "QSTEST01",
+                "Virtual disk VD04 backing file read error; partition IPL stopped",
+            ),
+            row(
+                "1041",
+                false,
+                "10/26/26 01:00:12",
+                "B1811001",
+                "QSHQ400",
+                "",
+                "Scheduled power off failed: service interface password rejected",
+            ),
+            row(
+                "1040",
+                false,
+                "10/18/26 08:04:50",
+                "11007611",
+                "QSHQVS1",
+                "",
+                "Power supply 2 lost input power (restored 08:06)",
+            ),
+            row(
+                "1039",
+                false,
+                "10/02/26 09:20:41",
+                "A6005008",
+                "QSHQVS1",
+                "QSTEST01",
+                "Console not connected within 10 minutes of activation (informational)",
+            ),
+        ],
+        paging: qsweb::partials::Paging::from_query("", "", 4, Vec::new()),
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/events";
+    assert_golden(&render(here, &page(&ctx(here), &v)), "events.html", &[]);
+}
+
+#[test]
+fn event_detail() {
+    use webpages::service::event::{Event, Fru, page};
+    let v = Event {
+        number: "1042".into(),
+        theirs: "7".into(),
+        open: true,
+        reported: "10/29/26 22:14:05".into(),
+        system: ("QSHQVS1".into(), "/server/QSHQVS1/general".into()),
+        partition: Some(("QSTEST01".into(), "/partition/QSHQVS1/2/general".into(), 2)),
+        code: ("B6000100".into(), "/refcode/B6000100".into()),
+        words: vec!["00000002".into(), "4B4F4E53".into()],
+        severity: "Error - partition cannot IPL".into(),
+        description: "The QS/VS host reported an unrecoverable read error on the file backing virtual disk VD04 while partition QSTEST01 was loading the operating system from it. The partition stopped with B6000100 and was placed in Not activated state.".into(),
+        explained: Some((
+            "Load source disk unit read failure during IPL.".into(),
+            "the load source (first SCSI client disk) returned a media error.".into(),
+            "correct the backing storage, then re-IPL from source A; if the error repeats, re-install from source D or restore from tape.".into(),
+        )),
+        frus: vec![
+            Fru {
+                priority: "High".into(),
+                fru: "Virtual disk VD04 - storage pool POOL1".into(),
+                location: "QSHQVS1 POOL1 /pool1/VD04.img".into(),
+                part: "VD04 (120 GB thin)".into(),
+                action: "Check pool; run storage verification".into(),
+            },
+            Fru {
+                priority: "Medium".into(),
+                fru: "SAS RAID controller (POOL1 backing)".into(),
+                location: "U9Q10.V1.9F11A2-P1-C2".into(),
+                part: "FC 57B8".into(),
+                action: "Check controller log; disk 4 reported 12 media errors".into(),
+            },
+        ],
+        log: vec![
+            "10/29/26 22:14:05  B6000100  QSTEST01  IPL stopped at load source read, LBA 0x0001A3F0".into(),
+            "10/29/26 22:14:05  host      POOL1     read error /pool1/VD04.img offset 0x34FE0000: I/O error".into(),
+            "10/29/26 22:14:06  host      C2        sd 2:0:3:0 [sdd] Unrecovered read error, media error count 12".into(),
+            "10/29/26 22:14:07  analysis  -         FRU candidates: VD04 (virtual), C2 disk 4 (physical)".into(),
+            "10/29/26 22:14:07  action    -         Serviceable event 1042 opened; partition left Not activated".into(),
+        ],
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/event/1042";
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "event-detail.html",
+        &[(
+            // The managed system's own number for it, beside the console's.
+            "<tr><th>Problem number</th><td>1042</td></tr>",
+            "<tr><th>Problem number</th><td>1042</td></tr>\n<tr><th>Managed system's number</th><td>7</td></tr>",
+        )],
+    );
+}
+
+#[test]
+fn dumps() {
+    use webpages::service::dumps::{Dumps, Row, page};
+    let row = |name: &str, kind: &str, size: &str, date: &str, source: &str, status: &str| Row {
+        key: format!("QSHQVS1:0:{name}"),
+        name: name.into(),
+        kind: kind.into(),
+        size: size.into(),
+        date: date.into(),
+        source: source.into(),
+        status: status.into(),
+    };
+    let v = Dumps {
+        rows: vec![
+            row(
+                "SYSDUMP.QSTEST01.20261029.221405",
+                "Partition main storage dump",
+                "8,210",
+                "10/29/26 22:15",
+                "QSTEST01 on QSHQVS1",
+                "Ready - not copied",
+            ),
+            row(
+                "SPDUMP.QSHQVS1.20261018.080450",
+                "Service processor dump",
+                "42",
+                "10/18/26 08:05",
+                "QSHQVS1",
+                "Ready - not copied",
+            ),
+            row(
+                "SYSDUMP.QSDEV01.20261014.184012",
+                "Partition main storage dump (function 22)",
+                "4,100",
+                "10/14/26 18:41",
+                "QSDEV01 on QSHQVS1",
+                "Copied to remote host",
+            ),
+            row(
+                "FWDUMP.QSHQ400.20260930.120000",
+                "Firmware dump",
+                "120",
+                "09/30/26 12:00",
+                "QSHQ400",
+                "Copied to remote host",
+            ),
+        ],
+        space: "Dump space: 12,472 MB of 40,000 MB used.".into(),
+        per_system: Vec::new(),
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/dumps";
+    let mut fix: Vec<(String, String)> = vec![
+        // The form holds the checkboxes, so a choice reaches the server
+        // with script off; each box says which dump it is.
+        (
+            "</h1>\n\n\n<table class=\"list\"".into(),
+            "</h1>\n\n\n<form method=\"post\"><table class=\"list\"".into(),
+        ),
+        (
+            "</table><form method=\"post\"><div class=\"buttons\"><input type=\"submit\" value=\"Download\"><input type=\"submit\" value=\"Copy to remote host...\"><input type=\"submit\" value=\"Delete\">".into(),
+            "</table><div class=\"buttons\"><input type=\"submit\" name=\"download\" value=\"Download\"><input type=\"submit\" name=\"copy\" value=\"Copy to remote host...\"><input type=\"submit\" name=\"delete\" value=\"Delete\">".into(),
+        ),
+    ];
+    for (i, r) in v.rows.iter().enumerate() {
+        fix.push((
+            format!("<input type=\"checkbox\" name=\"d{i}\">"),
+            format!(
+                "<input type=\"checkbox\" name=\"d{i}\" value=\"{}\">",
+                r.key
+            ),
+        ));
+    }
+    let fix: Vec<(&str, &str)> = fix.iter().map(|(a, b)| (a.as_str(), b.as_str())).collect();
+    assert_golden(&render(here, &page(&ctx(here), &v)), "dumps.html", &fix);
+}
+
+#[test]
+fn code_updates() {
+    use webpages::updates::code::{Line, Updates, page};
+    let v = Updates {
+        console: vec![
+            Line {
+                component: "QS/MC".into(),
+                installed: "V1R0M0 build 26290".into(),
+                available: "V1R0M0 build 26290".into(),
+                released: "10/17/26".into(),
+                status: ("Current".into(), Some(true)),
+                notes: Some("/updates/notes/qsmc/RELEASE_NOTES_V1R0M0.md".into()),
+                actions: Vec::new(),
+            },
+            Line {
+                component: "Console fixes".into(),
+                installed: "QMC10102, QMC10115".into(),
+                available: "(none pending)".into(),
+                released: String::new(),
+                status: ("Current".into(), Some(true)),
+                notes: None,
+                actions: Vec::new(),
+            },
+        ],
+        hosts: vec![
+            Line {
+                component: "QSHQVS1".into(),
+                installed: "V1R0M0 build 26280".into(),
+                available: "V1R0M0 build 26300".into(),
+                released: "10/24/26".into(),
+                status: ("Update available".into(), Some(false)),
+                notes: Some("/updates/notes/qsvs/RELEASE_NOTES_V1R0M0.md".into()),
+                actions: vec![
+                    ("/updates/code".into(), "Download"),
+                    ("/confirm/update-install?t=QSHQVS1".into(), "Install..."),
+                    ("/schedule/add?op=update&ms=QSHQVS1".into(), "Schedule"),
+                ],
+            },
+            Line {
+                component: "QSBR01VS1".into(),
+                installed: "V1R0M0 build 26300".into(),
+                available: "V1R0M0 build 26300".into(),
+                released: "10/24/26".into(),
+                status: ("Current".into(), Some(true)),
+                notes: Some("/updates/notes/qsvs/RELEASE_NOTES_V1R0M0.md".into()),
+                actions: Vec::new(),
+            },
+        ],
+        progress: "/updates/code/QSHQVS1/progress".into(),
+        server: "update.quartz.systems".into(),
+        check: "Daily 04:00".into(),
+        download: false,
+        messages: vec![qsweb::msg::Message::new(
+            qsweb::msg::Kind::Info,
+            "QMC7001",
+            "Checked update.quartz.systems at 10/30/26 04:00:10. 1 QS/VS host update available.",
+        )],
+    };
+    let here = "/qsmc/updates/code";
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "code-updates.html",
+        &[(
+            // What an install of a QS/VS update does, as QS/VS does it.
+            "Installing a QS/VS update restarts the host's management layer; running partitions are not affected unless the release notes say otherwise.",
+            "Installing a QS/VS update restarts the host into its other slot; its running partitions are shut down first, as the confirmation page lists them.",
+        )],
+    );
+}
+
+#[test]
+fn code_update_progress() {
+    use webpages::updates::progress::{Progress, Stand, Step, page};
+    let s = |step: &str, stand, started: &str, ended: &str, message: &str| Step {
+        step: step.into(),
+        stand,
+        started: started.into(),
+        ended: ended.into(),
+        message: message.into(),
+    };
+    let v = Progress {
+        target: "QSHQVS1".into(),
+        steps: vec![
+            s(
+                "Download build 26300 (412 MB)",
+                Stand::Complete,
+                "07:30:00",
+                "07:31:12",
+                "",
+            ),
+            s(
+                "Verify signature",
+                Stand::Complete,
+                "07:31:12",
+                "07:31:13",
+                "Signed by Quartz Update Services",
+            ),
+            s(
+                "Transfer to QSHQVS1",
+                Stand::Complete,
+                "07:31:13",
+                "07:32:40",
+                "",
+            ),
+            s(
+                "Save system plan qshqvs1-20261030",
+                Stand::Complete,
+                "07:32:40",
+                "07:32:41",
+                "",
+            ),
+            s(
+                "Install on host",
+                Stand::Going,
+                "07:32:41",
+                "",
+                "Applying package 3 of 7",
+            ),
+            s(
+                "Restart host management layer",
+                Stand::Pending,
+                "",
+                "",
+                "Partitions keep running",
+            ),
+            s("Verify connectivity", Stand::Pending, "", "", ""),
+        ],
+        messages: vec![qsweb::msg::Message::new(
+            qsweb::msg::Kind::Info,
+            "QMC7010",
+            "Installing QS/VS V1R0M0 build 26300 on QSHQVS1. This page reloads every 10 seconds.",
+        )],
+    };
+    let here = "/qsmc/updates/code/QSHQVS1/progress";
+    assert_golden(
+        &render(here, &page(&ctx(here), &v)),
+        "code-update-progress.html",
+        &[(
+            "<input type=\"submit\" value=\"View log\">",
+            "<input type=\"submit\" name=\"log\" value=\"View log\">",
+        )],
+    );
+}
+
+#[test]
+fn updates() {
+    use webpages::updates::fleet::{Fleet, Row, page};
+    let r =
+        |action: (&str, &str), name: &str, kind: &str, c: &str, l: &str, s: &str, when: &str| Row {
+            action: (action.0.into(), action.1.into()),
+            name: name.into(),
+            kind: kind.into(),
+            current: c.into(),
+            latest: l.into(),
+            status: s.into(),
+            checked: when.into(),
+        };
+    let code = ("/updates/code", "Code updates");
+    let nav = |h: &str, id: u32| {
+        (
+            format!("/partition/{h}/{id}/navigator"),
+            "Navigator PTFs".to_string(),
+        )
+    };
+    let n1 = nav("QSHQ400", 0);
+    let n2 = nav("QSHQVS1", 3);
+    let n3 = nav("QSHQVS1", 1);
+    let n4 = nav("QSHQVS1", 2);
+    let v = Fleet {
+        show: "All".into(),
+        kind: "All".into(),
+        rows: vec![
+            r(
+                code,
+                "QSHQMC1",
+                "QS/MC console",
+                "V1R0M0 build 26290",
+                "V1R0M0 build 26290",
+                "Current",
+                "10/30/26 04:00",
+            ),
+            r(
+                code,
+                "QSHQVS1",
+                "QS/VS host",
+                "V1R0M0 build 26280",
+                "V1R0M0 build 26300",
+                "Update available",
+                "10/30/26 04:00",
+            ),
+            r(
+                (&n1.0, &n1.1),
+                "QSHQ400",
+                "QS/400 (standalone)",
+                "QS400-CUM-26290",
+                "QS400-CUM-26290",
+                "Current",
+                "10/30/26 04:00",
+            ),
+            r(
+                (&n2.0, &n2.1),
+                "QSPROD01",
+                "QS/400 partition",
+                "QS400-CUM-26290",
+                "QS400-CUM-26290",
+                "Current",
+                "10/30/26 04:00",
+            ),
+            r(
+                (&n3.0, &n3.1),
+                "QSDEV01",
+                "QS/400 partition",
+                "QS400-CUM-26270",
+                "QS400-CUM-26290",
+                "Update available",
+                "10/30/26 04:00",
+            ),
+            r(
+                (&n4.0, &n4.1),
+                "QSTEST01",
+                "QS/400 partition",
+                "(not activated)",
+                "QS400-CUM-26290",
+                "Unknown",
+                "10/29/26 23:00",
+            ),
+            r(
+                code,
+                "QSBR01VS1",
+                "QS/VS host",
+                "V1R0M0 build 26300",
+                "V1R0M0 build 26300",
+                "Current",
+                "10/30/26 04:00",
+            ),
+        ],
+        paging: Some(qsweb::partials::Paging::from_query("", "", 7, Vec::new())),
+        messages: Vec::new(),
+    };
+    let here = "/qsmc/updates";
+    assert_golden(&render(here, &page(&ctx(here), &v)), "updates.html", &[]);
+}
