@@ -90,6 +90,8 @@ the tree's routes did not know the new pages live (`7647470`).
 cargo run -p build -- all && cargo run -p build -- --test-image all
 cargo run -p build -- test                      every suite of Phases 0 to 5 but those of a real machine
 cargo run -p build -- test --suite parts-upload
+QSMC_QSVS_DISK=... QSMC_QS400_ISO=... cargo run -p build -- test --suite mgmt-host-pages
+QSMC_QS400_IMAGE=... cargo run -p build -- test --suite mgmt-standalone
 cargo run -p build -- fuzz --target mgmt-host
 cargo run -p sim --bin qsmcsim -- --port 2300   the prototype's systems for a browser
 cargo test -p webpages --test golden            every live page against its prototype file
@@ -140,6 +142,23 @@ what the host received:
 | `parts-older` | a host whose hello lacks bits 19 to 24: 91 pages served, `QMC1114` naming what is lacking for each, nothing sent |
 | `parts-audit` | 39 kinds of action audited with the user, a scheduled run with its owner; no password or key in the logs |
 
+Two suites run by name on real systems, each in a second machine
+whose QSI port the build machine forwards:
+
+| Suite | What it shows |
+| --- | --- |
+| `mgmt-host-pages` (suite 13) | a QS/VS host at `0488d96` (its installed test disk, `QSMC_QSVS_DISK`) through the web UI alone: paired from the Add page; a pool on its blank disk made the media repository; a thin virtual disk; a switch; QS/400's install ISO (`QSMC_QS400_ISO`) streamed through Virtual Optical; a shared partition from the wizard with the disk, an Ethernet adapter and the ISO in OPT01, shown on Virtual Optical and Activate's confirmation before its first activation; activated from D with its codes in the history to `C6001090` and QS/400 installed by itself; QSECOFR signed on in the terminal window; its entitlement changed while it runs (`QMC3122`); shut down through its operating system; its activation scheduled a minute ahead and run, from A to Sign On; its configuration saved as a profile; deleted with its disk, gone at the host |
+| `mgmt-standalone` (suite 14) | a standalone QS/400 at `cf8f014` (`QSMC_QS400_IMAGE`, its release image): its service console signs QSECOFR on and `STRQSIPAIR` gives the password; paired from the Add page; its row and properties; 20 codes in the history to `C6001090`; its console (ID 0) in the terminal window at Sign On, the 24 rows its own display's; the control panel lists its 15 functions; 21 at a normal keylock refused (`QMC5010`, `QSI0452`); a controlled power down from its confirmation page (`QMC2202`), the system off and away on Connectivity |
+
+Suite 13 found that a partition never activated showed no optical
+device, as the pages read only the last activated profile; they read
+its default profile then (`c83d699`). QS/400's install from this ISO
+asks nothing, so the steps an attended install would add, and an image
+loaded into a running partition from Load (QS/VS loads media only into
+a partition starting or running), are for a real machine (below).
+Suite 14 needs no test image: QS/400's service console is on its
+release image's serial port.
+
 The first run found seven faults in the pages, fixed in `32ae99c`:
 Manage profiles' Edit opened the default profile; the pool form left
 out a disk with another system's label, so its confirmation was never
@@ -156,5 +175,5 @@ BLOCKED(phase5): the acceptance run from empty targets (two builds compared, the
 
 ## Not done
 
-- BLOCKED(phase5): suite 13, a real QS/VS host through the web UI alone from an ISO's upload to a QS/400 installed in a partition, and suite 14, a real standalone QS/400 paired from the Add page.
-- NEEDS-CODY: the Dell's host managed from a real console through an install of QS/400; a standalone QS/400 paired with a console on real hardware; every page of this phase beside its prototype file in a browser.
+- NEEDS-CODY: on a real host (the Dell), what QEMU's nesting leaves out of suite 13: an attended install of QS/400 answered in the terminal window, and an image loaded from Virtual Optical's Load into a running partition.
+- NEEDS-CODY: a standalone QS/400 paired with a console on real hardware; every page of this phase beside its prototype file in a browser.
