@@ -48,6 +48,12 @@ pub fn watch(app: Arc<App>) {
             was = Some(true);
         }
         loop {
+            // The listeners hand over the certificates after this
+            // starts: the first look waits for them, not an hour.
+            if app.certs.get().is_none() {
+                std::thread::sleep(Duration::from_secs(1));
+                continue;
+            }
             if let Some(c) = app.certs.get() {
                 let info = c.shown().info;
                 let now = app.console.now();
