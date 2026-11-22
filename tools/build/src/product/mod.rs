@@ -96,6 +96,9 @@ const TEST_PACKAGES: &[Package] = &[
     package(SERVICES[3]),
     package(SERVICES[4]),
     package(SERVICES[5]),
+    package(SERVICES[6]),
+    package(SERVICES[7]),
+    package(SERVICES[8]),
     package(CONSOLE),
     package(INSTALLER),
     package(HOOK),
@@ -234,6 +237,9 @@ mod tests {
         let test = qsmc(Image::Test).unwrap();
         assert_eq!(test.name, "QS/MC (test image)");
         assert_eq!(test.packages.last().map(|p| p.name), Some(HOOK));
+        // The test image is the release image with the hooks: no service less.
+        let tested: Vec<&str> = test.packages.iter().map(|p| p.name).collect();
+        assert_eq!(tested[..tested.len() - 1], names[..]);
         assert_eq!((test.cmdline, test.fragments), (p.cmdline, p.fragments));
         assert_eq!(p.fragments, ["qsmc.config"]);
     }
