@@ -25,6 +25,13 @@ webusers = { path = "../../web/users", version = "0.1.0" }
 ipc.workspace = true
 zeroize.workspace = true
 serde_json.workspace = true
+problem.workspace = true
+update.workspace = true
+msg.workspace = true
+servicedump.workspace = true
+loadsource.workspace = true
+consdump = { path = "../../lic/consdump", version = "0.1.0" }
+refcode = { path = "../../lic/refcode", version = "0.1.0" }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 rustix.workspace = true

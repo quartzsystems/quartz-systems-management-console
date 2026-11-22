@@ -105,7 +105,8 @@ pub const NETD: Service = Service {
 };
 
 /// The local console on the display and the serial port. It takes the
-/// display from the kernel's console, which needs `SYS_TTY_CONFIG`.
+/// display from the kernel's console, which needs `SYS_TTY_CONFIG`, and
+/// mounts a removable volume for option 8, which needs `SYS_ADMIN`.
 pub const CONSOLE: Service = Service {
     name: "console",
     binary: release::CONSOLE,
@@ -113,7 +114,7 @@ pub const CONSOLE: Service = Service {
     order: 25,
     needs: &[],
     ready_within: READY_WITHIN,
-    caps: Caps::Only(&[SYS_TTY_CONFIG]),
+    caps: Caps::Only(&[SYS_TTY_CONFIG, SYS_ADMIN]),
 };
 
 /// The web server: no capabilities, handed its listeners by PID 1

@@ -99,6 +99,38 @@ impl Env {
         }
     }
 
+    /// The console's own problem log.
+    #[allow(
+        clippy::unused_self,
+        reason = "each service is reached through the session"
+    )]
+    pub fn problems(&self) -> problem::proto::Client {
+        problem::proto::Client::new(problem::proto::socket(release::ID, release::RUN_DIR))
+    }
+
+    /// The console's own update service.
+    #[allow(
+        clippy::unused_self,
+        reason = "each service is reached through the session"
+    )]
+    pub fn updd(&self) -> update::proto::Client {
+        update::proto::Client::new(update::proto::socket(release::ID, release::RUN_DIR))
+    }
+
+    /// A console dump, asked of PID 1 for the signed-on user: its name.
+    pub fn take_dump(&mut self) -> Result<String, String> {
+        self.control
+            .take_dump(format!("service tools user {}", self.user))
+            .map_err(|e| wire(e, "PID 1"))?
+    }
+
+    /// Post `code` through PID 1.
+    pub fn post(&mut self, code: &refcode::RefCode, detail: &str) {
+        let _ = self
+            .control
+            .post(code.code.to_string(), code.text_with(detail));
+    }
+
     /// PID 1's status.
     pub fn status(&mut self) -> HostStatus {
         let status = self.control.status().unwrap_or_default();

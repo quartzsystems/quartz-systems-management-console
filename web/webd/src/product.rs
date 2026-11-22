@@ -93,9 +93,7 @@ pub static PRODUCT: Product = Product {
 
 /// The routes of the tree that later phases bring, and the phase.
 /// Each answers with a page saying the function arrives later.
-pub const LATER: &[(&str, u8)] = &[
-    ("/plans", 7),
-];
+pub const LATER: &[(&str, u8)] = &[("/plans", 7)];
 
 #[cfg(test)]
 mod tests {

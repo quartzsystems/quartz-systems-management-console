@@ -3,8 +3,8 @@
 // root directory of this project.
 
 //! The local console's own panels around `base/panels`' own: the main
-//! menu, a choice of two or three, a place a later phase fills, and the
-//! idle screen shown while nobody is signed on. The numbers of the menu
+//! menu, a choice of two or three, and the idle screen shown while
+//! nobody is signed on. The numbers of the menu
 //! keep the places QS/VS's Service Tools gives the same things.
 
 use console::Screen;
@@ -64,7 +64,7 @@ impl Panel<Env, Outcome> for MainMenu {
             Some(5) => Flow::Push(Box::new(UsersPanel)),
             Some(6) => Flow::Push(Box::new(TimePanel::new(env))),
             Some(7) => Flow::Push(Box::new(Choice::LOGS)),
-            Some(8) => Flow::Push(Box::new(Later::SERVICE)),
+            Some(8) => Flow::Push(Box::new(crate::service::ServiceMenu)),
             Some(9) => Flow::Push(Box::new(Choice::POWER)),
             Some(_) => Flow::Error("Selection not valid.".into()),
             None => Flow::Error("Type the number of an option.".into()),
@@ -91,8 +91,8 @@ impl Panel<Env, Outcome> for MainMenu {
                 "protects or repairs them. 3 sets its open network. 4 shows the",
                 "web interface and resets an Administrator's password. 5 works",
                 "with the users of this console. 6 sets the clock and the time",
-                "servers. 7 shows the logs. 8, service functions, arrives later.",
-                "9 powers off or restarts.",
+                "servers. 7 shows the logs. 8 works with the console's problems,",
+                "dumps and code updates. 9 powers off or restarts.",
                 "",
                 "F3 or F12 signs you off. So do ten minutes without a key.",
             ],
@@ -175,61 +175,6 @@ impl Panel<Env, Outcome> for Choice {
     }
 }
 
-/// An option a later phase fills: what it will hold, and when.
-pub struct Later {
-    name: &'static str,
-    title: &'static str,
-    lines: &'static [&'static str],
-    help: Help,
-}
-
-impl Later {
-    /// Option 8.
-    pub const SERVICE: Later = Later {
-        name: "console-service",
-        title: "Service Functions",
-        lines: &[
-            "Service functions are not available yet. They arrive in Phase 6.",
-            "",
-            "This option will then hold the console's own dumps and its code",
-            "updates.",
-        ],
-        help: Help {
-            title: "Service Functions",
-            lines: &[
-                "Service functions are what a service provider asks for: the",
-                "console's dumps, and its code updates from the product stream",
-                "or a removable volume. They arrive in Phase 6.",
-                "",
-                "Enter, F3 or F12 goes back.",
-            ],
-        },
-    };
-}
-
-impl Panel<Env, Outcome> for Later {
-    fn name(&self) -> &'static str {
-        self.name
-    }
-
-    fn render(&self, env: &mut Env) -> Screen {
-        kit::page(
-            self.title,
-            &env.system(),
-            &kit::lines(self.lines),
-            "Enter=Continue   F1=Help   F3=Exit   F12=Cancel",
-        )
-    }
-
-    fn enter(&mut self, _fields: &[String], _env: &mut Env) -> Step {
-        Flow::Pop
-    }
-
-    fn help(&self) -> Help {
-        self.help
-    }
-}
-
 /// What ends with the console, on `base/panels`' power confirmation.
 pub const POWER_WORDS: PowerWords = PowerWords {
     ends: &[
@@ -276,14 +221,6 @@ mod tests {
         assert_eq!(OPTIONS[1].1, "Work with disk units");
         assert_eq!(OPTIONS[4].1, "Work with service tools user IDs");
         assert_eq!(OPTIONS[8].1, "Power off or restart");
-    }
-
-    #[test]
-    fn the_placeholders_name_their_phases() {
-        assert!(Later::SERVICE.lines[0].contains("Phase 6"));
-        let later = &Later::SERVICE;
-        assert!(later.lines.iter().all(|l| l.len() <= 76));
-        assert!(later.help.lines.iter().all(|l| l.len() <= 76));
     }
 
     #[test]

@@ -21,6 +21,7 @@ mod env;
 mod keep;
 mod menu;
 mod network;
+mod service;
 mod status;
 mod web;
 
