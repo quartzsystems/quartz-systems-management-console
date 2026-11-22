@@ -42,10 +42,7 @@ fn install(b: &mut Browser, timeout: &str, done: &str) -> Result<String, String>
         &[]
     };
     let r = post_on(b, &html, &path, ("ok", "OK"), set)?;
-    let t = expect(b, &r, qmcmsg::INSTALL_BEGUN.id)?;
-    if !crate::suite::web::shows(&t, qmcmsg::NO_PLAN_SAVED.id) {
-        return Err("the install did not say the plan was not saved".into());
-    }
+    expect(b, &r, qmcmsg::INSTALL_BEGUN.id)?;
     let progress = format!("/qsmc/updates/code/{VS}/progress");
     let mut last = String::new();
     until(

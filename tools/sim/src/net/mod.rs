@@ -250,6 +250,15 @@ impl Link {
             self.pair(sess, r.id, p);
             return;
         }
+        let delay = lock(&self.sys)
+            .faults
+            .slow
+            .iter()
+            .find(|(f, o, _)| *f == req.family() && o.is_none_or(|o| o == req.op()))
+            .map(|(_, _, ms)| *ms);
+        if let Some(ms) = delay {
+            std::thread::sleep(std::time::Duration::from_millis(ms));
+        }
         let a = answer::answer(&mut lock(&self.sys), &req, &r.user);
         let _ = match a {
             Answer::Reply(rep) => sess.reply_any(r.id, &rep),

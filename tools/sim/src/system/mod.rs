@@ -107,6 +107,9 @@ pub struct Faults {
     pub oversize: bool,
     /// Push events as fast as the log takes them.
     pub flood: bool,
+    /// Answer a family's requests, or one operation's, only after so
+    /// many milliseconds: a step that takes time.
+    pub slow: Vec<(u16, Option<u16>, u64)>,
     /// Grant no credit on a console's stream.
     pub no_credit: bool,
 }

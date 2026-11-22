@@ -21,6 +21,7 @@ pub mod base;
 pub mod install;
 pub mod mgmt;
 pub mod parts;
+pub mod plans;
 pub mod serv;
 pub(crate) mod steps;
 pub mod web;
@@ -106,6 +107,7 @@ pub fn names(media: Media) -> Vec<&'static str> {
             .chain(mgmt::SUITES.iter().map(|(name, _)| *name))
             .chain(parts::SUITES.iter().map(|(name, _)| *name))
             .chain(serv::SUITES.iter().map(|(name, _)| *name))
+            .chain(plans::SUITES.iter().map(|(name, _)| *name))
             .collect(),
         Media::Iso => steps::ISO.iter().map(steps::Step::name).collect(),
     }
@@ -170,6 +172,7 @@ impl Suite {
             && mgmt::NAMED
                 .iter()
                 .chain(serv::NAMED)
+                .chain(plans::NAMED)
                 .any(|(n, _)| only == Some(*n));
         if let Some(name) = only
             && !names(media).contains(&name)
@@ -195,11 +198,13 @@ impl Suite {
                 .chain(web::SUITES)
                 .chain(mgmt::SUITES)
                 .chain(parts::SUITES)
-                .chain(serv::SUITES);
+                .chain(serv::SUITES)
+                .chain(plans::SUITES);
             // A suite run by name only, when it is named.
             let named = mgmt::NAMED
                 .iter()
                 .chain(serv::NAMED)
+                .chain(plans::NAMED)
                 .filter(|(n, _)| only == Some(*n));
             for (name, suite) in all.filter(|(n, _)| wanted(n)).chain(named) {
                 let report = self.base(name, *suite)?;

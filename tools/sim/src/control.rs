@@ -332,6 +332,25 @@ pub fn command(systems: &[Shared], line: &str) -> String {
             });
             format!("refusing family {f:#06x}")
         }
+        "slow" => {
+            let what = words.get(2).copied().unwrap_or_default();
+            let (f, op) = what
+                .split_once('/')
+                .map_or((what, None), |(f, o)| (f, Some(o)));
+            let Some(f) = family(f) else {
+                return format!("slow: no family {f}");
+            };
+            let op = match op.map(number) {
+                None => None,
+                Some(Some(o)) => Some(o),
+                Some(None) => return format!("slow: no operation {what}"),
+            };
+            let Some(ms) = words.get(3).and_then(|m| m.parse().ok()) else {
+                return "slow: how many milliseconds".into();
+            };
+            s.faults.slow.push((f, op, ms));
+            format!("answering family {f:#06x} after {ms} ms")
+        }
         "missing" => match words.get(2) {
             None | Some(&"none") => {
                 s.faults.missing.clear();
@@ -347,6 +366,7 @@ pub fn command(systems: &[Shared], line: &str) -> String {
             s.faults.refuse_panel = None;
             s.faults.refuse_family.clear();
             s.faults.missing.clear();
+            s.faults.slow.clear();
             "allowing".into()
         }
         "nonsense" => {

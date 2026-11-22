@@ -376,8 +376,9 @@ pub fn act(rq: &Rq<'_>, back: &str, action: &str, chosen: &[(String, u32)]) -> R
         "Delete partition" => format!("/confirm/partition-delete?ms={ms}&p={id}"),
         "Reference code history" => format!("/refcodes?ms={ms}&p={id}"),
         "Control panel functions" => format!("/partition/{ms}/{id}/panel"),
+        "Manage dumps" => "/dumps".into(),
         _ => {
-            let m = qmcmsg::message(Kind::Info, &qmcmsg::LATER_RELEASE, &[action]);
+            let m = qmcmsg::message(Kind::Info, &qmcmsg::NOT_IN_V1, &[action]);
             return rq.done(back, m);
         }
     };

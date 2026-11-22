@@ -298,9 +298,10 @@ fn act(rq: &Rq<'_>, action: &str, chosen: &[String]) -> Response {
         "Create partition" => format!("/partitions/create/step/1?ms={one}"),
         "Manage partition profiles" => format!("/partitions?ms={one}"),
         "Virtual resources" => format!("/server/{one}/virtual/ethernet"),
+        "Manage dumps" => "/dumps".into(),
         _ => {
-            // A system's profiles and its dumps come with later phases.
-            let m = qmcmsg::message(Kind::Info, &qmcmsg::LATER_RELEASE, &[action]);
+            // A QS/VS host has no system profiles: not in V1.
+            let m = qmcmsg::message(Kind::Info, &qmcmsg::NOT_IN_V1, &[action]);
             return rq.done("/servers", m);
         }
     };
