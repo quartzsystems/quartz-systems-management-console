@@ -205,7 +205,14 @@ fn detail(env: &Env, p: &problem::Problem, severity: problem::Severity) -> Vec<S
         line("Reference code", s.refcode.code.clone()),
         line("First seen", when(env, s.first_seen)),
         line("Last seen", when(env, s.last_seen)),
-        line("Seen", format!("{} times", s.count)),
+        line(
+            "Seen",
+            if s.count == 1 {
+                "once".into()
+            } else {
+                format!("{} times", s.count)
+            },
+        ),
         String::new(),
     ];
     out.extend(textwrap(&s.description));

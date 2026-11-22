@@ -64,6 +64,11 @@ pub fn mount(device: &str, write: bool) -> Result<Mounted, String> {
     }
     // The console's own disks are never a removable volume.
     let node = Path::new("/dev").join(device);
+    // Nothing is tried on a name no device has: the kernel's complaint
+    // would land on the panel.
+    if !node.exists() {
+        return Err(format!("{device} is not a device of this console."));
+    }
     let disk = loadsource::disks::disk_of(&node).unwrap_or_else(|| device.to_string());
     if loadsource::disks::load_sources(&release::LOAD_SOURCE)
         .iter()
