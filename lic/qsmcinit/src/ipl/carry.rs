@@ -4,7 +4,8 @@
 
 //! The console's folders beside `/data/state` across an update:
 //! `mgmt/` (the managed systems and their pins), `web/` (the web
-//! certificate) and `fetch/` (the download service's settings).
+//! certificate), `fetch/` (the download service's settings) and
+//! `plans/` (the system plans and their deployments).
 //! `update::state_copy` keeps `/data/state` alone; these are kept by the
 //! same rule, so a slot that rolls back has everything as it was: the
 //! pending slot's first IPL copies each, the slot that confirms drops the
@@ -19,7 +20,7 @@ use std::path::{Path, PathBuf};
 use update::state_copy::{Done, Ipl};
 
 /// The folders kept, under the data file system.
-pub const FOLDERS: &[&str] = &["mgmt", "web", "fetch"];
+pub const FOLDERS: &[&str] = &["mgmt", "web", "fetch", "plans"];
 
 /// Where the copies are, under the data file system.
 pub const COPIES: &str = "update/carry";

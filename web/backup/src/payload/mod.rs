@@ -16,9 +16,10 @@ pub const MOST_FILES: usize = 4096;
 pub const MOST_BYTES: usize = 7 * 1024 * 1024;
 /// The top folders a path may begin with: `/data/state`, `/data/web`,
 /// the managed-systems service's `/data/mgmt` and the download
-/// service's settings in `/data/fetch`. Downloaded images and dumps are
+/// service's settings in `/data/fetch`, and the system plans in
+/// `/data/plans` with their deployments. Downloaded images and dumps are
 /// never in a backup.
-pub const TOPS: [&str; 4] = ["state", "web", "mgmt", "fetch"];
+pub const TOPS: [&str; 5] = ["state", "web", "mgmt", "fetch", "plans"];
 
 /// What a backup says of itself.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
