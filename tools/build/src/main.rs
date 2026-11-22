@@ -74,6 +74,9 @@ enum Command {
     },
     /// Write the UEFI-bootable installation ISO.
     Iso,
+    /// Write the console's update image from the built slot UKIs:
+    /// `images/QSMC-<release>-update-<hash>.upd`, signed.
+    Update,
     /// Write and sign the artifact manifest.
     Manifest,
     /// Run the whole pipeline.
@@ -144,6 +147,7 @@ fn all(ctx: &Ctx, image: Image) -> Result<()> {
     kernel::uki(ctx, false)?;
     image::disk::disk(ctx, None)?;
     buildkit::image::iso::iso(ctx)?;
+    image::update::update(ctx)?;
     image::manifest::manifest(ctx, image)?;
     Ok(())
 }
@@ -190,6 +194,9 @@ fn main() -> Result<()> {
         Command::Loadsource { out, size } => image::writer::write(&ctx, &out, size)?,
         Command::Iso => {
             buildkit::image::iso::iso(&ctx)?;
+        }
+        Command::Update => {
+            image::update::update(&ctx)?;
         }
         Command::Manifest => {
             image::manifest::manifest(&ctx, image)?;

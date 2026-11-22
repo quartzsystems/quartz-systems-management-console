@@ -14,6 +14,7 @@
 mod catalogue;
 mod initramfs;
 pub mod kernel;
+pub mod keys;
 mod media;
 
 use std::path::Path;
@@ -27,13 +28,16 @@ use release::LOAD_SOURCE;
 pub const INIT: &str = "qsmcinit";
 
 /// The service packages, `/qsmc/bin/<name>` in a slot's initramfs.
-pub const SERVICES: [&str; 6] = [
+pub const SERVICES: [&str; 9] = [
     "qsmcstgd",
     "qsmclogd",
     "qsmcnetd",
     "qsmcwebd",
     "qsmcmgmtd",
     "qsmcschedd",
+    "qsmcprobd",
+    "qsmcupdd",
+    "qsmcfetchd",
 ];
 
 /// The local console, `/qsmc/bin/qsmccons` in a slot's initramfs.
@@ -78,6 +82,9 @@ const RELEASE_PACKAGES: &[Package] = &[
     package(SERVICES[3]),
     package(SERVICES[4]),
     package(SERVICES[5]),
+    package(SERVICES[6]),
+    package(SERVICES[7]),
+    package(SERVICES[8]),
     package(CONSOLE),
     package(INSTALLER),
 ];
@@ -215,6 +222,9 @@ mod tests {
                 "qsmcwebd",
                 "qsmcmgmtd",
                 "qsmcschedd",
+                "qsmcprobd",
+                "qsmcupdd",
+                "qsmcfetchd",
                 "qsmccons",
                 "qsmcinstall"
             ]

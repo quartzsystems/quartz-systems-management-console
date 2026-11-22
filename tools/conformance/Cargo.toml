@@ -38,6 +38,10 @@ qsi.workspace = true
 qsitrust.workspace = true
 srcdata.workspace = true
 rustls.workspace = true
+ed25519-dalek.workspace = true
+sha2.workspace = true
+stream.workspace = true
+updcat.workspace = true
 x509kit.workspace = true
 
 [lints]

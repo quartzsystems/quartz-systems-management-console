@@ -43,6 +43,27 @@ fn all(ctx: &Ctx, hooks: bool, kind: UkiKind) -> Result<Vec<Entry>> {
             trusted_keys(&key),
         ));
     } else {
+        // The keys an update image is verified by, as the media's are.
+        entries.push(Entry::dir("qsmc/keys"));
+        let key = buildkit::image::manifest::signing_key(ctx)?;
+        entries.push(Entry::file(
+            release::TRUSTED_KEYS.trim_start_matches('/'),
+            trusted_keys(&key),
+        ));
+        // Each product stream's keys, by which its index is used.
+        let image = if hooks {
+            super::Image::Test
+        } else {
+            super::Image::Release
+        };
+        let streams = fetchd::streams::KEYS_DIR.trim_start_matches('/');
+        entries.push(Entry::dir(streams));
+        for (name, text) in super::keys::files(ctx, image)? {
+            entries.push(Entry::file(
+                &format!("{streams}/{name}.pub"),
+                text.into_bytes(),
+            ));
+        }
         // The QS/VS catalogue a host's codes are explained from.
         entries.push(Entry::file(
             release::CATALOGUE.trim_start_matches('/'),

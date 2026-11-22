@@ -9,5 +9,6 @@
 
 pub mod disk;
 pub mod manifest;
+pub mod update;
 pub mod userland;
 pub mod writer;

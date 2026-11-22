@@ -15,6 +15,8 @@
 //! - [`suite`]: Phase 0's steps and the base system's suites.
 //! - [`web`]: a browser of the web interface, pinned to the certificate
 //!   it expects.
+//! - [`streams`]: the product streams' test keys and a stream server of
+//!   the harness's own.
 //!
 //! QS/VS's harness (`tools/conformance` there) cannot be taken from
 //! outside: it depends on most of QS/VS's own crates and reads `QSVS_`
@@ -26,6 +28,7 @@
 pub mod error;
 pub mod image;
 pub mod qemu;
+pub mod streams;
 pub mod suite;
 pub mod web;
 
