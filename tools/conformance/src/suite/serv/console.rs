@@ -78,6 +78,32 @@ fn install_console(b: &mut Browser) -> Result<(), String> {
     expect(b, &r, qmcmsg::INSTALL_BEGUN.id).map(|_| ())
 }
 
+/// Wait for the console to restart into its update, or say why the
+/// install ended without it, as its progress page says.
+fn restarts(guest: &mut Guest<'_>, b: &mut Browser) -> Result<(), String> {
+    let end = Instant::now() + Duration::from_secs(600);
+    loop {
+        if guest
+            .wait_exit(Instant::now() + Duration::from_secs(5))
+            .is_ok()
+        {
+            return Ok(());
+        }
+        if let Ok(a) = b.get("/qsmc/updates/code/console/progress") {
+            let t = a.text();
+            if t.contains("<td class=\"error\">") {
+                return Err(format!(
+                    "the install ended without a restart: {}",
+                    message_of(&t)
+                ));
+            }
+        }
+        if Instant::now() > end {
+            return Err("the console did not restart into its update in 600 s".into());
+        }
+    }
+}
+
 /// Wait for the guest to restart: its QEMU ends.
 fn ends(guest: &mut Guest<'_>, within: Duration) -> Result<(), String> {
     guest.wait_exit(Instant::now() + within).map(|_| ())
@@ -201,6 +227,14 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
     publish(&lab.streams, 3, &[qsmc_release(next)?]);
     super::check(&mut lab.c.browser)?;
     download(&mut lab.c.browser, CONSOLE_ROW, "qsmc", &file_name(next))?;
+    // A setting changed writes web.toml, at this release's schema 1.
+    let r = crate::suite::parts::post_form(
+        &mut lab.c.browser,
+        "/qsmc/console/locale",
+        ("apply", "Apply"),
+        &[("to", "45")],
+    )?;
+    crate::suite::web::follow(&mut lab.c.browser, &r)?;
     let ch = channel(&mut lab.c.guest)?;
     let web_before = ch.text("/data/state/web.toml")?;
     let users = ch.text("/data/state/webusers.toml")?;
@@ -225,13 +259,27 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
         streams,
     };
     c_confirmed(&mut lab.c.guest)?;
+    // Each service asks PID 1 every 5 s whether its slot confirmed.
+    let _ = lab.c.guest.seen(
+        &refcode::STATE_MIGRATED.tag(),
+        Instant::now() + Duration::from_secs(60),
+    );
     let log = lab.c.guest.log().to_string();
     let at = |t: &str| log.find(t);
     let (Some(confirmed), Some(migrated)) = (
         at(&refcode::UPDATE_CONFIRMED.tag()),
         at(&refcode::STATE_MIGRATED.tag()),
     ) else {
-        return Err("the serial log lacks the confirmation or the migration".into());
+        let web = channel(&mut lab.c.guest)
+            .and_then(|ch| ch.text("/data/state/web.toml"))
+            .unwrap_or_default();
+        let said = crate::suite::mgmt::logs(
+            &mut lab.c.guest,
+            &["web.toml", "migrat", "this release's form"],
+        );
+        return Err(format!(
+            "the serial log lacks the confirmation or the migration; web.toml:\n{web}\nthe logs:\n{said}"
+        ));
     };
     if migrated < confirmed {
         return Err("state was migrated before the slot confirmed".into());
@@ -632,9 +680,11 @@ pub fn power(run: &Run<'_>) -> Result<String, String> {
         } else {
             // During the pending slot's first IPL.
             let Console {
-                mut guest, machine, ..
+                mut guest,
+                machine,
+                mut browser,
             } = c;
-            ends(&mut guest, Duration::from_secs(600)).map_err(at)?;
+            restarts(&mut guest, &mut browser).map_err(at)?;
             drop(guest);
             let mut g = run.boot(&machine).map_err(at)?;
             g.expect("IPL slot B", Instant::now() + Duration::from_secs(300))
