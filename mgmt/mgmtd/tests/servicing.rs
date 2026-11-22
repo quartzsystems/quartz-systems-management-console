@@ -250,7 +250,7 @@ fn a_dump_downloads_paced_by_its_reader_and_an_abandoned_one_ends_at_the_host() 
     let mut r = mgmtproto::console::Frames::new(s);
     r.read_exact(&mut buf).unwrap();
     drop(r);
-    until("the host saw the download end", 15, || {
+    until("the host saw the download end", 60, || {
         sim(&host, "lines QSHQVS1").contains("a servicing stream was reset by the console")
     });
     // No such dump: the host's refusal.

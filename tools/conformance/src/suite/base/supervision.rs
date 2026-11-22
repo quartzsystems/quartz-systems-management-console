@@ -76,8 +76,17 @@ fn give_up(run: &Run<'_>) -> Result<String, String> {
     if fact_of(&status, fact::READY)? != "no" {
         return Err("the base says it is ready with a service stopped".into());
     }
+    // From Phase 6 a service that gives up is followed by the console's
+    // dump, whose codes come after its own.
     let reference = fact_of(&status, fact::REFERENCE)?;
-    if !reference.starts_with(refcode::SERVICE_STOPPED.code) {
+    let after = [
+        refcode::SERVICE_STOPPED.code,
+        refcode::DUMP_STARTED.code,
+        refcode::DUMP_WRITTEN.code,
+    ];
+    if !after.iter().any(|c| reference.starts_with(c))
+        || !guest.said(&refcode::SERVICE_STOPPED.tag())
+    {
         return Err(format!("the current reference code is `{reference}`"));
     }
     // The console goes on: heartbeats after the code.
