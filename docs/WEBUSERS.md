@@ -86,10 +86,17 @@ nothing:
 
 A scheduled operation runs in its owner's name, its role checked again
 when it runs (`docs/SCHED.md`). The later phases' routes need the task
-their pages will: System plans, Serviceable events for events and
+their pages will: Serviceable events for events and
 dumps, Code updates for updates. A route the role lacks answers Not authorized
 (403, `QMC9010`), and the attempt is audited. A change of the matrix
 applies at each user's next sign-on.
+
+Phase 7's pages (`docs/PLANS.md`) are the matrix's one row, System
+plans, which the prototype gives Administrator alone: the list,
+View, Export, Create plan, Import, the description and Save as
+template, Delete and its confirmation, every step of Deploy, its
+confirmation and the progress page with Cancel deployment. Deploy and
+Delete happen only on their confirmation's POST with its token.
 
 ## Sign-on
 
@@ -127,3 +134,8 @@ function, a terminal window opened or disconnected and its socket,
 Print Screen. Every request to a managed system also carries the
 signed-on user's ID, for the managed system's own log. The pairing
 password is in no line.
+
+Phase 7's are each audited with the user: a plan created from a
+managed system, imported, exported, described, saved as a template and
+deleted; a deployment begun, refused or cancelled; and each of its
+steps, by the scheduler, `from deployment of system plan <plan>`.

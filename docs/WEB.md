@@ -142,7 +142,10 @@ Golden corrections, each the only difference allowed:
 | `qsmc/event-detail.html` | a row `Managed system's number` after Problem number | the console numbers the fleet's problems; the system's own number is shown beside it (`docs/SERVICE.md`) |
 | `qsmc/dumps.html` | the form begins before the list, not after it; each box has the dump's key as its value; the buttons named (`download`, `copy`, `delete`) | as drawn, the boxes are outside the form and would not be sent |
 | `qsmc/code-updates.html` | the note under the hosts says what activating a QS/VS update does: the host restarts into its other slot and its running partitions are shut down first | the design's note (the management layer restarts, partitions keep running) is not what QS/VS does (`docs/UPDATES.md`) |
-| `qsmc/code-update-progress.html` | View log named (`log`) | the page tells which was pressed |
+| `qsmc/code-update-progress.html` | View log named (`log`); the Save system plan step's plan linked (`plan-view.html`) | the page tells which was pressed; the plan saved first is linked (`docs/PLANS.md`) |
+| `qsmc/plans.html` | Create plan and Import named (`create`, `import`) | one form holds both; the page tells which was pressed |
+| `qsmc/plan-view.html` | an Edit link (the description, Save as template) before Export; Export leads to the document (where it lands is `plans.html`), not `#` | the prototype has neither page; Export downloads the plan |
+| `qsmc/plan-deploy-progress.html` | Cancel deployment named (`stop`) | the page tells it from Refresh and from the wizard's Cancel |
 
 What a live page adds to its golden file's data, its golden test
 unchanged: Add scheduled operation lists `the console` last among the
@@ -150,6 +153,14 @@ targets, Install code update's alone (`docs/SCHED.md`), and Code
 updates' Schedule opens it with that operation and its row's target
 chosen; Code updates shows a download that stopped with its message
 (`QMC7204`, `QMC7205`) until it is asked for again.
+
+What System plans' live pages add, their golden tests unchanged: the
+validation (`plan-deploy-2.html`) has a row for every item of the plan
+where the prototype's lists eight, and a partition deployed to another
+host is a Warning for its new MAC addresses and serial number
+(`docs/PLANS.md`, "Against the prototype"); step 3 says what a
+partition's Warning is about the same way, `Warning (POOL2, C3)`. Step
+1 lists every QS/VS host, the plan's own last.
 
 ## Time
 

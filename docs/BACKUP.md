@@ -8,8 +8,8 @@ user whose role has the Console settings task.
 ## What a backup holds
 
 Every file under `/data/state` and `/data/web`, the managed systems'
-files under `/data/mgmt`, and the download service's settings under
-`/data/fetch`:
+files under `/data/mgmt`, the download service's settings under
+`/data/fetch`, and the system plans under `/data/plans`:
 
 | Folder | What |
 | --- | --- |
@@ -17,6 +17,7 @@ files under `/data/mgmt`, and the download service's settings under
 | `web/` | the web certificate and its key |
 | `mgmt/` | `systems.toml`, the managed systems as paired with their pins, and `mgmt.toml` (`docs/MGMT.md`) |
 | `fetch/` | `updates.toml`: the update server, and whether to check and download automatically (`docs/UPDATES.md`), which the web server asks the download service for (`backup`) |
+| `plans/` | every system plan (`<name>.qmcplan`), their index `plans.toml`, and each host's deployments (`deploy/<HOST>.toml`) (`docs/PLANS.md`); the scheduler's, root's, which the web server reads |
 
 The QSI key and the `mgmt/` files are the managed-systems service's
 user's alone: the web server cannot read them, and asks the service for
@@ -62,9 +63,12 @@ The payload is `QSMCPAY1`, the manifest as `key value` lines (`console`,
 `release`, `build`, `made` in Unix seconds) ended by an empty line,
 then each file: a big-endian `u16` path length, the path under `/data`
 (`state/host.toml`), a `u32` mode, a `u32` length and the bytes. A path
-is under `state/` or `web/`, at most four parts below it, each letters,
+is under one of the folders above, at most four parts below it, each letters,
 digits, `.`, `_` or `-` and never `.` or `..`; a payload is at most
-7 MiB, under the web server's upload limit, and 4096 files.
+7 MiB, under the web server's upload limit, and 4096 files. Plans are
+at most 1 MiB each: a console whose plans would pass the limit has its
+backup refused with the size, and an operator removes plans it no longer
+needs (automatic plans are ten a host at most).
 
 ## Making one
 

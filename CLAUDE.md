@@ -37,14 +37,14 @@ Two things already exist and are reused, never rewritten or copied:
 | 3 | The web server and Console Management pages | `docs/PHASE3.md` |
 | 4 | QSI and managed systems, proven on a QS/VS host; the browser terminal | `docs/PHASE4.md` |
 | 5 | Partitions, profiles and virtual resources | `docs/PHASE5.md` |
-| **6 (current)** | Service management and updates | `docs/PHASE6.md` |
-| 7 | System plans | |
+| 6 | Service management and updates | `docs/PHASE6.md` |
+| **7 (current)** | System plans | `docs/PHASE7.md` |
 | 8 | Release engineering and hardening | |
 
 Work that is not done is listed in the current phase's record,
-`docs/PHASE6.md`. Code and documents mark it `BLOCKED(phase6): reason`
+`docs/PHASE7.md`. Code and documents mark it `BLOCKED(phase7): reason`
 (one line) or `NEEDS-CODY` (Cody's hardware or sign-off); an earlier
-phase's `BLOCKED(phase0)` to `BLOCKED(phase5)` stays as it was written.
+phase's `BLOCKED(phase0)` to `BLOCKED(phase6)` stays as it was written.
 No other marker form.
 
 ## Ground rules
@@ -86,7 +86,7 @@ No other marker form.
   value.
 - No IBM text, product names or marks anywhere. The names in use are
   QS/MC, QS/VS and QS/400.
-- Anything not done is listed in the current phase's record (`docs/PHASE6.md`).
+- Anything not done is listed in the current phase's record (`docs/PHASE7.md`).
 
 ## Locked decisions
 
@@ -125,6 +125,11 @@ See `docs/ARCHITECTURE.md`. Short form:
   update to a host over QSI. Hosts fetch nothing. It updates itself
   with `base/update` into its other slot, back on the old one with its
   state put back when the new one does not confirm.
+- **System plans.** A host's configuration as one versioned TOML
+  document in `/data/plans/`, written by the scheduler alone; deployed
+  through validation as a job of the scheduler, making only what is
+  missing and never deleting, changing or taking what it did not make
+  (`docs/PLANS.md`).
 - **Outbound traffic.** DHCP, DNS, NTP, QSI to managed systems, HTTPS to
   the configured product stream (`fetchd` alone, unprivileged, holding
   no key), and the BMC of a machine it is asked to power on. Nothing
@@ -173,10 +178,11 @@ tools/          host tools
     src/web/        a browser of the web interface, pinned to the certificate it expects; its forms as a browser sends them; an upload streamed
     src/suite/      Phase 0's steps; base/: Phase 1's suites; install/: Phase 2's, the installer and the local console; web/: Phase 3's; mgmt/: Phase 4's;
                     parts/: Phase 5's, partitions, profiles, virtual resources, the wizard, groups, schedules, the upload, roles, an older host, audit;
-                    serv/: Phase 6's, events, the console's problems, dumps, streams, a host's update, the console's own update, refusals, power pulls, option 8, its dump, schedules, roles, audit
+                    serv/: Phase 6's, events, the console's problems, dumps, streams, a host's update, the console's own update, refusals, power pulls, option 8, its dump, schedules, roles, audit;
+                    plans/: Phase 7's, the pages, capture, validation, deployment, restarts, import, the plan before an update, roles and audit, backup, a real host
     src/streams/    a stream server of the harness's own: signed indexes and a catalog under test keys, images, notes; slow, cut, wrong or absent
     golden/         every installer and local console screen, as text
-  fuzz/           qsmcfuzz over QS/400's fuzzer: a backup's reader, the certificate import, what mgmtd does with a peer's messages and the servicing families', a stream's index, the update image
+  fuzz/           qsmcfuzz over QS/400's fuzzer: a backup's reader, the certificate import, what mgmtd does with a peer's messages and the servicing families', a stream's index, the update image, a system plan
 lic/            PID 1, release, the product's binaries
   qsmcinit/       PID 1
     src/ipl/        the IPL in order: mounts, the record, storage and /data (the panel for the unit to keep), a restore, a panic's records, clock, seed, the state kept or put back across a trial, state and inventory, identity; the media's hand-off to the installer
@@ -206,7 +212,8 @@ web/            the web interface (docs/WEB.md)
   pages/          every page from its view, a module and its routes each; the App: sessions, the task of each route, audit;
                   systems/ the managed systems' pages, refcodes/ explanations and the history, terminal/ the window, its socket, the control panel,
                   vres/ a host's virtual resources and the upload, partitions/ the list, properties, activate, shut down, the wizard, profiles,
-                  groups.rs custom groups, schedule.rs scheduled operations, service/ events and dumps, updates/ Code updates, progress, Updates
+                  groups.rs custom groups, schedule.rs scheduled operations, service/ events and dumps, updates/ Code updates, progress, Updates,
+                  plans/ System plans, a plan's view and its edit, the deployment's wizard, confirmation and progress
   backup/         the backup file: the payload PID 1 restores, sealed under a passphrase (docs/BACKUP.md)
 mgmt/           managed systems (docs/MGMT.md)
   proto/          mgmtproto: what is kept of a system, the requests on mgmtd's socket, a terminal window's connection
@@ -214,10 +221,14 @@ mgmt/           managed systems (docs/MGMT.md)
 upd/            code updates (docs/UPDATES.md)
   fetchd/         the download service: the three streams, their keys, checks, downloads verified and resumed, its settings, its socket
 sched/          scheduled operations (docs/SCHED.md)
-  schedd/         the scheduler: schedules.toml, when each is due, the runs in their owners' names, its socket; update.rs an install's checks and steps, shared with the pages
+  schedd/         the scheduler: schedules.toml, when each is due, the runs in their owners' names, its socket; update.rs an install's checks and steps, shared with the pages;
+                  plans/ the system plans' files it alone writes, and deployments run as jobs kept on disk
+plan/           system plans (docs/PLANS.md)
+  model/          crate plan: doc/ the document, its bounds, its reader and writer; view/ a host read through mgmtd; capture, compare;
+                  validate/ the rules table and every item against a host; deploy the steps and their requests; index, job
 svc/            the local console
   console/        qsmccons over base/panels: the sessions, the main menu, status, network, disk units, the web interface (option 4), service functions (option 8), the one panel for the unit to keep
-docs/           ARCHITECTURE, PHASE0-6, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, MGMT, TERMINAL, SIM, PARTITIONS, VRES, SCHED, SERVICE, UPDATES, OPEN_QUESTIONS
+docs/           ARCHITECTURE, PHASE0-7, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, MGMT, TERMINAL, SIM, PARTITIONS, VRES, SCHED, SERVICE, UPDATES, PLANS, OPEN_QUESTIONS
 design/         qsmc-prototype/: the web UI's approved design, every page a golden rendering (its README is the handoff)
 ```
 
@@ -226,9 +237,11 @@ Category folders are made as phases need them. The full set: `tools/`
 (the server, sessions, templates, the terminal relay, static files),
 `mgmt/` (managed systems: the QSI client's use, pairing, events, what
 is kept about each system), `sched/` (scheduled operations), `upd/`
-(code updates: the download service), `svc/` (the local console).
+(code updates: the download service), `svc/` (the local console),
+`plan/` (system plans: the document and its rules).
 Phases 0 and 1 made `tools/` and `lic/`, Phase 2 `svc/`, Phase 3
-`web/`, Phase 4 `mgmt/`, Phase 5 `sched/`, Phase 6 `upd/`.
+`web/`, Phase 4 `mgmt/`, Phase 5 `sched/`, Phase 6 `upd/`, Phase 7
+`plan/`.
 
 ## Commands
 
@@ -241,8 +254,9 @@ cargo run -p build -- all             fetch, kernel, userland, initramfs, uki, d
 cargo run -p build -- --test-image all   the same with the test hooks, under test-image/ in the target
 QSMC_RELEASE=V1R0M1 QSMC_NEXT_SCHEMA=1 cargo run -p build -- --test-image --variant next all   the update Phase 6's suites install
 QSMC_RELEASE=V1R0M1 QSMC_TEST_WEBD_BROKEN=1 cargo run -p build -- --test-image --variant broken all   the update that rolls back
-cargo run -p build -- test            Phase 0's steps on the release image, then Phases 1 to 6's suites on the test image
+cargo run -p build -- test            Phase 0's steps on the release image, then Phases 1 to 7's suites on the test image
 cargo run -p build -- test --suite mgmt-host   suite 10 on a real QS/VS host: QSMC_QSVS_DISK names its installed test disk
+cargo run -p build -- test --suite plans-real-host   Phase 7's suite 12 on the same disk: a plan of a real host deployed back to it
 cargo run -p sim --bin qsmcsim        the prototype's managed systems on the network, told what to do on standard input
 cargo run -p build -- fuzz            the fuzzer with coverage counters, every target 60 s (--target NAME, --secs N)
 cargo run -p build -- test --suite <name>   one step or suite; `list` lists them
@@ -304,6 +318,12 @@ guest's second serial port.
 - `docs/PHASE6.md`: service management and updates: what exists, how
   to run it, hashes, the pages live, the acceptance table with
   evidence, what is not done and what needs a person.
+- `docs/PHASE7.md`: system plans: what exists, how to run it, hashes,
+  the pages live out of the prototype's whole count, the acceptance
+  table with evidence, what is not done and what needs a person.
+- `docs/PLANS.md`: the plan document field by field, capture, the
+  validation table (held to the code by a test), deployment's steps and
+  rules, what a plan never holds or does.
 - `docs/SERVICE.md`: serviceable events and dumps as the console shows
   them, its own problem table and its dump.
 - `docs/UPDATES.md`: the streams, their trust, `fetchd`, a host's

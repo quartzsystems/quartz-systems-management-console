@@ -706,3 +706,71 @@ for up to 90 s before it says `QMC7204`. A browser waits; the harness's
 does not, and posts it from a thread of its own (`serv-streams`). A
 check begun in the background with its result on the page, as a
 download is, would answer at once.
+
+## 45. The pages of system plans built without a design (Phase 7)
+
+As item 37, for Phase 7. The prototype has no page for these; each is
+the shared pattern closest to it, with no new style:
+
+| Page | Route | Pattern | Fields |
+| --- | --- | --- | --- |
+| A plan's description and Save as template | `/plan/<name>/edit`, linked from View as Edit | properties | the description; the template's name |
+| Delete a plan | `/confirm/plan-delete?p=` | the shared confirmation | the plan, its description, managed system and date |
+| Deploy a plan | `/confirm/plan-deploy?p=&t=&c=&act=` | the shared confirmation | the plan, the managed system, the partitions to create, whether they are activated |
+
+For the design to draw, and to say whether Edit belongs on View or in
+the list's actions.
+
+## 46. Validation of a partition on another host (design)
+
+The prototype's step 2 shows `QSDEV01` and `QSTEST01` OK when the plan
+of `QSHQVS1` is deployed to `QSHQVS2`. Phase 7's decisions make a
+partition whose MAC addresses and serial number will be new a Warning,
+and the console says so (`docs/PLANS.md`, "Against the prototype").
+Step 3 still ticks such a partition, as its only Warning is its
+identity. The prototype's table also lists eight items where the
+console lists every item of the plan. For the design: the rows as the
+console has them, or the identity said elsewhere (on the managed
+system's row, or in the confirmation).
+
+## 47. Every prototype file not live (Phase 7)
+
+86 of the prototype's 90 files are live. The four that are not are
+Navigator for QS/400's pages that QS/MC links to and that the handoff
+lists as reference only (`nav/active-jobs.html`,
+`nav/end-job-confirm.html`, `nav/job-props-general.html`,
+`nav/ptfs.html`): they are QS/400's own pages, served by a partition's
+Navigator, not by the console. Updates' partition rows link to
+`ptfs.html`'s place on the partition (`docs/UPDATES.md`). Nothing waits
+on this repository.
+
+## 48. What V1 answers with a message, gathered (Phase 7)
+
+Items 19, 32 and 38 and this phase's, in one list: each choice the
+prototype draws that V1 answers with a `QMC` message, the page drawn as
+the design has it. To decide, for each, whether it joins the locked
+decisions in a later release or the design drops it.
+
+| Where | Choice | Answer |
+| --- | --- | --- |
+| Backup and restore | Remote host (SFTP); Schedule...; Reference code and event history; Virtual optical media library index; unchecking Console data | `QMC8405`, `QMC8700` (item 19) |
+| Date and time | Act as NTP server on the private management network | `QMC8700` (item 19) |
+| Network settings | DHCP for service interfaces; SSH to console | `QMC8700` (item 19) |
+| Language and locale | a language other than English | `QMC8700` (item 19) |
+| A managed system's General tab | its name | `QMC1008`: the system's own (item 32) |
+| A managed system's Power-on parameters | the fields QSI has none for | left as the host says them (item 30) |
+| Servers, a managed system | Power on | `QMC2201` (item 29) |
+| Servers | Manage system profiles | `QMC8700`: a QS/VS host has none (Phase 7; it said `QMC9030` before) |
+| The terminal window's toolbar | Copy, Paste, Keypad, Keyboard Map | `QMC8700`: the script has the keyboard and keypad (item 32) |
+| Virtual optical | Fetch an image from a URL | `QMC2405` (item 38) |
+| Virtual tape | Add pass-through drive | `QMC2435`: a drive is released at the host (item 38) |
+| A partition's settings | Open firmware; a physical console adapter; the console's serial adapters changed | `QMC3123`, `QMC3124`, `QMC3125` (item 38) |
+| Add scheduled operation | Power on; Backup console data | `QMC2201`, `QMC3407` (item 38) |
+| Virtual storage | Extend of a QS/VS pool | the host's own refusal, `QSI1616` (item 38) |
+| Any page | a request the host's hello does not offer | `QMC1114` (item 38) |
+| Deploy system plan, step 1 | Replace matching partitions | `QMC6108`: a deployment never deletes or changes what exists |
+| System plans | Create plan from a standalone QS/400 | `QMC6105`: it has no partitions to plan |
+
+The partitions' and Servers' Manage dumps, which items 32 and 38 listed
+as `QMC9030`, lead to Manage dumps from Phase 7. No function of the
+tree says it arrives in a later release (`QMC9030`) any more.

@@ -76,3 +76,29 @@ is on Code updates.
 Power on answers as its page does (`QMC2201`). Backup console data
 answers `QMC3407`: a backup leaves the console through a browser, under
 a passphrase typed there.
+
+## System plans
+
+From Phase 7 the scheduler also owns `/data/plans/` (`docs/PLANS.md`),
+and nothing else writes it: the web server asks it on its socket to
+list, read, capture, import, describe, save as template and delete a
+plan, to validate one against a host, to deploy one, and for a
+deployment's job and its Cancel. A capture and a validation read the
+host through `mgmtd` in the signed-on user's name; each request is
+audited as `audit: user <user> from the web interface: <what>: <outcome>`.
+
+A deployment is a job of the scheduler, one at a time a host, begun
+only by the confirmation's POST. It is validated again then, and its
+steps run on a thread of their own through `mgmtd` in the deploying
+user's name, each audited as `audit: user <user> from deployment of
+system plan <plan>: <step> on <host>: <outcome>`. The job and its steps
+are written to `/data/plans/deploy/<HOST>.toml` before and after each
+step; Cancel and a step the host refuses stop it before its next. When
+the scheduler starts, a job left running is marked stopped and its step
+interrupted.
+
+An install of a host's code update (a page's or a scheduled one) saves
+a plan of the host first, once its image verified on the host: from a
+schedule the scheduler saves it itself, from a page the web server asks
+it to (`save_before`). The install stops when no plan could be saved
+(`QMC7013`).

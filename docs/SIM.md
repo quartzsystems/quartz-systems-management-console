@@ -16,6 +16,7 @@ The prototype's data (`design/qsmc-prototype/README.md` and its pages):
 | --- | --- |
 | `QSHQVS1` | QS/VS host, `9Q10-V1`, serial `10-9F11A2`, 8 cores (3.50 available), 131,072 MiB (40,960 available), memory block 256 MiB, MAC prefix `02:51:53`; partitions `QSDEV01` (1, running, shared uncapped), `QSTEST01` (2, not activated, `A6005008`), `QSPROD01` (3, running, dedicated); everything below |
 | `QSHQ400` | standalone, `9Q04-M2`, serial `10-7A2B9C` |
+| `QSHQVS2` | QS/VS host, `9Q10-V1`, serial `10-7C22B4`, the target of the prototype's plan deployment as its step 2 finds it: 8 cores and 131,072 MiB all available, MAC prefix `02:51:54`; `POOL1` raid6 on six SSDs at `C2` (5,400 GiB, none allocated) holding the media library with the installation image; no disk where `POOL2`'s was (`T2-L1`), `sdi` free, `sdj` another host's; slot `C3` empty, `C1`'s ports free, `C4-T1` the management interface; no switch, no named processor pool, no partitions. Its location codes carry its own serial (`U9Q10.V1.7C22B4-P1-…`); a partition made on it has a serial number of its own (`sim::system::partition::serial_of`) |
 | `QSBR01VS1` to `QSBR25VS1` | the branch hosts of the paged lists: their available processors, memory, serial numbers and partition counts as the prototype has them, each partition with one profile `NORMAL`; 4, 11, 18 and 25 starting (Standby); 6, 13 and 20 with `B6000100`, which the suites take down (No connection) |
 
 `QSHQVS1`'s partitions and profiles (the partition pages,
@@ -154,6 +155,7 @@ short, reset or its connection gone: `QSI0702`, nothing kept.
 | `down S`, `up S` | a machine off (no answer at all) and on |
 | `refuse-power S ID TEXT`, `refuse-panel S ID TEXT` | refuse power or panel requests with that message |
 | `refuse-family S FAMILY[/OP] ID TEXT` | refuse a family's requests (`vres`, `partition`, `profiles`, … or its number), or one operation of it (`vres/0x0011`), with that message |
+| `slow S FAMILY[/OP] MS` | answer a family's requests, or one operation's, only after so many milliseconds: a deployment's step that takes time (`allow` ends it) |
 | `missing S NAME`, `missing S none` | an activation finds `NAME` missing: a virtual disk `POOL/NAME`, a switch, a location code, an image or volume |
 | `allow S` | refuse nothing, nothing missing |
 | `nonsense S`, `oversize S` | after the hello, bytes that are no frame; a frame past every limit |
@@ -190,3 +192,9 @@ The conformance suites (`tools/conformance/src/suite/mgmt`) run the
 same systems in the harness's process. `cargo test -p sim` holds each
 family against the fixture, the activation's codes and the upload
 sink over `qsisess`'s loopback.
+
+`sim::direct::Direct` answers the managed-systems service's calls a
+caller of `mgmtd` makes (`systems`, `system`, `partition`, `ask`) from
+simulated systems in the same process, with no session between: the
+unit tests of system plans (`plan/model`) and of the scheduler's
+deployments (`sched/schedd/tests/deploy.rs`) run against it.

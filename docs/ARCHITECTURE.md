@@ -108,6 +108,13 @@ A sentence on each:
 - **Scheduled operations.** A service of its own runs them in their
   owners' names, their roles checked when they run, and never runs a
   missed one late (`docs/SCHED.md`).
+- **System plans.** A plan is one versioned text document of a host's
+  configuration, built only from what QSI's host family reads and
+  writes, owned and written by the scheduler alone in `/data/plans/`;
+  a deployment validates every item against the host as it is, makes
+  only what is missing, never deletes, changes or takes what it did not
+  make, and keeps its job on disk so a restart loses none of it
+  (`docs/PLANS.md`).
 
 ## The two-pin rule
 

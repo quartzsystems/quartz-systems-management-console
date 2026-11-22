@@ -93,11 +93,13 @@ checks (`schedd::update::host_plan`, `install_host`):
 2. The confirmation lists the running partitions it shuts down, each
    given the seconds typed; without that leave an install while
    partitions run is refused (`QMC7004`).
-3. The plan saved before an install is Phase 7's: the step is shown
-   skipped (`QMC7013`).
-4. The image is streamed to the host over QSI's `update` family
+3. The image is streamed to the host over QSI's `update` family
    (`Stage`), QSI's credit the back-pressure, nothing held whole. The
    host verifies it against its own keys (`Staged`, `Verified`).
+4. A system plan of the host is saved (`docs/PLANS.md`), by the
+   scheduler, which owns the plans: named for the host and the date,
+   described by the update, its automatic plans kept to ten. The
+   install stops when none can be saved (`QMC7013`).
 5. It is installed into the host's other slot (`Install`,
    `Installing`, `Installed`) without disturbing its partitions.
 6. The partitions are shut down, and the host activated (`Activate`):
@@ -106,9 +108,10 @@ checks (`schedd::update::host_plan`, `install_host`):
    the host's reason: `QMC7012`).
 
 The progress page (`/qsmc/updates/code/<host>/progress`) has the
-steps Download, Transfer, Verify signature, Save system plan
-(skipped), Install on host, Activate, Restart and reconnect, Confirm;
-it reloads by Refresh, and View log shows the host's update log.
+steps Download, Transfer, Verify signature, Save system plan (done,
+the plan linked), Install on host, Activate, Restart and reconnect,
+Confirm; it reloads by Refresh, and View log shows the host's update log.
+The console's own install has no plan step: a plan is of a host.
 
 ## The console's own update
 
@@ -132,7 +135,7 @@ key, which the image trusts as `/qsmc/keys/system.pub`.
    that leaves nothing pending.
 4. **Activated** by a restart after its confirmation page. Before the
    pending slot's first IPL PID 1 keeps a copy of the state
-   (`update::state_copy`, `C3007065`), and of `mgmt`, `web` and `fetch`
+   (`update::state_copy`, `C3007065`), and of `mgmt`, `web`, `fetch` and `plans`
    beside it (`lic/qsmcinit/src/ipl/carry.rs`).
 5. **Confirmed** when the web server answers (`C3001095`, `C3007060`).
    A slot that does not confirm within 15 minutes is followed by the
