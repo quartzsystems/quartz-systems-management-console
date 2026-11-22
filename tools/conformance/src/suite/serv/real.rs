@@ -126,6 +126,21 @@ pub fn host(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         || Ok(page(b, &v("storage"))?.contains(POOL)),
     )?;
     // Its disk pulled: every transfer to it fails from now on.
+    // The host's events before: its own of the IPL (the IOMMU's, under
+    // QEMU) are not the pulled disk's.
+    let numbers = |t: &str| -> Vec<u64> {
+        t.split("<tr")
+            .filter_map(|r| {
+                r.split("/qsmc/event/")
+                    .nth(1)?
+                    .split('"')
+                    .next()?
+                    .parse()
+                    .ok()
+            })
+            .collect()
+    };
+    let before = numbers(&page(b, &format!("/qsmc/events?s=All&ms={name}&rows=100"))?);
     host.monitor("drive_del hd1")?;
     let mut n = 0;
     until(
@@ -133,17 +148,9 @@ pub fn host(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         Duration::from_mins(5),
         || {
             let t = page(b, &format!("/qsmc/events?ms={name}&rows=100"))?;
-            n = t
-                .split("<tr")
-                .filter(|r| r.contains("/qsmc/event/"))
-                .find_map(|r| {
-                    r.split("/qsmc/event/")
-                        .nth(1)?
-                        .split('"')
-                        .next()?
-                        .parse()
-                        .ok()
-                })
+            n = numbers(&t)
+                .into_iter()
+                .find(|x| !before.contains(x))
                 .unwrap_or(0);
             Ok(n > 0)
         },
@@ -152,7 +159,7 @@ pub fn host(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     if !detail.contains("Disk unit") && !detail.contains("Storage pool") {
         return Err(format!(
             "event {n} names no unit or pool: {}",
-            message_of(&detail)
+            crate::suite::parts::plain(&detail)
         ));
     }
     // A note and a close from the console, in the host's own log.
@@ -219,8 +226,16 @@ pub fn standalone(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         },
     )?;
     let line = row(&fleet, &name).to_string();
-    if line.contains("(not known)") {
-        return Err(format!("{name}'s fix level is not known: {line}"));
+    // Its level as the system said it: a fresh image has no cumulative
+    // package installed.
+    let shown = line
+        .split("<td class=\"mono\">")
+        .nth(2)
+        .and_then(|c| c.split('<').next())
+        .unwrap_or_default()
+        .to_string();
+    if shown.is_empty() || shown == "(not known)" {
+        return Err(format!("{name}'s fix level was not asked: {line}"));
     }
     drop(streams);
     c.guest.kill();
@@ -228,7 +243,7 @@ pub fn standalone(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     Ok(format!(
         "standalone QS/400 {name} ({release}) paired; {problems} of its problems listed on \
          Serviceable events, {listed} of its dumps on Manage dumps with its dump space; on \
-         Updates its fix level beside the qs400 catalog's latest, {}",
+         Updates its fix level, {shown}, beside the qs400 catalog's latest, {}",
         super::CUM
     ))
 }
