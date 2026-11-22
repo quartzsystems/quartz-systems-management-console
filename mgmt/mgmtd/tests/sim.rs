@@ -44,6 +44,7 @@ fn service(name: &str) -> (Service, PathBuf) {
         history_dir: Some(d.join("mgmt")),
         log: Box::new(|l| eprintln!("mgmtd: {l}")),
         post: Box::new(|_, _, _| {}),
+        updates_dir: std::env::temp_dir(),
     });
     (svc, d)
 }

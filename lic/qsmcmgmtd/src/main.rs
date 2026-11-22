@@ -120,6 +120,7 @@ fn run() -> Result<(), String> {
         history_dir: Some(mgmt.join("refcodes")),
         log: Box::new(|l| eprintln!("{l}")),
         post: Box::new(post),
+        updates_dir: release::UPDATES_DIR.into(),
     });
     let s2 = svc.clone();
     std::thread::spawn(move || mgmtd::service::consoles::serve(&consoles, &s2));

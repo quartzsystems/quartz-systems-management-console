@@ -22,10 +22,11 @@ use crate::words::qmc;
 /// How long a host may take to open a stage's stream.
 const STAGE: Duration = Duration::from_secs(60);
 
-/// The folder a downloaded host update is in, the download service's.
-fn downloaded(path: &str) -> Option<&Path> {
+/// `path` when it is a downloaded host update in the download
+/// service's folder `updates`.
+fn downloaded<'a>(path: &'a str, updates: &Path) -> Option<&'a Path> {
     let p = Path::new(path);
-    let dir = Path::new(release::UPDATES_DIR).join("qsvs");
+    let dir = updates.join("qsvs");
     let name = p.file_name()?.to_str()?;
     let plain = !name.starts_with('.')
         && name
@@ -91,7 +92,8 @@ impl Inner {
         if let Some(what) = mgmtproto::ask::lacks(e.kept().caps, caps::UPDATE) {
             return Err(qmc(&qmcmsg::LACKS, &[&e.name, what]));
         }
-        let p = downloaded(path).ok_or_else(|| qmc(&qmcmsg::NOT_DOWNLOADED, &[path]))?;
+        let p = downloaded(path, &self.updates_dir)
+            .ok_or_else(|| qmc(&qmcmsg::NOT_DOWNLOADED, &[path]))?;
         let file = std::fs::File::open(p).map_err(|_| qmc(&qmcmsg::NOT_DOWNLOADED, &[path]))?;
         let bytes = file
             .metadata()
@@ -129,7 +131,8 @@ impl Inner {
 mod tests {
     #[test]
     fn only_a_downloaded_host_image_is_staged() {
-        assert!(super::downloaded("/data/updates/qsvs/QSVS-V1R0M1-update-ab.upd").is_some());
+        let u = std::path::Path::new("/data/updates");
+        assert!(super::downloaded("/data/updates/qsvs/QSVS-V1R0M1-update-ab.upd", u).is_some());
         for bad in [
             "/data/updates/qsmc/QSMC-V1R0M1-update-ab.upd",
             "/data/updates/qsvs/../../state/identity.key",
@@ -137,7 +140,7 @@ mod tests {
             "/data/state/identity.key",
             "QSVS-V1R0M1-update-ab.upd",
         ] {
-            assert!(super::downloaded(bad).is_none(), "{bad}");
+            assert!(super::downloaded(bad, u).is_none(), "{bad}");
         }
     }
 }

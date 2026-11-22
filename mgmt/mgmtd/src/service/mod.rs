@@ -70,6 +70,9 @@ pub struct Config {
     pub log: Box<dyn Fn(&str) + Send + Sync>,
     /// Post one of the console's own codes: the code and its text.
     pub post: Poster,
+    /// The download service's folder, which a host's update image is
+    /// brought from (`release::UPDATES_DIR`).
+    pub updates_dir: PathBuf,
 }
 
 /// What every thread shares.
@@ -89,6 +92,8 @@ pub struct Inner {
     setups: (Mutex<u32>, Condvar),
     log: Box<dyn Fn(&str) + Send + Sync>,
     post: Poster,
+    /// The download service's folder.
+    pub updates_dir: PathBuf,
     windows: AtomicU32,
     next_window: AtomicU64,
 }
@@ -122,6 +127,7 @@ impl Inner {
             setups: (Mutex::new(0), Condvar::new()),
             log: Box::new(|_| {}),
             post: Box::new(|_, _, _| {}),
+            updates_dir: PathBuf::from(release::UPDATES_DIR),
             windows: AtomicU32::new(0),
             next_window: AtomicU64::new(1),
         })
@@ -276,6 +282,7 @@ impl Service {
             setups: (Mutex::new(0), Condvar::new()),
             log: c.log,
             post: c.post,
+            updates_dir: c.updates_dir,
             windows: AtomicU32::new(0),
             next_window: AtomicU64::new(1),
         });

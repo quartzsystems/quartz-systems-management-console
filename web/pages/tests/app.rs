@@ -80,6 +80,7 @@ impl Console for Fixed {
             history_dir: None,
             log: Box::new(|_| {}),
             post: Box::new(|_, _, _| {}),
+            updates_dir: std::env::temp_dir(),
         });
         Box::new(webpages::app::mgmt::Local(svc))
     }
