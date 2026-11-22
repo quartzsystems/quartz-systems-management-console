@@ -233,10 +233,12 @@ fn rows(rq: &Rq<'_>, messages: &mut Vec<Message>) -> Vec<Row> {
                 ),
                 name: k.name.clone(),
                 kind: "QS/400 (standalone)".into(),
-                current: if current.is_empty() {
-                    "(not known)".into()
-                } else {
-                    current.clone()
+                // A system that answered with no level has no cumulative
+                // package installed; one not asked is not known.
+                current: match (&k.fix_level, current.is_empty()) {
+                    (_, false) => current.clone(),
+                    (Some(_), true) => "(none installed)".into(),
+                    (None, true) => "(not known)".into(),
                 },
                 latest: newest.clone().unwrap_or_else(|| "(not known)".into()),
                 status: match &newest {
