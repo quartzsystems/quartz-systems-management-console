@@ -437,3 +437,15 @@ fn a_deployment_s_steps_are_in_order_and_skip_what_is_in_error() {
     assert!(crate::deploy::steps(&plan, &again, &[1, 2, 3], false).is_empty());
     assert!(again.decisions.same_host);
 }
+
+#[test]
+fn a_real_machine_s_model_and_serial_are_its_own_words() {
+    let mut d = hosts();
+    let mut p = baseline(&mut d);
+    p.host.model = "Standard PC (Q35 + ICH9, 2009)".into();
+    p.pools[0].units[0].serial = "QEMU HARDDISK 0001".into();
+    let text = crate::doc::text::write(&p).unwrap();
+    assert_eq!(crate::doc::text::read(text.as_bytes()).unwrap(), p);
+    p.host.model = "a\u{7}b".into();
+    assert!(crate::doc::text::write(&p).is_err());
+}

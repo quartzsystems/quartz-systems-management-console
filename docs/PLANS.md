@@ -50,7 +50,9 @@ named `<name>.qmcplan`.
 | `[[partition.profile]]` | every profile whole: `name`; `[processors]` `mode` (`dedicated`, `shared`), `minimum`, `desired`, `maximum`, and shared `minimum_units`, `desired_units`, `maximum_units`, `sharing` (`capped`, `uncapped`), `weight`, `pool`; `[memory]` `minimum_mib`, `desired_mib`, `maximum_mib`; `[boot]` `source` (`A`, `B`, `recorded`, `D`), `ipl_type` (`unattended`, `attended`), `console` (`serial`, `local`, `partition`); `scsi` (`slot`, `luns`: `lun`, `backing` `POOL/NAME`, `serial`), `ethernet` (`slot`, `switch`, `vlan`, `tagged`, `mac`, `required`), `optical` and `tape` (`slot`, `media`: an image, a volume, or `@` and a tape drive's location code), `physical_io` (`location`, `required`) |
 
 Bounds: names are 1 to 64 printable characters without spaces (QSI's),
-location codes and backings 1 to 256; at most 256 of any list QSI
+location codes and backings 1 to 256 (a host's type and model and a
+unit's serial number are the machine's own words: at most 64 bytes, spaces
+allowed, no control characters); at most 256 of any list QSI
 bounds, 64 storage pools and processor pools, 4,096 virtual disks,
 volumes and images, 999 partitions; VLANs 1 to 4094; slots 0 to 1023,
 each once a profile; minimum, desired and maximum in that order; a

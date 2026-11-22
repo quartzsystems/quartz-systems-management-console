@@ -156,13 +156,20 @@ pub fn plan(p: &Plan) -> Result<(), String> {
         return Err("an automatic plan names its managed system".into());
     }
     let h = &p.host;
+    if !h.name.is_empty() {
+        name("the host's name", &h.name)?;
+    }
+    // A machine's type, model and serial are its firmware's words, spaces
+    // and all (`Standard PC (Q35 + ICH9, 2009)`).
     for (what, v) in [
-        ("the host's name", &h.name),
         ("the host's type and model", &h.model),
         ("the host's serial number", &h.serial),
     ] {
-        if !v.is_empty() {
-            name(what, v)?;
+        if v.len() > MAX_NAME || v.chars().any(char::is_control) {
+            return Err(format!(
+                "{what} \"{}\": at most {MAX_NAME} bytes and no control characters",
+                shown(v)
+            ));
         }
     }
     within("the host's cores", h.cores, 1, MAX_CORES)?;
@@ -198,8 +205,11 @@ pub fn plan(p: &Plan) -> Result<(), String> {
             if !u.disk.is_empty() {
                 name("a unit's disk", &u.disk)?;
             }
-            if !u.serial.is_empty() {
-                name("a unit's serial number", &u.serial)?;
+            if u.serial.len() > MAX_NAME || u.serial.chars().any(char::is_control) {
+                return Err(format!(
+                    "a unit's serial number \"{}\": at most {MAX_NAME} bytes",
+                    shown(&u.serial)
+                ));
             }
             within("a unit's size (bytes)", u.bytes, 0, MAX_DISK_MIB << 20)?;
         }
