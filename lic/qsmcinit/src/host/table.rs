@@ -82,7 +82,9 @@ pub const UPDD: Service = Service {
 };
 
 /// The download service: it binds its socket and makes its folders its
-/// own as root, then becomes its own user for good (`release::FETCH_ID`).
+/// own as root, then becomes its own user for good (`release::FETCH_ID`),
+/// every capability gone. `DAC_OVERRIDE` reads the folders it made 0700
+/// as that user on an earlier IPL.
 pub const FETCHD: Service = Service {
     name: "fetchd",
     binary: release::FETCHD,
@@ -90,7 +92,7 @@ pub const FETCHD: Service = Service {
     order: 47,
     needs: &[],
     ready_within: READY_WITHIN,
-    caps: Caps::Only(&[CHOWN, SETUID, SETGID]),
+    caps: Caps::Only(&[CHOWN, DAC_OVERRIDE, SETUID, SETGID]),
 };
 
 /// The management network and time.
