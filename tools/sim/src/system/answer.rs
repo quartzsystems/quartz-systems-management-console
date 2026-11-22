@@ -30,6 +30,12 @@ pub enum Answer {
     Attach(u32, bool),
     /// An image's upload to take: its name and size.
     Upload(String, u64),
+    /// A stage of an update image: its stream.
+    Stage(String, u64),
+    /// A dump's download: partition (0 for the system's own), name, size.
+    Download(u32, String, u64),
+    /// An activation into the pending slot.
+    Activate(String),
     /// An operation this system does not answer.
     Unknown,
     /// A power down begun: the connection's controller carries it out.
@@ -75,7 +81,38 @@ pub fn answer(s: &mut System, req: &AnyRequest, user: &str) -> Answer {
         return a;
     }
     let host = s.hello.kind == PeerKind::Host;
+    if let AnyRequest::Base(b) = req
+        && let Some(r) = s.own_dump_answer(b, user)
+    {
+        return of(r);
+    }
     match req {
+        AnyRequest::Base(base::Request::DownloadDump(d)) => match s.own_dump(&d.name) {
+            Ok(n) => Answer::Download(0, d.name.clone(), n),
+            Err(r) => Answer::Refuse(r),
+        },
+        AnyRequest::Service(r) => of(s.service_answer(r, user)),
+        AnyRequest::Dumps(qsi::host::dumps::Request::Download(d)) if host => {
+            match s.part_dump(d.id, &d.name) {
+                Ok(n) => Answer::Download(d.id, d.name.clone(), n),
+                Err(r) => Answer::Refuse(r),
+            }
+        }
+        AnyRequest::Dumps(r) if host => of(s.dumps_answer(r)),
+        AnyRequest::Update(qsi::update::Request::Stage(st)) if host => {
+            if s.servicing.staged.is_some() {
+                return refuse(
+                    "QSI1107",
+                    "An update image is staged already: discard it first.",
+                );
+            }
+            Answer::Stage(st.name.clone(), st.bytes)
+        }
+        AnyRequest::Update(qsi::update::Request::Activate(a)) if host => match s.may_activate(a) {
+            Ok(slot) => Answer::Activate(slot),
+            Err(r) => Answer::Refuse(r),
+        },
+        AnyRequest::Update(r) if host => of(s.update_answer(r)),
         AnyRequest::Base(b) => match b {
             base::Request::Identify(_) => {
                 Answer::Reply(AnyReply::Base(base::Reply::Identify(s.identify())))

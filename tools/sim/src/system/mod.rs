@@ -15,6 +15,7 @@ pub mod pairing;
 pub mod partition;
 pub mod profiles;
 pub mod refuse;
+pub mod servicing;
 #[cfg(test)]
 mod tests;
 pub mod vres;
@@ -150,6 +151,8 @@ pub struct Part {
     pub viewer: Option<u64>,
     /// The connection that took the console over from the viewer.
     pub taken_by: Option<u64>,
+    /// Its dumps, oldest first.
+    pub dumps: Vec<qsi::host::dumps::DumpInfo>,
 }
 
 impl Part {
@@ -174,6 +177,7 @@ impl Part {
             keys: Vec::new(),
             viewer: None,
             taken_by: None,
+            dumps: Vec::new(),
         }
     }
 
@@ -226,6 +230,9 @@ pub struct UploadStats {
 /// What a simulated host says it answers: every host family and each
 /// later bit this phase's pages use.
 pub const HOST_CAPS: u64 = qsi::caps::HOST_V1
+    | qsi::caps::SERVICING
+    | qsi::caps::PROBLEM_NOTES
+    | qsi::caps::DUMP_SPACE
     | qsi::caps::PHYSICAL_IO
     | qsi::caps::PARTITION_V2
     | qsi::caps::SWITCHES
@@ -246,6 +253,8 @@ pub const NEW_BITS: u64 = qsi::caps::SWITCHES
 
 /// A managed system.
 pub struct System {
+    /// Its problems, dumps and code slots.
+    pub servicing: servicing::Servicing,
     /// What its hello says.
     pub hello: Hello,
     /// Its type and model.
@@ -312,6 +321,19 @@ impl System {
             _ => qsi::caps::STANDALONE,
         };
         Self {
+            servicing: servicing::Servicing {
+                next: 1,
+                dump_limit: 1 << 30,
+                slots: if kind == PeerKind::Host {
+                    vec![
+                        servicing::slot("A", "V1R0M0", "", true),
+                        servicing::slot("B", "", "", false),
+                    ]
+                } else {
+                    Vec::new()
+                },
+                ..servicing::Servicing::default()
+            },
             hello: Hello {
                 version: qsi::VERSION,
                 caps,

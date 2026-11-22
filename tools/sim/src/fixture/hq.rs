@@ -408,5 +408,6 @@ pub fn qshqvs1() -> Shared {
         Source::System,
         false,
     );
+    super::service::host(&mut s);
     shared(s)
 }

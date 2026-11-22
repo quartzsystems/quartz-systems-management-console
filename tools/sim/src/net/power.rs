@@ -18,6 +18,27 @@ use crate::system::{Shared, codes, lock};
 pub const AWAY: Duration = Duration::from_secs(3);
 
 /// Begin `action`; the reply has been queued.
+/// An update's activation: the host restarts into `slot`, ending its
+/// partitions, and after it confirms or rolls back as it was told.
+pub fn activate(sys: &Shared, slot: &str) {
+    {
+        let mut s = lock(sys);
+        s.push(&qsi::any::AnyEvent::Update(qsi::update::Event::Activating(
+            qsi::update::Activating {
+                slot: slot.into(),
+                time: crate::system::now_s(),
+            },
+        )));
+    }
+    let (sys, slot) = (sys.clone(), slot.to_string());
+    thread::spawn(move || {
+        begin(&sys, PowerAction::Restart, false);
+        // The restart's own thread is back within its time away.
+        thread::sleep(AWAY + Duration::from_secs(1));
+        lock(&sys).after_activation(&slot);
+    });
+}
+
 pub fn begin(sys: &Shared, action: PowerAction, immediate: bool) {
     let sys = sys.clone();
     thread::spawn(move || {

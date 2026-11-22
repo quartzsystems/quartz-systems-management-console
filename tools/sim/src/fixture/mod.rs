@@ -9,6 +9,7 @@
 
 mod hq;
 pub mod screen;
+mod service;
 mod vres;
 
 pub use hq::{DEV_SINCE, PROD_SINCE, qshqvs1};
@@ -176,6 +177,7 @@ pub fn qshq400() -> Shared {
         own.screen = Some(r);
     }
     s.parts = vec![own];
+    service::standalone(&mut s);
     shared(s)
 }
 
@@ -293,6 +295,10 @@ pub fn branch(n: u32) -> Shared {
     if n % 7 == 6 {
         codes::post(&mut s, "B6000100", "System partition ended abnormally");
     }
+    s.servicing.slots = vec![
+        crate::system::servicing::slot("A", "V1R0M0", "26300", true),
+        crate::system::servicing::slot("B", "", "", false),
+    ];
     shared(s)
 }
 

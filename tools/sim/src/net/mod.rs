@@ -9,6 +9,7 @@
 
 mod console;
 mod power;
+mod transfer;
 mod upload;
 
 use std::io::{self, Read, Write};
@@ -107,6 +108,7 @@ fn connection(sys: &Shared, sock: TcpStream) -> Result<(), String> {
         binding,
         consoles: Consoles::default(),
         uploads: Uploads::default(),
+        transfers: transfer::Transfers::default(),
         junk_sent: false,
     };
     let end = link.run(&mut sess, &mut io, generation);
@@ -125,6 +127,7 @@ struct Link {
     binding: qsitrust::Binding,
     consoles: Consoles,
     uploads: Uploads,
+    transfers: transfer::Transfers,
     junk_sent: bool,
 }
 
@@ -188,6 +191,16 @@ impl Link {
                 match i {
                     Incoming::Request(r) => self.request(sess, &r),
                     Incoming::Closed { text, .. } => return text,
+                    Incoming::Data { stream, bytes } if self.transfers.owns(stream) => {
+                        self.transfers.data(sess, stream, &bytes);
+                    }
+                    Incoming::StreamClosed { stream } if self.transfers.owns(stream) => {
+                        self.transfers.ended(&self.sys, stream, true);
+                    }
+                    Incoming::StreamReset { stream, .. } if self.transfers.owns(stream) => {
+                        lock(&self.sys).note("a servicing stream was reset by the console".into());
+                        self.transfers.ended(&self.sys, stream, false);
+                    }
                     Incoming::Data { stream, bytes } if self.uploads.owns(stream) => {
                         self.uploads.data(&self.sys, sess, stream, &bytes);
                     }
@@ -213,6 +226,7 @@ impl Link {
             }
             self.consoles.pump(&self.sys, sess, self.conn);
             self.uploads.pump(&self.sys, sess);
+            self.transfers.pump(sess);
             if sess.is_closed() {
                 return "closed".into();
             }
@@ -253,6 +267,17 @@ impl Link {
                 .consoles
                 .attach(&self.sys, sess, r.id, self.conn, id, take_over),
             Answer::Upload(name, bytes) => self.uploads.open(&self.sys, sess, r.id, &name, bytes),
+            Answer::Stage(name, bytes) => self.transfers.stage(sess, r.id, &name, bytes),
+            Answer::Download(id, name, bytes) => {
+                lock(&self.sys).note(format!("download of {name} begun, {bytes} bytes"));
+                self.transfers.download(sess, r.id, id, &name, bytes)
+            }
+            Answer::Activate(slot) => {
+                let done =
+                    sess.reply_any(r.id, &AnyReply::Update(qsi::update::Reply::Activate(Empty)));
+                power::activate(&self.sys, &slot);
+                done
+            }
             Answer::Power(action, immediate) => {
                 let done = sess.reply_any(r.id, &AnyReply::Base(qsi::base::Reply::Power(Empty)));
                 power::begin(&self.sys, action, immediate);

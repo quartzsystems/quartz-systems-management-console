@@ -23,7 +23,9 @@ pub const HELP: &str = "pair S | expire S | drop S | stall S on|off | refuse S o
 | state S P not-activated|starting|running|shutting-down|error | fail S POOL UNIT \
 | upload-rate S BYTES|stall|off | uploaded S | code S CODE TEXT... | pcode S P CODE TEXT... \
 | keylock S P normal|manual | keys S P | lines S | pins S | withhold S BIT...|new \
-| kept S pools|disks|vdisks|images|volumes|switches|procpools|profiles P|drives P";
+| kept S pools|disks|vdisks|images|volumes|switches|procpools|profiles P|drives P \
+| problem S open P CODE TEXT... | problem S seen|clear|close N | dump S P NAME MIB \
+| stage-refuse S ID TEXT... | outcome S confirm | outcome S rollback CODE TEXT... | fixlevel S LEVEL";
 
 fn on(w: Option<&&str>) -> bool {
     w.is_some_and(|w| *w == "on")
@@ -425,6 +427,79 @@ pub fn command(systems: &[Shared], line: &str) -> String {
             p.state = "Degraded".into();
             crate::system::vres::pool_changed(&mut s, pool);
             "failed".into()
+        }
+        "problem" => match words.get(2).copied() {
+            Some("open") => {
+                let code = words.get(4).copied().unwrap_or("A2007020");
+                let resources = if part(3) == 0 {
+                    Vec::new()
+                } else {
+                    vec![crate::system::servicing::resource(
+                        qsi::service::ResourceKind::Partition,
+                        &s.part_name(part(3)),
+                        "",
+                        "",
+                    )]
+                };
+                let n = s.open_problem(
+                    part(3),
+                    code,
+                    &rest(&words, 5),
+                    qsi::service::Severity::Attention,
+                    resources,
+                );
+                format!("problem {n} opened")
+            }
+            Some(w @ ("seen" | "clear")) => {
+                match s.problem_seen(u64::from(part(3)), w == "clear") {
+                    Ok(()) => format!("problem {} {w}", part(3)),
+                    Err(e) => e,
+                }
+            }
+            Some("close") => match s.close_problem(u64::from(part(3)), true, "sim") {
+                Ok(_) => "closed".into(),
+                Err(n) => said(&n),
+            },
+            _ => "problem: open, seen, clear or close".into(),
+        },
+        "dump" => {
+            let name = words.get(3).copied().unwrap_or("DUMP");
+            let mib: u64 = words.get(4).and_then(|w| w.parse().ok()).unwrap_or(1);
+            if part(2) == 0 {
+                s.take_own_dump(name, mib << 20, "sim");
+                "dump taken".into()
+            } else {
+                match s.take_part_dump(part(2), name, mib << 20, "function22") {
+                    Ok(()) => "dump taken".into(),
+                    Err(e) => e,
+                }
+            }
+        }
+        "stage-refuse" => {
+            s.servicing.refuse_stage = Some((
+                (*words.get(2).unwrap_or(&"QSI1101")).into(),
+                rest(&words, 3),
+            ));
+            "the next stage is refused".into()
+        }
+        "outcome" => {
+            if words.get(2).copied() == Some("rollback") {
+                s.servicing.outcome = crate::system::servicing::Outcome::RollBack(
+                    rest(&words, 4),
+                    (*words.get(3).unwrap_or(&"A2001035")).into(),
+                );
+                "the next activation rolls back".into()
+            } else {
+                s.servicing.outcome = crate::system::servicing::Outcome::Confirm;
+                "the next activation confirms".into()
+            }
+        }
+        "fixlevel" => {
+            s.servicing.fix_level = Some(qsi::base::Level {
+                level: rest(&words, 2),
+                date: crate::system::now_s(),
+            });
+            "fix level set".into()
         }
         "upload-rate" => {
             match words.get(2).copied() {
