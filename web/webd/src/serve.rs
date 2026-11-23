@@ -246,6 +246,10 @@ pub fn https_location(req: &Request, name: &str, local: &str) -> String {
     } else {
         local
     };
+    // A target that is not a path would join the host: `/` instead.
+    if !req.path.starts_with('/') {
+        return format!("https://{host}/");
+    }
     let mut to = format!("https://{host}{}", req.path);
     if !req.query.is_empty() {
         to.push('?');
@@ -355,6 +359,11 @@ mod tests {
             "[::1]:80",
         ] {
             assert_eq!(to(elsewhere), "https://10.0.0.1/x", "{elsewhere}");
+        }
+        // The fuzzer's: a target that is not a path joins no host.
+        for target in ["..//qsmc/signon", ".evil.example/x", "@evil.example", ""] {
+            let at = https_location(&request(target, None), "QSMC123456", "10.0.0.1");
+            assert_eq!(at, "https://10.0.0.1/", "{target}");
         }
     }
 
