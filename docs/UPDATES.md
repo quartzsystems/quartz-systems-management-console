@@ -64,7 +64,7 @@ and `SETGID` only until then. It holds no key of the console's. Its
 requests on `/run/qsmcfetchd.sock` (`upd/fetchd/src/proto.rs`): status,
 configure, check, download, remove, and the backup of its settings.
 
-- **Check now** reads the three streams in turn (`QMC7001`, `C3007100`).
+- **Check now** reads the three streams at once (`QMC7001`, `C3007100`).
   A server that answers nothing or is slower than 30 s is `QMC7204`
   with `A3007105`; nothing kept changes. Checking automatically
   (`Never`, the default; `Daily 04:00`; `Weekly`) and downloading

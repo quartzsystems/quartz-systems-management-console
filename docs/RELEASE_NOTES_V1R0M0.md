@@ -51,8 +51,8 @@ This is the first release.
 - **The local console** is not confined by the file-system rules every
   other service is: its option 8 mounts a removable volume. It keeps its
   system call filter (`docs/SECURITY.md`).
-- **Check now** waits for each of the three streams in turn, up to 30
-  seconds each, when a server is slow.
+- **Check now** reads the three streams at once and waits for the
+  slowest, up to 30 seconds, when a server is slow.
 
 What the fuzzing and the 24-hour soak found, and anything left open,
 is added here before the tag (`docs/PHASE8.md`).

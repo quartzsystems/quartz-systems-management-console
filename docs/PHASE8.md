@@ -63,6 +63,35 @@ The pointer needs no golden: a click moves the cursor or presses a
 key's label and the screens are the same. User IDs as long as QS/VS's
 console takes are the base's rule (`users::ID_MAX`), here unchanged.
 
+## Fuzzing
+
+`fuzz-long` run 45113495933 (at `4ddaf52`) ran every target for four
+hours (14,400 s), one runner each:
+
+| Target | Corpus at the end | Finding |
+| --- | --- | --- |
+| `backup-file` | 508 files, 1,119,143 bytes | none |
+| `backup-payload` | 763 files, 2,609,261 bytes | none |
+| `cert-import` | 1,288 files, 1,536,934 bytes | none |
+| `mgmt-host` | 3,251 files, 1,220,304 bytes | none |
+| `mgmt-peer` | 2,097 files, 11,238,840 bytes | none |
+| `mgmt-servicing` | 1,906 files, 444,793 bytes | none |
+| `qsmc-update-image` | 428 files, 38,999 bytes | none |
+| `sched-store` | 4,910 files, 14,706,011 bytes | none |
+| `seed-answers` | 4,568 files, 4,652,093 bytes | none |
+| `stream-index` | 537 files, 200,739 bytes | none |
+| `system-plan` | 5,328 files, 16,943,695 bytes | none |
+| `terminal-input` | 428 files, 67,370 bytes | none |
+| `web-request` | 976 files, 1,274,022 bytes | one, at 4 h 04 min, fixed |
+
+The finding: port 80's redirect joined a request target that is not a
+path to the console's address, so `GET .evil.example/x` was sent to
+`https://10.0.0.1.evil.example/x`. A target that does not begin with
+`/` is now sent to `/` (`5854cee`); the input is in
+`tools/fuzz/corpus/web-request/d60d89e4572c4048` and
+`a_redirect_never_leaves_the_console` holds it. `fuzz-long` takes a
+`target` input, so one target can run alone.
+
 ## Every `BLOCKED` line of Phases 0 to 7
 
 Phases 3 to 7 wrote none; every one of Phases 0 to 2 is done, and none

@@ -712,12 +712,13 @@ would carry.
 
 ## 44. Check now waits on the slowest stream (Phase 6)
 
-Check now reads the three streams in turn within the page's request,
-each given 30 s, so a server that is slow but not absent holds the page
-for up to 90 s before it says `QMC7204`. A browser waits; the harness's
-does not, and posts it from a thread of its own (`serv-streams`). A
-check begun in the background with its result on the page, as a
-download is, would answer at once.
+Check now read the three streams in turn within the page's request,
+each given 30 s, so a server that is slow but not absent held the page
+for up to 90 s before it said `QMC7204`. Phase 8: `fetchd` reads the
+three indexes at once, so the page waits for one timeout, 30 s, at
+most. A check begun in the background with its result on the page,
+as a download is, would answer at once; that is a new message and a
+page that reloads, so it is left for after V1.
 
 ## 45. The pages of system plans built without a design (Phase 7)
 

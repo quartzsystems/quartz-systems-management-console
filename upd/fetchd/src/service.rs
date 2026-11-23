@@ -324,10 +324,26 @@ impl Service {
             let i = self.lock();
             (i.settings.server.clone(), i.config.keys.clone())
         };
+        // The three indexes at once: a slow stream holds the check for
+        // its own timeout, not the others' as well (open question 44).
+        let gots: Vec<(String, Result<Vec<u8>, String>)> = std::thread::scope(|scope| {
+            let each: Vec<_> = Stream::ALL
+                .iter()
+                .map(|s| {
+                    let url = s.index_url(&server);
+                    let at = url.clone();
+                    (
+                        url,
+                        scope.spawn(move || self.lock_free_get(&at, verify::MAX_INDEX)),
+                    )
+                })
+                .collect();
+            each.into_iter()
+                .map(|(url, h)| (url, h.join().unwrap_or_else(|_| Err("no answer".into()))))
+                .collect()
+        });
         let mut said = Vec::new();
-        for s in Stream::ALL {
-            let url = s.index_url(&server);
-            let got = self.lock_free_get(&url, verify::MAX_INDEX);
+        for (s, (url, got)) in Stream::ALL.into_iter().zip(gots) {
             let mut i = self.lock();
             let now = (i.config.clock)();
             let seen = s.seen(&i.settings.seen);
