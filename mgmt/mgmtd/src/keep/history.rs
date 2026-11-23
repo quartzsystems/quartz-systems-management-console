@@ -110,7 +110,13 @@ impl History {
             else {
                 continue;
             };
-            let text = fs::read_to_string(&path).unwrap_or_default();
+            let mut text = fs::read_to_string(&path).unwrap_or_default();
+            // A line cut by a power loss goes, so the next is not added
+            // to it; its code is read again from the system.
+            if !text.is_empty() && !text.ends_with('\n') {
+                text.truncate(text.rfind('\n').map_or(0, |i| i + 1));
+                let _ = state::atomic_write(&path, text.as_bytes());
+            }
             let rows: Vec<Row> = text.lines().filter_map(|l| parse(name, l)).collect();
             let seen = rows
                 .iter()
@@ -167,10 +173,7 @@ impl History {
         };
         if over {
             let all: String = self.by[system].rows.iter().map(line).collect();
-            let tmp = path.with_extension("codes.new");
-            if fs::write(&tmp, all).is_ok() {
-                let _ = fs::rename(&tmp, &path);
-            }
+            let _ = state::atomic_write(&path, all.as_bytes());
         } else if let Ok(mut f) = fs::OpenOptions::new().create(true).append(true).open(&path) {
             let text: String = new.iter().map(line).collect();
             let _ = f.write_all(text.as_bytes());
@@ -272,6 +275,33 @@ mod tests {
         assert_eq!(host.total, 1);
         let paged = again.query(&Filter::default(), 25, 25);
         assert_eq!(paged.rows.len(), 25);
+        let _ = fs::remove_dir_all(&dir);
+    }
+    #[test]
+    fn a_line_cut_by_a_power_loss_goes_and_the_next_is_whole() {
+        let dir = std::env::temp_dir().join(format!("mgmtd-history-cut-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        let mut h = History::open(Some(&dir), 64);
+        h.add(
+            "QSHQVS1",
+            (1..=3).map(|s| row("QSHQVS1", 1, s, "C6004031")).collect(),
+        );
+        let path = dir.join("QSHQVS1.codes");
+        let whole = fs::read_to_string(&path).unwrap();
+        // The power went while code 4 was written: half its line kept.
+        let four = line(&row("QSHQVS1", 1, 4, "C6004031"));
+        fs::write(&path, format!("{whole}{}", &four[..four.len() / 2])).unwrap();
+        let mut again = History::open(Some(&dir), 64);
+        assert_eq!(again.last_seq("QSHQVS1", 1), 3);
+        assert_eq!(fs::read_to_string(&path).unwrap(), whole);
+        // Read again from the system, 4 and 5 are kept whole.
+        again.add(
+            "QSHQVS1",
+            (4..=5).map(|s| row("QSHQVS1", 1, s, "C6004031")).collect(),
+        );
+        let back = History::open(Some(&dir), 64);
+        assert_eq!(back.last_seq("QSHQVS1", 1), 5);
+        assert_eq!(back.query(&Filter::default(), 0, 100).total, 5);
         let _ = fs::remove_dir_all(&dir);
     }
 }

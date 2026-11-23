@@ -67,10 +67,8 @@ impl Problems {
         let Some(p) = &self.path else {
             return;
         };
-        let tmp = p.with_extension("new");
-        if fs::write(&tmp, ipc::encode(&self.book)).is_ok() {
-            let _ = fs::rename(&tmp, p);
-        }
+        // Whole after a power loss: the numbers given are never given again.
+        let _ = state::atomic_write(p, &ipc::encode(&self.book));
     }
 
     /// Keep `summary` of `system`: the row it had, or a new number. Its
