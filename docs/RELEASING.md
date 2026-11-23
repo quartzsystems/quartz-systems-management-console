@@ -131,6 +131,16 @@ path and compares every file byte for byte; a difference stops it
 (`--no-compare` builds once, for a trial). The tag, `v1.0.0`, is
 Cody's, and is pushed with the release's files published.
 
+### By the workflow
+
+`.github/workflows/release.yml`, started by hand, does the same on
+GitHub with the keys held as the repository's secrets
+(`QSMC_SIGNING_KEY` the seed's hexadecimal line, `QSMC_SB_KEY` the PEM,
+`QSMC_SB_CERT_B64` the certificate in base64) and the streams' public
+keys committed in `tools/build/keys/streams/`; it refuses a signing key
+whose public half is not that folder's `qsmc.pub`. The release
+directory and its stream are the run's artifact. It tags nothing.
+
 ## The stream
 
 Releases of QS/MC are published as the `qsmc` stream: one directory

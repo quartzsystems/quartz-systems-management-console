@@ -92,44 +92,100 @@ path to the console's address, so `GET .evil.example/x` was sent to
 `a_redirect_never_leaves_the_console` holds it. `fuzz-long` takes a
 `target` input, so one target can run alone.
 
-## Where this stands (2026-11-23)
+## Evidence
 
-The runs so far:
+### The runs
 
 | Run | Commit | What | Result |
 | --- | --- | --- | --- |
-| QEMU 45086679139 | Step 0 | every Phase 0 to 7 suite on the last pins | 14 of 14 |
-| QEMU 45193087442 | `fe3608d` | every suite, every service confined | 14 of 14, `ci` green |
-| fuzz-long 45113495933 | `4ddaf52` | every target four hours | clean but `web-request` (fixed, `5854cee`) |
-| fuzz-long 45173327969 | after `5854cee` | `web-request` four hours again | running when this was written |
-| QEMU 45216241201 | `ae31cbd` | every suite after the accept fix | running when this was written |
-| nightly 45216378918 | `ae31cbd` | full suite, release, short fuzz, soak | release running; short fuzz passed; three failures below |
+| QEMU 45086679139 | `2dad9c6` (Step 0) | every Phase 0 to 7 suite on the last pins | 14 of 14 jobs; 95 suites passed, none failed |
+| fuzz-long 45113495933 | `4ddaf52` | every target four hours | clean but `web-request` (Fuzzing, above; fixed, `5854cee`) |
+| fuzz-long 45173327969 | `eb1ace7` | `web-request` four hours again, after `5854cee` | clean: 977 files, 1,241,449 bytes of corpus, no crash |
+| QEMU 45193087442 | `fe3608d` | every suite, every service's confinement enforced | 14 of 14 jobs, `ci` green; 103 suites passed, none failed |
+| nightly 45216378918 | `ae31cbd` | the full suite, the release, a short fuzz, the soak | release, stream, Secure Boot and short fuzz passed; `sec-soak`, `plans-restart`, `serv-pages`, `serv-streams` failed (below) |
+| QEMU 45216241201 | `ae31cbd` | every suite after the accept change | `plans-restart`, `serv-pages`, `serv-streams`, `serv-own`, `install-display` failed (below); cancelled by the next push |
+| QEMU 45231390970 | `119b2e4` | every suite after the fixes | 14 of 14 jobs; 103 suites passed, none failed, the five above among them |
+| nightly 45231462663 | `119b2e4` | the full suite, the release, a short fuzz, the half-hour soak | the full suite, the release twice with its stream and Secure Boot, and the short fuzz passed; `sec-soak` failed on `QSI0102` (below) |
+| QEMU 45267308132 | `fd75ab2` | every suite with `sec-power` and `sec-imports`, after every fix | recorded with the release's hashes, after it |
+| nightly 45260315948 | `b8763be` | the full suite, the release, a short fuzz, the half-hour soak | `sec-soak` passed (below); the short fuzz passed |
+| release 45265148007 | `90b0295` | `release.yml` with the release keys | passed: the signing key's public half `qsmc.pub`; built twice, 12 files the same, byte for byte; its stream made and verified |
+
+### The failures at `ae31cbd`, and whether it caused them
+
+`ae31cbd` makes `webd`'s listener block in `accept` for 200 ms at most
+(`SO_RCVTIMEO`) instead of polling it and sleeping 200 ms. Before it, a
+new connection waited most of a sleep: `sec-baselines` at `fe3608d`
+measured every page at 200 ms; at `ae31cbd`, sign-on 62 ms and the
+Partitions list 43 to 61 ms. Nothing else in the product changed
+between the two runs. The listener is `webd`'s alone (PID 1 closes its
+copies once sent), and every connection sets its own 30 s timeouts, so
+the listener's timeout reaches no connection. The change stays.
+
+It did not cause `sec-soak`'s failure, and it exposed the others:
+
+| Suite | Failure | Cause | Fix |
+| --- | --- | --- | --- |
+| `sec-soak` | `QMC6101 not shown: QSI0301 The partition manager did not answer` | not `ae31cbd`: the simulator's fleet hosts had no hardware, so a plan could not be captured; the soaks before stopped earlier, at a partition made without `VD06` (`54b1902`) | the fleet hosts have `QSHQVS1`'s hardware and devices; `a_soak_host_can_be_captured` (`106bede`) |
+| `plans-restart` | `QMC6007 ... Not connected: 10.0.2.2: Network unreachable` | the web server answered after the console's restart before `mgmtd` had the hosts again; the suite deployed at once | the suite waits for both hosts Connected (`fc1c3da`) |
+| `serv-pages` | `/qsmc/confirm/event-close?c=1 answered 303` | the console's problem is opened a moment after its code is posted; the crawl took it as number 1 before it was listed (the event page answers 200 with a message when there is none, so only the confirmation showed it) | `serv-pages` and `serv-roles` wait for the problem and use its number; a redirect's message is shown (`fc1c3da`) |
+| `serv-streams` | `a bad download opened no problem of the console's` | the same: the events list read once, at once | it waits for `A3007110` (`fc1c3da`) |
+| `serv-own` | `the answer has no end to its head` | `kill` returned before PID 1 saw the service end, so `webd_ready` read the killed `webd`'s `ready` and the suite signed on to it | `kill` waits until the killed process is gone (`fc1c3da`) |
+| `install-display` | the installer's first screen did not move on | not `ae31cbd`: the installer runs no web server; it passed in the nightly at the same commit | none; it passed at `119b2e4` |
+
+### The soak's second failure: a product fault
+
+At `119b2e4` the soak's first partition was made, but its Change was
+refused with `QSI0102 64 requests are outstanding`. The page said
+`QMC3130` beside the refusal and kept the wizard's draft, so the next
+partition made on that host had `VD06` twice (`QVS1209`). The cause was
+`mgmtd`'s: after a host's partitions are listed it reads each one's
+profiles, uses, drives and functions at once, about 120 requests for
+the soak's 30 running partitions, past QSI's 64 outstanding. While
+they were out, any operator's request to that host was refused, and
+the reads past the limit were dropped without a word. A host of 17 or
+more running partitions could meet it.
+
+`mgmtd`'s own reads now wait while fewer than 16 of a session's
+request slots are free and go as replies come, so an operator's
+request always has room (`4d6e603`;
+`a_host_s_reads_wait_for_room_and_leave_some` reads 40 running
+partitions: at most 48 outstanding, the operator's request taken, every
+read sent once). The soak's create now fails on a partition not made
+whole (`b8763be`). A five-minute soak of 2 hosts in WSL then passed:
+124 turns, 21 partitions made and deleted, 5 plans captured and
+deployed, no service restarted, descriptors and memory back to idle.
+
+### The soak in CI
+
+nightly 45260315948 at `b8763be`, `mgmtd`'s fix in: 1,800 s, 335 turns
+over 100 hosts (3,000 partitions); 13,400 pages by 4 roles, 56
+partitions made and deleted, 56 systems dropped and back, 12 plans
+captured and deployed, terminals open throughout; no service
+restarted; staging and temporary files as idle. Held (idle/peak/end):
+`mgmtd` 115/115/105 descriptors, 38,960/50,636/50,572 KiB (its 100
+hosts' sessions); `webd` 27/27/7, 6,848/8,352/8,028 KiB; every other
+service within a descriptor and 1 MiB of idle.
+
+### Baselines
 
 `sec-baselines` at `ae31cbd`, recorded not held: the sign-on page
-46,603 ms after the machine started; sign-on 62 ms; the Partitions
-list 43 ms with 25 partitions (last page 42 ms), 45 ms with 500 (44 ms),
-61 ms with 5,000 (61 ms). Base ready is `status`'s: 1.27 s on one disk,
-1.28 s mirrored.
+46,603 ms after the machine started; sign-on 62 ms; the Partitions list
+43 ms with 25 partitions (last page 42 ms), 45 ms with 500 (44 ms),
+61 ms with 5,000 (61 ms). Base ready is `status`'s: 1.17 s on one disk,
+1.21 s mirrored.
 
-Open, from nightly 45216378918; each passed at `fe3608d` or failed
-differently there, so check first whether `ae31cbd` (webd's accept
-with `SO_RCVTIMEO`) caused it:
+### The release, built twice
 
-- `sec-soak`: `QMC6101 not shown (200): QSI0301 The partition manager
-  did not answer.`
-- `plans-restart`: `QMC6007 ... Not connected: 10.0.2.2:43133: Network
-  unreachable (os error 101)`.
-- `serv-pages`: `/qsmc/confirm/event-close?c=1 answered 303`.
-
-Still to do: the acceptance table with this evidence; power pulls
-against the remaining persistent-state writers; imported files as
-hostile; Section 9's prototype count, script-off and stylesheet-off
-use, 25 rows at 1024 by 768 (or `NEEDS-CODY`); the release notes'
-known limits kept current; for QS/VS, `refcodes.ndjson` is unbounded.
-
-The nightly's soak is half an hour; the 24-hour soak is Cody's
-(`docs/QUALIFICATION.md` 7). What the tag waits on: the 24-hour soak,
-the release keys, real machines, the design's answers.
+nightly 45216378918's release job at `ae31cbd`, with keys made for the
+run and thrown away: `build release 1.0.0` built twice from clean, "12
+files the same, byte for byte"; `stream add` and `stream verify`
+passed; `sec-secure-boot` (the UKIs verify against the run's
+certificate, start under OVMF's Secure Boot with it enrolled, are
+refused without it; the test image refused) and `sec-stream` (V1R0M0
+found on the release's own stream, with its notes) passed. Its
+hashes are that run's key's, not the release's: the release's are
+written here when Cody builds it with the release keys
+(`docs/RELEASING.md`).
 
 ## Every `BLOCKED` line of Phases 0 to 7
 
@@ -180,6 +236,83 @@ is left for the release notes:
 | `sec-secrets` | after a pairing, a user's passwords, a backup's passphrase and a dump, no secret in any file under `/data`, no hash or key outside its own file, none on any page |
 | `sec-limits` | each limit filled and one past it refused |
 | `sec-rotation` | V1R0M1 signed by a key not trusted refused with nothing changed; V1R0M1 signed by the next key installed and confirmed, its systems connected again |
+| `sec-power` | the power pulled at random moments while the writers outside `base/state` write: 8 cuts while a host posts codes and opens problems (`problems.bin` whole and not set aside, no number given twice or lost, every history line whole and once), 5 among certificate imports (an imported pair served after each, none made again, no half pair or mark left), 3 just after a restore is confirmed (applied, or taken back, the users as that says) |
+| `sec-imports` | every file of the `backup-file`, `cert-import` and `system-plan` corpora sent through its page: each answered with a page and its message, never an error of the inside; no service restarted; the plans kept the ones imported |
 | `sec-secure-boot` (by name) | the release's UKIs verify against its certificate, start under OVMF's Secure Boot build with it enrolled, and are refused without it; the test image refused |
 | `sec-stream` (by name) | the release's own stream, served, found by a console |
 | `sec-soak` (by name) | the soak |
+
+## Acceptance
+
+| # | Check | Evidence |
+| --- | --- | --- |
+| 0 | The last pins, every Phase 0 to 7 suite on them, each golden change explained | Step 0; QEMU 45086679139 |
+| 1 | Every service under its filter and its file-system rules; a forbidden call ends that service alone, posts `A3001085` and it starts again | `sec-confined`, `sec-machine`; QEMU 45193087442 (enforced) |
+| 2 | Hardening: no redirect leaves the console; a body said two ways refused; no path climbs out; the terminal socket from the console's page only; the root read-only; a hostile managed system shown as text | `sec-web`, `sec-machine`, `sec-systems`; QEMU 45193087442; the one fuzz finding fixed (`5854cee`) |
+| 3 | Keys and signing: a development key said; a rotation installs, a stranger's key is refused | `sec-rotation`; QEMU 45193087442 |
+| 4 | The release built twice from clean, byte for byte; its stream verified; its UKIs under Secure Boot | The release, built twice; nightly 45216378918 |
+| 5 | Updating: a stranger's image refused with nothing changed; a power pull at any moment of an update leaves a good slot | `sec-rotation`, `serv-console`, `serv-power` (30 pulls); QEMU 45193087442 |
+| 6 | Every fuzz target four hours, every finding fixed | Fuzzing; fuzz-long 45113495933 and 45173327969 |
+| 7 | The soak: no service restarted, no descriptors, memory or staging left behind | the half-hour soak, nightly 45260315948 (passed: 1,800 s, 335 turns over 100 hosts and 3,000 partitions, no service restarted); the 24-hour soak `NEEDS-CODY` |
+| 8 | Each limit filled and one past it refused | `sec-limits`; QEMU 45193087442 |
+| 9 | The design's acceptance: every page's links resolving, no script but the terminal's | `sec-web` (279 pages, 230 forms) beside Phases 3 to 7's page suites; 86 of the prototype's 90 pages live (`docs/PHASE7.md`); in a browser, `NEEDS-CODY` |
+| 10 | What V1 leaves out, written for the design | `docs/DESIGN_REVIEW.md`; its answers `NEEDS-CODY` |
+| 11 | Documents and audits: the headers, other vendors' names, every panel's help, the catalogue | `build doctor`; `ci` green at every commit above |
+| 12 | CI: the nightly runs the full suite, the release, a short fuzz and the soak | `.github/workflows/nightly.yml`; nightly 45260315948 |
+| 13 | A release candidate: the notes and the runbook | `docs/RELEASE_NOTES_V1R0M0.md`, `docs/QUALIFICATION.md` |
+| - | Power pulled while every writer outside `base/state` writes; each file whole after | `sec-power` (Power pulls and hostile files, below) |
+| - | Imported files as hostile, through the pages | `sec-imports` (Power pulls and hostile files, below) |
+| - | No secret in any file under `/data` or on any page | `sec-secrets`: 21 files and 316 pages at `ae31cbd` (at `fe3608d` it walked no folder; `6d19743`) |
+
+## What the tag waits on
+
+Each is `NEEDS-CODY`, in `docs/QUALIFICATION.md`'s order:
+
+- The release keys are made: the signing key and the Secure Boot key
+  and certificate are the repository's secrets (`QSMC_SIGNING_KEY`,
+  `QSMC_SB_KEY`, `QSMC_SB_CERT_B64`), and the three streams' public
+  keys are in `tools/build/keys/streams/` (`qsmc.pub` checked against
+  the signing key's own). `.github/workflows/release.yml` builds the
+  release with them, twice and compared, and its stream: the release
+  run at the commit to be tagged, its directory's hashes written here.
+- NEEDS-CODY: real machines: a console installed on a real machine and
+  as a virtual machine, Secure Boot with QS/MC's key enrolled, the Dell
+  as the real host and a standalone QS/400 (steps 2 to 5).
+- NEEDS-CODY: the design's answers: every item of
+  `docs/DESIGN_REVIEW.md` answered, and every page beside its prototype
+  file, at 1024 by 768, with scripts off and with the stylesheet off
+  (step 6).
+- NEEDS-CODY: the 24-hour soak beside the Dell (step 7); the nightly's is
+  half an hour.
+
+## Power pulls and hostile files
+
+Phase 6's `power-pull` churns `base/state`'s files. Four writers write
+around it, and each could leave a file half written:
+
+| Writer | Before | Now |
+| --- | --- | --- |
+| `mgmtd`'s problems (`/data/mgmt/problems.bin`) | a new file renamed over the old, neither synced: after a power loss it could be empty, set aside as `.bad`, and the console's problem numbers given again from 1 | `state::atomic_write` |
+| `mgmtd`'s history (`/data/mgmt/refcodes/<system>.codes`) | appended; its rewrite renamed unsynced. A line cut short took the next code's line into it | the rewrite through `state::atomic_write`; a cut last line removed when the file is opened, its code read again from the system (`a_line_cut_by_a_power_loss_goes_and_the_next_is_whole`) |
+| The web certificate (`/data/web/certificate.pem`, `key.pem`, `made-here`) | the key and the certificate renamed one after the other: a cut between left a pair that does not match, and the web server made a new self-signed one over an imported certificate. The mark changed after the pair, so an imported certificate could be marked the console's own and made again at the next address | both new files written and synced, then renamed and the folder synced; at the start a pair cut short is finished when its new halves match, else taken back (`a_pair_cut_short_is_the_old_pair_or_the_new_one`); the mark first, synced |
+| A restore confirmed (`/data/restore/pending`) | renamed unsynced: a power loss after OK could lose the restore the page said would happen | the folder synced before the answer (`9d554ff`) |
+| `/data/restore` itself | removed by PID 1 when a restore was confirmed, while the web server ran: its Landlock rule held the folder removed, so every backup opened after a restore was refused (`Permission denied`) until the web server restarted. Found by `sec-power` | emptied, the folder kept (`fd75ab2`); `qsmcinit`'s restore tests hold it |
+
+`sec-power` pulls the power at random moments of each, and
+`sec-imports` sends the fuzzers' corpora through the three pages that
+take a file. In WSL at `fd75ab2`, `sec-power` (seed 775244109): 8 cuts
+while QSHQVS1 posted codes and opened 168 problems, `problems.bin`
+whole each time, no number given twice or lost, 4,497 history lines
+each whole and once; 5 cuts among 101 certificate imports, an imported
+pair served after each; 3 cuts just after a restore was confirmed, each
+applied with the users it held. `sec-imports`: 379 backups (all
+refused), 897 certificates (all refused), 3,087 system plans (6
+imported, 3,081 refused), each answered with a page and its message,
+no service restarted. Before passing, `sec-power` was itself corrected
+twice: the events list shows the newest 100, so each problem is asked
+for by its number and its code (`6a6ad33`, `4b9be3e`), and the churn
+opens 20 problems a cut, under the 500 kept (`ef0b67d`).
+
+## Not done
+
+- For QS/VS: `refcodes.ndjson` grows without a bound; the fix is QS/VS's.

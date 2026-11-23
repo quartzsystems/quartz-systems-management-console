@@ -54,8 +54,10 @@ This is the first release.
 - **Check now** reads the three streams at once and waits for the
   slowest, up to 30 seconds, when a server is slow.
 
-What the fuzzing and the 24-hour soak found, and anything left open,
-is added here before the tag (`docs/PHASE8.md`).
+Four hours of fuzzing of every target found one fault, fixed in this
+release: port 80's redirect could join a request target that is not a
+path to the console's address. What the 24-hour soak finds, and
+anything left open, is added here before the tag (`docs/PHASE8.md`).
 
 ## Reporting a problem
 

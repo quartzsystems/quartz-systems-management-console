@@ -180,7 +180,7 @@ tools/          host tools
                     parts/: Phase 5's, partitions, profiles, virtual resources, the wizard, groups, schedules, the upload, roles, an older host, audit;
                     serv/: Phase 6's, events, the console's problems, dumps, streams, a host's update, the console's own update, refusals, power pulls, option 8, its dump, schedules, roles, audit;
                     plans/: Phase 7's, the pages, capture, validation, deployment, restarts, import, the plan before an update, roles and audit, backup, a real host;
-                    sec/: Phase 8's, every service confined, the machine, the web server reviewed, hostile systems, secrets, limits, a key rotation; by name: Secure Boot, the release's stream, the soak
+                    sec/: Phase 8's, every service confined, the machine, the web server reviewed, hostile systems, secrets, limits, a key rotation, power pulls against the writers outside base/state, the fuzzers' files through the pages; by name: Secure Boot, the release's stream, the soak
     src/streams/    a stream server of the harness's own: signed indexes and a catalog under test keys, images, notes; slow, cut, wrong or absent
     golden/         every installer and local console screen, as text
   fuzz/           qsmcfuzz over QS/400's fuzzer: a backup's reader, the certificate import, what mgmtd does with a peer's messages and the servicing families', a stream's index, the update image, a system plan

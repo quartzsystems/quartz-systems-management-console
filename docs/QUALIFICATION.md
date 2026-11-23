@@ -123,7 +123,11 @@ With the console managing the Dell and the standalone system, open each
 of the prototype's 86 live files (`design/qsmc-prototype/`) and the page
 the console serves for it side by side, in two browsers. Check
 `docs/DESIGN_REVIEW.md` against what is seen. Then the Partitions list at
-1024 by 768: expect 25 rows without the page body scrolling.
+1024 by 768: expect 25 rows without the page body scrolling. Then, with
+the browser's scripts off, sign on, open a partition's properties and
+shut it down through its confirmation: expect each to work (only the
+terminal window needs its script). Then with the stylesheet off: expect
+every page read in order, its forms usable.
 **Record:** any page that differs, and the browsers.
 
 ## 7. The soak beside a real host
