@@ -38,13 +38,13 @@ Two things already exist and are reused, never rewritten or copied:
 | 4 | QSI and managed systems, proven on a QS/VS host; the browser terminal | `docs/PHASE4.md` |
 | 5 | Partitions, profiles and virtual resources | `docs/PHASE5.md` |
 | 6 | Service management and updates | `docs/PHASE6.md` |
-| **7 (current)** | System plans | `docs/PHASE7.md` |
-| 8 | Release engineering and hardening | |
+| 7 | System plans | `docs/PHASE7.md` |
+| **8 (current)** | Release engineering and hardening | `docs/PHASE8.md` |
 
 Work that is not done is listed in the current phase's record,
-`docs/PHASE7.md`. Code and documents mark it `BLOCKED(phase7): reason`
+`docs/PHASE8.md`. Code and documents mark it `BLOCKED(phase8): reason`
 (one line) or `NEEDS-CODY` (Cody's hardware or sign-off); an earlier
-phase's `BLOCKED(phase0)` to `BLOCKED(phase6)` stays as it was written.
+phase's `BLOCKED(phase0)` to `BLOCKED(phase7)` stays as it was written.
 No other marker form.
 
 ## Ground rules
@@ -71,7 +71,7 @@ No other marker form.
 - **The two pins.** QS/VS's crates are git dependencies at one commit of
   its `main`. QS/400's crates are git dependencies at one commit:
   exactly the commit that QS/VS commit pins, so the tree holds one copy
-  of every shared crate. Both are recorded in `docs/PHASE5.md`, where
+  of every shared crate. Both are recorded in `docs/PHASE8.md`, where
   they last moved (`docs/PHASE0.md` has the first). Moving
   either is its own commit, and they move together. Never path
   dependencies, never copies. `build doctor` fails when they disagree
@@ -86,7 +86,7 @@ No other marker form.
   value.
 - No IBM text, product names or marks anywhere. The names in use are
   QS/MC, QS/VS and QS/400.
-- Anything not done is listed in the current phase's record (`docs/PHASE7.md`).
+- Anything not done is listed in the current phase's record (`docs/PHASE8.md`).
 
 ## Locked decisions
 
