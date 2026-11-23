@@ -16,6 +16,8 @@ use supervise::control::HostStatus;
 
 /// How long an ordinary command may take.
 const ANSWER: Duration = Duration::from_secs(10);
+/// How long a file read is given.
+const CAT_ANSWER: Duration = Duration::from_secs(180);
 
 /// The channel.
 pub struct Channel {
@@ -117,8 +119,13 @@ impl Channel {
 
     /// Send one command and take its answer. An `error` line is an error.
     pub fn ask(&mut self, command: &str) -> Result<Vec<String>, String> {
+        self.ask_within(command, ANSWER)
+    }
+
+    /// [`Self::ask`], its answer given `within`.
+    fn ask_within(&mut self, command: &str, within: Duration) -> Result<Vec<String>, String> {
         self.send(command)?;
-        let lines = self.answer(Instant::now() + ANSWER)?;
+        let lines = self.answer(Instant::now() + within)?;
         match lines.first().and_then(|l| l.split_once(' ')) {
             Some((word::ERROR, why)) => Err(format!("`{command}`: {why}")),
             _ => Ok(lines),
@@ -137,7 +144,9 @@ impl Channel {
 
     /// A file's bytes.
     pub fn cat(&mut self, path: &str) -> Result<Vec<u8>, String> {
-        let lines = self.ask(&format!("{} {path}", command::CAT))?;
+        // A file of a few hundred KiB is longer than a second on the
+        // serial port, twice over as hex.
+        let lines = self.ask_within(&format!("{} {path}", command::CAT), CAT_ANSWER)?;
         let hex = match lines.as_slice() {
             [line] => line.strip_prefix(word::HEX).map(str::trim),
             _ => None,
