@@ -29,8 +29,9 @@ const HOMES: [&str; 4] = [
     "/data/web/key.pem",
 ];
 
-/// The largest file read whole over the channel.
-const READ_MAX: u64 = 16 << 20;
+/// The largest file read whole over the channel: the hook's `cat`
+/// refuses one larger.
+const READ_MAX: u64 = 1 << 20;
 
 /// Every file under `dir`, with its length.
 fn files(ch: &mut crate::qemu::channel::Channel, dir: &str) -> Vec<(String, u64)> {
@@ -39,10 +40,9 @@ fn files(ch: &mut crate::qemu::channel::Channel, dir: &str) -> Vec<(String, u64)
     while let Some(d) = stack.pop() {
         for name in ch.ls(&d).unwrap_or_default() {
             let path = format!("{d}/{name}");
-            let Ok((mode, _, _)) = ch.stat(&path) else {
-                continue;
-            };
-            if mode.starts_with("40") {
+            // The hook's `stat` gives the permission bits alone: a
+            // directory is what `ls` answers.
+            if ch.ls(&path).is_ok() {
                 stack.push(path);
             } else if let Ok((len, _)) = ch.sum(&path) {
                 out.push((path, len));
@@ -200,7 +200,7 @@ pub fn secrets(run: &Run<'_>) -> Result<String, String> {
         if skipped.is_empty() {
             String::new()
         } else {
-            format!("; larger than 16 MiB, not read: {}", skipped.join(", "))
+            format!("; larger than 1 MiB, not read: {}", skipped.join(", "))
         }
     ))
 }
