@@ -767,7 +767,12 @@ pub fn rotation(run: &Run<'_>) -> Result<String, String> {
         .ok_or("the stranger variant is not built (`build --test-image --variant stranger all`)")?;
     let mut lab = lab(run, "sec-rotation", &[qsmc_release(stranger)?])?;
     super::check(&mut lab.c.browser)?;
-    download(&mut lab.c.browser, CONSOLE_ROW, "qsmc", &file_name(stranger))?;
+    download(
+        &mut lab.c.browser,
+        CONSOLE_ROW,
+        "qsmc",
+        &file_name(stranger),
+    )?;
     // The stream's index verifies, the file is what it names; its image
     // is signed by a key the console does not trust.
     let b = &mut lab.c.browser;

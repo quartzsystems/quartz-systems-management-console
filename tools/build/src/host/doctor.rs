@@ -118,11 +118,37 @@ fn qs400_image() -> Row {
     r
 }
 
+/// The folders whose panels give their help: the local console and
+/// the installer.
+const PANELS: &[&str] = &["svc/console/src", "lic/qsmcinstall/src"];
+
+fn wording(ctx: &Ctx) -> Row {
+    let name = "no other vendor's names";
+    match buildaid::wording::names(&ctx.paths.repo, &["tools/fuzz/corpus/"]) {
+        Ok((files, found)) if found.is_empty() => row(name, true, format!("{files} tracked files")),
+        Ok((_, found)) => row(name, false, found.join("; ")),
+        Err(e) => row(name, false, format!("{e:#}")),
+    }
+}
+
+fn help(ctx: &Ctx) -> Row {
+    let name = "help on every panel";
+    match buildaid::wording::help(&ctx.paths.repo, PANELS) {
+        Ok((panels, empty)) if empty.is_empty() => {
+            row(name, true, format!("{panels} panels, none with empty help"))
+        }
+        Ok((_, empty)) => row(name, false, empty.join("; ")),
+        Err(e) => row(name, false, format!("{e:#}")),
+    }
+}
+
 /// QS/MC's rows.
 pub fn rows(ctx: &Ctx) -> Vec<Row> {
     vec![
         ovmf(),
         headers(ctx),
+        wording(ctx),
+        help(ctx),
         pins(ctx),
         once(ctx),
         catalogue(),
