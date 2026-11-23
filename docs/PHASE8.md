@@ -82,3 +82,36 @@ is left for the release notes:
 | `PHASE1.md` | the unit to keep of two that ran apart is chosen through a hook only | the local console's panel, Phase 2 (`apart-panel`) |
 | `PHASE1.md` | nothing writes the other slot or sets a pending slot | the console's own update, Phase 6 (`docs/UPDATES.md`) |
 | `PHASE2.md` | the media's check, the disk unit panels, the power words, the installer's writes are QS/MC's own (items 15 to 18) | `base/loadsource`, `panels::units`, `panels::tools::power`, `install::write`, Phase 5 (items 15 to 18 closed) |
+
+## What exists
+
+| Section | Where | What |
+| --- | --- | --- |
+| 1, confining every service | `lic/sandbox` | Landlock's paths and TCP ports (`landlock.rs`), each service's policy (`policy.rs`), the call every service makes before its first thread; `base/confine`'s seccomp filter; `confine-learn` and `confine-trip-<service>` in a test image; `A3001085` and `QMC7342` when a filter ends a service. Cody chose Landlock beside `base/confine` (open question 50). `docs/SECURITY.md` has the table |
+| 2, hardening | `web/webd`, `web/pages`, `lic/qsmcinit`, `tools/sim` | port 80's redirect kept on the console; a body said two ways refused (open question 49); the terminal socket from the console's own page only; the root read-only after the IPL, its writable folders bound `nodev,nosuid,noexec`; the simulator's `markup`, `lie` and `bad-screen` |
+| 3, keys and signing | `lic/release`, `tools/build` | `QSMC_KEY_KIND` and the Signature fact and row (`release key` or `development key`, Secure Boot on, off or unknown); a development key said at the IPL and on Console version; `QSMC_TRUSTED_KEYS` for a rotation; the `rotated` and `stranger` variants; `docs/RELEASING.md`; open question 9 closed |
+| 4, the release build | `tools/build/src/image/release.rs`, `host/catalogue.rs` | `build release`, `build stream add` and `verify` over `buildaid::release`; `catalogue.json` and `docs/catalogue.schema.json`; open question 8 closed |
+| 5, updating | `tools/conformance/src/suite/serv/console.rs` | `sec-rotation` beside Phase 6's `serv-console`, `serv-refusals`, `serv-local` and `serv-power` |
+| 6, fuzzing | `tools/fuzz` | four more targets: `web-request`, `terminal-input`, `sched-store`, `seed-answers`; `.github/workflows/fuzz-long.yml`, every target for four hours |
+| 7, soak | `sec-soak`, `sim::fixture::fleet` | the soak, run by name |
+| 8, limits | `web/users`, `web/pages`, `sched/schedd`, `mgmt/mgmtd` | web users 256 (`QMC8012`), groups 256 (`QMC3304`), schedules 500 (`QMC3410`), operators' plans 500 (`QMC6115`), sessions 256 (`QMC9007`), uploads to a host at once 4 (`QMC2442`); the managed systems' limit held where a system is kept; `sec-limits` |
+| 9, the design's acceptance | `sec-web` | every link of every page resolving, beside Phases 3 to 7's suites |
+| 10, what V1 leaves out | `docs/DESIGN_REVIEW.md` | every choice, page and field, for the design |
+| 11, documents and audits | `tools/build/src/host/doctor.rs` | `build doctor`'s rows for other vendors' names and every panel's help, beside the headers and the catalogue; `docs/OPERATIONS.md`; `docs/INSTALL.md`'s Secure Boot; `docs/LOCALCONSOLE.md`'s Signature row |
+| 12, CI | `.github/workflows/nightly.yml` | every night: the full suite (`qemu.yml`), the release twice and compared, its stream, Secure Boot, a short fuzz of every target, a one-hour soak |
+| 13, the release candidate | `docs/RELEASE_NOTES_V1R0M0.md`, `docs/QUALIFICATION.md` | the notes and the runbook |
+
+### The suites
+
+| Suite | What it shows |
+| --- | --- |
+| `sec-confined` | every service under its filter with no new privileges; at one IPL each, each service's forbidden call ends it, `A3001085` is posted, it is started again, and no other service fails |
+| `sec-machine` | the root read-only; `/data`, `/run`, `/proc`, `/sys`, `/etc` and `/tmp` `nodev,nosuid,noexec`, `/dev` `nosuid,noexec`; dmesg and ptrace restricted; the baked command line; a service under its filter |
+| `sec-web` | a body said two ways refused alone; no path climbs out; no redirect leaves the console; a session fixed before sign-on is not taken and one signed off is no session; every page crawled with its headers and policy, every link resolving, every form refused without its token, nothing changed by GET; error pages show nothing of the inside; the terminal socket refuses another origin, none, and no session; the password hash's parameters and sign-on's time |
+| `sec-systems` | markup in names, a model, a code and console cells shown as text; a hello that lies shown as text; a wrong screen answered; with one system a minute slow, no page about the others waits; no service notices |
+| `sec-secrets` | after a pairing, a user's passwords, a backup's passphrase and a dump, no secret in any file under `/data`, no hash or key outside its own file, none on any page |
+| `sec-limits` | each limit filled and one past it refused |
+| `sec-rotation` | V1R0M1 signed by a key not trusted refused with nothing changed; V1R0M1 signed by the next key installed and confirmed, its systems connected again |
+| `sec-secure-boot` (by name) | the release's UKIs verify against its certificate, start under OVMF's Secure Boot build with it enrolled, and are refused without it; the test image refused |
+| `sec-stream` (by name) | the release's own stream, served, found by a console |
+| `sec-soak` (by name) | the soak |
