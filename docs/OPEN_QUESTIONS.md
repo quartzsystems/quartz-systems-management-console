@@ -141,7 +141,7 @@ is `buildkit`'s.
 `target/release/<VRM>/` and the stream, as QS/VS's release directory
 keeps `QSVS-V1R0M0-<hash>.iso`.
 
-## 9. Secure Boot
+## 9. Secure Boot (closed)
 
 The UKIs are not signed for Secure Boot in Phase 0: `buildkit`'s
 manifest records no db certificate (`Product::secure_boot_db` gives

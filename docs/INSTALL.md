@@ -11,7 +11,7 @@ disks you give it and nothing else.
 | --- | --- |
 | Processor | x86_64 with AVX2, ADX, AES and PCLMULQDQ: the web interface and QSI need them. Without them the console installs and starts but says so (`A3001015`). In a virtual machine, give it the host's processor model |
 | Memory | 2 GiB or more |
-| Firmware | UEFI. Secure Boot is not needed (the console's images are not signed for it yet) |
+| Firmware | UEFI. Secure Boot is not needed; a release's images are signed for it, and the firmware checks them once QS/MC's certificate is enrolled (Secure Boot, below) |
 | Load-source disk | one disk of at least 16 GiB, or two for mirrored protection. 64 GiB or more is what a console wants: its data file system holds its state and logs, update images on their way to the hosts, and the dumps it fetches from the systems it manages |
 | Network | one Ethernet port for the `open` network, the one operators reach the console on. A second, `private`, toward the systems it manages, is optional |
 | Console | a display and keyboard, or a serial port at 115200 baud, or both: the installer is on both at once |
@@ -30,6 +30,29 @@ payload's manifest must be signed by a key the installer trusts, and
 both images on it must be the ones the manifest names. Media that fails
 is refused before anything is written (`A3004010`); use media of a
 QS/MC build, written whole.
+
+## Secure Boot
+
+A release's three UKIs, slot A, slot B and the media's, are signed for
+Secure Boot with QS/MC's db key, and its certificate is on the media
+and in the release's directory as `qsmc-db.cer` (`docs/RELEASING.md`).
+Booting does not need Secure Boot. To have the firmware check that only
+QS/MC's images start:
+
+1. Copy `qsmc-db.cer` from the media's root (or the release's
+   directory) to a FAT volume the firmware can read.
+2. In the firmware's setup, under Secure Boot's key management, add
+   it to **db** (the allowed signatures), beside the keys already
+   there. On a hypervisor, enrol it in the virtual machine's UEFI
+   variables the same way, or with the hypervisor's own tool.
+3. Turn Secure Boot on, and boot the media.
+
+The installer's summary and the local console's status screen say
+whether Secure Boot is on (the Signature row: `release key, Secure Boot
+on`). An image the certificate did not sign, a test image or one of
+another build, is refused by the firmware before it starts. When a
+release's db key is replaced, the release notes say so, and the new
+certificate is enrolled before that release is installed.
 
 ## An attended installation
 

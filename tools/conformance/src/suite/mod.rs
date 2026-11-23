@@ -175,6 +175,7 @@ impl Suite {
                 .iter()
                 .chain(serv::NAMED)
                 .chain(plans::NAMED)
+                .chain(sec::NAMED)
                 .any(|(n, _)| only == Some(*n));
         if let Some(name) = only
             && !names(media).contains(&name)
@@ -208,6 +209,7 @@ impl Suite {
                 .iter()
                 .chain(serv::NAMED)
                 .chain(plans::NAMED)
+                .chain(sec::NAMED)
                 .filter(|(n, _)| only == Some(*n));
             for (name, suite) in all.filter(|(n, _)| wanted(n)).chain(named) {
                 let report = self.base(name, *suite)?;

@@ -327,6 +327,7 @@ mod tests {
             vars: "/f/VARS.fd".into(),
             kvm: true,
             timeout: Duration::from_secs(60),
+            secure_boot: false,
         }
     }
 

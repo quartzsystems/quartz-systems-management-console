@@ -468,6 +468,7 @@ dependencies = [
  "mgmtd",
  "ntp",
  "panels",
+ "pesign",
  "plan",
  "qemu",
  "qmcbackup",

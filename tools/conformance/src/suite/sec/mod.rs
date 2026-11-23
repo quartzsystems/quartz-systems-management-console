@@ -8,6 +8,7 @@
 mod confined;
 mod machine;
 mod secrets;
+mod secureboot;
 mod systems;
 mod web;
 
@@ -22,3 +23,7 @@ pub const SUITES: &[(&str, SuiteFn)] = &[
     ("sec-secrets", secrets::secrets),
     ("sec-rotation", super::serv::console::rotation),
 ];
+
+/// The suites run only by name: after `build release`, with its
+/// certificate.
+pub const NAMED: &[(&str, SuiteFn)] = &[("sec-secure-boot", secureboot::secure_boot)];

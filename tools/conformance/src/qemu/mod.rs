@@ -50,6 +50,9 @@ pub struct Launch {
     pub kvm: bool,
     /// How long a boot may take.
     pub timeout: Duration,
+    /// Whether the firmware checks Secure Boot: its build, SMM on
+    /// (`sec-secure-boot`).
+    pub secure_boot: bool,
 }
 
 impl Launch {
@@ -67,6 +70,7 @@ impl Launch {
             vars,
             kvm: driver::launch::kvm_wanted(NO_KVM_ENV),
             timeout,
+            secure_boot: false,
         })
     }
 
@@ -79,6 +83,7 @@ impl Launch {
             kvm: self.kvm,
             memory_mb: MEMORY_MB,
             cpus: CPUS,
+            secure_boot: self.secure_boot,
             ..driver::Launch::default()
         }
     }
@@ -178,6 +183,7 @@ mod tests {
             vars: "/f/VARS.fd".into(),
             kvm: true,
             timeout: TIMEOUT,
+            secure_boot: false,
         }
     }
 
