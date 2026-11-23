@@ -105,8 +105,9 @@ fn certified(
     Ok(CertifiedKey::new(chain, signing))
 }
 
-/// Write `text` to `path` through a new file, `0o600` when `secret`.
-fn write_file(path: &Path, text: &str, secret: bool) -> Result<(), String> {
+/// Write `text` to `path`'s new file (`key.new` beside `key.pem`),
+/// synced, `0o600` when `secret`: renamed over `path` by the caller.
+fn stage(path: &Path, text: &str, secret: bool) -> Result<(), String> {
     use std::io::Write;
     let fresh = path.with_extension("new");
     let mut options = std::fs::OpenOptions::new();
@@ -121,8 +122,49 @@ fn write_file(path: &Path, text: &str, secret: bool) -> Result<(), String> {
         .map_err(|e| format!("{}: {e}", fresh.display()))?;
     file.write_all(text.as_bytes())
         .and_then(|()| file.sync_all())
-        .map_err(|e| format!("{}: {e}", fresh.display()))?;
-    std::fs::rename(&fresh, path).map_err(|e| format!("{}: {e}", path.display()))
+        .map_err(|e| format!("{}: {e}", fresh.display()))
+}
+
+/// Make `dir`'s renames durable.
+fn sync_dir(dir: &Path) -> Result<(), String> {
+    std::fs::File::open(dir)
+        .and_then(|d| d.sync_all())
+        .map_err(|e| format!("{}: {e}", dir.display()))
+}
+
+/// Whether the certificate at `cert` and the key at `key` read as one
+/// pair.
+fn pair_reads(cert: &Path, key: &Path) -> bool {
+    std::fs::read_to_string(cert)
+        .and_then(|c| Ok(c + &std::fs::read_to_string(key)?))
+        .ok()
+        .and_then(|text| bundle::read_pem(&text, None).ok())
+        .is_some_and(|b| checked(b).is_ok())
+}
+
+/// A pair written but cut by a power loss before both were renamed:
+/// finished when its new halves make a pair, else what is left of it
+/// is removed and the pair before stays.
+fn settle(dir: &Path) -> Result<(), String> {
+    let (key, cert) = (dir.join(KEY_FILE), dir.join(CERT_FILE));
+    let (key_new, cert_new) = (key.with_extension("new"), cert.with_extension("new"));
+    if !key_new.exists() && !cert_new.exists() {
+        return Ok(());
+    }
+    let k = if key_new.exists() { &key_new } else { &key };
+    let c = if cert_new.exists() { &cert_new } else { &cert };
+    if pair_reads(c, k) {
+        for (from, to) in [(&key_new, &key), (&cert_new, &cert)] {
+            if from.exists() {
+                std::fs::rename(from, to).map_err(|e| format!("{}: {e}", to.display()))?;
+            }
+        }
+    } else {
+        for f in [&key_new, &cert_new] {
+            let _ = std::fs::remove_file(f);
+        }
+    }
+    sync_dir(dir)
 }
 
 /// The bundle an upload holds: PEM text (its key opened with
@@ -162,6 +204,9 @@ impl Certs {
         now: u64,
     ) -> Result<(Self, bool), String> {
         let provider = provider();
+        if dir.exists() {
+            settle(dir)?;
+        }
         let read = std::fs::read_to_string(dir.join(CERT_FILE))
             .and_then(|c| Ok(c + &std::fs::read_to_string(dir.join(KEY_FILE))?))
             .map_err(|e| e.to_string())
@@ -198,21 +243,31 @@ impl Certs {
         let id =
             x509kit::server::self_signed(host, &names, now.saturating_sub(60), SELF_SIGNED_DAYS)
                 .map_err(|e| format!("the certificate was not made: {e}"))?;
-        Self::write(dir, std::slice::from_ref(&id.cert), &id.key)?;
+        std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
         mark(dir, true)?;
+        Self::write(dir, std::slice::from_ref(&id.cert), &id.key)?;
         Ok((vec![id.cert], id.key))
     }
 
+    /// The pair replaced as one: both new files written and synced,
+    /// then renamed; a power loss between leaves what [`settle`]
+    /// finishes or takes back.
     fn write(dir: &Path, chain: &[Vec<u8>], key: &PrivateKey) -> Result<(), String> {
         std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
         let key_der = key.to_pkcs8_der().map_err(|e| e.to_string())?;
         let key_pem = zeroize::Zeroizing::new(x509kit::pem::encode("PRIVATE KEY", &key_der));
-        write_file(&dir.join(KEY_FILE), &key_pem, true)?;
         let certs: String = chain
             .iter()
             .map(|c| x509kit::pem::encode("CERTIFICATE", c))
             .collect();
-        write_file(&dir.join(CERT_FILE), &certs, false)
+        let (key_file, cert_file) = (dir.join(KEY_FILE), dir.join(CERT_FILE));
+        stage(&key_file, &key_pem, true)?;
+        stage(&cert_file, &certs, false)?;
+        for to in [&key_file, &cert_file] {
+            std::fs::rename(to.with_extension("new"), to)
+                .map_err(|e| format!("{}: {e}", to.display()))?;
+        }
+        sync_dir(dir)
     }
 
     fn in_use(&self) -> Arc<InUse> {
@@ -255,8 +310,9 @@ impl Certs {
         let id =
             x509kit::server::self_signed(host, &names, now.saturating_sub(60), SELF_SIGNED_DAYS)
                 .map_err(|e| format!("the certificate was not made: {e}"))?;
-        self.take(&[id.cert], &id.key)?;
+        // The mark first: a pair cut short is still the console's own.
         mark(&self.dir, true)?;
+        self.take(&[id.cert], &id.key)?;
         Ok(self.shown())
     }
 
@@ -264,8 +320,9 @@ impl Certs {
     /// PKCS #12 with its password.
     pub fn import(&self, bundle: Bundle) -> Result<Shown, String> {
         let (chain, key) = checked(bundle)?;
-        self.take(&chain, &key)?;
+        // The mark gone first: an import is never made again over.
         mark(&self.dir, false)?;
+        self.take(&chain, &key)?;
         Ok(self.shown())
     }
 
@@ -295,10 +352,12 @@ fn mark(dir: &Path, made: bool) -> Result<(), String> {
     let path = dir.join(MADE_FILE);
     let done = if made {
         std::fs::write(&path, "the console made this certificate\n")
+            .and_then(|()| std::fs::File::open(&path)?.sync_all())
+            .and_then(|()| std::fs::File::open(dir)?.sync_all())
     } else {
         match std::fs::remove_file(&path) {
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
-            other => other,
+            other => other.and_then(|()| std::fs::File::open(dir)?.sync_all()),
         }
     };
     done.map_err(|e| format!("{}: {e}", path.display()))
@@ -322,6 +381,51 @@ mod tests {
         let d = std::env::temp_dir().join(format!("webd-tls-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&d);
         d
+    }
+
+    /// The key's PEM and the certificate's of a new self-signed pair.
+    fn pem_pair(name: &str, now: u64) -> (String, String) {
+        let id = x509kit::server::self_signed(name, &[name], now, 30).unwrap();
+        let key = x509kit::pem::encode("PRIVATE KEY", &id.key.to_pkcs8_der().unwrap());
+        (
+            key.as_str().to_owned(),
+            x509kit::pem::encode("CERTIFICATE", &id.cert),
+        )
+    }
+
+    #[test]
+    fn a_pair_cut_short_is_the_old_pair_or_the_new_one() {
+        let now = 1_790_000_000;
+        let (new_key, new_cert) = pem_pair("NEW", now);
+        let write = |d: &Path, f: &str, t: &str| std::fs::write(d.join(f), t).unwrap();
+        let key_new = KEY_FILE.replace(".pem", ".new");
+        let cert_new = CERT_FILE.replace(".pem", ".new");
+        // (what was left, whether the new pair is the one read)
+        let cuts: [(&[(&str, &str)], bool); 5] = [
+            (&[(&key_new, &new_key)], false),
+            (&[(&key_new, &new_key), (&cert_new, &new_cert[..40])], false),
+            (&[(&key_new, &new_key), (&cert_new, &new_cert)], true),
+            (&[(KEY_FILE, &new_key), (&cert_new, &new_cert)], true),
+            (&[(KEY_FILE, &new_key), (CERT_FILE, &new_cert)], true),
+        ];
+        for (i, (left, is_new)) in cuts.iter().enumerate() {
+            let dir = scratch(&format!("cut{i}"));
+            let (old, _) = Certs::load_or_make(&dir, "OLD", &[], now).unwrap();
+            let old = old.shown().sha256;
+            for (f, t) in *left {
+                write(&dir, f, t);
+            }
+            let (got, made) = Certs::load_or_make(&dir, "OTHER", &[], now).unwrap();
+            assert!(!made, "cut {i}: a pair was made again");
+            let name = got.shown().info.common_name;
+            if *is_new {
+                assert_eq!(name.as_deref(), Some("NEW"), "cut {i}");
+            } else {
+                assert_eq!(got.shown().sha256, old, "cut {i}");
+            }
+            assert!(!dir.join(&key_new).exists() && !dir.join(&cert_new).exists());
+            let _ = std::fs::remove_dir_all(&dir);
+        }
     }
 
     #[test]
