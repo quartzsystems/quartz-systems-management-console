@@ -196,7 +196,11 @@ fn uploads(lab: &mut Lab<'_>) -> Result<String, String> {
         .c
         .browser
         .stream_upload(path, &up("PAST.iso".into(), 32 << 10))?;
-    let t = past.map(|a| a.text()).unwrap_or_default();
+    // The refusal is shown on the page the answer sends the browser to.
+    let t = match past {
+        Some(a) => follow(&mut lab.c.browser, &a)?.text(),
+        None => String::new(),
+    };
     lab.fleet.tell(0, "upload-rate off");
     if !shows(&t, qmcmsg::UPLOADS_FULL.id) {
         return Err(format!("an upload past {most} at once was not refused"));
