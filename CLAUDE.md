@@ -179,7 +179,8 @@ tools/          host tools
     src/suite/      Phase 0's steps; base/: Phase 1's suites; install/: Phase 2's, the installer and the local console; web/: Phase 3's; mgmt/: Phase 4's;
                     parts/: Phase 5's, partitions, profiles, virtual resources, the wizard, groups, schedules, the upload, roles, an older host, audit;
                     serv/: Phase 6's, events, the console's problems, dumps, streams, a host's update, the console's own update, refusals, power pulls, option 8, its dump, schedules, roles, audit;
-                    plans/: Phase 7's, the pages, capture, validation, deployment, restarts, import, the plan before an update, roles and audit, backup, a real host
+                    plans/: Phase 7's, the pages, capture, validation, deployment, restarts, import, the plan before an update, roles and audit, backup, a real host;
+                    sec/: Phase 8's, every service confined, the machine, the web server reviewed, hostile systems, secrets, limits, a key rotation; by name: Secure Boot, the release's stream, the soak
     src/streams/    a stream server of the harness's own: signed indexes and a catalog under test keys, images, notes; slow, cut, wrong or absent
     golden/         every installer and local console screen, as text
   fuzz/           qsmcfuzz over QS/400's fuzzer: a backup's reader, the certificate import, what mgmtd does with a peer's messages and the servicing families', a stream's index, the update image, a system plan
@@ -205,6 +206,7 @@ lic/            PID 1, release, the product's binaries
   consdump/       the console's service dump over base/servicedump: what it takes, what it leaves out
   release/        V1R0M0 over QS/400's vrm, the banner, the prefixes, the Appliance and its interface roles, LOAD_SOURCE, status facts and screen, the processor's words
   refcode/        the console's reference codes (docs/REFCODES.md), each base event's, the poster
+  sandbox/        every service confined: Landlock's paths and ports, base/confine's seccomp filter, each service's policy (docs/SECURITY.md)
 web/            the web interface (docs/WEB.md)
   webd/           qsweb under rustls: the listeners PID 1 hands over, TLS and the certificate, the limits and headers, the self-test
   users/          web users, roles and the matrix, sign-on rules, web.toml, the web server's socket protocol (docs/WEBUSERS.md)
@@ -228,7 +230,7 @@ plan/           system plans (docs/PLANS.md)
                   validate/ the rules table and every item against a host; deploy the steps and their requests; index, job
 svc/            the local console
   console/        qsmccons over base/panels: the sessions, the main menu, status, network, disk units, the web interface (option 4), service functions (option 8), the one panel for the unit to keep
-docs/           ARCHITECTURE, PHASE0-7, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, MGMT, TERMINAL, SIM, PARTITIONS, VRES, SCHED, SERVICE, UPDATES, PLANS, OPEN_QUESTIONS
+docs/           ARCHITECTURE, PHASE0-8, SECURITY, RELEASING, OPERATIONS, QUALIFICATION, DESIGN_REVIEW, RELEASE_NOTES_V1R0M0, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, MGMT, TERMINAL, SIM, PARTITIONS, VRES, SCHED, SERVICE, UPDATES, PLANS, OPEN_QUESTIONS
 design/         qsmc-prototype/: the web UI's approved design, every page a golden rendering (its README is the handoff)
 ```
 
@@ -264,7 +266,9 @@ cargo run -p build -- test --media iso   the installation ISO
 cargo run -p build -- loadsource a.img [b.img]   a load source (two files: mirrored) from the built UKIs
 cargo run -p build -- deny            cargo-deny and the C-linkage check
 cargo run -p build -- notices         rewrite lic/release/NOTICES.txt (--check in CI)
-cargo run -p build -- keys DIR        the release keys, once, outside the checkout (docs/UPDATES.md)
+cargo run -p build -- keys DIR        the release keys, once, outside the checkout (docs/RELEASING.md)
+cargo run -p build -- release 1.0.0   the release from a clean tree with the release keys, built twice and compared (docs/RELEASING.md)
+cargo run -p build -- stream add DIR STREAM | stream verify STREAM   a release joined to the qsmc stream's index; checked
 cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
 cargo clippy -p qsmcinit -p qsmcstgd -p qsmclogd -p qsmcnetd -p qsmccons -p qsmcinstall -p qsmcwebd -p qsmcmgmtd -p qsmcschedd --all-targets --target x86_64-unknown-linux-musl -- -D warnings
@@ -321,6 +325,19 @@ guest's second serial port.
 - `docs/PHASE7.md`: system plans: what exists, how to run it, hashes,
   the pages live out of the prototype's whole count, the acceptance
   table with evidence, what is not done and what needs a person.
+- `docs/PHASE8.md`: release engineering and hardening: the last pins and
+  the goldens they changed, what was done, the release directory's
+  hashes, the acceptance table with evidence, what the tag waits on.
+- `docs/SECURITY.md`: what the console trusts and does not, each
+  boundary, what enforces it and which suite shows it; every service's
+  confinement; the machine.
+- `docs/RELEASING.md`: the keys, cutting a release, the stream, a key
+  rotated, leaked or lost.
+- `docs/OPERATIONS.md`: an operator's guide, from the machine to a
+  console's recovery.
+- `docs/QUALIFICATION.md`: every `NEEDS-CODY` item in one runbook.
+- `docs/DESIGN_REVIEW.md`: what V1 leaves out, for the design.
+- `docs/RELEASE_NOTES_V1R0M0.md`: the release notes.
 - `docs/PLANS.md`: the plan document field by field, capture, the
   validation table (held to the code by a test), deployment's steps and
   rules, what a plan never holds or does.
