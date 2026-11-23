@@ -6,7 +6,8 @@
 # suite on the release build (`qemu.yml`, the update up and down among
 # its suites); the release directory built twice and compared, its
 # stream verified and its UKIs booted under Secure Boot; a short run of
-# every fuzz target; a half-hour soak. The release keys here are made for
+# every fuzz target; a half-hour soak. NEEDS-CODY: the 24-hour soak, beside
+# a real host (`docs/QUALIFICATION.md` 7). The release keys here are made for
 # the run and thrown away: never a release's. A hosted runner nests KVM;
 # where one cannot, `runs-on` is the one line to change (the comment
 # beside it names a self-hosted runner's labels).
