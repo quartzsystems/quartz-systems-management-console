@@ -70,8 +70,8 @@ is left for the release notes:
 
 | Where | Line | Done |
 | --- | --- | --- |
-| `PHASE0.md` | the processor check is QS/MC's own copy (item 3) | `base/processor`, Phase 1 (item 3 closed) |
-| `PHASE0.md`, `PHASE1.md` | the QEMU driver is QS/MC's own (item 4) | `base/qemu` as `driver`, Phase 1 (item 4 closed) |
+| `PHASE0.md` | the processor check is QS/MC's own copy (item 3) | `base/processor`, Phase 2 (item 3 closed) |
+| `PHASE0.md`, `PHASE1.md` | the QEMU driver is QS/MC's own (item 4) | `base/qemu` as `driver`, Phase 2 (item 4 closed) |
 | `PHASE0.md` | no base event has a reference code | the console's codes, Phase 1 (`docs/REFCODES.md`) |
 | `PHASE0.md` | PID 1 does not read the A/B record or write boot entries | Phase 1 (`lic/qsmcinit/src/slot`) |
 | `PHASE0.md` | the ISO's name is `buildkit`'s (item 8) | settled as `buildkit`'s `QSMC-<release>-<hash>.iso`, as QS/VS's (item 8 closed here) |
