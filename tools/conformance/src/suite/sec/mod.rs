@@ -6,6 +6,8 @@
 //! image (`docs/SECURITY.md`).
 
 mod confined;
+mod machine;
+mod secrets;
 mod systems;
 mod web;
 
@@ -14,7 +16,9 @@ use super::base::SuiteFn;
 /// The suites.
 pub const SUITES: &[(&str, SuiteFn)] = &[
     ("sec-confined", confined::confined),
+    ("sec-machine", machine::machine),
     ("sec-web", web::web),
     ("sec-systems", systems::systems),
+    ("sec-secrets", secrets::secrets),
     ("sec-rotation", super::serv::console::rotation),
 ];
