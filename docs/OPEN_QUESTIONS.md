@@ -148,6 +148,14 @@ manifest records no db certificate (`Product::secure_boot_db` gives
 none). QS/400's `pesign` and QS/VS's `build release` show how; that is
 Phase 8's.
 
+**Closed in Phase 8:** `build release` signs the three UKIs with
+QS/MC's db key (`QSMC_SB_KEY`, `QSMC_SB_CERT`) before the disk and the
+ISO are made of them, and puts `qsmc-db.cer` on the media and in the
+release; the installer's summary and the status screen say whether
+Secure Boot is on; `docs/INSTALL.md` says how to enrol it, and booting
+does not need it. `sec-secure-boot` boots a release under OVMF's Secure
+Boot build with the certificate enrolled, and is refused without it.
+
 ## 10. The ISO hangs on an IDE CD-ROM under OVMF (closed)
 
 Booted as an IDE CD-ROM of q35 (`-device ide-cd,bus=ide.0`, as QS/VS's
