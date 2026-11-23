@@ -14,7 +14,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use supervise::control::{Calls, Client};
 
 use crate::listen::{self, Gate, Running, Serving};
-use crate::serve::{Pages, Redirect, Site};
+use crate::serve::{Pages, Site};
 use crate::tls::{self, Certs};
 
 /// How long PID 1's socket is tried for at the start.
@@ -123,7 +123,7 @@ pub fn run(pages: Arc<dyn Pages>) -> Result<(), String> {
         site: Arc::new(Site {
             pages: pages.clone(),
         }),
-        redirect: Arc::new(Redirect),
+        host: host.clone(),
         gate: Mutex::new(Gate::default()),
         pages,
     });

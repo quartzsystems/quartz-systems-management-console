@@ -49,6 +49,26 @@ pub fn secured(r: Response) -> Response {
     }
 }
 
+/// A request whose body could be read two ways is refused: a length and
+/// chunks both, two lengths, or a transfer coding other than `chunked`
+/// (`docs/SECURITY.md`). `qsweb` reads it one way; a request another
+/// reader would see as two is never acted on.
+pub fn framing_refused(req: &Request) -> Option<Response> {
+    let count = |name: &str| req.headers.iter().filter(|(k, _)| k == name).count();
+    let (lengths, codings) = (count("content-length"), count("transfer-encoding"));
+    let coding_ok = req
+        .header("transfer-encoding")
+        .is_none_or(|t| t.trim().eq_ignore_ascii_case("chunked"));
+    if lengths > 1 || codings > 1 || (lengths == 1 && codings == 1) || !coding_ok {
+        Some(
+            qsweb::http::plain(400, "The request's length is not said one way.")
+                .with("Connection", "close"),
+        )
+    } else {
+        None
+    }
+}
+
 /// The stylesheet, or `304` when the client has it.
 pub fn stylesheet(req: &Request) -> Response {
     let etag = css_etag();
@@ -113,6 +133,9 @@ impl Handler for Site {
     }
 
     fn handle(&self, req: &Request, peer: &Peer) -> Response {
+        if let Some(r) = framing_refused(req) {
+            return secured(r);
+        }
         let r = if req.path == CSS_PATH {
             if req.method == "GET" || req.method == "HEAD" {
                 stylesheet(req)
@@ -128,29 +151,60 @@ impl Handler for Site {
     }
 
     fn streams(&self, req: &Request, peer: &Peer) -> bool {
-        req.path != CSS_PATH && self.pages.streams(req, peer)
+        // A request refused for its framing is answered before its body
+        // is read, and its connection is closed after.
+        framing_refused(req).is_some() || (req.path != CSS_PATH && self.pages.streams(req, peer))
     }
 
     fn handle_stream(&self, req: &Request, body: &mut dyn std::io::Read, peer: &Peer) -> Response {
+        if let Some(r) = framing_refused(req) {
+            return secured(r);
+        }
         secured(self.pages.page_stream(req, body, peer))
     }
 }
 
-/// Port 80: every request is sent to 443.
-pub struct Redirect;
+/// Port 80: every request is sent to 443 of the console itself.
+pub struct Redirect {
+    /// The console's host name.
+    pub host: String,
+    /// The address the request came to, as a URL names it.
+    pub local: String,
+}
 
-/// Where a request on 80 is sent: its host without a port, its path
-/// and query.
-pub fn https_location(req: &Request, local: &str) -> String {
-    let host = req
+/// The address `ip` as a URL's host names it.
+pub fn url_host(ip: std::net::IpAddr) -> String {
+    match ip {
+        std::net::IpAddr::V4(v4) => v4.to_string(),
+        std::net::IpAddr::V6(v6) => format!("[{v6}]"),
+    }
+}
+
+/// Where a request on 80 is sent: the host it asked for, without its
+/// port, when that names the console (`local`, the address it came to,
+/// or `name`, its host name, alone or with a domain), else `local`; its
+/// path and query. A redirect never leaves the console.
+pub fn https_location(req: &Request, name: &str, local: &str) -> String {
+    let asked = req
         .header("host")
         .map(str::trim)
         .filter(|h| !h.is_empty() && h.bytes().all(|b| b.is_ascii_graphic()))
-        .unwrap_or(local);
+        .unwrap_or("");
     // `[v6]:port` keeps its brackets; `name:port` loses the port.
-    let host = match host.rsplit_once(':') {
+    let asked = match asked.rsplit_once(':') {
         Some((h, p)) if p.bytes().all(|b| b.is_ascii_digit()) && !h.ends_with(':') => h,
-        _ => host,
+        _ => asked,
+    };
+    let first = asked.split('.').next().unwrap_or("");
+    let named = !name.is_empty()
+        && first.eq_ignore_ascii_case(name)
+        && asked
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'.' || b == b'-');
+    let host = if named || asked.eq_ignore_ascii_case(local) {
+        asked
+    } else {
+        local
     };
     let mut to = format!("https://{host}{}", req.path);
     if !req.query.is_empty() {
@@ -165,14 +219,13 @@ impl Handler for Redirect {
         BRAND.server_header()
     }
 
-    fn handle(&self, req: &Request, peer: &Peer) -> Response {
-        let local = peer.addr.ip().to_string();
+    fn handle(&self, req: &Request, _: &Peer) -> Response {
         Response::new(
             301,
             "text/plain; charset=utf-8",
             b"Moved to HTTPS.\n".to_vec(),
         )
-        .with("Location", &https_location(req, &local))
+        .with("Location", &https_location(req, &self.host, &self.local))
         .with("Cache-Control", "no-store")
     }
 }
@@ -191,21 +244,56 @@ mod tests {
 
     #[test]
     fn port_80_sends_the_same_path_to_443() {
+        let to = |target, host| https_location(&request(target, host), "QSMC123456", "10.0.0.1");
         assert_eq!(
-            https_location(
-                &request("/qsmc/welcome?x=1", Some("qsmc.example:80")),
-                "10.0.0.1"
-            ),
-            "https://qsmc.example/qsmc/welcome?x=1"
+            to("/qsmc/welcome?x=1", Some("qsmc123456.example:80")),
+            "https://qsmc123456.example/qsmc/welcome?x=1"
         );
-        assert_eq!(
-            https_location(&request("/", None), "10.0.0.1"),
-            "https://10.0.0.1/"
-        );
-        assert_eq!(
-            https_location(&request("/", Some("bad host\r\n")), "10.0.0.1"),
-            "https://10.0.0.1/"
-        );
+        assert_eq!(to("/", Some("QSMC123456")), "https://QSMC123456/");
+        assert_eq!(to("/", Some("10.0.0.1:80")), "https://10.0.0.1/");
+        assert_eq!(to("/", None), "https://10.0.0.1/");
+        assert_eq!(to("/", Some("bad host\r\n")), "https://10.0.0.1/");
+        assert_eq!(url_host("fe80::1".parse().unwrap()), "[fe80::1]");
+    }
+
+    #[test]
+    fn a_body_said_two_ways_is_refused() {
+        let with = |headers: &[(&str, &str)]| {
+            let mut r = request("/qsmc/signon", None);
+            for (k, v) in headers {
+                r.headers.push(((*k).into(), (*v).into()));
+            }
+            framing_refused(&r).map(|r| r.status)
+        };
+        assert_eq!(with(&[("content-length", "4")]), None);
+        assert_eq!(with(&[("transfer-encoding", "chunked")]), None);
+        for two in [
+            &[("content-length", "4"), ("transfer-encoding", "chunked")][..],
+            &[("content-length", "4"), ("content-length", "5")],
+            &[
+                ("transfer-encoding", "chunked"),
+                ("transfer-encoding", "chunked"),
+            ],
+            &[("transfer-encoding", "gzip, chunked")],
+            &[("transfer-encoding", "xchunked")],
+        ] {
+            assert_eq!(with(two), Some(400), "{two:?}");
+        }
+    }
+
+    #[test]
+    fn a_redirect_never_leaves_the_console() {
+        let to = |host| https_location(&request("/x", Some(host)), "QSMC123456", "10.0.0.1");
+        for elsewhere in [
+            "evil.example",
+            "evil.example:80",
+            "qsmc123456@evil.example",
+            "10.0.0.2",
+            "qsmc1234567.example",
+            "[::1]:80",
+        ] {
+            assert_eq!(to(elsewhere), "https://10.0.0.1/x", "{elsewhere}");
+        }
     }
 
     #[test]

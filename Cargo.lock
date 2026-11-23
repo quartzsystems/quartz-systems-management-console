@@ -243,8 +243,13 @@ dependencies = [
  "fetchd",
  "hex",
  "loadsource",
+ "msg",
+ "pesign",
  "qemu",
+ "qmcmsg",
+ "qsmcprobd",
  "qsmcupdd",
+ "refcode",
  "release",
  "serde_json",
  "sha2 0.11.0",
@@ -439,6 +444,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "confine"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=dec674bd0b432da728a1dc00aa1adda1303d351b#dec674bd0b432da728a1dc00aa1adda1303d351b"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "conformance"
 version = "0.1.0"
 dependencies = [
@@ -467,6 +480,7 @@ dependencies = [
  "refcode",
  "release",
  "rustls",
+ "sandbox",
  "seed",
  "servicedump",
  "sha2 0.11.0",
@@ -1784,6 +1798,7 @@ dependencies = [
  "refcode",
  "release",
  "rustix",
+ "sandbox",
  "serde_json",
  "servicedump",
  "state",
@@ -1806,6 +1821,7 @@ dependencies = [
  "libc",
  "refcode",
  "release",
+ "sandbox",
  "state",
  "supervise",
 ]
@@ -1842,6 +1858,7 @@ dependencies = [
  "refcode",
  "release",
  "rustix",
+ "sandbox",
  "seed",
  "servicedump",
  "state",
@@ -1878,6 +1895,7 @@ dependencies = [
  "logd",
  "refcode",
  "release",
+ "sandbox",
 ]
 
 [[package]]
@@ -1890,6 +1908,7 @@ dependencies = [
  "qsitrust",
  "refcode",
  "release",
+ "sandbox",
  "supervise",
 ]
 
@@ -1900,6 +1919,7 @@ dependencies = [
  "netd",
  "refcode",
  "release",
+ "sandbox",
 ]
 
 [[package]]
@@ -1912,6 +1932,7 @@ dependencies = [
  "qmcmsg",
  "refcode",
  "release",
+ "sandbox",
  "supervise",
 ]
 
@@ -1924,6 +1945,7 @@ dependencies = [
  "mgmtproto",
  "refcode",
  "release",
+ "sandbox",
  "schedd",
  "state",
  "supervise",
@@ -1937,6 +1959,7 @@ dependencies = [
  "inventory",
  "refcode",
  "release",
+ "sandbox",
  "stgd",
 ]
 
@@ -1949,6 +1972,7 @@ dependencies = [
  "qmcmsg",
  "refcode",
  "release",
+ "sandbox",
  "schedd",
  "state",
  "update",
@@ -1962,6 +1986,7 @@ version = "0.1.0"
 dependencies = [
  "refcode",
  "release",
+ "sandbox",
  "users",
  "webd",
  "webpages",
@@ -2235,6 +2260,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "sandbox"
+version = "0.1.0"
+dependencies = [
+ "confine",
+ "libc",
 ]
 
 [[package]]

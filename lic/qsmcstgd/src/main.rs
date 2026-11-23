@@ -25,6 +25,8 @@ fn main() {
     }
 
     static APPLIANCE: release::Appliance = release::appliance(remote::post, remote::note);
+    // Confined before it starts a thread (docs/SECURITY.md).
+    sandbox::confine_or_end(sandbox::Service::Stgd);
     // It returns only when it could not start.
     let e = stgd::serve::run(&APPLIANCE, Host { inventory });
     eprintln!("the storage service did not start: {e}");

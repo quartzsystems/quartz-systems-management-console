@@ -811,6 +811,9 @@ catalogue! {
     PRB_STORAGE_LOST = "QMC7341", 30, "The storage service of the mirrored load source stopped: &1.",
         "The data file system has no server and nothing more was written.",
         "Restart the console, then report this problem with a console dump.";
+    PRB_SERVICE_CONFINED = "QMC7342", 30, "Service &1 was ended by its confinement: it made a system call its policy does not allow.",
+        "The service is started again at once; the call was refused before it was made.",
+        "If this problem is opened again, report it with the system log and a console dump.";
 
     // Product streams and `fetchd`.
     STREAM_NOT_SIGNED = "QMC7201", 30, "The &1 stream's index is not signed by a key this console trusts.",
@@ -923,6 +926,7 @@ pub mod base {
         PRB_DOWNLOAD_BAD,
         PRB_PID1,
         PRB_STORAGE_LOST,
+        PRB_SERVICE_CONFINED,
     );
 }
 

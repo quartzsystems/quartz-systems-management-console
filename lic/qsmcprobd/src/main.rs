@@ -43,6 +43,8 @@ fn main() {
         data: PathBuf::from(release::DATA_DIR),
         share: keep,
     };
+    // Confined before it starts a thread (docs/SECURITY.md).
+    sandbox::confine_or_end(sandbox::Service::Probd);
     // It returns only when it could not start.
     let e = problem::serve::run(host);
     eprintln!("the problem service did not start: {e}");

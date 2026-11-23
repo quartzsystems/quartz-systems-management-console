@@ -72,7 +72,7 @@ fn view(rq: &Rq<'_>) -> Version {
     let kernel = app.console.kernel();
     Version {
         release: release::RELEASE.to_string(),
-        build: release::BUILD_ID.into(),
+        build: release::build_shown(),
         built: String::new(),
         fixes: "None".into(),
         kernel: if kernel.is_empty() {

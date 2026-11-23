@@ -199,6 +199,7 @@ pub const HARDENING_Y: &[&str] = &[
     "RANDOMIZE_MEMORY",
     "CPU_MITIGATIONS",
     "SECURITY_YAMA",
+    "SECURITY_LANDLOCK",
     "LEGACY_VSYSCALL_NONE",
 ];
 

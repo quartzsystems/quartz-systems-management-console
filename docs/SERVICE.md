@@ -93,6 +93,7 @@ doubled. Its log is in `/data/problems`.
 | A kernel panic found at the next IPL | `A3001005` | | |
 | A load-source unit failed, or the units ran apart | `A3003020`, `A3003030`, `A3003040` | the disk unit | `C3003025`, `C3003035`, `C3003050` |
 | A service stopped after its retries | `A3001080` | the service | |
+| A service ended by its confinement (`docs/SECURITY.md`) | `A3001085` | the service | |
 | A pending slot not confirmed, the console back on the other | `A3001035` | the code slot | |
 | An update that failed to install | `A3007030` | the code slot | `C3007040` |
 | `/data` nearly full | `A3006010` | | `C3006010` |

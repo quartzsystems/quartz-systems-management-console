@@ -47,6 +47,8 @@ fn run() -> Result<(), String> {
     while !state.is_dir() {
         std::thread::sleep(std::time::Duration::from_secs(5));
     }
+    // Confined once /data is there, before its first thread.
+    sandbox::confine_or_end(sandbox::Service::Schedd);
     release::trial::migrate_after(
         state.clone(),
         &[(

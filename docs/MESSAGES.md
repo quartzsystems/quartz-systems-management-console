@@ -67,7 +67,7 @@ request refused.
 | `QMC7101`-`QMC7117` | the console's own code update: what `base/update` refuses, in the console's words |
 | `QMC7201`-`QMC7210` | product streams, the download service `fetchd`, and a downloaded host update |
 | `QMC7301`-`QMC7305` | the console's own problem log: what `base/problem` refuses |
-| `QMC7311`-`QMC7341` | the console's own problems: each condition's description, what to do its second level (`docs/SERVICE.md`) |
+| `QMC7311`-`QMC7342` | the console's own problems: each condition's description, what to do its second level (`docs/SERVICE.md`) |
 | `QMC7401`-`QMC7402` | serviceable events closed and noted |
 | `QMC7501`-`QMC7506` | Manage dumps: deleted, chosen, copied, taken |
 | `QMC8001`-`QMC8011` | users, roles and form values |
@@ -192,6 +192,7 @@ request refused.
 | `QMC7339` | 30 | A downloaded file did not match its product stream's index: &1. | Its size or SHA-256 is not the one the signed index names; it was removed. | Download it again; if it fails again, the server or the path to it changes what it sends. |
 | `QMC7340` | 30 | The console's first process failed: &1. | PID 1 panicked and the console parked. | Report this problem with the text after it and a console dump. |
 | `QMC7341` | 30 | The storage service of the mirrored load source stopped: &1. | The data file system has no server and nothing more was written. | Restart the console, then report this problem with a console dump. |
+| `QMC7342` | 30 | Service &1 was ended by its confinement: it made a system call its policy does not allow. | The service is started again at once; the call was refused before it was made. | If this problem is opened again, report it with the system log and a console dump. |
 | `QMC7401` | 0 | Serviceable event &1 closed. | The system that owns the problem closed it, with your user name. | None. |
 | `QMC7402` | 0 | Note added to serviceable event &1. | The system that owns the problem added it to the analysis log, with your user name. | None. |
 | `QMC7501` | 0 | Dump &1 deleted from &2. | The system that held the dump deleted it. | None. |

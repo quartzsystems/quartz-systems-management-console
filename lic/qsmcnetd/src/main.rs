@@ -13,6 +13,8 @@ fn main() {
     use refcode::post::remote;
 
     static APPLIANCE: release::Appliance = release::appliance(remote::post, remote::note);
+    // Confined before it starts a thread (docs/SECURITY.md).
+    sandbox::confine_or_end(sandbox::Service::Netd);
     // It returns only when it could not start.
     let Err(e) = netd::serve::run(&APPLIANCE, Vec::new);
     eprintln!("the network service did not start: {e}");

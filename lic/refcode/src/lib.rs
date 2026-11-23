@@ -266,6 +266,12 @@ pub const SERVICE_STOPPED: RefCode = attention(
     "Service stopped",
     "Restart the console; if the service stops again, report this code with the system log",
 );
+/// A service made a call its confinement does not allow, and was ended.
+pub const SERVICE_CONFINED: RefCode = attention(
+    "A3001085",
+    "Service ended by its confinement",
+    "The service is started again; if it is posted again, report this code with the system log and a console dump",
+);
 /// The firmware's boot order could not be written at confirmation.
 pub const BOOT_ORDER_NOT_WRITTEN: RefCode = attention(
     "A3001095",
@@ -557,6 +563,7 @@ pub const ALL: &[&RefCode] = &[
     &IDENTITY_NOT_GENERATED,
     &MGMT_NOT_SHARED,
     &SERVICE_STOPPED,
+    &SERVICE_CONFINED,
     &BOOT_ORDER_NOT_WRITTEN,
     &NO_INTERFACE,
     &NO_CARRIER,

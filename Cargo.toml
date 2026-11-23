@@ -13,6 +13,8 @@ members = [
     "lic/qsmcinit",
     "lic/release",
     "lic/refcode",
+    # Every service confined: its paths, ports and calls.
+    "lic/sandbox",
     # The services: the base crates' own, run as QS/MC.
     "lic/qsmcstgd",
     "lic/qsmclogd",
@@ -81,6 +83,7 @@ problem = { git = "https://github.com/quartzsystems/quartz-systems-virtual-serve
 servicedump = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "dec674bd0b432da728a1dc00aa1adda1303d351b" }
 stream = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "dec674bd0b432da728a1dc00aa1adda1303d351b" }
 msg = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "dec674bd0b432da728a1dc00aa1adda1303d351b" }
+confine = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "dec674bd0b432da728a1dc00aa1adda1303d351b" }
 # base/qemu, the harness's QEMU driver, named as QS/VS's harness names it.
 driver = { package = "qemu", git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "dec674bd0b432da728a1dc00aa1adda1303d351b" }
 buildkit = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "960861dc3a948f6c9004f30b0f155732029d025c" }
@@ -106,6 +109,8 @@ updcat = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "9
 # The shipped root authorities, which the download service checks an
 # https:// update server by.
 certs = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "960861dc3a948f6c9004f30b0f155732029d025c" }
+# Secure Boot signing of a release's UKIs, under base/buildaid.
+pesign = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "960861dc3a948f6c9004f30b0f155732029d025c" }
 
 anyhow = "1.0.104"
 ed25519-dalek = "3.0.0"

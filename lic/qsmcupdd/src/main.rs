@@ -38,6 +38,8 @@ fn main() {
         partitions: || Box::new(update::Nothing),
         names: &release::LOAD_SOURCE,
     };
+    // Confined before it starts a thread (docs/SECURITY.md).
+    sandbox::confine_or_end(sandbox::Service::Updd);
     // It returns only when it could not start.
     let e = update::serve::run(host);
     eprintln!("the update service did not start: {e}");

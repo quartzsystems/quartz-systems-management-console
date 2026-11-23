@@ -22,6 +22,7 @@ pub mod install;
 pub mod mgmt;
 pub mod parts;
 pub mod plans;
+pub mod sec;
 pub mod serv;
 pub(crate) mod steps;
 pub mod web;
@@ -108,6 +109,7 @@ pub fn names(media: Media) -> Vec<&'static str> {
             .chain(parts::SUITES.iter().map(|(name, _)| *name))
             .chain(serv::SUITES.iter().map(|(name, _)| *name))
             .chain(plans::SUITES.iter().map(|(name, _)| *name))
+            .chain(sec::SUITES.iter().map(|(name, _)| *name))
             .collect(),
         Media::Iso => steps::ISO.iter().map(steps::Step::name).collect(),
     }
@@ -199,7 +201,8 @@ impl Suite {
                 .chain(mgmt::SUITES)
                 .chain(parts::SUITES)
                 .chain(serv::SUITES)
-                .chain(plans::SUITES);
+                .chain(plans::SUITES)
+                .chain(sec::SUITES);
             // A suite run by name only, when it is named.
             let named = mgmt::NAMED
                 .iter()

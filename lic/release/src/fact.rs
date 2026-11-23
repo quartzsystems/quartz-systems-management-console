@@ -40,6 +40,10 @@ pub const READY: &str = "ready";
 pub const PROCESSOR: &str = "processor";
 /// The machine: its serial number and what the inventory counts.
 pub const MACHINE: &str = "machine";
+/// What signed the image and whether the firmware checks it: `release
+/// key` or `development key`, then `Secure Boot on`, `off` or
+/// `unknown`.
+pub const SIGNATURE: &str = "signature";
 /// The outcome of the last web interface request made to PID 1 while
 /// the web server was down: `<key>: done` or `<key>: <why not>`.
 pub const WEB_REQUEST: &str = "web.request";

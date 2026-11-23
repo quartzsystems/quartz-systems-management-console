@@ -85,6 +85,8 @@ fn run() -> Result<(), String> {
     let calls = bind(release::MGMTD_SOCKET)?;
     let consoles = bind(release::MGMTD_CONSOLES)?;
     sys::become_user(release::MGMT_ID).map_err(|e| format!("becoming its user: {e}"))?;
+    // Its own user, then confined before its first thread.
+    sandbox::confine_or_end(sandbox::Service::Mgmtd);
     let data = Path::new(release::DATA_DIR);
     let state = data.join("state");
     let identity = identity(&state);

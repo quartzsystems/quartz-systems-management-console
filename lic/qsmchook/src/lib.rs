@@ -38,6 +38,16 @@ pub const WEBD_FAILS: &str = "webd-fails";
 /// minutes: the update that rolls back (`docs/UPDATES.md`).
 pub const SHORT_TRIAL: &str = "short-trial";
 
+/// The hook that has every service report a call its confinement
+/// refuses and fail it, instead of ending: the learning mode.
+pub const CONFINE_LEARN: &str = "confine-learn";
+
+/// The hook `confine-trip-<service>`: that service makes a forbidden
+/// call once confined, once.
+pub fn confine_trip(service: &str) -> String {
+    format!("confine-trip-{service}")
+}
+
 /// The SMBIOS OEM string that switches the hook `name` on:
 /// `qsmc.hook=<name>`.
 pub fn oem_string(name: &str) -> String {

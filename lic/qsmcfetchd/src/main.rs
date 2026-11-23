@@ -80,6 +80,8 @@ fn run() -> Result<(), String> {
     }
     sys::become_user(release::FETCH_ID, release::MGMT_ID)
         .map_err(|e| format!("becoming its user: {e}"))?;
+    // Its own user, then confined before its first thread.
+    sandbox::confine_or_end(sandbox::Service::Fetchd);
     release::trial::migrate_after(
         PathBuf::from(release::FETCH_DIR),
         &[(

@@ -12,6 +12,8 @@ fn main() {
     use refcode::post::remote;
 
     static APPLIANCE: release::Appliance = release::appliance(remote::post, remote::note);
+    // Confined before it opens anything (docs/SECURITY.md).
+    sandbox::confine_or_end(sandbox::Service::Logd);
     // It returns only when it could not start.
     let Err(e) = logd::serve::run(&APPLIANCE, logd::files::Limits::default());
     eprintln!("the log service did not start: {e}");

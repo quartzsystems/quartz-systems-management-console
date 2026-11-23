@@ -81,6 +81,7 @@ pub const CONDITIONS: &[Condition] = &[
     opens("A3001075", &m::PRB_IDENTITY, &[], &["C3001075"]),
     opens("A3001076", &m::PRB_MGMT_NOT_SHARED, &[], &[]),
     opens("A3001080", &m::PRB_SERVICE_STOPPED, &[SERVICE], &[]),
+    opens("A3001085", &m::PRB_SERVICE_CONFINED, &[SERVICE], &[]),
     opens("A3001095", &m::PRB_BOOT_ORDER, &[CODE_SLOT], &[]),
     opens("A3002005", &m::PRB_NO_INTERFACE, &[], &["C3002010"]),
     opens(

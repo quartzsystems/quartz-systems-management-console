@@ -101,9 +101,17 @@ pub fn userland(ctx: &Ctx, image: Image) -> Result<Vec<PathBuf>> {
         "userland: {HOOKS_ENV}={hooks} cargo build --release -p {} --target {RUST_TARGET}",
         names.join(" -p ")
     );
+    // Which kind of key signs this image: the binaries say so.
+    let key_kind = if env::var_os(ctx.product.env_name("SIGNING_KEY")).is_some() {
+        "release"
+    } else {
+        "development"
+    };
+    info!("userland: QSMC_KEY_KIND={key_kind}");
     let mut cmd = Cmd::new(cargo, "userland");
     cmd.cwd(&ctx.paths.repo)
         .env(HOOKS_ENV, hooks)
+        .env("QSMC_KEY_KIND", key_kind)
         .args(["build", "--release", "--locked"]);
     for name in &names {
         cmd.args(["-p", name]);

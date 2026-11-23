@@ -66,3 +66,48 @@ pub fn has(name: &str) -> bool {
     let wanted = format!("{}{}={name}", release::KEY_PREFIX, release::HOOK_KEY);
     inventory::oem_strings(&inventory::Roots::default()).contains(&wanted)
 }
+
+/// Every service's refused calls reported and failed, not fatal: the
+/// learning mode its policy is derived in (`docs/SECURITY.md`).
+pub const CONFINE_LEARN: &str = "confine-learn";
+
+/// `confine-trip-<service>`: that service makes a forbidden call once
+/// confined, once.
+pub const CONFINE_TRIP: &str = "confine-trip-";
+
+/// Write the services' confinement hooks (`sandbox::HOOKS`) from this
+/// IPL's, before any service starts.
+pub fn write_confine() {
+    let prefix = format!("{}{}=", release::KEY_PREFIX, release::HOOK_KEY);
+    let mut lines = Vec::new();
+    for s in inventory::oem_strings(&inventory::Roots::default()) {
+        let Some(hook) = s.strip_prefix(&prefix) else {
+            continue;
+        };
+        if hook == CONFINE_LEARN {
+            lines.push("learn".to_string());
+        } else if let Some(service) = hook.strip_prefix(CONFINE_TRIP) {
+            lines.push(format!("trip {service}"));
+        }
+    }
+    let _ = std::fs::write(sandbox::HOOKS, joined(&lines));
+}
+
+/// `service` made its forbidden call: started again, it does not.
+pub fn tripped(service: &str) {
+    let Ok(text) = std::fs::read_to_string(sandbox::HOOKS) else {
+        return;
+    };
+    let gone = format!("trip {service}");
+    let kept: Vec<String> = text
+        .lines()
+        .filter(|l| l.trim() != gone)
+        .map(str::to_string)
+        .collect();
+    let _ = std::fs::write(sandbox::HOOKS, joined(&kept));
+}
+
+/// Lines, each ended.
+fn joined(lines: &[String]) -> String {
+    lines.iter().map(|l| l.clone() + "\n").collect()
+}

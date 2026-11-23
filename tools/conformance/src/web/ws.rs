@@ -25,8 +25,14 @@ pub struct Ws {
 }
 
 impl Browser {
-    /// Open the WebSocket at `path` in this browser's session.
+    /// Open the WebSocket at `path` in this browser's session, from the
+    /// console's own page, as a browser says (`Origin`).
     pub fn websocket(&self, path: &str) -> Result<Ws, String> {
+        self.websocket_from(path, Some(&format!("https://{}", self.host)))
+    }
+
+    /// The same from `origin`; `None`: no `Origin` said.
+    pub fn websocket_from(&self, path: &str, origin: Option<&str>) -> Result<Ws, String> {
         let sock = TcpStream::connect(("127.0.0.1", self.https)).map_err(|e| e.to_string())?;
         // The handshake and the upgrade wait as a browser would; the
         // frames after are read a short while at a time.
@@ -41,8 +47,11 @@ impl Browser {
             .as_ref()
             .map(|c| format!("Cookie: QSMCSID={c}\r\n"))
             .unwrap_or_default();
+        let origin = origin
+            .map(|o| format!("Origin: {o}\r\n"))
+            .unwrap_or_default();
         let head = format!(
-            "GET {path} HTTP/1.1\r\nHost: {}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n{cookie}\r\n",
+            "GET {path} HTTP/1.1\r\nHost: {}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n{origin}{cookie}\r\n",
             self.host
         );
         tls.write_all(head.as_bytes()).map_err(|e| e.to_string())?;

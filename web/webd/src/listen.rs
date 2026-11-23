@@ -118,8 +118,8 @@ pub struct Serving {
     pub tls: Arc<ServerConfig>,
     /// The console.
     pub site: Arc<dyn Handler>,
-    /// The redirect.
-    pub redirect: Arc<dyn Handler>,
+    /// The console's host name, which a redirect on 80 may name.
+    pub host: String,
     /// The limits.
     pub gate: Mutex<Gate>,
     /// The pages, which say which addresses are answered.
@@ -166,7 +166,15 @@ fn one(serving: &Serving, stream: TcpStream, from: SocketAddr, port: u16) {
             addr: from,
             secure: false,
         };
-        qsweb::http::serve(&mut plain, &peer, serving.redirect.as_ref());
+        // Sent on to 443 of the address it came to, or a name of it.
+        let local = plain
+            .local_addr()
+            .map_or_else(|_| String::new(), |a| crate::serve::url_host(a.ip()));
+        let redirect = crate::serve::Redirect {
+            host: serving.host.clone(),
+            local,
+        };
+        qsweb::http::serve(&mut plain, &peer, &redirect);
     }
 }
 

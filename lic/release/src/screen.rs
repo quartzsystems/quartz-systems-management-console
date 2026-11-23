@@ -33,6 +33,8 @@ pub const REFERENCE: &str = "Reference";
 pub const PROCESSOR: &str = "Processor";
 /// The machine row's label.
 pub const MACHINE: &str = "Machine";
+/// The signature row's label.
+pub const SIGNATURE: &str = "Signature";
 /// The label of a service's row.
 pub const SERVICE: &str = "Service";
 
@@ -47,7 +49,7 @@ pub fn service(name: &str, state: &str) -> String {
 }
 
 /// The rows of the screen: the label and the fact it shows.
-const ROWS: [(&str, &str); 9] = [
+const ROWS: [(&str, &str); 10] = [
     (SLOT, fact::SLOT),
     (HOST, fact::HOST),
     (MANAGEMENT, fact::MANAGEMENT),
@@ -57,6 +59,7 @@ const ROWS: [(&str, &str); 9] = [
     (REFERENCE, fact::REFERENCE),
     (PROCESSOR, fact::PROCESSOR),
     (MACHINE, fact::MACHINE),
+    (SIGNATURE, fact::SIGNATURE),
 ];
 
 /// The screen for `status`, under `banner`: the facts, then a line a
@@ -89,7 +92,7 @@ mod tests {
     use supervise::control::ServiceStatus;
 
     #[test]
-    fn the_screen_is_the_banner_nine_facts_and_a_line_a_service() {
+    fn the_screen_is_the_banner_ten_facts_and_a_line_a_service() {
         let fact = |k: &str, v: &str| (k.to_string(), v.to_string());
         let status = HostStatus {
             facts: vec![
@@ -103,6 +106,7 @@ mod tests {
                 fact(fact::REFERENCE, "C3001090 Base ready"),
                 fact(fact::PROCESSOR, "has what the cryptography needs"),
                 fact(fact::MACHINE, "serial M525400123456 (derived), 2 threads"),
+                fact(fact::SIGNATURE, "release key, Secure Boot on"),
                 fact(fact::TIME, "1794998523"),
             ],
             services: vec![
@@ -133,6 +137,7 @@ mod tests {
                 "Reference      C3001090 Base ready",
                 "Processor      has what the cryptography needs",
                 "Machine        serial M525400123456 (derived), 2 threads",
+                "Signature      release key, Secure Boot on",
                 "Service        logd       ready",
                 "Service        netd       restarting, 2 failures",
             ]

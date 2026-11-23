@@ -160,7 +160,9 @@ mod on_console {
 
     pub fn main() {
         // PID 1 runs the console so when the load source's units ran
-        // apart: one panel, no session.
+        // apart: one panel, no session. Its calls are confined first
+        // (docs/SECURITY.md).
+        sandbox::confine_or_end(sandbox::Service::Console);
         if std::env::args().nth(1).as_deref() == Some(release::KEEP_UNIT) {
             crate::keep::main();
         }

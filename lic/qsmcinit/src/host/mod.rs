@@ -43,6 +43,9 @@ const TICK: Duration = Duration::from_secs(1);
 const RETRY: Duration = Duration::from_millis(20);
 /// What each service is given to end before it is killed.
 const STOP_GRACE: Duration = Duration::from_secs(5);
+/// How a service its seccomp filter ended is said to have ended
+/// (`sys::reap`): `SIGSYS`.
+const SIGSYS_ENDED: &str = "signal 31";
 /// How long a slot on trial has to confirm before the console restarts
 /// into the other slot: its services never became ready.
 const TRIAL_WAIT: Duration = Duration::from_mins(15);
@@ -291,6 +294,16 @@ impl Host {
                         |d| format!("started again in {} s", d.as_secs()),
                     );
                     self.say(Severity::Warning, &format!("{service}: {how}; {next}"));
+                    // Its seccomp filter ended it (docs/SECURITY.md).
+                    if how == SIGSYS_ENDED {
+                        self.post_about(
+                            &refcode::SERVICE_CONFINED,
+                            service,
+                            &[refcode::event::service(service)],
+                        );
+                        #[cfg(test_hooks)]
+                        crate::hooks::tripped(service);
+                    }
                     // A console that ended has no session any more.
                     if service == table::CONSOLE.name && self.serial_lent {
                         self.lend_serial(false);
@@ -320,6 +333,11 @@ impl Host {
                     } else {
                         Severity::Info
                     };
+                    // The learning mode's reports, on the serial log too.
+                    #[cfg(test_hooks)]
+                    if line.contains(": confine: ") {
+                        self.line(&line);
+                    }
                     self.log.send(Record::new(service, severity, &line));
                 }
                 Occurrence::Killed { service } => {
@@ -457,6 +475,7 @@ impl Host {
             (fact::RELEASE, release::RELEASE.to_string()),
             (fact::BUILD, release::BUILD_ID.to_string()),
             (fact::IMAGE, image.to_string()),
+            (fact::SIGNATURE, signature()),
             (fact::SLOT, self.facts.slot.clone()),
             (fact::RECORD, record),
             (fact::HOST, self.facts.host.clone()),
@@ -660,4 +679,21 @@ impl Host {
             self.turn();
         }
     }
+}
+
+/// The signature fact: the key that signed the image, and whether the
+/// firmware checks it (`docs/RELEASING.md`).
+fn signature() -> String {
+    let key = if release::DEVELOPMENT_KEY {
+        "development key"
+    } else {
+        "release key"
+    };
+    let boot = match loadsource::boot::secure_boot(std::path::Path::new(loadsource::boot::EFIVARS))
+    {
+        Some(true) => "on",
+        Some(false) => "off",
+        None => "unknown",
+    };
+    format!("{key}, Secure Boot {boot}")
 }

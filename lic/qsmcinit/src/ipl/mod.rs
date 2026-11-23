@@ -340,6 +340,16 @@ mod on_console {
 
     /// The services step: what waited for `/data` is started.
     fn services(host: &mut Host) {
+        // Nothing on a writable file system is run: the root read-only,
+        // but for the resolver's folder, the web server's scratch and,
+        // when it has no data file system, the state in memory.
+        let mut writable = vec!["/etc", "/tmp"];
+        if !host.data_mounted {
+            writable.push(release::DATA_DIR);
+        }
+        if let Err(e) = mounts::root_read_only(&writable) {
+            host.line(&format!("the root stays writable: {e}"));
+        }
         host.release_services();
         host.quiet = false;
         let names: Vec<&str> = table::chosen().iter().map(|s| s.name).collect();
@@ -371,8 +381,13 @@ mod on_console {
 
         host.post(&refcode::IPL_STARTED, "");
         host.line(&release::banner());
+        if release::DEVELOPMENT_KEY {
+            host.line(release::DEVELOPMENT_LINE);
+        }
         #[cfg(test_hooks)]
         host.line(crate::hooks::MARKER);
+        #[cfg(test_hooks)]
+        crate::hooks::write_confine();
         let line = std::fs::read_to_string("/proc/cmdline").unwrap_or_default();
         let source = cmdline::parse(&line);
         host.line(&source.line());

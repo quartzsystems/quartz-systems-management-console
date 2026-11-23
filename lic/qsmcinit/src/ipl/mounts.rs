@@ -9,7 +9,7 @@ use std::ffi::CStr;
 use std::path::Path;
 
 use loadsource::boot::EFIVARS;
-use rustix::mount::{MountFlags, UnmountFlags, mount, mount_remount, unmount};
+use rustix::mount::{MountFlags, UnmountFlags, mount, mount_bind, mount_remount, unmount};
 
 /// One mount: source, mount point, type, flags, options.
 struct Mount<'a> {
@@ -105,6 +105,27 @@ pub fn kernel(run: &str) -> Vec<(String, String)> {
 pub fn data(device: &Path, at: &str) -> Result<(), String> {
     let _ = std::fs::create_dir_all(at);
     mount(device, at, "xfs", nodev(), None).map_err(|e| e.to_string())
+}
+
+/// The root, where every program is, read-only from here on, so nothing
+/// written is ever run (`docs/SECURITY.md`): each of `writable`, a folder
+/// of the root a service or PID 1 still writes, is first bound onto
+/// itself with no devices, set-user-ID or execution, then the root's own
+/// mount alone is made read-only, its binds and what they hold kept.
+/// Called before the services that waited for `/data`.
+pub fn root_read_only(writable: &[&str]) -> Result<(), String> {
+    for at in writable {
+        let _ = std::fs::create_dir_all(at);
+        mount_bind(*at, *at).map_err(|e| format!("{at}: {e}"))?;
+        mount_remount(*at, MountFlags::BIND.union(nodev()), c"")
+            .map_err(|e| format!("{at}: {e}"))?;
+    }
+    mount_remount(
+        "/",
+        MountFlags::BIND.union(MountFlags::RDONLY).union(nodev()),
+        c"",
+    )
+    .map_err(|e| format!("/: {e}"))
 }
 
 /// Unmount `at`. When something still holds it, it is at least made

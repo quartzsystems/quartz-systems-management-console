@@ -63,7 +63,10 @@ style-src-attr 'unsafe-inline'; img-src 'self'; form-action 'self';
 frame-ancestors 'none'; base-uri 'none'
 ```
 
-The script is served from the console; the socket is the console's.
+The script is served from the console; the socket is the console's,
+and is opened only from the console's own page: its `Origin` must be
+`https://` and the `Host` the request names, or it is refused with 403
+and audited (Phase 8, `sec-web`).
 `style-src-attr 'unsafe-inline'` is for the style attributes the window
 is drawn with, as the prototype draws it; no other page's policy
 changes (`webd::serve::secured` keeps a page's own policy and gives

@@ -675,6 +675,18 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
 /// `GET /terminal/<host>/<id>/ws`: the script's socket.
 #[cfg(unix)]
 fn socket_route(rq: &Rq<'_>, host: &str, id: u32) -> Response {
+    // A page of another site cannot open a console's terminal: a
+    // browser says where the page that asks is (`docs/TERMINAL.md`).
+    if !same_origin(rq.req) {
+        rq.audit(
+            &format!("open console socket of {host} partition {id}"),
+            "refused: not from the console's own page",
+        );
+        return qsweb::http::plain(
+            403,
+            "This socket is opened only from the console's own page.",
+        );
+    }
     let Some(path) = rq.app.console.consoles() else {
         return qsweb::http::plain(503, "The managed-systems service has no console socket.");
     };
@@ -763,4 +775,40 @@ fn config_route(rq: &Rq<'_>) -> Response {
         messages: Vec::new(),
     };
     rq.page(config::page(&rq.ctx, &v))
+}
+
+/// Whether a socket's request comes from a page of the console itself:
+/// its `Origin` is `https://` and the `Host` it asked.
+fn same_origin(req: &qsweb::http::Request) -> bool {
+    let (Some(origin), Some(host)) = (req.header("origin"), req.header("host")) else {
+        return false;
+    };
+    origin
+        .trim()
+        .strip_prefix("https://")
+        .is_some_and(|o| !o.is_empty() && o.eq_ignore_ascii_case(host.trim()))
+}
+
+#[cfg(test)]
+mod origin_tests {
+    use qsweb::http::Request;
+
+    fn asked(origin: Option<&str>, host: &str) -> bool {
+        let mut r = Request::new("GET", "/qsmc/terminal/H/1/ws");
+        r.headers.push(("host".into(), host.into()));
+        if let Some(o) = origin {
+            r.headers.push(("origin".into(), o.into()));
+        }
+        super::same_origin(&r)
+    }
+
+    #[test]
+    fn only_the_consoles_own_page_opens_a_socket() {
+        assert!(asked(Some("https://10.0.2.15"), "10.0.2.15"));
+        assert!(asked(Some("https://QSMC123456:8443"), "qsmc123456:8443"));
+        assert!(!asked(None, "10.0.2.15"));
+        assert!(!asked(Some("https://evil.example"), "10.0.2.15"));
+        assert!(!asked(Some("http://10.0.2.15"), "10.0.2.15"));
+        assert!(!asked(Some("null"), "10.0.2.15"));
+    }
 }

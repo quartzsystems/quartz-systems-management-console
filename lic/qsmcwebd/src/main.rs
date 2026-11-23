@@ -52,6 +52,8 @@ fn main() {
         std::process::exit(1);
     }
 
+    // Confined before its first thread (docs/SECURITY.md).
+    sandbox::confine_or_end(sandbox::Service::Webd);
     let state = Path::new(release::DATA_DIR).join("state");
     release::trial::migrate_after(state.clone(), MIGRATE, migrated, said);
     let users_db = state.join(users::FILE);

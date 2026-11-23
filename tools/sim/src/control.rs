@@ -15,10 +15,14 @@ use crate::fixture;
 use crate::system::refuse::units;
 use crate::system::{FamilyRefusal, Shared, System, codes, lock};
 
+/// What `markup` and `lie` put where a system names things: every
+/// character a page must escape.
+pub const MARKUP: &str = "<script>alert(1)</script><img src=x onerror=1>\"'&";
+
 /// The commands, for `help`.
 pub const HELP: &str = "pair S | expire S | drop S | stall S on|off | refuse S on|off | down S | up S \
 | refuse-power S ID TEXT... | refuse-panel S ID TEXT... | refuse-family S FAMILY[/OP] ID TEXT... \
-| missing S NAME|none | allow S | nonsense S | oversize S | flood S on|off \
+| missing S NAME|none | allow S | nonsense S | oversize S | markup S | lie S | bad-screen S | flood S on|off \
 | no-credit S on|off | renew S | activate S P [PROFILE] [a|b|d] | shutdown S P [delayed|system|immediate] \
 | state S P not-activated|starting|running|shutting-down|error | fail S POOL UNIT \
 | upload-rate S BYTES|stall|off | uploaded S | code S CODE TEXT... | pcode S P CODE TEXT... \
@@ -372,6 +376,48 @@ pub fn command(systems: &[Shared], line: &str) -> String {
         "nonsense" => {
             s.faults.nonsense = true;
             "nonsense".into()
+        }
+        "markup" => {
+            // Names, a code's text and a console's cells full of markup:
+            // the console shows each as text (`docs/SECURITY.md`).
+            for p in &mut s.parts {
+                p.definition.name = format!("<b>{}</b>\"'&", p.definition.id);
+                if let Some(r) = &mut p.screen {
+                    for (c, ch) in r.frame.cells.iter_mut().zip(MARKUP.chars().cycle()) {
+                        c.ch = ch;
+                    }
+                }
+            }
+            s.model = MARKUP.into();
+            codes::post(&mut s, "B6000666", MARKUP);
+            s.generation += 1;
+            "markup".into()
+        }
+        "lie" => {
+            // A hello that says what the system is not: another product's
+            // release, a model and build of markup, no capability.
+            s.hello.release = "V99R99M99<script>".into();
+            s.build = MARKUP.into();
+            s.hello.caps = 0;
+            s.generation += 1;
+            "lying".into()
+        }
+        "bad-screen" => {
+            // A console's frame whose size is not its cells', its cursor
+            // off the grid and a character past every code page.
+            for p in &mut s.parts {
+                if let Some(r) = &mut p.screen {
+                    r.frame.rows = 200;
+                    r.frame.cols = 250;
+                    r.frame.status.row = 255;
+                    r.frame.status.col = 255;
+                    if let Some(c) = r.frame.cells.first_mut() {
+                        c.ch = '\u{10FFFF}';
+                        c.attr = u16::MAX;
+                    }
+                }
+            }
+            "bad screen".into()
         }
         "oversize" => {
             s.faults.oversize = true;

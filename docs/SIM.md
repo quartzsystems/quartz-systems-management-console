@@ -159,6 +159,9 @@ short, reset or its connection gone: `QSI0702`, nothing kept.
 | `missing S NAME`, `missing S none` | an activation finds `NAME` missing: a virtual disk `POOL/NAME`, a switch, a location code, an image or volume |
 | `allow S` | refuse nothing, nothing missing |
 | `nonsense S`, `oversize S` | after the hello, bytes that are no frame; a frame past every limit |
+| `markup S` | its partitions' names, its model, a code's text (`B6000666`) and its consoles' cells full of markup (`<script>…`, quotes, `&`) |
+| `lie S` | its hello says release `V99R99M99<script>` and no capability, and its build is markup; the session comes back so |
+| `bad-screen S` | its consoles' frames say 200 rows by 250 columns over the cells they have, a cursor off the grid, a character and attribute past every code page |
 | `flood S on\|off` | events as fast as the log takes them |
 | `no-credit S on\|off` | grant no credit on a console's stream |
 | `renew S` | another certificate under the same name |
