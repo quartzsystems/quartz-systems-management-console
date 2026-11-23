@@ -382,11 +382,16 @@ pub fn command(systems: &[Shared], line: &str) -> String {
             // the console shows each as text (`docs/SECURITY.md`).
             for p in &mut s.parts {
                 p.definition.name = format!("<b>{}</b>\"'&", p.definition.id);
+                p.status.name.clone_from(&p.definition.name);
                 if let Some(r) = &mut p.screen {
                     for (c, ch) in r.frame.cells.iter_mut().zip(MARKUP.chars().cycle()) {
                         c.ch = ch;
                     }
                 }
+            }
+            let ids: Vec<u32> = s.parts.iter().map(|p| p.definition.id).collect();
+            for id in ids {
+                s.resources_changed(id);
             }
             s.model = MARKUP.into();
             codes::post(&mut s, "B6000666", MARKUP);

@@ -89,18 +89,18 @@ fn schedules(b: &mut Browser) -> Result<String, String> {
         0,
         qmcmsg::SCHEDULES_FULL.id,
         |_| {
-            answers(
+            // The form's own date and time, as a browser sends them.
+            let r = crate::suite::parts::post_form(
                 b,
                 "/qsmc/schedule/add",
+                ("ok", "OK"),
                 &[
                     ("r", "daily"),
-                    ("op", "Activate partition"),
-                    ("tg", "QSTEST01 on QSHQVS1"),
-                    ("p", "default"),
-                    ("ok", "OK"),
+                    ("op", "Restart partition"),
+                    ("tg", "QSDEV01 on QSHQVS1"),
                 ],
-                "QMC3401",
-            )
+            )?;
+            Ok(shows(&follow(b, &r)?.text(), "QMC3401"))
         },
     )
 }

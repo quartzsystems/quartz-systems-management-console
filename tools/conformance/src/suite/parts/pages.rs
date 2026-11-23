@@ -141,9 +141,15 @@ pub(crate) fn key(path: &str) -> String {
     format!("{p}?{}", kept.join("&"))
 }
 
-/// The links of a page: `<a href>`, `<img src>`, `formaction`.
+/// The links of a page: `<a href>`, `<img src>`, `formaction`. What is
+/// not a page (a file downloaded, a picture) has none.
 pub(crate) fn links(html: &str) -> Vec<String> {
-    qsweb::golden::tokens(html)
+    // Bytes that were not text, or markup the tokens cannot end.
+    if html.contains('\u{fffd}') {
+        return Vec::new();
+    }
+    std::panic::catch_unwind(|| qsweb::golden::tokens(html))
+        .unwrap_or_default()
         .into_iter()
         .filter_map(|t| match t {
             qsweb::golden::Tok::Open(n, a) if n == "a" || n == "img" || n == "input" => a
