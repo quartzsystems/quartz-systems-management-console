@@ -71,17 +71,21 @@ fn markup(lab: &mut Lab<'_>) -> Result<String, String> {
     ))
 }
 
-/// A hello that lies is shown as it says, as text.
+/// A hello that lies is taken for what it is: the session is made
+/// again, nothing of it is shown unescaped, and no capability it denies
+/// is asked of it. The release a page shows is the system's status, not
+/// its hello.
 fn lies(lab: &mut Lab<'_>) -> Result<String, String> {
     lab.fleet.tell(1, "lie");
+    // Its old session closes; the next is made with the lying hello.
+    std::thread::sleep(Duration::from_secs(5));
     let b = &mut lab.c.browser;
     until(
-        "the lying hello on Servers",
+        "the lying system connected again",
         Duration::from_secs(90),
         || {
-            Ok(b.get("/qsmc/servers")?
-                .text()
-                .contains("V99R99M99&lt;script&gt;"))
+            let t = b.get("/qsmc/connectivity")?.text();
+            Ok(crate::suite::serv::row(&t, "QSHQ400").contains(">Connected<"))
         },
     )?;
     for p in [

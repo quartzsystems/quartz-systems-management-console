@@ -48,7 +48,9 @@ fn framing(b: &Browser) -> Result<String, String> {
         // What followed on its connection is refused as well, never
         // answered as a page.
         let all = answers(&raw);
-        let refusals = String::from_utf8_lossy(&raw).matches("HTTP/1.1 400 ").count();
+        let refusals = String::from_utf8_lossy(&raw)
+            .matches("HTTP/1.1 400 ")
+            .count();
         if !matches!(status, Some(400)) || all == 0 || refusals != all {
             return Err(format!(
                 "a body said two ways answered {status:?} with {} answers: {:?}",
@@ -187,9 +189,10 @@ fn headers(path: &str, a: &Answer) -> Result<(), String> {
     want("referrer-policy", "no-referrer")?;
     want("cache-control", "no-store")?;
     let csp = a.header("content-security-policy").unwrap_or("");
-    let script = csp.contains("script-src");
     if window(path) {
-        if !script || !csp.contains("frame-ancestors 'none'") {
+        // With its script, or without it where the window has no
+        // console to show (`docs/TERMINAL.md`).
+        if csp != webpages::terminal::CSP && csp != webpages::terminal::CSP_NO_SCRIPT {
             return Err(format!("{path}: the terminal window's policy is {csp:?}"));
         }
     } else if csp != webd::serve::CSP {

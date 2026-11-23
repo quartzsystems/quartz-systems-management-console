@@ -333,7 +333,8 @@ mod tests {
         };
         let mut two = request("/qsmc/signon", None);
         two.headers.push(("content-length".into(), "0".into()));
-        two.headers.push(("transfer-encoding".into(), "chunked".into()));
+        two.headers
+            .push(("transfer-encoding".into(), "chunked".into()));
         assert_eq!(refused(&two, &peer).map(|r| r.status), Some(400));
         let next = request("/qsmc/welcome", None);
         assert_eq!(refused(&next, &peer).map(|r| r.status), Some(400));

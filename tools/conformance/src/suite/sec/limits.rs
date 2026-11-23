@@ -120,7 +120,7 @@ fn plans(b: &mut Browser) -> Result<String, String> {
         1,
         qmcmsg::PLANS_FULL.id,
         |i| {
-            let named = doc.replacen(&line, &format!("name = \"LIM{i}\""), 1);
+            let named = doc.replacen(&line, &format!("name = \"lim{i}\""), 1);
             let t = crate::suite::plans::import(b, named.as_bytes())?;
             Ok(
                 shows(&t, "QMC6102")
