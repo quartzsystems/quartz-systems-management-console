@@ -252,9 +252,11 @@ pub fn branch(n: u32) -> Shared {
 }
 
 /// Host `n` (1 to 999) of the soak's fleet (Phase 8): a branch host
-/// with `partitions` partitions (64 at most), named `QSSKnnnVS1`.
+/// with `partitions` partitions (64 at most), named `QSSKnnnVS1`, and
+/// QSHQVS1's virtual resources, so a partition made has `VD06` to load
+/// from.
 pub fn fleet(n: u32, partitions: u32) -> Shared {
-    let s = like_branch(
+    let mut s = like_branch(
         &format!("QSSK{n:03}VS1"),
         &format!("10-8E{n:04X}"),
         n,
@@ -262,6 +264,7 @@ pub fn fleet(n: u32, partitions: u32) -> Shared {
         &format!("QSSK{n:03}P"),
         &format!("K3{n:03}"),
     );
+    s.vres = vres::resources();
     shared(s)
 }
 

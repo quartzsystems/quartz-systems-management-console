@@ -312,12 +312,35 @@ pub fn groups(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
 }
 
 /// Make partition `id` named `name` on `host` through the wizard, every
-/// step but the first two on its defaults (Phase 8's soak).
+/// step on its defaults but the first two and the load source, `VD06`
+/// (Phase 8's soak).
 pub(crate) fn create(b: &mut Browser, host: &str, id: u32, name: &str) -> Result<(), String> {
     page(b, &format!("{}?ms={host}", step(1)))?;
     next(b, 1, &[("id", &id.to_string()), ("n", name)])?;
     next(b, 2, &[("p", "default")])?;
-    for n in 3..=8 {
+    for n in 3..=5 {
+        next(b, n, &[])?;
+    }
+    let form = post_answer(
+        b,
+        6,
+        ("add", "Add..."),
+        &[("t", "SCSI client (virtual disk)")],
+    )?;
+    let r = post_on(
+        b,
+        &form.text(),
+        &step(6),
+        ("keep", "OK"),
+        &[("disk", "POOL1/VD06"), ("req", "on")],
+    )?;
+    if r.status != 303 {
+        return Err(format!(
+            "the load source's adapter: {}",
+            message_of(&r.text())
+        ));
+    }
+    for n in 6..=8 {
         next(b, n, &[])?;
     }
     let done = post_answer(b, 9, ("finish", "Finish"), &[])?;
