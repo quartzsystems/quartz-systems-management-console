@@ -1,0 +1,3 @@
+cargo:rerun-if-changed=zones.toml
+cargo:rerun-if-changed=tzdata
+cargo:rerun-if-changed=build/tzdata.rs

@@ -1,0 +1,4 @@
+cargo::rustc-check-cfg=cfg(test_hooks)
+cargo::rustc-check-cfg=cfg(qsmc_next_schema)
+cargo::rerun-if-env-changed=QSMC_TEST_HOOKS
+cargo::rerun-if-env-changed=QSMC_NEXT_SCHEMA

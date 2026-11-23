@@ -26,6 +26,14 @@ mgmtd = { path = "../../mgmt/mgmtd", version = "0.1.0" }
 fetchd = { path = "../../upd/fetchd", version = "0.1.0" }
 qsmcupdd = { path = "../../lic/qsmcupdd", version = "0.1.0" }
 plan = { path = "../../plan/model", version = "0.1.0" }
+schedd = { path = "../../sched/schedd", version = "0.1.0" }
+release = { path = "../../lic/release", version = "0.1.0" }
+qsweb = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "960861dc3a948f6c9004f30b0f155732029d025c" }
+termlook = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "960861dc3a948f6c9004f30b0f155732029d025c" }
+qsi = { git = "https://github.com/quartzsystems/quartz-systems-400", rev = "960861dc3a948f6c9004f30b0f155732029d025c" }
+state = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "dec674bd0b432da728a1dc00aa1adda1303d351b" }
+seed = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "dec674bd0b432da728a1dc00aa1adda1303d351b" }
+netd = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "dec674bd0b432da728a1dc00aa1adda1303d351b" }
 update = { git = "https://github.com/quartzsystems/quartz-systems-virtual-server", rev = "dec674bd0b432da728a1dc00aa1adda1303d351b" }
 
 # The fuzzer's build (`build fuzz`), as QS/400 has it.

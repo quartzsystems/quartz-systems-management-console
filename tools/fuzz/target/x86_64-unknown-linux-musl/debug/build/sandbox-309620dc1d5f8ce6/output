@@ -1,0 +1,4 @@
+cargo::rustc-check-cfg=cfg(test_hooks)
+cargo::rustc-check-cfg=cfg(confine_learn)
+cargo::rerun-if-env-changed=QSMC_TEST_HOOKS
+cargo::rerun-if-env-changed=QSMC_CONFINE_LEARN

@@ -73,6 +73,67 @@ fn system_plan(data: &[u8]) {
     plan::fuzz(data);
 }
 
+/// A request as the web server takes it once `qsweb` has read it: its
+/// framing, the redirect on 80, which never leaves the console, and its
+/// form.
+fn web_request(data: &[u8]) {
+    let Ok(req) = qsweb::http::request::read_request(&mut &data[..], &mut Vec::new()) else {
+        return;
+    };
+    let _ = webd::serve::framing_refused(&req);
+    let to = webd::serve::https_location(&req, "QSMC123456", "10.0.0.1");
+    let host = to
+        .strip_prefix("https://")
+        .and_then(|r| r.split('/').next())
+        .unwrap_or("");
+    let first = host.split('.').next().unwrap_or("");
+    assert!(
+        host == "10.0.0.1" || first.eq_ignore_ascii_case("QSMC123456"),
+        "a redirect left the console: {to}"
+    );
+    let _ = req.form();
+}
+
+/// A terminal window's message from the browser: the keys it names, as
+/// the socket sends them on.
+fn terminal_input(data: &[u8]) {
+    let Ok(text) = std::str::from_utf8(data) else {
+        return;
+    };
+    if let Some(input) = termlook::exchange::Input::parse(text) {
+        for k in input.console_keys() {
+            let _ = qsi::host::console::In::Key(k).piece();
+        }
+    }
+}
+
+/// What the scheduler keeps: its schedules, the plans' index and a
+/// deployment's job, as it reads them again at a start.
+fn sched_store(data: &[u8]) {
+    let Ok(text) = std::str::from_utf8(data) else {
+        return;
+    };
+    let _ = state::store::parse::<schedd::model::Schedules>(text);
+    let _ = state::store::parse::<plan::index::Index>(text);
+    if let Some(j) = plan::job::read(text) {
+        assert!(
+            plan::job::read(&plan::job::write(&j)).is_some(),
+            "a job read writes and reads"
+        );
+    }
+}
+
+/// A seed volume's `seed.toml`, and the console's rule for its
+/// interface roles.
+fn seed_answers(data: &[u8]) {
+    let Ok(text) = std::str::from_utf8(data) else {
+        return;
+    };
+    if let Ok(s) = seed::format::parse(text) {
+        let _ = netd::manage::check_roles(&s.network, release::INTERFACE_ROLES);
+    }
+}
+
 const PLAN: &[u8] = b"schema_version = 1\nname = \"seed\"\ncreated = 1\nby = \"qsadmin\"\nsystem = \"QSHQVS1\"\n\n[host]\nname = \"QSHQVS1\"\nserial = \"10-9F11A2\"\ncores = 8\nmemory_mib = 131072\n\n[[pool]]\nname = \"POOL1\"\nprotection = \"raid6\"\nbytes = 1073741824\n\n[[pool.unit]]\nlocation = \"U9Q10.V1.9F11A2-P1-C2-T1-L0\"\ndisk = \"sdc\"\nbytes = 1073741824\n\n[[switch]]\nname = \"ETHSW0\"\nvlans = [10, 20]\nmtu = 1500\nuplink = [\"U9Q10.V1.9F11A2-P1-C1-T1\"]\n\n[[procpool]]\nname = \"TESTPOOL\"\ncores = [6, 7]\n\n[[vdisk]]\npool = \"POOL1\"\nname = \"VD01\"\nmib = 100\nthick = true\n\n[[volume]]\nname = \"VTAP01\"\nmib = 100\n\n[[image]]\nname = \"A.iso\"\n\n[[partition]]\nid = 1\nname = \"QSDEV01\"\nserial = \"K2M4101\"\nkeylock = \"normal\"\ndefault_profile = \"default\"\n\n[[partition.profile]]\nname = \"default\"\nscsi = [{ slot = 3, luns = [{ lun = 0, backing = \"POOL1/VD01\" }] }]\nethernet = [{ slot = 2, switch = \"ETHSW0\", vlan = 10, mac = \"02:51:53:00:01:02\", required = true }]\noptical = [{ slot = 5, media = \"A.iso\" }]\ntape = [{ slot = 6, media = \"VTAP01\" }]\nphysical_io = [{ location = \"U9Q10.V1.9F11A2-P1-C3\" }]\n\n[partition.profile.processors]\nmode = \"shared\"\nminimum = 1\ndesired = 1\nmaximum = 2\nminimum_units = 10\ndesired_units = 50\nmaximum_units = 100\nsharing = \"uncapped\"\nweight = 128\npool = \"TESTPOOL\"\n\n[partition.profile.memory]\nminimum_mib = 1024\ndesired_mib = 2048\nmaximum_mib = 4096\n\n[partition.profile.boot]\nsource = \"A\"\nipl_type = \"unattended\"\nconsole = \"partition\"\n";
 
 const PAYLOAD: &[u8] =
@@ -194,6 +255,55 @@ pub static TARGETS: &[Target] = &[
         seeds: &[b"QSMCUPDT\x01\x00\x00\x00", b"QSMC-UPDATE 1\nproduct QS/MC\nrelease V1R0M1\n"],
         dict: &[b"QSMCUPDT", b"QSMC-UPDATE 1", b"product ", b"release ", b"state ", b"file ", b"SLOTA.EFI", b"SLOTB.EFI"],
         max_len: 64 * 1024,
+    },
+    Target {
+        name: "web-request",
+        what: "a request after qsweb read it: its framing, the redirect on 80, its form",
+        run: web_request,
+        seeds: &[b"POST /qsmc/signon HTTP/1.1
+Host: QSMC123456
+Content-Length: 9
+
+user=a&b=c"],
+        dict: &[b"
+", b"Host: ", b"Content-Length: ", b"Transfer-Encoding: chunked", b"%2e%2e/", b"&", b"="],
+        max_len: 16 * 1024,
+    },
+    Target {
+        name: "terminal-input",
+        what: "a terminal window's messages from the browser, as keys",
+        run: terminal_input,
+        seeds: &[b"{\"k\":\"Enter\"}", b"{\"t\":\"abc\"}"],
+        dict: &[b"{\"k\":\"", b"{\"t\":\"", b"\"}", b"F24", b"Enter"],
+        max_len: 4096,
+    },
+    Target {
+        name: "sched-store",
+        what: "the scheduler's schedules, the plans' index and a deployment's job",
+        run: sched_store,
+        seeds: &[b"schema_version = 1
+next_id = 1
+"],
+        dict: &[b"schema_version = 1
+", b"[[schedules]]
+", b"[[runs]]
+", b"[[step]]
+", b"id = ", b"\""],
+        max_len: 64 * 1024,
+    },
+    Target {
+        name: "seed-answers",
+        what: "a seed volume's seed.toml and the interface roles",
+        run: seed_answers,
+        seeds: &[b"[network]
+interfaces = []
+"],
+        dict: &[b"[network]
+", b"[install]
+", b"role = \"open\"
+", b"[[network.interfaces]]
+"],
+        max_len: 16 * 1024,
     },
 ];
 

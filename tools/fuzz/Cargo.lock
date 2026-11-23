@@ -540,6 +540,14 @@ version = "0.1.0"
 source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=960861dc3a948f6c9004f30b0f155732029d025c#960861dc3a948f6c9004f30b0f155732029d025c"
 
 [[package]]
+name = "confine"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=dec674bd0b432da728a1dc00aa1adda1303d351b#dec674bd0b432da728a1dc00aa1adda1303d351b"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "const-oid"
 version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1706,6 +1714,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "netd"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=dec674bd0b432da728a1dc00aa1adda1303d351b#dec674bd0b432da728a1dc00aa1adda1303d351b"
+dependencies = [
+ "appliance",
+ "dhcp",
+ "ipc",
+ "libc",
+ "netlink",
+ "ntp",
+ "rustix",
+ "state",
+ "supervise",
+]
+
+[[package]]
 name = "netlink"
 version = "0.1.0"
 source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=960861dc3a948f6c9004f30b0f155732029d025c#960861dc3a948f6c9004f30b0f155732029d025c"
@@ -1767,6 +1791,15 @@ dependencies = [
 name = "ntlm"
 version = "0.1.0"
 source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=960861dc3a948f6c9004f30b0f155732029d025c#960861dc3a948f6c9004f30b0f155732029d025c"
+
+[[package]]
+name = "ntp"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=960861dc3a948f6c9004f30b0f155732029d025c#960861dc3a948f6c9004f30b0f155732029d025c"
+dependencies = [
+ "thiserror 2.0.21",
+ "tracing",
+]
 
 [[package]]
 name = "once_cell"
@@ -2075,9 +2108,17 @@ dependencies = [
  "fetchd",
  "fuzz",
  "mgmtd",
+ "netd",
  "plan",
  "qmcbackup",
+ "qsi",
  "qsmcupdd",
+ "qsweb",
+ "release 0.1.0",
+ "schedd",
+ "seed",
+ "state",
+ "termlook",
  "update",
  "webd",
 ]
@@ -2089,6 +2130,7 @@ dependencies = [
  "qmcmsg",
  "refcode",
  "release 0.1.0",
+ "sandbox",
  "state",
  "update",
 ]
@@ -2379,6 +2421,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "69e4ce4a039f42bf25920b95667e4d789e98749ab11bbb8d2c2936f788421bb5"
 
 [[package]]
+name = "sandbox"
+version = "0.1.0"
+dependencies = [
+ "confine",
+ "libc",
+]
+
+[[package]]
 name = "saverst"
 version = "0.1.0"
 source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=960861dc3a948f6c9004f30b0f155732029d025c#960861dc3a948f6c9004f30b0f155732029d025c"
@@ -2410,6 +2460,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "schedd"
+version = "0.1.0"
+dependencies = [
+ "appliance",
+ "fetchd",
+ "ipc",
+ "mgmtproto",
+ "msg",
+ "plan",
+ "qmcmsg",
+ "qsi",
+ "qsweb",
+ "release 0.1.0",
+ "serde",
+ "state",
+ "update",
+ "vrm",
+ "webusers",
+]
+
+[[package]]
 name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2433,6 +2504,18 @@ dependencies = [
  "thiserror 2.0.21",
  "toml",
  "tracing",
+]
+
+[[package]]
+name = "seed"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=dec674bd0b432da728a1dc00aa1adda1303d351b#dec674bd0b432da728a1dc00aa1adda1303d351b"
+dependencies = [
+ "appliance",
+ "rustix",
+ "serde",
+ "state",
+ "toml",
 ]
 
 [[package]]
@@ -2775,6 +2858,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "svcusers"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=960861dc3a948f6c9004f30b0f155732029d025c#960861dc3a948f6c9004f30b0f155732029d025c"
+dependencies = [
+ "argon2",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "syn"
 version = "2.0.119"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2848,6 +2940,14 @@ dependencies = [
  "ipc",
  "netlink",
  "thiserror 2.0.21",
+]
+
+[[package]]
+name = "termlook"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-400?rev=960861dc3a948f6c9004f30b0f155732029d025c#960861dc3a948f6c9004f30b0f155732029d025c"
+dependencies = [
+ "qsipart",
 ]
 
 [[package]]
@@ -3097,6 +3197,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "users"
+version = "0.1.0"
+source = "git+https://github.com/quartzsystems/quartz-systems-virtual-server?rev=dec674bd0b432da728a1dc00aa1adda1303d351b#dec674bd0b432da728a1dc00aa1adda1303d351b"
+dependencies = [
+ "svcusers",
+]
+
+[[package]]
 name = "utf8parse"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3209,6 +3317,20 @@ dependencies = [
  "supervise",
  "x509kit",
  "zeroize",
+]
+
+[[package]]
+name = "webusers"
+version = "0.1.0"
+dependencies = [
+ "ipc",
+ "release 0.1.0",
+ "serde",
+ "state",
+ "supervise",
+ "svcusers",
+ "toml",
+ "users",
 ]
 
 [[package]]

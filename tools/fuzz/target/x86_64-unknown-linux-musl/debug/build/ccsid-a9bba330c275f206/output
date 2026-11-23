@@ -1,0 +1,3 @@
+cargo:rerun-if-changed=cp037.csv
+cargo:rerun-if-changed=cp
+cargo:rerun-if-changed=cp/mixed
