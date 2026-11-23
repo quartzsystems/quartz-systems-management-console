@@ -1,0 +1,65 @@
+# Copyright (C), 2026 Quartz Systems. Some rights reserved. This work is
+# licensed under the terms of the MIT license which can be found in the
+# root directory of this project.
+#
+# Every fuzz target for as long as asked (four hours by default), one
+# job a target side by side (Phase 8, Section 6). A finding fails its
+# job and is uploaded with the corpus grown; each corpus is reported by
+# its files and bytes.
+
+name: fuzz-long
+
+on:
+  workflow_dispatch:
+    inputs:
+      secs:
+        description: seconds each target runs
+        default: "14400"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fuzz:
+    name: fuzz ${{ matrix.target }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - backup-file
+          - backup-payload
+          - mgmt-peer
+          - mgmt-host
+          - cert-import
+          - mgmt-servicing
+          - stream-index
+          - system-plan
+          - qsmc-update-image
+          - web-request
+          - terminal-input
+          - sched-store
+          - seed-answers
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain (rust-toolchain.toml)
+        run: rustup show active-toolchain || rustup toolchain install
+      - run: cargo run -q -p build -- fuzz --target ${{ matrix.target }} --secs ${{ inputs.secs }}
+      - name: The corpus
+        if: always()
+        run: |
+          d=tools/fuzz/corpus/${{ matrix.target }}
+          echo "$(find "$d" -type f | wc -l) files, $(du -sb "$d" | cut -f1) bytes" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fuzz-${{ matrix.target }}
+          retention-days: 14
+          path: |
+            tools/fuzz/crashes/${{ matrix.target }}
+            tools/fuzz/corpus/${{ matrix.target }}
+          if-no-files-found: ignore
