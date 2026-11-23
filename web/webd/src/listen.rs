@@ -28,7 +28,8 @@ pub const MAX_PER_ADDRESS: usize = 16;
 /// How long a connection may be silent: a request's head and body
 /// arrive within it, and an idle keep-alive ends after it.
 pub const IDLE: Duration = Duration::from_secs(30);
-/// How long the listener sleeps between looks when nothing arrives.
+/// How long the listener waits in `accept` before it looks whether it
+/// is to stop.
 const LOOK: Duration = Duration::from_millis(200);
 
 /// One listening socket of a set.
@@ -241,10 +242,26 @@ fn accept(serving: &Arc<Serving>, listener: &TcpListener, port: u16, stop: &Atom
                         .closed(ip);
                 }
             }
-            Err(e) if e.kind() == io::ErrorKind::WouldBlock => thread::sleep(LOOK),
+            // `LOOK` passed with nothing: look at `stop` again.
+            Err(e)
+                if matches!(
+                    e.kind(),
+                    io::ErrorKind::WouldBlock | io::ErrorKind::TimedOut
+                ) => {}
             Err(_) => thread::sleep(LOOK),
         }
     }
+}
+
+/// A listener whose `accept` blocks for [`LOOK`] at most: Linux's
+/// receive timeout bounds `accept`, so a connection is taken as it
+/// arrives and `stop` is still seen. (Polling a non-blocking listener
+/// held each new connection for most of a sleep.)
+fn waiting(fd: OwnedFd) -> Option<TcpListener> {
+    let as_stream = TcpStream::from(fd);
+    as_stream.set_nonblocking(false).ok()?;
+    as_stream.set_read_timeout(Some(LOOK)).ok()?;
+    Some(TcpListener::from(OwnedFd::from(as_stream)))
 }
 
 /// The listeners of the set in use.
@@ -263,10 +280,9 @@ impl Running {
         }
         self.on.clear();
         for (line, fd) in set {
-            let listener = TcpListener::from(fd);
-            if listener.set_nonblocking(true).is_err() {
+            let Some(listener) = waiting(fd) else {
                 continue;
-            }
+            };
             let stop = Arc::new(AtomicBool::new(false));
             let (s, st, port) = (serving.clone(), stop.clone(), line.port);
             let started = thread::Builder::new()
@@ -301,6 +317,20 @@ mod tests {
         );
         assert!(parse("\n").unwrap().is_empty());
         assert!(parse("443\n").is_err());
+    }
+
+    #[test]
+    fn a_connection_is_taken_as_it_arrives_and_stop_is_seen() {
+        let l = TcpListener::bind("127.0.0.1:0").unwrap();
+        let at = l.local_addr().unwrap();
+        let l = waiting(OwnedFd::from(l)).unwrap();
+        let t = std::time::Instant::now();
+        assert!(l.accept().is_err(), "nothing arrived");
+        assert!(t.elapsed() >= LOOK / 2 && t.elapsed() < LOOK * 10);
+        let _c = TcpStream::connect(at).unwrap();
+        let t = std::time::Instant::now();
+        l.accept().unwrap();
+        assert!(t.elapsed() < LOOK / 4, "{:?}", t.elapsed());
     }
 
     #[test]
