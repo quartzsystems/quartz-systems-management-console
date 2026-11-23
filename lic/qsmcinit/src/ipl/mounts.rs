@@ -122,7 +122,11 @@ pub fn root_read_only(writable: &[&str]) -> Result<(), String> {
     }
     mount_remount(
         "/",
-        MountFlags::BIND.union(MountFlags::RDONLY).union(nodev()),
+        // Read-only, no device nodes or set-user-ID; its programs run.
+        MountFlags::BIND
+            .union(MountFlags::RDONLY)
+            .union(MountFlags::NODEV)
+            .union(MountFlags::NOSUID),
         c"",
     )
     .map_err(|e| format!("/: {e}"))
