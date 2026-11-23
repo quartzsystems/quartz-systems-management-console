@@ -162,6 +162,7 @@ fn fixation(b: &Browser) -> Result<String, String> {
 #[derive(Default)]
 struct Walk {
     pages: usize,
+    redirects: usize,
     windows: usize,
     forms: usize,
     actions: BTreeSet<String>,
@@ -235,7 +236,12 @@ fn walk(b: &mut Browser) -> Result<Walk, String> {
             continue;
         }
         let a = b.get(&path)?;
-        if a.status == 303 || a.status == 404 {
+        // Every link of every page resolves (the design's acceptance).
+        if a.status == 404 || a.status >= 500 {
+            return Err(format!("{path}, a link of a page, answered {}", a.status));
+        }
+        if a.status == 303 {
+            w.redirects += 1;
             continue;
         }
         headers(&path, &a)?;
@@ -361,10 +367,11 @@ pub fn web(run: &Run<'_>) -> Result<String, String> {
         return Err("the crawl's GETs changed what the pages show".into());
     }
     said.push(format!(
-        "{} pages each with the frame, sniffing, referrer and cache headers and the policy without \
+        "{} pages, every link resolving ({} redirects), each with the frame, sniffing, referrer and cache headers and the policy without \
          script ({} terminal windows with their own); {} forms, {} actions, each refused without \
          its token; nothing changed by the crawl's GETs",
         w.pages,
+        w.redirects,
         w.windows,
         w.forms,
         w.actions.len()
