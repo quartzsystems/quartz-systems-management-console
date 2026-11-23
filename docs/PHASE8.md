@@ -106,7 +106,8 @@ path to the console's address, so `GET .evil.example/x` was sent to
 | QEMU 45216241201 | `ae31cbd` | every suite after the accept change | `plans-restart`, `serv-pages`, `serv-streams`, `serv-own`, `install-display` failed (below); cancelled by the next push |
 | QEMU 45231390970 | `119b2e4` | every suite after the fixes | 14 of 14 jobs; 103 suites passed, none failed, the five above among them |
 | nightly 45231462663 | `119b2e4` | the full suite, the release, a short fuzz, the half-hour soak | the full suite, the release twice with its stream and Secure Boot, and the short fuzz passed; `sec-soak` failed on `QSI0102` (below) |
-| QEMU 45267308132 | `fd75ab2` | every suite with `sec-power` and `sec-imports`, after every fix | recorded with the release's hashes, after it |
+| QEMU 45267308132 | `fd75ab2` | every suite with `sec-power` and `sec-imports`, after every fix | 14 of 14 jobs; 105 suites passed, none failed |
+| release 45274171896 | `94c380b` | `release.yml`: V1R0M0, the release tagged `v1.0.0` | passed: built twice, 12 files the same, byte for byte; its stream made and verified (The release, below) |
 | nightly 45260315948 | `b8763be` | the full suite, the release, a short fuzz, the half-hour soak | `sec-soak` passed (below); the short fuzz passed |
 | release 45265148007 | `90b0295` | `release.yml` with the release keys | passed: the signing key's public half `qsmc.pub`; built twice, 12 files the same, byte for byte; its stream made and verified |
 
@@ -187,6 +188,32 @@ hashes are that run's key's, not the release's: the release's are
 written here when Cody builds it with the release keys
 (`docs/RELEASING.md`).
 
+## The release
+
+V1R0M0, build `94c380b`, tagged `v1.0.0`: release run 45274171896,
+with the release keys (the signing key's public half
+`c4cc6899a0ee785ca42918ff29c1277174c8e51d52a066b9d825bb385a72e12b`,
+the Secure Boot db certificate's SHA-256
+`F4:B5:72:24:F3:64:90:63:F1:2B:05:FB:F2:58:F1:A0:F6:84:4D:2A:98:CB:79:E5:3D:F5:82:45:28:9E:FE:5F`),
+built twice from clean and the same byte for byte. The directory is the
+run's artifact `release-V1R0M0`, its `qsmc` stream beside it.
+
+| SHA-256 | File |
+| --- | --- |
+| `230911d2d85b186bf5821d23abb9b07564e76990417d0d3a9ed1842e094362ac` | `MANIFEST.json` |
+| `dd6ec9cfbe63cf2359177c2d932ef2a655c06d06cc2859b899c8890dd5d61549` | `MANIFEST.sig` |
+| `037e2651ca262c2f5dafc285f5cfef0ddda0dd55c19a52ca1ca13818280748b1` | `NOTICES.txt` |
+| `db57a31165df19440ef508cccd7bbcd6b01f1846869c6da238b58c9c27835c72` | `QSMC-V1R0M0-27000675a950.iso` |
+| `fd803c2c7b28656ff2eb6973145d5f7e5606cc50f37ed3411c8fb1cf3e3b9947` | `QSMC-V1R0M0-update-fd803c2c7b28.upd` |
+| `9d66ef4a9a54f2ce52c3503da1db9e74f4b2960c57c0c246b232ac5a5e0aa9d1` | `RELEASE_NOTES_V1R0M0.md` |
+| `3c8662e5c194bd32fc86134efc5d34994217d8d89d3e066a910c4400005011c3` | `catalogue.json` |
+| `6c62e40def94df69400351f4be242dbd4203069fdf55a3a20e1c982a9d980cc1` | `catalogue.schema.json` |
+| `f4b57224f3649063f12b05fbf258f1a0f6844d2a98cb79e53df58245289efe5f` | `qsmc-db.cer` |
+| `08c834300580712efdc24c71846c4b97e4b8cce0798182a6e093bb96b13cabc7` | `stream/index.toml` |
+
+The code at `94c380b` is `fd75ab2`'s, whose QEMU run 45267308132
+passed every suite; `94c380b` changed documents alone.
+
 ## Every `BLOCKED` line of Phases 0 to 7
 
 Phases 3 to 7 wrote none; every one of Phases 0 to 2 is done, and none
@@ -260,8 +287,8 @@ is left for the release notes:
 | 11 | Documents and audits: the headers, other vendors' names, every panel's help, the catalogue | `build doctor`; `ci` green at every commit above |
 | 12 | CI: the nightly runs the full suite, the release, a short fuzz and the soak | `.github/workflows/nightly.yml`; nightly 45260315948 |
 | 13 | A release candidate: the notes and the runbook | `docs/RELEASE_NOTES_V1R0M0.md`, `docs/QUALIFICATION.md` |
-| - | Power pulled while every writer outside `base/state` writes; each file whole after | `sec-power` (Power pulls and hostile files, below) |
-| - | Imported files as hostile, through the pages | `sec-imports` (Power pulls and hostile files, below) |
+| - | Power pulled while every writer outside `base/state` writes; each file whole after | `sec-power` (Power pulls and hostile files, below); QEMU 45267308132 (seed 41659813) |
+| - | Imported files as hostile, through the pages | `sec-imports` (Power pulls and hostile files, below); QEMU 45267308132 |
 | - | No secret in any file under `/data` or on any page | `sec-secrets`: 21 files and 316 pages at `ae31cbd` (at `fe3608d` it walked no folder; `6d19743`) |
 
 ## What the tag waits on
