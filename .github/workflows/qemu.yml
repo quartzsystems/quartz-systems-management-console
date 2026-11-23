@@ -84,6 +84,8 @@ jobs:
       - run: cargo run -q -p build -- doctor
       - run: cargo run -q -p build -- all
       - run: cargo run -q -p build -- --test-image all
+        # Phase 8: one run whose test image learns (lic/sandbox).
+        env: { QSMC_CONFINE_LEARN: "1" }
       # Phase 6's updates: the one that installs and the one that rolls back.
       - run: cargo run -q -p build -- --test-image --variant next all
         env: { QSMC_RELEASE: V1R0M1, QSMC_NEXT_SCHEMA: "1" }
