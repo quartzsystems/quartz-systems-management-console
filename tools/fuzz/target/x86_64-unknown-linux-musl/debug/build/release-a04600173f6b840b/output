@@ -1,9 +1,0 @@
-cargo:rerun-if-env-changed=QS400_BUILD_ID
-cargo:rerun-if-changed=C:\Users\cwellman\.cargo\git\checkouts\quartz-systems-400-82e9eb051c96b7e6\960861d\.git/HEAD
-cargo:rerun-if-changed=C:\Users\cwellman\.cargo\git\checkouts\quartz-systems-400-82e9eb051c96b7e6\960861d\.git/index
-cargo:rustc-env=QS400_BUILD_ID=960861d
-cargo:rerun-if-env-changed=QS400_RELEASE
-cargo:rerun-if-changed=C:\Users\cwellman\.cargo\git\checkouts\quartz-systems-400-82e9eb051c96b7e6\960861d\VERSION
-cargo:rustc-env=QS400_RELEASE_V=1
-cargo:rustc-env=QS400_RELEASE_R=1
-cargo:rustc-env=QS400_RELEASE_M=0

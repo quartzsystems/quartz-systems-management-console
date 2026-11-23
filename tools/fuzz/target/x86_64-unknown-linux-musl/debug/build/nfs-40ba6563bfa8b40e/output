@@ -1,7 +1,0 @@
-cargo:rerun-if-changed=x\rpc.x
-cargo:rerun-if-changed=x\rpcb.x
-cargo:rerun-if-changed=x\mount.x
-cargo:rerun-if-changed=x\nfs3.x
-cargo:rerun-if-changed=x\nlm.x
-cargo:rerun-if-changed=x\nsm.x
-cargo:rerun-if-changed=x\nfs4.x
