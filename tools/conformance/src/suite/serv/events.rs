@@ -264,7 +264,12 @@ fn own_rows(b: &mut Browser, what: &str) -> Result<Vec<u64>, String> {
 
 /// Wait until the console's own event with `code` and `what` is listed:
 /// its number.
-fn own_event(b: &mut Browser, code: &str, what: &str, within: Duration) -> Result<u64, String> {
+pub(super) fn own_event(
+    b: &mut Browser,
+    code: &str,
+    what: &str,
+    within: Duration,
+) -> Result<u64, String> {
     let mut n = Vec::new();
     until(
         &format!("the console's {code} about {what}"),

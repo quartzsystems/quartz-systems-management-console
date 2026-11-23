@@ -22,7 +22,7 @@ use qsi::base::Keylock;
 use qsi::host::model::PartitionState;
 
 use super::beside::Beside;
-use super::{page, until};
+use super::{connected, page, until};
 use crate::qemu::session::{Disk, Machine, Size};
 use crate::qemu::term::key;
 use crate::suite::install::{option, titled};
@@ -218,16 +218,6 @@ fn reaches(h: &Beside, id: u32, state: PartitionState, within: Duration) -> Resu
         std::thread::sleep(Duration::from_secs(5));
     }
     Err(format!("the partition is {last:?}, not {state:?}"))
-}
-
-/// Whether Connectivity's row of `name` says Connected.
-fn connected(conn: &str, name: &str) -> bool {
-    let Some(at) = conn.find(&format!(">{name}<")) else {
-        return false;
-    };
-    let start = conn[..at].rfind("<tr").unwrap_or(at);
-    let end = conn[at..].find("</tr>").map_or(conn.len(), |e| at + e);
-    conn[start..end].contains(">Connected<")
 }
 
 /// The codes on the first page of the partition's history.

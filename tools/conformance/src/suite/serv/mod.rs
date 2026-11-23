@@ -279,13 +279,22 @@ pub fn set_clock(guest: &mut crate::qemu::session::Session, secs: i64) -> Result
 /// Kill service `name`; supervision starts it again.
 pub fn kill(guest: &mut crate::qemu::session::Session, name: &str) -> Result<(), String> {
     // One killed a moment ago is started again first.
+    let mut pid = 0;
     until(&format!("{name} running"), Duration::from_secs(60), || {
         let st = super::base::channel(guest)?.status()?;
-        Ok(st.service(name).is_some_and(|s| s.pid != 0))
+        pid = st.service(name).map_or(0, |s| s.pid);
+        Ok(pid != 0)
     })?;
-    super::base::channel(guest)?
-        .ask(&format!("{} {name}", qsmchook::proto::command::KILL))
-        .map(|_| ())
+    super::base::channel(guest)?.ask(&format!("{} {name}", qsmchook::proto::command::KILL))?;
+    // Gone, so that a status read next is not the killed one's.
+    until(
+        &format!("{name} {pid} gone"),
+        Duration::from_secs(30),
+        || {
+            let st = super::base::channel(guest)?.status()?;
+            Ok(st.service(name).is_none_or(|s| s.pid != pid))
+        },
+    )
 }
 
 /// Post `code` through the control socket, about `about`

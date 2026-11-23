@@ -199,10 +199,12 @@ pub fn streams(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     if downloaded(&mut lab.c.guest)? {
         return Err("a file of the wrong size was kept".into());
     }
-    let problems = page(&mut lab.c.browser, "/qsmc/events?rows=100")?;
-    if !problems.contains("A3007110") {
-        return Err("a bad download opened no problem of the console's".into());
-    }
+    // The problem service opens it a moment after the code is posted.
+    until(
+        "a bad download's problem of the console's",
+        Duration::from_secs(60),
+        || Ok(page(&mut lab.c.browser, "/qsmc/events?rows=100")?.contains("A3007110")),
+    )?;
     said.push(
         "a file of the wrong hash and one of the wrong size: QMC7205, removed, A3007110 open"
             .into(),

@@ -173,6 +173,16 @@ pub fn logs(guest: &mut crate::qemu::session::Session, what: &[&str]) -> String 
     lines[from..].join("\n")
 }
 
+/// Whether Connectivity's row of `name` says Connected.
+pub fn connected(conn: &str, name: &str) -> bool {
+    let Some(at) = conn.find(&format!(">{name}<")) else {
+        return false;
+    };
+    let start = conn[..at].rfind("<tr").unwrap_or(at);
+    let end = conn[at..].find("</tr>").map_or(conn.len(), |e| at + e);
+    conn[start..end].contains(">Connected<")
+}
+
 /// The text of `path`, which must answer 200.
 pub fn page(b: &mut Browser, path: &str) -> Result<String, String> {
     let a = b.get(path)?;

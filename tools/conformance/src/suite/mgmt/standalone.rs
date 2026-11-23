@@ -15,7 +15,7 @@ use std::time::{Duration, Instant};
 
 use qsi::host::model::SYSTEM_ID;
 
-use super::{page, until};
+use super::{connected, page, until};
 use crate::qemu::session::{Disk, Machine, Session, Size};
 use crate::suite::web::{ADMIN, PASSWORD, follow, message_of, shows, signed_on, start, submit};
 use crate::web::{Browser, free_port};
@@ -263,16 +263,6 @@ fn same_rows(display: &str, rows: &[String]) -> bool {
         && lines
             .windows(rows.len())
             .any(|w| w.iter().zip(rows).all(|(l, r)| *l == r))
-}
-
-/// Whether Connectivity's row of `name` says Connected.
-fn connected(conn: &str, name: &str) -> bool {
-    let Some(at) = conn.find(&format!(">{name}<")) else {
-        return false;
-    };
-    let start = conn[..at].rfind("<tr").unwrap_or(at);
-    let end = conn[at..].find("</tr>").map_or(conn.len(), |e| at + e);
-    conn[start..end].contains(">Connected<")
 }
 
 /// The codes on the first page of the history.

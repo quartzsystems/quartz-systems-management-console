@@ -14,7 +14,7 @@ use super::{
     read, table, untouchable, with_status,
 };
 use crate::suite::base::Run;
-use crate::suite::mgmt::{page, until};
+use crate::suite::mgmt::{connected, page, until};
 use crate::suite::web::{ADMIN, PASSWORD, boot, message_of, shows, signed_on};
 
 /// How long a deployment against the simulator may take.
@@ -392,6 +392,15 @@ pub fn restart(run: &Run<'_>) -> Result<String, String> {
         ));
     }
     tell(&lab, 1, "allow");
+    // The web server may answer before mgmtd has the hosts again.
+    until(
+        "both hosts connected again",
+        Duration::from_secs(120),
+        || {
+            let conn = page(&mut c.browser, "/qsmc/connectivity")?;
+            Ok(connected(&conn, VS1) && connected(&conn, VS2))
+        },
+    )?;
     wizard(&mut c.browser, &name, VS2, &[1, 2], false)?;
     let (id, again) = ended(&mut c.browser, &name, VS2, DEPLOYS)?;
     c.guest.kill();

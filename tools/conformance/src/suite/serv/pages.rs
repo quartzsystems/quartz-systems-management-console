@@ -9,6 +9,7 @@
 //! matrix says.
 
 use std::collections::{BTreeSet, VecDeque};
+use std::time::Duration;
 
 use webusers::{Matrix, Role, Task};
 
@@ -41,15 +42,14 @@ fn streamed(path: &str) -> bool {
     p == "/qsmc/dumps/download" || p == "/qsmc/updates/code/download"
 }
 
-/// The pages a crawl starts from.
-fn seeds(n: u64) -> Vec<String> {
+/// The pages a crawl starts from: `n` the host's event, `own` the
+/// console's.
+fn seeds(n: u64, own: u64) -> Vec<String> {
     let mut v: Vec<String> = [
         "/qsmc/welcome",
         "/qsmc/events",
         "/qsmc/events?s=All",
         "/qsmc/events?s=Closed&ms=QSHQ400",
-        "/qsmc/event/console/1",
-        "/qsmc/confirm/event-close?c=1",
         "/qsmc/dumps",
         "/qsmc/updates",
         "/qsmc/updates/code",
@@ -63,6 +63,8 @@ fn seeds(n: u64) -> Vec<String> {
         v.push(format!("/qsmc/event/{n}{tail}"));
     }
     v.push(format!("/qsmc/confirm/event-close?n={n}"));
+    v.push(format!("/qsmc/event/console/{own}"));
+    v.push(format!("/qsmc/confirm/event-close?c={own}"));
     v.push(format!("/qsmc/confirm/dump-delete?d={DUMP}"));
     v.push(format!("/qsmc/updates/code/{VS}/progress"));
     v.push(format!("/qsmc/updates/code/{VS}/log"));
@@ -70,8 +72,12 @@ fn seeds(n: u64) -> Vec<String> {
     v
 }
 
-/// A lab with a console problem of its own, the host's image downloaded.
-fn ready_lab<'a>(run: &crate::suite::base::Run<'a>, tag: &str) -> Result<(Lab<'a>, u64), String> {
+/// A lab with a console problem of its own, the host's image downloaded:
+/// the host's event's number and the console's.
+fn ready_lab<'a>(
+    run: &crate::suite::base::Run<'a>,
+    tag: &str,
+) -> Result<(Lab<'a>, u64, u64), String> {
     let mut lab = lab(run, tag, &[])?;
     post_code(
         &mut lab.c.guest,
@@ -81,15 +87,22 @@ fn ready_lab<'a>(run: &crate::suite::base::Run<'a>, tag: &str) -> Result<(Lab<'a
     )?;
     super::download(&mut lab.c.browser, VS, "qsvs", super::QSVS_IMAGE)?;
     let n = number_of(&mut lab.c.browser, "B6000100")?;
-    Ok((lab, n))
+    // The problem service opens it a moment after the code is posted.
+    let own = super::events::own_event(
+        &mut lab.c.browser,
+        "A3005030",
+        "A3005030",
+        Duration::from_secs(60),
+    )?;
+    Ok((lab, n, own))
 }
 
 /// Suite 2.
 pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
-    let (mut lab, n) = ready_lab(run, "serv-pages")?;
+    let (mut lab, n, own) = ready_lab(run, "serv-pages")?;
     let b = &mut lab.c.browser;
     let mut seen = BTreeSet::new();
-    let mut queue: VecDeque<String> = seeds(n).into();
+    let mut queue: VecDeque<String> = seeds(n, own).into();
     let mut c = Crawl::default();
     let mut asked = 0;
     while let Some(path) = queue.pop_front() {
@@ -123,10 +136,12 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         }
         // A note's text and an export are files of their own.
         if a.status != 200 {
+            // A redirect's message is on the page it leads to.
+            let said = crate::suite::web::follow(b, &a)?.text();
             return Err(format!(
                 "{path} answered {}: {}",
                 a.status,
-                message_of(&text)
+                message_of(&said)
             ));
         }
         c.pages += 1;
@@ -160,7 +175,7 @@ struct R {
 }
 
 /// The routes of this phase and the tasks `docs/WEBUSERS.md` gives them.
-fn routes(n: u64) -> Vec<R> {
+fn routes(n: u64, own: u64) -> Vec<R> {
     use Task::{CodeUpdates as U, Events as E};
     let r = |path: String, get: Task, post: Option<(Task, Vec<(&'static str, String)>)>| R {
         path,
@@ -181,7 +196,7 @@ fn routes(n: u64) -> Vec<R> {
             Some((E, vec![("cancel", "Cancel".into())])),
         ),
         r(format!("/qsmc/event/{n}/export"), E, None),
-        r("/qsmc/event/console/1".into(), E, None),
+        r(format!("/qsmc/event/console/{own}"), E, None),
         r(
             format!("/qsmc/confirm/event-close?n={n}"),
             E,
@@ -230,7 +245,7 @@ fn as_matrix(want: bool, status: u16, text: &str) -> bool {
 
 /// Suite 16's roles.
 pub fn roles(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
-    let (mut lab, n) = ready_lab(run, "serv-roles")?;
+    let (mut lab, n, own) = ready_lab(run, "serv-roles")?;
     let b = &mut lab.c.browser;
     let matrix = Matrix::default();
     let mut who: Vec<(Role, Browser)> = vec![(Role::Administrator, b.clone_session())];
@@ -241,7 +256,7 @@ pub fn roles(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     let (mut pairs, mut refused) = (0, 0);
     let mut wrong = Vec::new();
     for (role, nb) in &mut who {
-        for route in routes(n) {
+        for route in routes(n, own) {
             let a = nb.get(&route.path)?;
             let want = matrix.allows(*role, route.get);
             if !as_matrix(want, a.status, &a.text()) {
