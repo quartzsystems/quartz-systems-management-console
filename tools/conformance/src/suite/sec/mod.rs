@@ -5,6 +5,7 @@
 //! Phase 8's suites: release engineering and hardening on the final
 //! image (`docs/SECURITY.md`).
 
+mod baselines;
 mod confined;
 mod limits;
 mod machine;
@@ -26,6 +27,7 @@ pub const SUITES: &[(&str, SuiteFn)] = &[
     ("sec-secrets", secrets::secrets),
     ("sec-limits", limits::limits),
     ("sec-rotation", super::serv::console::rotation),
+    ("sec-baselines", baselines::baselines),
 ];
 
 /// The suites run only by name: after `build release`, with its
