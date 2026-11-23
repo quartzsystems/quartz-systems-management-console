@@ -62,3 +62,23 @@ one by `base/panels` or `base/users`:
 The pointer needs no golden: a click moves the cursor or presses a
 key's label and the screens are the same. User IDs as long as QS/VS's
 console takes are the base's rule (`users::ID_MAX`), here unchanged.
+
+## Every `BLOCKED` line of Phases 0 to 7
+
+Phases 3 to 7 wrote none; every one of Phases 0 to 2 is done, and none
+is left for the release notes:
+
+| Where | Line | Done |
+| --- | --- | --- |
+| `PHASE0.md` | the processor check is QS/MC's own copy (item 3) | `base/processor`, Phase 1 (item 3 closed) |
+| `PHASE0.md`, `PHASE1.md` | the QEMU driver is QS/MC's own (item 4) | `base/qemu` as `driver`, Phase 1 (item 4 closed) |
+| `PHASE0.md` | no base event has a reference code | the console's codes, Phase 1 (`docs/REFCODES.md`) |
+| `PHASE0.md` | PID 1 does not read the A/B record or write boot entries | Phase 1 (`lic/qsmcinit/src/slot`) |
+| `PHASE0.md` | the ISO's name is `buildkit`'s (item 8) | settled as `buildkit`'s `QSMC-<release>-<hash>.iso`, as QS/VS's (item 8 closed here) |
+| `PHASE0.md` | the UKIs are not signed for Secure Boot (item 9) | `build release` signs them with QS/MC's db key (Section 3; item 9 closed here) |
+| `PHASE1.md` | no hardware inventory (item 12) | `base/inventory`, Phase 2 (item 12 closed) |
+| `PHASE1.md` | one network interface (item 11) | `open` and `private`, Phase 2 (item 11 closed) |
+| `PHASE1.md`, `PHASE2.md` | a mirrored unit absent at the IPL is copied whole (item 13); a degraded IPL waits twenty seconds (item 14) | QS/400's resume map and QS/VS's wait, Phase 5 (items 13 and 14 closed) |
+| `PHASE1.md` | the unit to keep of two that ran apart is chosen through a hook only | the local console's panel, Phase 2 (`apart-panel`) |
+| `PHASE1.md` | nothing writes the other slot or sets a pending slot | the console's own update, Phase 6 (`docs/UPDATES.md`) |
+| `PHASE2.md` | the media's check, the disk unit panels, the power words, the installer's writes are QS/MC's own (items 15 to 18) | `base/loadsource`, `panels::units`, `panels::tools::power`, `install::write`, Phase 5 (items 15 to 18 closed) |
