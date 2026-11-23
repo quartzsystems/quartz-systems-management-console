@@ -224,6 +224,10 @@ fn systems_and_windows(lab: &mut Lab<'_>) -> Result<String, String> {
         .filter(|l| !l.starts_with("max_systems") && !l.starts_with("max_consoles"))
         .map(str::to_string)
         .collect();
+    // The file is not there until written: it needs its version too.
+    if !kept.iter().any(|l| l.starts_with("schema_version")) {
+        kept.insert(0, "schema_version = 1".into());
+    }
     kept.push("max_systems = 2".into());
     kept.push("max_consoles = 2".into());
     ch.ask(&format!(
