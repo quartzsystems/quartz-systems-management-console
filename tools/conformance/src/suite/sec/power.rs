@@ -8,7 +8,7 @@
 //! certificate while one is imported after another, and a restore just
 //! confirmed. After each IPL each is whole: the old or the new.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use crate::suite::base::{Run, channel};
@@ -64,12 +64,36 @@ fn cut<'a>(run: &Run<'a>, c: Console<'a>) -> Result<Console<'a>, String> {
 }
 
 /// The console's numbers of the host's serviceable events listed.
-fn numbers(c: &mut Console<'_>) -> Result<BTreeSet<u64>, String> {
+/// Each with the first reference code its row shows.
+fn numbers(c: &mut Console<'_>) -> Result<BTreeMap<u64, String>, String> {
     let t = page(&mut c.browser, "/qsmc/events?s=All&rows=100")?;
-    Ok(t.split("/qsmc/event/")
-        .skip(1)
-        .filter_map(|r| r.split('"').next()?.parse().ok())
+    Ok(t.split("<tr")
+        .filter_map(|r| {
+            let n = r
+                .split("/qsmc/event/")
+                .nth(1)?
+                .split('"')
+                .next()?
+                .parse()
+                .ok()?;
+            Some((n, code_in(r)?))
+        })
         .collect())
+}
+
+/// The first reference code in `text`: 8 of `0-9A-F`, a letter first.
+fn code_in(text: &str) -> Option<String> {
+    let b = text.as_bytes();
+    (0..b.len().saturating_sub(7)).find_map(|i| {
+        let w = &b[i..i + 8];
+        let edge = |j: usize| b.get(j).is_none_or(|c| !c.is_ascii_alphanumeric());
+        (w[0].is_ascii_uppercase()
+            && w.iter()
+                .all(|c| c.is_ascii_digit() || (b'A'..=b'F').contains(c))
+            && (i == 0 || edge(i - 1))
+            && edge(i + 8))
+        .then(|| String::from_utf8_lossy(w).into_owned())
+    })
 }
 
 /// The console's number of the host's event whose row holds `text`.
@@ -161,16 +185,17 @@ fn churn<'a>(
             },
         )?;
         let new = new.unwrap_or(0);
-        if before.last().is_some_and(|m| new <= *m) {
+        if before.keys().last().is_some_and(|m| new <= *m) {
             return Err(format!(
-                "after cut {n} a problem was numbered {new}, not past {before:?}"
+                "after cut {n} a problem was numbered {new}, not past {:?}",
+                before.keys().last()
             ));
         }
         // Each seen before is kept: the list shows the newest 100
         // alone, so each is asked for by its number.
-        for m in &before {
+        for (m, code) in &before {
             let t = page(&mut c.browser, &format!("/qsmc/event/{m}"))?;
-            if !t.contains("B600060") {
+            if !t.contains(code.as_str()) {
                 return Err(format!(
                     "after cut {n} problem {m} is gone: {}",
                     message_of(&t)
