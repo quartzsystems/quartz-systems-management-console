@@ -44,6 +44,32 @@ fn gone(r: io::Result<()>) -> io::Result<()> {
     }
 }
 
+/// Everything in `dir` removed, the folder kept: the web server's
+/// file-system rule holds the folder itself, so one made again would be
+/// out of its reach.
+fn empty(dir: &Path) -> io::Result<()> {
+    let entries = match fs::read_dir(dir) {
+        Ok(e) => e,
+        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(()),
+        Err(e) => return Err(e),
+    };
+    for e in entries {
+        let p = e?.path();
+        if p.is_dir() {
+            gone(fs::remove_dir_all(&p))?;
+        } else {
+            gone(fs::remove_file(&p))?;
+        }
+    }
+    Ok(())
+}
+
+/// Whether `dir` is empty or not there.
+#[cfg(test)]
+fn bare(dir: &Path) -> bool {
+    fs::read_dir(dir).map_or(true, |mut e| e.next().is_none())
+}
+
 /// Put the folders kept aside back, and forget the restore.
 fn take_back(data: &Path) -> io::Result<()> {
     let r = data.join(DIR);
@@ -55,7 +81,7 @@ fn take_back(data: &Path) -> io::Result<()> {
         }
     }
     sync_dir(data);
-    gone(fs::remove_dir_all(&r))?;
+    empty(&r)?;
     sync_dir(data);
     Ok(())
 }
@@ -113,11 +139,11 @@ pub fn at_ipl(data: &Path, ours: release::Release) -> Outcome {
     }
     let Ok(bytes) = fs::read(r.join(PENDING)) else {
         // An upload never asked for is not kept past a restart.
-        let _ = gone(fs::remove_dir_all(&r));
+        let _ = empty(&r);
         return Outcome::Nothing;
     };
     let refuse = |why: String| {
-        let _ = gone(fs::remove_dir_all(&r));
+        let _ = empty(&r);
         Outcome::Refused(why)
     };
     let backup = match Backup::decode(&bytes) {
@@ -152,8 +178,7 @@ pub fn confirm(data: &Path) -> bool {
     if !r.join(TRIAL).exists() {
         return false;
     }
-    let _ = gone(fs::remove_dir_all(r.join(PREVIOUS)));
-    let _ = gone(fs::remove_dir_all(&r));
+    let _ = empty(&r);
     sync_dir(data);
     true
 }
@@ -210,7 +235,8 @@ mod tests {
         // Nothing of the old web folder is in the new one.
         assert!(!d.join("web/key.pem").exists());
         assert!(confirm(&d));
-        assert!(!d.join(DIR).exists());
+        // Kept, empty: the web server's rule holds this folder.
+        assert!(d.join(DIR).is_dir() && bare(&d.join(DIR)));
         assert!(!confirm(&d));
         let _ = fs::remove_dir_all(d);
     }
@@ -248,7 +274,7 @@ mod tests {
             fs::read_to_string(d.join("state/host.toml")).unwrap(),
             "old"
         );
-        assert!(!d.join(DIR).exists());
+        assert!(bare(&d.join(DIR)));
         let _ = fs::remove_dir_all(d);
     }
 
@@ -263,7 +289,7 @@ mod tests {
             fs::read_to_string(d.join("state/host.toml")).unwrap(),
             "old"
         );
-        assert!(!d.join(DIR).exists());
+        assert!(bare(&d.join(DIR)));
         let _ = fs::remove_dir_all(d);
     }
 }
