@@ -24,6 +24,8 @@ const CHURN_CUTS: u32 = 8;
 const CERT_CUTS: u32 = 5;
 /// Cuts just after a restore is confirmed.
 const RESTORE_CUTS: u32 = 3;
+/// Problems opened a cut at most: all the cuts' stay under the 500 kept.
+const PROBLEMS_A_CUT: u32 = 20;
 /// The longest the work runs before the power goes, in milliseconds.
 const RUN_ON_MS: u64 = 3000;
 /// The host's history file and the problems' file.
@@ -161,7 +163,7 @@ fn churn<'a>(
         while Instant::now() < end {
             fleet.tell(0, &format!("pcode 1 C6004031 churn {n} {i}"));
             fleet.tell(0, &format!("code C2001000 churn {n} {i}"));
-            if i.is_multiple_of(4) {
+            if i.is_multiple_of(4) && i / 4 < PROBLEMS_A_CUT {
                 fleet.tell(0, &format!("problem open 1 B6000600 churn {n} {i}"));
                 opened += 1;
             }
