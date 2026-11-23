@@ -9,7 +9,7 @@ Phase 8 reviewed every one (`docs/PHASE8.md`). QS/VS's
 
 | Party | Trusted with | Not trusted | Enforced by | Shown by |
 |---|---|---|---|---|
-| A browser and its user, by role | what the user's role allows (`docs/WEBUSERS.md`'s matrix), after sign-on | every byte of a request; anything without a session; a state change without the form's token; another site's page | TLS on 443 only, 80 redirects to it and never off the console; the session cookie `HttpOnly; Secure; SameSite=Strict; Path=/qsmc`; the token checked on every POST in one place (`web/pages/src/app/routes.rs`); the task of every route; a body said two ways refused; no file served from a path; the terminal socket from the console's own page only; the limits of `docs/WEB.md` | `web-signon`, `web-roles`, `parts-roles`, `serv-roles`, `plans-roles`, `web-hostile`, `sec-web`, `fuzz --target web-request`, `--target terminal-input` |
+| A browser and its user, by role | what the user's role allows (`docs/WEBUSERS.md`'s matrix), after sign-on | every byte of a request; anything without a session; a state change without the form's token; another site's page | TLS on 443 only, 80 redirects to it and never off the console; the session cookie `HttpOnly; Secure; SameSite=Strict; Path=/qsmc`; the token checked on every POST in one place (`web/pages/src/app/routes.rs`); the task of every route; a body said two ways refused, with every request after it on its connection (`qsweb` would read on: `docs/OPEN_QUESTIONS.md` 49); no file served from a path; the terminal socket from the console's own page only; the limits of `docs/WEB.md` | `web-signon`, `web-roles`, `parts-roles`, `serv-roles`, `plans-roles`, `web-hostile`, `sec-web`, `fuzz --target web-request`, `--target terminal-input` |
 | A web page | its own content | script: no page but the terminal window has any; framing, sniffing, a referrer, caching | every answer on 443 carries `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy: no-referrer`, `Cache-Control: no-store` and the policy `default-src 'none'; style-src 'self'; img-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'` (`web/webd/src/serve.rs`); the terminal window's own policy adds only `script-src 'self'` and `connect-src 'self'` (`docs/TERMINAL.md`) | `sec-web` (every page crawled), `web-pages` |
 | A managed system | the replies and events of its own families, once paired | everything it sends: its hello, names, messages, codes, console frames, its pace | QSI's TLS 1.3 with both ends pinned (`docs/MGMT.md`); one thread a system, each request bounded in time; every value it names escaped on every page; a frame past its limits ends the session; the session's credit; `mgmtd` confined (below) | `mgmt-hostile`, `sec-systems`, `fuzz --target mgmt-peer`, `--target mgmt-host`, `--target mgmt-servicing` |
 | A system not paired | answering a pairing with its one-time password | anything else | pairing pins the certificate it saw; any other certificate after is refused (`QMC7333`) | `mgmt-pair` |
@@ -39,7 +39,10 @@ Every service is confined in three layers (`lic/sandbox`):
    each to the port its peer's setting names. Signals and abstract
    sockets outside its own domain are scoped away. A kernel without
    Landlock ABI 6 refuses to start a service at all, so none ever runs
-   unconfined.
+   unconfined. A rule holds the folder that is there when the service
+   confines itself: a folder it writes it makes first, and one it only
+   reads that another service makes (`/data/updates`, `/data/log`) PID 1
+   makes before any service starts (`sandbox::policy::read_folders`).
 3. **A seccomp filter** (`base/confine`): the calls the service makes,
    some only with given arguments: `socket` with its families only (unix
    for every service; `inet` and `inet6` for `mgmtd`, `fetchd` and

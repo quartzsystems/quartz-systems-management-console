@@ -363,6 +363,21 @@ pub fn of(service: Service, process: u32) -> Policy {
         calls: calls(service, process),
     }
 }
+/// The folders of `/data` a service only reads, which another makes:
+/// PID 1 makes them before any starts, since a Landlock rule holds a
+/// folder that exists when the service confines itself.
+pub fn read_folders() -> Vec<&'static str> {
+    let mut v: Vec<&str> = ALL
+        .iter()
+        .flat_map(|s| reach(*s).iter())
+        .filter(|(p, a)| *a == Access::Read && p.starts_with("/data/"))
+        .map(|(p, _)| *p)
+        .collect();
+    v.sort_unstable();
+    v.dedup();
+    v
+}
+
 /// Calls no service ever makes: a policy that allows one is wrong.
 pub const NEVER: [libc::c_long; 16] = [
     libc::SYS_execve,
@@ -444,6 +459,14 @@ mod tests {
         // The web server answers on the listeners it was handed.
         assert!(!of(Service::Webd, 1).reach.unwrap().any_connect);
         assert!(of(Service::Mgmtd, 1).reach.unwrap().any_connect);
+    }
+
+    #[test]
+    fn the_folders_read_but_made_by_another_are_listed() {
+        let f = read_folders();
+        assert!(f.contains(&"/data/updates"), "{f:?}");
+        assert!(f.contains(&"/data/log"), "{f:?}");
+        assert!(!f.contains(&"/data"));
     }
 
     #[test]

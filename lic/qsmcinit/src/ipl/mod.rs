@@ -350,6 +350,13 @@ mod on_console {
         if let Err(e) = mounts::root_read_only(&writable) {
             host.line(&format!("the root stays writable: {e}"));
         }
+        // What a service reads and another makes, there before either
+        // confines itself.
+        for dir in sandbox::policy::read_folders() {
+            if let Err(e) = std::fs::create_dir_all(dir) {
+                host.line(&format!("{dir}: {e}"));
+            }
+        }
         host.release_services();
         host.quiet = false;
         let names: Vec<&str> = table::chosen().iter().map(|s| s.name).collect();
