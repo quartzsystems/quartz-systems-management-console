@@ -240,19 +240,52 @@ pub const STANDALONE_FUNCTIONS: [(u8, &str); 15] = [
 /// Branch host `n` (1 to 25) of the paged lists.
 pub fn branch(n: u32) -> Shared {
     let i = n.saturating_sub(1);
-    let name = format!("QSBR{n:02}VS1");
-    let serial = format!("10-9F{i:02X}{i:02X}");
+    let s = like_branch(
+        &format!("QSBR{n:02}VS1"),
+        &format!("10-9F{i:02X}{i:02X}"),
+        n,
+        i % 4 + 1,
+        &format!("QSBR{n:02}P"),
+        &format!("K2B{n:02}"),
+    );
+    shared(s)
+}
+
+/// Host `n` (1 to 999) of the soak's fleet (Phase 8): a branch host
+/// with `partitions` partitions (64 at most), named `QSSKnnnVS1`.
+pub fn fleet(n: u32, partitions: u32) -> Shared {
+    let s = like_branch(
+        &format!("QSSK{n:03}VS1"),
+        &format!("10-8E{n:04X}"),
+        n,
+        partitions.min(64),
+        &format!("QSSK{n:03}P"),
+        &format!("K3{n:03}"),
+    );
+    shared(s)
+}
+
+/// A branch-like host: `count` partitions named `prefix` and its ID,
+/// their serials `serials` and two digits.
+fn like_branch(
+    name: &str,
+    serial: &str,
+    n: u32,
+    count: u32,
+    prefix: &str,
+    serials: &str,
+) -> System {
+    let i = n.saturating_sub(1);
     let mut s = System::new(
         PeerKind::Host,
-        &name,
-        &serial,
+        name,
+        serial,
         "9Q10-V1",
-        identity(&name, &serial, 0),
+        identity(name, serial, 0),
     );
     s.build = "26280".into();
     let units = 100 + 50 * u64::from(i % 4);
     let mib = 16_384 + 8192 * u64::from(i % 3);
-    let count = i % 4 + 1;
     s.host = Some(Host {
         sockets: 1,
         cores: 4,
@@ -276,10 +309,10 @@ pub fn branch(n: u32) -> Shared {
     });
     s.parts = (1..=count)
         .map(|id| {
-            let pname = format!("QSBR{n:02}P{id}");
+            let pname = format!("{prefix}{id}");
             part(
                 id,
-                &format!("K2B{n:02}{id:02}"),
+                &format!("{serials}{id:02}"),
                 status(
                     id,
                     &pname,
@@ -301,7 +334,7 @@ pub fn branch(n: u32) -> Shared {
         crate::system::servicing::slot("A", "V1R0M0", "26300", true),
         crate::system::servicing::slot("B", "", "", false),
     ];
-    shared(s)
+    s
 }
 
 /// Whether branch host `n` is one the paged list shows not connected.

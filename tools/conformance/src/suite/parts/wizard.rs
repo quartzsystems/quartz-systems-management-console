@@ -310,3 +310,25 @@ pub fn groups(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             .into(),
     )
 }
+
+/// Make partition `id` named `name` on `host` through the wizard, every
+/// step but the first two on its defaults (Phase 8's soak).
+pub(crate) fn create(b: &mut Browser, host: &str, id: u32, name: &str) -> Result<(), String> {
+    page(b, &format!("{}?ms={host}", step(1)))?;
+    next(b, 1, &[("id", &id.to_string()), ("n", name)])?;
+    next(b, 2, &[("p", "default")])?;
+    for n in 3..=8 {
+        next(b, n, &[])?;
+    }
+    let done = post_answer(b, 9, ("finish", "Finish"), &[])?;
+    expect(b, &done, "QMC3130").map(|_| ())
+}
+
+/// Delete partition `id` of `host` through its confirmation.
+pub(crate) fn delete(b: &mut Browser, host: &str, id: u32) -> Result<(), String> {
+    let path = format!("/qsmc/confirm/partition-delete?ms={host}&p={id}");
+    let html = page(b, &path)?;
+    let p = id.to_string();
+    let r = post_on(b, &html, &path, ("ok", "OK"), &[("ms", host), ("p", &p)])?;
+    expect(b, &r, "QMC3133").map(|_| ())
+}

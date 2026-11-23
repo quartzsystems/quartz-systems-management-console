@@ -19,12 +19,14 @@ on:
     paths-ignore: ["docs/**", "**/*.md"]
   pull_request:
   workflow_dispatch:
+  # The nightly run calls it whole (`nightly.yml`).
+  workflow_call:
 
 permissions:
   contents: read
 
 concurrency:
-  group: qemu-${{ github.ref }}
+  group: qemu-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:

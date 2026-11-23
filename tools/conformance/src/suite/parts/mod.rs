@@ -14,7 +14,7 @@ pub(crate) mod pages;
 mod requests;
 pub(crate) mod sched;
 mod upload;
-mod wizard;
+pub(crate) mod wizard;
 
 use std::sync::MutexGuard;
 use std::time::Duration;

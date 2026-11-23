@@ -1,0 +1,144 @@
+# Copyright (C), 2026 Quartz Systems. Some rights reserved. This work is
+# licensed under the terms of the MIT license which can be found in the
+# root directory of this project.
+#
+# Every night, beside the push runs (Phase 8, Section 12): the full
+# suite on the release build (`qemu.yml`, the update up and down among
+# its suites); the release directory built twice and compared, its
+# stream verified and its UKIs booted under Secure Boot; a short run of
+# every fuzz target; a one-hour soak. The release keys here are made for
+# the run and thrown away: never a release's. A hosted runner nests KVM;
+# where one cannot, `runs-on` is the one line to change (the comment
+# beside it names a self-hosted runner's labels).
+
+name: nightly
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  suites:
+    name: the full suite
+    uses: ./.github/workflows/qemu.yml
+
+  release:
+    name: the release, twice, its stream and Secure Boot
+    runs-on: ubuntu-24.04 # self-hosted: [self-hosted, linux, x64, kvm]
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - name: Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            make flex bison bc perl xz-utils gpg gzip tar git libelf-dev libssl-dev \
+            qemu-system-x86 ovmf lsb-release wget software-properties-common gnupg
+          wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+          sudo bash /tmp/llvm.sh 21
+          sudo apt-get install -y --no-install-recommends lld-21 llvm-21
+          echo /usr/lib/llvm-21/bin >> "$GITHUB_PATH"
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Toolchain (rust-toolchain.toml)
+        run: rustup show active-toolchain || rustup toolchain install
+      - name: Keys made for this run alone
+        run: |
+          k="$RUNNER_TEMP/keys"
+          cargo run -q -p build -- keys "$k"
+          mkdir -p "$k/streams"
+          for s in qsmc qsvs qs400; do cp "$k/qsmc-release.pub" "$k/streams/$s.pub"; done
+          {
+            echo "QSMC_SIGNING_KEY=$k/qsmc-release.ed25519"
+            echo "QSMC_SB_KEY=$k/qsmc-db.key"
+            echo "QSMC_SB_CERT=$k/qsmc-db.cer"
+            echo "QSMC_STREAM_KEYS=$k/streams"
+          } >> "$GITHUB_ENV"
+      - name: The release, built twice and compared
+        run: cargo run -q -p build -- release "$(cat VERSION)"
+      - name: Its stream
+        run: |
+          mkdir -p "$RUNNER_TEMP/stream"
+          cargo run -q -p build -- stream add target/release/V1R0M0 "$RUNNER_TEMP/stream"
+          cargo run -q -p build -- stream verify "$RUNNER_TEMP/stream"
+      - name: Secure Boot, and the console finding its release on the stream
+        run: |
+          env -u QSMC_SIGNING_KEY -u QSMC_STREAM_KEYS cargo run -q -p build -- --test-image all
+          cargo run -q -p build -- test --suite sec-secure-boot
+          QSMC_STREAM_DIR="$RUNNER_TEMP/stream" cargo run -q -p build -- test --suite sec-stream
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release
+          retention-days: 7
+          path: |
+            target/release/V1R0M0
+            target/conformance/*.log
+          if-no-files-found: ignore
+
+  fuzz:
+    name: every fuzz target, a short run
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain (rust-toolchain.toml)
+        run: rustup show active-toolchain || rustup toolchain install
+      - run: cargo run -q -p build -- fuzz --secs 120
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: fuzz-findings
+          path: tools/fuzz/crashes
+
+  soak:
+    name: a one-hour soak
+    runs-on: ubuntu-24.04 # self-hosted: [self-hosted, linux, x64, kvm]
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - name: Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            make flex bison bc perl xz-utils gpg gzip tar git libelf-dev libssl-dev \
+            qemu-system-x86 ovmf lsb-release wget software-properties-common gnupg
+          wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+          sudo bash /tmp/llvm.sh 21
+          sudo apt-get install -y --no-install-recommends lld-21 llvm-21
+          echo /usr/lib/llvm-21/bin >> "$GITHUB_PATH"
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Toolchain (rust-toolchain.toml)
+        run: rustup show active-toolchain || rustup toolchain install
+      - run: cargo run -q -p build -- all
+      - run: cargo run -q -p build -- --test-image all
+      - run: cargo run -q -p build -- test --suite sec-soak
+        env: { QSMC_SOAK_SECS: "3600" }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: soak
+          retention-days: 7
+          path: target/conformance/*.log
+          if-no-files-found: ignore

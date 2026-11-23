@@ -9,6 +9,8 @@ mod confined;
 mod machine;
 mod secrets;
 mod secureboot;
+mod soak;
+mod stream;
 mod systems;
 mod web;
 
@@ -26,4 +28,8 @@ pub const SUITES: &[(&str, SuiteFn)] = &[
 
 /// The suites run only by name: after `build release`, with its
 /// certificate.
-pub const NAMED: &[(&str, SuiteFn)] = &[("sec-secure-boot", secureboot::secure_boot)];
+pub const NAMED: &[(&str, SuiteFn)] = &[
+    ("sec-secure-boot", secureboot::secure_boot),
+    ("sec-stream", stream::stream),
+    ("sec-soak", soak::soak),
+];
