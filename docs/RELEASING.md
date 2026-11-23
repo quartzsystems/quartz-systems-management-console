@@ -140,6 +140,12 @@ GitHub with the keys held as the repository's secrets
 keys committed in `tools/build/keys/streams/`; it refuses a signing key
 whose public half is not that folder's `qsmc.pub`. The release
 directory and its stream are the run's artifact. It tags nothing.
+Started on a tag already made (`gh workflow run release.yml --ref
+v1.0.0 -f tag=v1.0.0`), it checks the tag is the commit it built and
+the files against `SHA256SUMS`, then publishes the GitHub release on
+the tag: the release directory's files, `SHA256SUMS` and its signature
+as its assets, the release notes as its text. `v1.0.0` was published
+by hand the same way.
 
 ## The stream
 

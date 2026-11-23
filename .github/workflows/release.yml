@@ -7,15 +7,22 @@
 # release directory kept as the run's artifact. The keys are the
 # repository's secrets; the streams' public keys are committed under
 # tools/build/keys/streams/, and qsmc.pub is checked against the
-# signing key's own. It tags nothing.
+# signing key's own. It tags nothing: given the `tag` of a commit already
+# tagged, it publishes the release there, its files and its notes, as
+# QS/400's releases are.
 
 name: release
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "The tag to publish the release on (it must exist); empty: build only"
+        required: false
+        default: ""
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: release
@@ -28,6 +35,8 @@ jobs:
     timeout-minutes: 330
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the tags, to check the one published is the commit built
       - name: Packages
         run: |
           sudo apt-get update
@@ -59,7 +68,8 @@ jobs:
           printf '302e020100300506032b657004220420%s' "$seed" | xxd -r -p > "$k/seed.der"
           openssl pkey -inform DER -in "$k/seed.der" -pubout -outform DER | tail -c 32 | xxd -p -c 64 > "$k/streams/qsmc.pub"
           rm -f "$k/seed.der"
-          cmp -s "$k/streams/qsmc.pub" tools/build/keys/streams/qsmc.pub             || { echo "::error::QSMC_SIGNING_KEY is not the key of tools/build/keys/streams/qsmc.pub"; exit 1; }
+          cmp -s "$k/streams/qsmc.pub" tools/build/keys/streams/qsmc.pub \
+            || { echo "::error::QSMC_SIGNING_KEY is not the key of tools/build/keys/streams/qsmc.pub"; exit 1; }
           for s in qsvs qs400; do
             f="tools/build/keys/streams/$s.pub"
             [ -s "$f" ] || { echo "::error::$f is missing: the $s stream's public key"; exit 1; }
@@ -87,5 +97,24 @@ jobs:
         with:
           name: release-V1R0M0
           retention-days: 90
-          path: target/release
+          # The release and its stream alone: target/release is also
+          # cargo's own folder.
+          path: |
+            target/release/V1R0M0
+            target/release/stream-qsmc
           if-no-files-found: error
+      - name: The release published on its tag
+        if: inputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -eu
+          d=target/release/V1R0M0
+          [ "$(git rev-parse "$TAG^{commit}")" = "$(git rev-parse HEAD)" ] \
+            || { echo "::error::$TAG is not the commit built"; exit 1; }
+          (cd "$d" && sha256sum -c SHA256SUMS)
+          gh release create "$TAG" --verify-tag \
+            --title "QS/MC V1R0M0 ($(cat VERSION))" \
+            --notes-file "$d/RELEASE_NOTES_V1R0M0.md" \
+            $(find "$d" -maxdepth 1 -type f | sort)
