@@ -178,6 +178,14 @@ fn the_fixture_s_deployment_gives_the_prototype_s_table() {
 }
 
 #[test]
+fn a_soak_host_can_be_captured() {
+    let mut d = sim::direct::Direct::new(vec![sim::fixture::fleet(1, 4)]);
+    let v = read::host(&mut d, "QSSK001VS1", "qsadmin").expect("QSSK001VS1 read");
+    let plan = capture(&v, meta("qssk001vs1")).expect("captured");
+    assert_eq!(plan.partitions.len(), 4);
+}
+
+#[test]
 fn a_plan_read_back_is_the_plan_written_and_two_captures_are_the_same() {
     let mut fleet = hosts();
     let a = baseline(&mut fleet);
