@@ -13,6 +13,12 @@ use std::path::PathBuf;
 use anyhow::Result;
 use buildkit::Ctx;
 
+/// The fixes `QSMC_FIXES` names, checked against QS/MC's format: a
+/// release's entry in the stream says them.
+pub fn named_fixes(ctx: &Ctx) -> Result<Vec<String>> {
+    buildaid::updimg::named_fixes(ctx, &qsmcupdd::FORMAT)
+}
+
 /// Write the update image of what was built: its path.
 pub fn update(ctx: &Ctx) -> Result<PathBuf> {
     buildaid::updimg::update(ctx, &qsmcupdd::FORMAT, qsmcupdd::schemas::this_release())

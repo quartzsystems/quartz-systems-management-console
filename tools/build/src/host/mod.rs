@@ -3,9 +3,10 @@
 // root directory of this project.
 
 //! Host-side steps that are QS/MC's own: the doctor rows (the license
-//! header check is `base/buildaid`'s), the pins, the QEMU suite and the
-//! fuzzer.
+//! header check is `base/buildaid`'s), the console's catalogue, the
+//! pins, the QEMU suite and the fuzzer.
 
+pub mod catalogue;
 pub mod doctor;
 pub mod fuzz;
 pub mod pins;

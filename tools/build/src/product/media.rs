@@ -7,7 +7,8 @@
 //! `base/loadsource::payload` describes it: both slots' UKIs and a
 //! manifest of them, signed with the build's key. The media UKI's
 //! initramfs holds that key's public half (`initramfs.rs`), so the
-//! media and the installer of one build trust each other.
+//! media and the installer of one build trust each other. A release
+//! adds what `images/media-root` holds at the media's root.
 
 use std::fs;
 
@@ -57,15 +58,29 @@ pub fn media(ctx: &Ctx, _uki: &[u8]) -> Result<Media> {
     let item = |name: &str, bytes: Vec<u8>| {
         Item::File(format!("{}/{name}", payload::dir(&LOAD_SOURCE)), bytes)
     };
+    let mut tree = vec![
+        Item::Boot,
+        item(payload::MANIFEST, text.into_bytes()),
+        item(payload::SIGNATURE, format!("{signature}\n").into_bytes()),
+        item(payload::SLOT_A, slot_a),
+        item(payload::SLOT_B, slot_b),
+    ];
+    // A release's: the db certificate, the notices, the release notes.
+    let root = ctx.paths.images().join(super::MEDIA_ROOT);
+    if root.is_dir() {
+        let mut names: Vec<_> = fs::read_dir(&root)?.flatten().map(|e| e.path()).collect();
+        names.sort();
+        for p in names {
+            let name = p
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            tree.push(Item::File(name, fs::read(&p)?));
+        }
+    }
     Ok(Media {
         volume_id: payload::volume_id(ctx.product.vendor, &ctx.product.release),
-        tree: vec![
-            Item::Boot,
-            item(payload::MANIFEST, text.into_bytes()),
-            item(payload::SIGNATURE, format!("{signature}\n").into_bytes()),
-            item(payload::SLOT_A, slot_a),
-            item(payload::SLOT_B, slot_b),
-        ],
+        tree,
         boot_files: Vec::new(),
         uki_copies: Vec::new(),
     })

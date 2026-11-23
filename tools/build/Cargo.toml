@@ -29,6 +29,11 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 uuid.workspace = true
 sha2.workspace = true
+pesign.workspace = true
+msg.workspace = true
+refcode = { path = "../../lic/refcode", version = "0.1.0" }
+qmcmsg = { path = "../../web/msgs", version = "0.1.0" }
+qsmcprobd = { path = "../../lic/qsmcprobd", version = "0.1.0" }
 qsmcupdd = { path = "../../lic/qsmcupdd", version = "0.1.0" }
 fetchd = { path = "../../upd/fetchd", version = "0.1.0" }
 

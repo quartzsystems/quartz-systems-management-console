@@ -105,6 +105,10 @@ const TEST_PACKAGES: &[Package] = &[
     package(HOOK),
 ];
 
+/// The folder of `images/` whose files a release puts at the media's
+/// root (`image::release`).
+pub const MEDIA_ROOT: &str = "media-root";
+
 /// Where the generated notices file lives in the tree.
 pub const NOTICES_FILE: &str = "lic/release/NOTICES.txt";
 

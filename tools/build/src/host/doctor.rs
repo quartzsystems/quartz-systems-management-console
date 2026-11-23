@@ -3,7 +3,8 @@
 // root directory of this project.
 
 //! The rows QS/MC adds to `buildkit`'s doctor: the OVMF firmware, the
-//! license headers, the two pins agreeing, and no shared crate twice.
+//! license headers, the two pins agreeing, no shared crate twice, and
+//! the console's codes and messages whole (`catalogue`).
 //! `buildkit` adds KVM and the target directory itself.
 
 use buildkit::Ctx;
@@ -66,6 +67,14 @@ fn once(ctx: &Ctx) -> Row {
     }
 }
 
+fn catalogue() -> Row {
+    let name = "codes and messages whole";
+    match super::catalogue::summary() {
+        Ok(detail) => row(name, true, detail),
+        Err(missing) => row(name, false, missing),
+    }
+}
+
 /// The QS/VS test disk suite 10 runs a real host from: not required,
 /// and how to make one when it is missing.
 fn qsvs_disk(ctx: &Ctx) -> Row {
@@ -116,6 +125,7 @@ pub fn rows(ctx: &Ctx) -> Vec<Row> {
         headers(ctx),
         pins(ctx),
         once(ctx),
+        catalogue(),
         qsvs_disk(ctx),
         qs400_image(),
     ]

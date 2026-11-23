@@ -130,12 +130,16 @@ interface, captured by QEMU, all are DHCP, DNS and NTP besides what the
 link itself needs (ARP, and IPv6 neighbour discovery and listener
 reports for the link-local address; `docs/PHASE1.md`).
 
-## 8. The ISO's name
+## 8. The ISO's name (closed)
 
 `buildkit` names the ISO `<VENDOR>-<release>-<hash>.iso`, so it is
 `QSMC-V1R0M0-<hash>.iso` beside `qsmc-V1R0M0-...` for the UKIs and the
 disk image. QS/VS accepted the same for its own (its item 5). The name
 is `buildkit`'s.
+
+**Closed in Phase 8:** `build release` keeps `buildkit`'s name in
+`target/release/<VRM>/` and the stream, as QS/VS's release directory
+keeps `QSVS-V1R0M0-<hash>.iso`.
 
 ## 9. Secure Boot
 

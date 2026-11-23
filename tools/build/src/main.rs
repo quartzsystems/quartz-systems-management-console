@@ -51,6 +51,23 @@ struct Cli {
 }
 
 #[derive(Subcommand)]
+enum StreamAction {
+    /// Copy a release's files into the stream's directory and join its
+    /// entry to the index there.
+    Add {
+        /// `target/release/<VRM>`.
+        release: PathBuf,
+        /// The stream's directory.
+        stream: PathBuf,
+    },
+    /// Verify the index and every file it names.
+    Verify {
+        /// The stream's directory.
+        stream: PathBuf,
+    },
+}
+
+#[derive(Subcommand)]
 enum Command {
     /// Download, verify and extract the pinned kernel tarball.
     Fetch,
@@ -111,7 +128,23 @@ enum Command {
         #[arg(long, default_value_t = 60)]
         secs: u64,
     },
-    /// Check host prerequisites, the license headers and the two pins.
+    /// A release from a clean tree, signed with the release keys and
+    /// never a development key, built twice and compared:
+    /// `target/release/<VRM>/`.
+    Release {
+        /// The version, as `VERSION` has it: `1.0.0`.
+        version: String,
+        /// Build it once, without the second build compared.
+        #[arg(long)]
+        no_compare: bool,
+    },
+    /// The published `qsmc` stream: add a release to it, or verify it.
+    Stream {
+        #[command(subcommand)]
+        action: StreamAction,
+    },
+    /// Check host prerequisites, the license headers, the two pins and
+    /// the console's codes and messages.
     Doctor,
     /// Run cargo-deny plus the C-linkage check of the compiled graph.
     Deny,
@@ -239,6 +272,19 @@ fn main() -> Result<()> {
             notices::notices(&ctx, check)?;
         }
         Command::Keys { dir } => product::keys::make(&dir)?,
+        Command::Release {
+            version,
+            no_compare,
+        } => {
+            anyhow::ensure!(image == Image::Release, "a release is never a test image");
+            image::release::release(&ctx, &version, !no_compare)?;
+        }
+        Command::Stream { action } => match action {
+            StreamAction::Add { release, stream } => {
+                image::release::stream_add(&ctx, &release, &stream)?;
+            }
+            StreamAction::Verify { stream } => image::release::stream_verify(&ctx, &stream)?,
+        },
     }
     Ok(())
 }
