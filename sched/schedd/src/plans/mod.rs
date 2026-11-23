@@ -19,6 +19,10 @@ use plan::capture::{Meta, capture};
 use plan::doc::{EXTENSION, Plan, check, text};
 use plan::index::{Entry, Index};
 
+/// The most plans operators keep (`docs/PLANS.md`); the automatic ones
+/// before updates are bounded by `automatic_kept`.
+pub const MAX_PLANS: usize = 500;
+
 fn issue(d: &qmcmsg::Def, values: &[&str]) -> Issued {
     qmcmsg::base_of(d).with(values)
 }
@@ -106,6 +110,10 @@ impl Plans {
     /// Write `plan` as a new plan: refused when one has its name.
     pub fn add(&self, plan: &Plan) -> Result<Entry, Issued> {
         let mut idx = lock(&self.index);
+        // Operators' plans are bounded; automatic ones are pruned.
+        if !plan.automatic && idx.plans.iter().filter(|e| !e.automatic).count() >= MAX_PLANS {
+            return Err(issue(&qmcmsg::PLANS_FULL, &[&MAX_PLANS.to_string()]));
+        }
         if idx.plans.iter().any(|e| e.name == plan.name) {
             return Err(issue(&qmcmsg::PLAN_EXISTS, &[&plan.name]));
         }

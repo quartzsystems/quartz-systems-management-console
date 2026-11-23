@@ -15,6 +15,8 @@ mod transfer;
 mod upload;
 mod worker;
 
+pub use upload::MAX_UPLOADS;
+
 pub use transfer::Piece;
 
 use std::sync::atomic::AtomicBool;

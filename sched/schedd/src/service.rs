@@ -19,7 +19,7 @@ use state::Store;
 use webusers::{Task, WebUsers};
 
 use crate::calls::Sched;
-use crate::model::{Op, Outcome, Run, Schedule, Schedules};
+use crate::model::{MAX_SCHEDULES, Op, Outcome, Run, Schedule, Schedules};
 use crate::when;
 
 /// How late a run may start and still be run: past this it is missed.
@@ -403,6 +403,14 @@ impl Sched for Service {
         s.next =
             when::next(&s, self.zone(), now - 1).ok_or("That time is past: it is never due.")?;
         let mut doc = lock(&self.0.doc);
+        if doc.schedules.len() >= MAX_SCHEDULES {
+            let d = &qmcmsg::SCHEDULES_FULL;
+            return Err(format!(
+                "{} {}",
+                d.id,
+                d.text.replace("&1", &MAX_SCHEDULES.to_string())
+            ));
+        }
         doc.next_id = doc
             .next_id
             .max(doc.schedules.iter().map(|x| x.id).max().unwrap_or(0))

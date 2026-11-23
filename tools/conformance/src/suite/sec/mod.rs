@@ -6,6 +6,7 @@
 //! image (`docs/SECURITY.md`).
 
 mod confined;
+mod limits;
 mod machine;
 mod secrets;
 mod secureboot;
@@ -23,6 +24,7 @@ pub const SUITES: &[(&str, SuiteFn)] = &[
     ("sec-web", web::web),
     ("sec-systems", systems::systems),
     ("sec-secrets", secrets::secrets),
+    ("sec-limits", limits::limits),
     ("sec-rotation", super::serv::console::rotation),
 ];
 

@@ -204,6 +204,9 @@ wire_struct!(Run {
 /// The most runs kept.
 pub const RUNS: usize = 200;
 
+/// The most scheduled operations the scheduler keeps.
+pub const MAX_SCHEDULES: usize = 500;
+
 /// `schedules.toml`.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Schedules {

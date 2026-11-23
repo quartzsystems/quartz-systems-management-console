@@ -17,13 +17,13 @@ request refused.
 | `QMC1101`-`QMC1120` | what a managed system's connection and pairing failed with, what it does not offer, and the managed-systems service not answering |
 | `QMC1201`-`QMC1202` | reference codes: one this release cannot explain, a date filter |
 | `QMC2201`-`QMC2221` | power on, off and restart of a managed system, and its power-on parameters |
-| `QMC2401`-`QMC2441` | a host's virtual resources: uploads, images, virtual disks, pools, switches, tape, processor pools |
+| `QMC2401`-`QMC2442` | a host's virtual resources: uploads, images, virtual disks, pools, switches, tape, processor pools |
 | `QMC3002` | a partition waiting for a console |
 | `QMC3003` | terminal windows: too many open |
 | `QMC3101`-`QMC3133` | partitions: activated, shut down, changed, made, deleted, and what a host refuses of them |
 | `QMC3201`-`QMC3205` | partition profiles |
-| `QMC3301`-`QMC3303` | custom groups |
-| `QMC3401`-`QMC3409` | scheduled operations (`QMC3408` is no more: an install is scheduled) |
+| `QMC3301`-`QMC3304` | custom groups |
+| `QMC3401`-`QMC3410` | scheduled operations (`QMC3408` is no more: an install is scheduled) |
 | `QMC3002` | 0 | Partition &1 is waiting for a console (&2). Open a terminal window to continue the IPL. | The partition's IPL stopped until a console connects to it. | Open a terminal window to the partition. |
 | `QMC3101` | 0 | Activation of partition &1 started. | The host took the request; the partition's codes follow its IPL. | None. |
 | `QMC3102` | 0 | Shut down of partition &1 started. | The host, or the partition's system, took the request. | None. |
@@ -51,6 +51,7 @@ request refused.
 | `QMC3301` | 0 | Custom group &1 saved. | The console keeps the group and its members. | None. |
 | `QMC3302` | 30 | A custom group named &1 exists. | Each group has a name of its own. | Choose another name, or edit that group. |
 | `QMC3303` | 0 | Custom group &1 deleted. | The group is gone; its systems and partitions are as they were. | None. |
+| `QMC3304` | 30 | The console has &1 custom groups, the most it keeps. | Each custom group is kept with its members. | Delete a group that is no longer needed, then save this one. |
 | `QMC3401` | 0 | &1 scheduled, first at &2. | The scheduler keeps the operation and runs it at its times in your name. | None. |
 | `QMC3402` | 0 | Scheduled operation &1 changed. | The scheduler runs it as changed, in your name from now on. | None. |
 | `QMC3403` | 0 | Scheduled operation &1 removed. | It is not run again; its runs stay in the list. | None. |
@@ -59,10 +60,11 @@ request refused.
 | `QMC3406` | 30 | User &1 may no longer &2: the scheduled run was refused. | A scheduled operation runs in its owner's name, and the owner's role is checked when it runs: it no longer has the task, or the user is disabled or gone. | Change the operation to an owner who may do it, or give the role the task. |
 | `QMC3407` | 20 | A backup of the console's data is not scheduled: it leaves the console through a browser, under a passphrase. | A backup is downloaded from Backup and restore, sealed under a passphrase typed there; the console sends it nowhere by itself. | Take the backup from Backup and restore. |
 | `QMC3409` | 30 | The scheduler did not answer: &1. | The console's service that keeps and runs scheduled operations is not running, or is starting. | Wait a moment and show the page again. If it goes on, see the reference code history of the console. |
+| `QMC3410` | 30 | The scheduler keeps &1 operations, the most it takes. | Each scheduled operation is kept until it is removed. | Remove an operation that is no longer needed, then add this one. |
 | `QMC4001`-`QMC4002` | a terminal window's console closed or disconnected |
 | `QMC5003`, `QMC5010` | control panel functions carried out and refused |
 | `QMC6001`-`QMC6010` | deploying a system plan: its progress, how it ended, what is refused |
-| `QMC6101`-`QMC6114` | system plans: created, imported, deleted, refused, the plan before an update |
+| `QMC6101`-`QMC6115` | system plans: created, imported, deleted, refused, the plan before an update |
 | `QMC7001`-`QMC7019` | Code updates and Updates: checks, downloads, installs, how each ended |
 | `QMC7101`-`QMC7117` | the console's own code update: what `base/update` refuses, in the console's words |
 | `QMC7201`-`QMC7210` | product streams, the download service `fetchd`, and a downloaded host update |
@@ -70,7 +72,7 @@ request refused.
 | `QMC7311`-`QMC7342` | the console's own problems: each condition's description, what to do its second level (`docs/SERVICE.md`) |
 | `QMC7401`-`QMC7402` | serviceable events closed and noted |
 | `QMC7501`-`QMC7506` | Manage dumps: deleted, chosen, copied, taken |
-| `QMC8001`-`QMC8011` | users, roles and form values |
+| `QMC8001`-`QMC8012` | users, roles and form values |
 | `QMC8100`-`QMC8103` | Network settings |
 | `QMC8200`-`QMC8201` | Date and time |
 | `QMC8300`-`QMC8305` | Certificates |
@@ -110,6 +112,7 @@ request refused.
 | `QMC6112` | 30 | No plan was made of &1: &2. | The managed system's configuration could not be read whole. | Act on the reason given, then create the plan again. |
 | `QMC6113` | 30 | &1 is not a plan's name: 1 to 32 of a-z, 0-9, -, _ and ., a letter or digit first. | A plan's name is its file's name. | Type a name of that form. |
 | `QMC6114` | 0 | System plan &1 of &2 saved before its update. | An install of a host's code update saves a plan of the host first. | None. |
+| `QMC6115` | 30 | The console keeps &1 system plans, the most it takes. | Plans made by operators are kept until they are deleted; the automatic ones before updates are pruned on their own. | Delete a plan that is no longer needed, then make or import this one. |
 | `QMC7001` | 0 | Checked &1 at &2. &3 | The console read each product stream's index or catalog from the update server and verified it against the keys built into its image. | None. |
 | `QMC7002` | 10 | The &2 stream offers nothing newer than &1. | The newest release the stream names, that updates from what runs, is what runs. | None; check again later. |
 | `QMC7003` | 30 | Download &1 before it is installed: it is not on the console. | An update is installed from the image the console downloaded and checked against the stream's index. | Choose Download, then Install when its status says it is downloaded. |
@@ -238,6 +241,7 @@ request refused.
 | `QMC2435` | 20 | A host's own tape drive is given to a partition on the partition's I/O page. | A drive passed through to a partition is released for partitions at the host first; the partition's profile then names it. | Release the drive at the host's Service Tools, then add it on the partition's I/O page. |
 | `QMC2440` | 0 | Shared processor pool &1 on &2 made or changed. | The host took the pool. | None. |
 | `QMC2441` | 0 | Shared processor pool &1 deleted from &2. | The host deleted the pool. | None. |
+| `QMC2442` | 30 | &1 uploads to &2 are under way, the most at once. | A host takes this many images at once from the console. | Wait for an upload to end, then upload this image. |
 | `QMC1006` | 30 | Select a managed system for &1. | The action acts on the systems selected in the list, and none was. | Select the system's box in the list, then choose the action again. |
 | `QMC1005` | 0 | Managed system &1 added. The console keeps its session open and shows its state. | The managed system was paired and is in the Servers list. | None. |
 | `QMC1120` | 30 | The managed-systems service did not answer: &1. | The console's service that keeps the managed systems' sessions is not running, or is starting. | Wait a moment and show the page again. If it goes on, see the reference code history of the console. |
@@ -267,6 +271,7 @@ request refused.
 | `QMC9004` | 30 | Too many sign-on attempts from this address. Try again in &1 seconds. | More sign-on attempts came from this address in the last minute than the console takes. | Wait the time given and sign on again. |
 | `QMC9005` | 0 | You are signed off. | You signed off, or your session ended. | Sign on to go on. |
 | `QMC9006` | 10 | Your session ended. Sign on again. | The session was idle longer than the idle timeout, reached the maximum session length, or its user ID was disabled or removed. | Sign on again. The timeouts are on Language, locale and session. |
+| `QMC9007` | 30 | The console has &1 sessions, the most it keeps. | A session is kept until it is signed off or idle past the timeout. | Sign off the sessions not in use, or wait for idle ones to end, then sign on. |
 | `QMC9010` | 30 | User &1 is not authorized to &2. | The user's role does not have the task the page needs. Roles and their tasks are on Users and roles. | Ask an Administrator of this console for a role with the task. |
 | `QMC9011` | 30 | The form has expired. Nothing was changed. | The form was not sent with the current session's token: it was opened in an earlier session, or did not come from this console. | Open the page again and send the form from it. |
 | `QMC9020` | 20 | There is no page &1. | The address does not name a page of this console. | Go to the page from the navigation tree. |
@@ -281,6 +286,7 @@ request refused.
 | `QMC8007` | 0 | Roles changed. They apply at each user's next sign-on. | An Administrator changed which roles have which tasks. | None. |
 | `QMC8010` | 30 | The last enabled Administrator cannot be removed, disabled or given another role. | The console must keep one enabled Administrator. | Make or enable another Administrator first. |
 | `QMC8011` | 30 | &1 | A value on the form is not valid. | Correct the value and send the form again. |
+| `QMC8012` | 30 | The console has &1 web users, the most it keeps. | Each web user is kept with its role and its password's hash. | Delete a user that is no longer needed, then add this one. |
 | `QMC8100` | 10 | Network change on trial: it is taken back in &1 seconds unless it is kept. | The change was applied on trial. | A change of the address the browser came in on is kept when you sign on at the new address within the time; any other change when its interfaces work. |
 | `QMC8101` | 0 | Network change kept. | The console was reached within the trial, and the change was written. | None. |
 | `QMC8102` | 20 | Network change taken back: &1 | The console was not reached within the trial, or the change did not work. | Check the values and apply them again. |

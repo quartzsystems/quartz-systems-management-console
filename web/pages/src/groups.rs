@@ -53,6 +53,9 @@ pub struct Group {
     pub members: Vec<Member>,
 }
 
+/// The most custom groups a console keeps.
+pub const MAX_GROUPS: usize = 256;
+
 /// `groups.toml`.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Groups {
@@ -426,6 +429,12 @@ pub fn edit(rq: &Rq<'_>) -> Response {
                 Kind::Error,
                 &qmcmsg::GROUP_EXISTS,
                 &[&name],
+            ));
+        } else if had.is_none() && all.groups.len() >= MAX_GROUPS {
+            messages.push(qmcmsg::message(
+                Kind::Error,
+                &qmcmsg::GROUPS_FULL,
+                &[&MAX_GROUPS.to_string()],
             ));
         } else {
             let g = Group {

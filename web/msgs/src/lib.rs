@@ -450,6 +450,24 @@ catalogue! {
     SESSION_ENDED = "QMC9006", 10, "Your session ended. Sign on again.",
         "The session was idle longer than the idle timeout, reached the maximum session length, or its user ID was disabled or removed.",
         "Sign on again. The timeouts are on Language, locale and session.";
+    SESSIONS_FULL = "QMC9007", 30, "The console has &1 sessions, the most it keeps.",
+        "A session is kept until it is signed off or idle past the timeout.",
+        "Sign off the sessions not in use, or wait for idle ones to end, then sign on.";
+    USERS_FULL = "QMC8012", 30, "The console has &1 web users, the most it keeps.",
+        "Each web user is kept with its role and its password's hash.",
+        "Delete a user that is no longer needed, then add this one.";
+    GROUPS_FULL = "QMC3304", 30, "The console has &1 custom groups, the most it keeps.",
+        "Each custom group is kept with its members.",
+        "Delete a group that is no longer needed, then save this one.";
+    SCHEDULES_FULL = "QMC3410", 30, "The scheduler keeps &1 operations, the most it takes.",
+        "Each scheduled operation is kept until it is removed.",
+        "Remove an operation that is no longer needed, then add this one.";
+    PLANS_FULL = "QMC6115", 30, "The console keeps &1 system plans, the most it takes.",
+        "Plans made by operators are kept until they are deleted; the automatic ones before updates are pruned on their own.",
+        "Delete a plan that is no longer needed, then make or import this one.";
+    UPLOADS_FULL = "QMC2442", 30, "&1 uploads to &2 are under way, the most at once.",
+        "A host takes this many images at once from the console.",
+        "Wait for an upload to end, then upload this image.";
     NOT_AUTHORIZED = "QMC9010", 30, "User &1 is not authorized to &2.",
         "The user's role does not have the task the page needs. Roles and their tasks are on Users and roles.",
         "Ask an Administrator of this console for a role with the task.";

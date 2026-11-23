@@ -482,6 +482,7 @@ dependencies = [
  "release",
  "rustls",
  "sandbox",
+ "schedd",
  "seed",
  "servicedump",
  "sha2 0.11.0",

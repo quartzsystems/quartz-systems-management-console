@@ -197,6 +197,14 @@ impl Mgmt for Service {
         }
         let next = {
             let mut paired = lock(&inner.paired);
+            // Pairings run side by side: the limit is held where a
+            // system is kept, not only where its pairing began.
+            if paired.systems.len() >= inner.limits.max_systems as usize {
+                return Err(qmc(
+                    &qmcmsg::TOO_MANY_SYSTEMS,
+                    &[&inner.limits.max_systems.to_string()],
+                ));
+            }
             paired.systems.push(p.clone());
             paired.clone()
         };

@@ -406,6 +406,12 @@ impl Worker {
                 started,
                 ended,
             } => {
+                if self.uploads.len() >= super::upload::MAX_UPLOADS {
+                    let n = super::upload::MAX_UPLOADS.to_string();
+                    let r = crate::words::qmc(&qmcmsg::UPLOADS_FULL, &[&n, &self.name()]);
+                    let _ = started.send(Err(r));
+                    return;
+                }
                 let req = AnyRequest::Vres(qsi::host::vres::Request::ImageUpload(
                     qsi::host::vres::ImageUpload {
                         name: name.clone(),

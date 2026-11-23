@@ -94,6 +94,15 @@ fn post(rq: &Rq<'_>) -> Response {
         return Response::redirect(&rq.ctx.url("/console/users"));
     }
     if f.get("create").is_some() {
+        if app.users().users.len() >= webusers::list::MAX_USERS {
+            let n = webusers::list::MAX_USERS.to_string();
+            rq.audit(&format!("create user {id}"), "refused: the most users");
+            return show(
+                rq,
+                Form::Create,
+                vec![qmcmsg::message(Kind::Error, &qmcmsg::USERS_FULL, &[&n])],
+            );
+        }
         let done = passwords(&f)
             .and_then(|p| app.change_users(|u| u.add(&id, &description, role, &p, now)));
         rq.audit(

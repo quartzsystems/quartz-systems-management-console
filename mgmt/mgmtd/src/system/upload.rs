@@ -29,11 +29,20 @@ struct Up {
     finished: bool,
 }
 
+/// The most uploads to one host at once.
+pub const MAX_UPLOADS: usize = 4;
+
 /// The uploads of one session.
 #[derive(Default)]
 pub struct Uploads(Vec<Up>);
 
 impl Uploads {
+    /// The uploads under way.
+    #[allow(clippy::len_without_is_empty, reason = "only the count is asked")]
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
     /// An upload asked of the host: waiting for its stream.
     pub fn add(
         &mut self,

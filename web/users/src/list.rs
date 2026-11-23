@@ -17,6 +17,8 @@ use crate::role::{Matrix, Role};
 
 /// The longest user ID.
 pub const ID_MAX: usize = 32;
+/// The most web users a console keeps.
+pub const MAX_USERS: usize = 256;
 
 /// One web user.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -162,6 +164,11 @@ impl WebUsers {
         password: &str,
         now: u64,
     ) -> Result<(), String> {
+        if self.users.len() >= MAX_USERS {
+            return Err(format!(
+                "The console has {MAX_USERS} web users, the most it keeps."
+            ));
+        }
         let id = check_id(id)?;
         if self.get(&id).is_some() {
             return Err(format!("User ID {id} exists already."));

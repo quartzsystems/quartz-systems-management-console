@@ -112,6 +112,9 @@ impl Rq<'_> {
     }
 }
 
+/// The most web sessions a console keeps at once.
+pub const MAX_SESSIONS: usize = 256;
+
 fn signon_page(app: &App, user: &str, messages: Vec<Message>) -> Response {
     let v = Signon {
         console: app.console.name(),
@@ -176,6 +179,19 @@ fn sign_on(app: &App, req: &Request, peer: &Peer) -> Response {
     let from = peer.addr.ip();
     match app.sign_on(&id, password, from) {
         Ok((id, role)) => {
+            // The sessions a console keeps are bounded; an idle one ends
+            // by its timeout and makes room.
+            if app.sessions.count() >= MAX_SESSIONS {
+                app.audit(
+                    &id,
+                    &from.to_string(),
+                    "sign on",
+                    "refused: the most sessions",
+                );
+                let n = MAX_SESSIONS.to_string();
+                let m = qmcmsg::message(Kind::Error, &qmcmsg::SESSIONS_FULL, &[&n]);
+                return signon_page(app, &id, vec![m]);
+            }
             let s = app.sessions.create(&id);
             let now = app.console.now();
             app.sessions.update(&s.id, |s| {
