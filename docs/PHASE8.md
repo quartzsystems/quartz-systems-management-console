@@ -92,6 +92,45 @@ path to the console's address, so `GET .evil.example/x` was sent to
 `a_redirect_never_leaves_the_console` holds it. `fuzz-long` takes a
 `target` input, so one target can run alone.
 
+## Where this stands (2026-11-23)
+
+The runs so far:
+
+| Run | Commit | What | Result |
+| --- | --- | --- | --- |
+| QEMU 45086679139 | Step 0 | every Phase 0 to 7 suite on the last pins | 14 of 14 |
+| QEMU 45193087442 | `fe3608d` | every suite, every service confined | 14 of 14, `ci` green |
+| fuzz-long 45113495933 | `4ddaf52` | every target four hours | clean but `web-request` (fixed, `5854cee`) |
+| fuzz-long 45173327969 | after `5854cee` | `web-request` four hours again | running when this was written |
+| QEMU 45216241201 | `ae31cbd` | every suite after the accept fix | running when this was written |
+| nightly 45216378918 | `ae31cbd` | full suite, release, short fuzz, soak | release running; short fuzz passed; three failures below |
+
+`sec-baselines` at `ae31cbd`, recorded not held: the sign-on page
+46,603 ms after the machine started; sign-on 62 ms; the Partitions
+list 43 ms with 25 partitions (last page 42 ms), 45 ms with 500 (44 ms),
+61 ms with 5,000 (61 ms). Base ready is `status`'s: 1.27 s on one disk,
+1.28 s mirrored.
+
+Open, from nightly 45216378918; each passed at `fe3608d` or failed
+differently there, so check first whether `ae31cbd` (webd's accept
+with `SO_RCVTIMEO`) caused it:
+
+- `sec-soak`: `QMC6101 not shown (200): QSI0301 The partition manager
+  did not answer.`
+- `plans-restart`: `QMC6007 ... Not connected: 10.0.2.2:43133: Network
+  unreachable (os error 101)`.
+- `serv-pages`: `/qsmc/confirm/event-close?c=1 answered 303`.
+
+Still to do: the acceptance table with this evidence; power pulls
+against the remaining persistent-state writers; imported files as
+hostile; Section 9's prototype count, script-off and stylesheet-off
+use, 25 rows at 1024 by 768 (or `NEEDS-CODY`); the release notes'
+known limits kept current; for QS/VS, `refcodes.ndjson` is unbounded.
+
+The nightly's soak is half an hour; the 24-hour soak is Cody's
+(`docs/QUALIFICATION.md` 7). What the tag waits on: the 24-hour soak,
+the release keys, real machines, the design's answers.
+
 ## Every `BLOCKED` line of Phases 0 to 7
 
 Phases 3 to 7 wrote none; every one of Phases 0 to 2 is done, and none
@@ -127,7 +166,7 @@ is left for the release notes:
 | 9, the design's acceptance | `sec-web` | every link of every page resolving, beside Phases 3 to 7's suites |
 | 10, what V1 leaves out | `docs/DESIGN_REVIEW.md` | every choice, page and field, for the design |
 | 11, documents and audits | `tools/build/src/host/doctor.rs` | `build doctor`'s rows for other vendors' names and every panel's help, beside the headers and the catalogue; `docs/OPERATIONS.md`; `docs/INSTALL.md`'s Secure Boot; `docs/LOCALCONSOLE.md`'s Signature row |
-| 12, CI | `.github/workflows/nightly.yml` | every night: the full suite (`qemu.yml`), the release twice and compared, its stream, Secure Boot, a short fuzz of every target, a one-hour soak |
+| 12, CI | `.github/workflows/nightly.yml` | every night: the full suite (`qemu.yml`), the release twice and compared, its stream, Secure Boot, a short fuzz of every target, a half-hour soak; the 24-hour soak is Cody's (`NEEDS-CODY`) |
 | 13, the release candidate | `docs/RELEASE_NOTES_V1R0M0.md`, `docs/QUALIFICATION.md` | the notes and the runbook |
 
 ### The suites

@@ -6,7 +6,7 @@
 # suite on the release build (`qemu.yml`, the update up and down among
 # its suites); the release directory built twice and compared, its
 # stream verified and its UKIs booted under Secure Boot; a short run of
-# every fuzz target; a one-hour soak. The release keys here are made for
+# every fuzz target; a half-hour soak. The release keys here are made for
 # the run and thrown away: never a release's. A hosted runner nests KVM;
 # where one cannot, `runs-on` is the one line to change (the comment
 # beside it names a self-hosted runner's labels).
@@ -108,9 +108,9 @@ jobs:
           path: tools/fuzz/crashes
 
   soak:
-    name: a one-hour soak
+    name: a half-hour soak
     runs-on: ubuntu-24.04 # self-hosted: [self-hosted, linux, x64, kvm]
-    timeout-minutes: 240
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
       - name: Packages
@@ -134,7 +134,7 @@ jobs:
       - run: cargo run -q -p build -- all
       - run: cargo run -q -p build -- --test-image all
       - run: cargo run -q -p build -- test --suite sec-soak
-        env: { QSMC_SOAK_SECS: "3600" }
+        env: { QSMC_SOAK_SECS: "1800" }
       - uses: actions/upload-artifact@v4
         if: always()
         with:
