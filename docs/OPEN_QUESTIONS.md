@@ -786,3 +786,26 @@ decisions in a later release or the design drops it.
 The partitions' and Servers' Manage dumps, which items 32 and 38 listed
 as `QMC9030`, lead to Manage dumps from Phase 7. No function of the
 tree says it arrives in a later release (`QMC9030`) any more.
+
+## 49. `qsweb` reads a body said two ways (QS/400)
+
+Found in Phase 8's review. `qsweb::http::request` reads a request with
+both `Content-Length` and `Transfer-Encoding: chunked` as chunked, with
+two lengths as the first, and with any coding that contains `chunked`
+as chunked. Nothing sits between a browser and the console, so no second
+reader sees the request otherwise; still, a request whose framing two
+readers could take differently is not one to act on. The web server
+refuses each with 400 before its body is read, and its connection is
+closed after (`webd::serve::framing_refused`, `sec-web`). For QS/400:
+`qsweb` refusing them itself; the console's check then goes.
+
+## 50. Landlock beside `base/confine` (QS/VS)
+
+Found in Phase 8. `base/confine::sys::isolate` gives a process an empty
+root and no network, which suits QS/VS's VMM and not QS/MC's services:
+each needs its own folders of `/data`, the sockets of `/run`, and two
+of them the network. QS/MC confines its services with Landlock instead
+(`lic/sandbox/src/landlock.rs`: paths, TCP ports, the signal and
+abstract-socket scopes), beside `base/confine`'s seccomp filter, as
+Cody chose. Landlock is product-neutral. For QS/VS: Landlock rules in
+`base/confine`; QS/MC's module then goes, and its policies stay.
