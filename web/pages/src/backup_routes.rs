@@ -360,7 +360,10 @@ pub fn confirm(rq: &Rq<'_>) -> Response {
     let f = rq.req.form();
     if rq.post() && f.get("ok").is_some() {
         let dir = restore_dir(rq);
-        let staged = fs::rename(dir.join(UPLOADED), dir.join(PENDING)).map_err(|e| e.to_string());
+        // Durable before it is said: a power loss after OK still restores.
+        let staged = fs::rename(dir.join(UPLOADED), dir.join(PENDING))
+            .and_then(|()| fs::File::open(&dir)?.sync_all())
+            .map_err(|e| e.to_string());
         rq.audit(
             &format!(
                 "restore the backup of {} made {} at the restart",
