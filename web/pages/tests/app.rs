@@ -1044,3 +1044,86 @@ fn the_pattern_reference_is_a_test_image_s() {
     }
     let _ = std::fs::remove_dir_all(dir);
 }
+
+/// The tree's `[+]` and `[-]` links by group: the glyph and its link.
+fn glyphs(page: &str) -> Vec<(String, String)> {
+    let toks = qsweb::golden::tokens(page);
+    let mut out = Vec::new();
+    for (i, t) in toks.iter().enumerate() {
+        if let qsweb::golden::Tok::Open(n, a) = t
+            && n == "a"
+            && a.get("class").map(String::as_str) == Some("glyph")
+        {
+            let glyph = match toks.get(i + 1) {
+                Some(qsweb::golden::Tok::Text(s)) => s.clone(),
+                _ => String::new(),
+            };
+            out.push((glyph, a.get("href").cloned().unwrap_or_default()));
+        }
+    }
+    out
+}
+
+#[test]
+fn the_tree_keeps_several_groups_open_and_its_glyphs_stay_on_the_page() {
+    let (app, _, dir) = app("tree");
+    let mut b = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.10",
+        host: None,
+    };
+    b.sign_on("qsadmin", PASSWORD);
+    // The page's own group opens; another's `[+]` asks the tree, not
+    // its first page, and comes back here.
+    let page = b.send("GET", "/qsmc/console", &[]).text();
+    let g = glyphs(&page);
+    assert!(
+        g.iter()
+            .any(|(s, h)| s == "[-]" && h.contains("close=Console")),
+        "{g:?}"
+    );
+    let (_, open) = g
+        .iter()
+        .find(|(s, h)| s == "[+]" && h.contains("open=Service"))
+        .unwrap_or_else(|| panic!("{g:?}"));
+    assert!(
+        open.starts_with("/qsmc/nav?") && open.ends_with("back=/qsmc/console"),
+        "{open}"
+    );
+    let r = b.send("GET", open, &[]);
+    assert_eq!(
+        (r.status, r.header("Location")),
+        (303, Some("/qsmc/console"))
+    );
+    // Both groups are open now, the page still Console settings.
+    let page = b.send("GET", "/qsmc/console", &[]).text();
+    let g = glyphs(&page);
+    assert_eq!(g.iter().filter(|(s, _)| s == "[-]").count(), 2, "{g:?}");
+    assert!(page.contains("Serviceable events") && page.contains("Users and roles"));
+    // Closing the page's own group sticks while the user stays.
+    let close = g
+        .iter()
+        .find(|(s, h)| s == "[-]" && h.contains("close=Console"))
+        .map(|(_, h)| h.clone())
+        .unwrap();
+    b.send("GET", &close, &[]);
+    let page = b.send("GET", "/qsmc/console", &[]).text();
+    assert!(
+        !page.contains("<div class=\"navitem\"><a href=\"/qsmc/console/users\""),
+        "{page}"
+    );
+    assert!(page.contains("Serviceable events"));
+    // `back` never leaves the console.
+    let r = b.send(
+        "GET",
+        "/qsmc/nav?open=Updates&back=https%3A%2F%2Fevil.example%2F",
+        &[],
+    );
+    assert_eq!(r.header("Location"), Some("/qsmc/"));
+    // Every page carries the navigation script.
+    assert!(page.contains(
+        "<script type=\"text/javascript\" src=\"/qsmc/shared/qsnav.js\" defer=\"defer\"></script>"
+    ));
+    let _ = std::fs::remove_dir_all(dir);
+}

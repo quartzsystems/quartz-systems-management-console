@@ -27,6 +27,7 @@ fn links(page: &str) -> Vec<String> {
         })
         .map(|h| h.split('#').next().unwrap_or("").to_string())
         .filter(|h| h.starts_with("/qsmc/"))
+        .filter_map(|h| crate::web::crawled(h.replace("&amp;", "&")))
         .collect()
 }
 
@@ -63,6 +64,9 @@ pub fn pages(run: &super::Run<'_>) -> Result<String, String> {
             continue;
         }
         let a = b.get(&path)?;
+        if crate::web::opened(&path, a.status)? {
+            continue;
+        }
         // `/qsmc/` (the help window's Close window) leads to Welcome.
         if a.status == 303 {
             match a.header("location") {
@@ -78,9 +82,8 @@ pub fn pages(run: &super::Run<'_>) -> Result<String, String> {
             return Err(format!("{path} answered {}", a.status));
         }
         pages += 1;
-        // No page carries a script or an inline handler.
-        let text = a.text().to_ascii_lowercase();
-        if text.contains("<script") || text.contains("javascript:") || text.contains(" onclick=") {
+        // No page carries a script or an inline handler of its own.
+        if crate::web::scripted(&a.text()) {
             return Err(format!("{path} carries a script"));
         }
         if a.header("content-type")

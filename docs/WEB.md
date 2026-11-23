@@ -79,11 +79,11 @@ The web certificate is not the console's QSI identity
 | A connection silent | 30 s, then closed (`web-hostile`: closed at 30 s) |
 | Connections at once | 64, of them 16 from one address; one more is closed at once |
 
-Every answer on 443 carries `Content-Security-Policy: default-src
-'none'; style-src 'self'; img-src 'self'; form-action 'self';
-frame-ancestors 'none'; base-uri 'none'` but the terminal window, whose
-policy also allows its script, its socket and its style attributes
-(`docs/TERMINAL.md`); `X-Frame-Options: DENY`,
+Every answer on 443 carries `Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-hashes' 'sha256-bPxKeIO3vE75rWhFps/iWImI78V11QxJ/ssbAigs2Vw='; connect-src 'self'; style-src 'self'; img-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'`
+but the terminal window, whose policy allows its script, its socket
+and its style attributes (`docs/TERMINAL.md`). The hash is the help
+window's Close window handler (`webd::serve::CLOSE_HANDLER`), the one
+inline script admitted; a test holds it to `qsweb`'s. `X-Frame-Options: DENY`,
 `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, and
 `Cache-Control: no-store` unless it says otherwise. There is no
 `Strict-Transport-Security`: with a self-signed certificate it would
@@ -98,9 +98,23 @@ in on), and nothing else.
 The stylesheet is `qsweb::CSS`, served byte for byte at
 `/qsmc/shared/qs400.css` with an entity tag (its SHA-256's first 16
 hex digits) and `max-age=3600`; a matching `If-None-Match` is answered
-`304`. The one script is QS/400's terminal script,
-`/qsmc/terminal/script.js` (`termlook::script::text`), on the terminal
-window only; `qsweb`'s navigation script is not served.
+`304`. `qsweb`'s navigation script, `qsweb::NAV_JS`, is served the
+same way at `/qsmc/shared/qsnav.js` and loaded by every framed page
+(`Product::nav_script`), as QS/400's Navigator: each `table.list` gets
+a Filter row under its headers and headers that sort A-Z, Z-A and back;
+links and forms swap the page in place; the help window's Close window
+goes back. Every page works without it. The other script is QS/400's
+terminal script, `/qsmc/terminal/script.js` (`termlook::script::text`),
+on the terminal window only, which does not load the navigation
+script.
+
+## The tree
+
+As QS/400's Navigator: `[+]` and `[-]` open and close a group in
+place (`/qsmc/nav?open=` or `close=`, back to the page), several at
+once, kept for the session (`qsweb::session`); a page's own group
+opens when the user arrives from another group, and stays closed if
+the user closed it there.
 
 ## Pages and their golden files
 
@@ -121,7 +135,7 @@ Golden corrections, each the only difference allowed:
 | `shared/error.html`, `notauth.html`, `confirm.html`, `components.html` | the frame is QS/MC's, as on its other pages: the wordmark and title suffix `QS/MC Management Console`, the header (`Console: QSHQMC1`, `User: qsadmin`) and the footer; the breadcrumb's root is `QS/MC` | the prototype's shared pages carry QS/400's frame (`docs/OPEN_QUESTIONS.md`, item 20) |
 | `shared/error.html` | no `Job log` button; `Technical details` for `Technical description` | QS/MC has no job log; `qsweb`'s heading |
 | `shared/notauth.html` | the closing paragraph is QS/MC's (`Brand::notauth_note`) | the prototype's names QS/400's security officer |
-| `shared/help.html` | the window's wordmark, title and footer are QS/MC's; Contents and Index lead to the help pages; Close window is a plain link to the console's start | as above; `qsweb` closes by script only for a product that serves script (item 22) |
+| `shared/help.html` | the window's wordmark, title and footer are QS/MC's; Contents and Index lead to the help pages; Close window goes back by script | as above; `qsweb` closes by script for a product that serves script (item 22) |
 | `shared/components.html` | the job actions (`../nav/active-jobs.html` and the two beside it) lead to the page itself | QS/MC has no job pages; the page is served under `/dev/components` in a test image only, with its error page example at `/dev/error` |
 | `qsmc/connectivity.html` | Reset connection and Change password lead to the add form (`add-system.html`) | both pair the system again with a new password; QSI has no service password to change |
 | `qsmc/add-system.html` | Verify TLS certificate: grey text, the system's own certificate pinned when paired, not a box for a certificate authority | QSI trusts a system by the certificate pinned at pairing (`docs/MGMT.md`) |

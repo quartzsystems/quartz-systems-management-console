@@ -16,6 +16,10 @@ pub const PREFIX: &str = "/qsmc";
 /// Where the stylesheet is served (`qsweb::CSS`, byte for byte).
 pub const CSS_PATH: &str = "/qsmc/shared/qs400.css";
 
+/// Where the navigation script is served (`qsweb::NAV_JS`, byte for
+/// byte): the tree's lists filtered and sorted, pages swapped in place.
+pub const NAV_PATH: &str = "/qsmc/shared/qsnav.js";
+
 /// The family: QS/MC alone.
 pub static BRAND: Brand = Brand {
     name: release::NAME,
@@ -23,8 +27,7 @@ pub static BRAND: Brand = Brand {
     release: &release::RELEASE,
     server: "QSMC",
     css_path: CSS_PATH,
-    // No page carries the script ([`PRODUCT`]); the path is never served.
-    nav_path: "/qsmc/shared/qsnav.js",
+    nav_path: NAV_PATH,
     cookie: "QSMCSID",
     signon_notice: "",
     notice_in_form: true,
@@ -88,7 +91,7 @@ pub static PRODUCT: Product = Product {
     prefix: PREFIX,
     nav: NAV,
     system_label: "Console",
-    nav_script: false,
+    nav_script: true,
 };
 
 /// The routes of the tree that later phases bring, and the phase.

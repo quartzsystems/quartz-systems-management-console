@@ -376,3 +376,50 @@ pub fn sha256_of_pem(pem: &[u8]) -> Result<String, String> {
     let leaf = b.chain.first().ok_or("no certificate in the file")?;
     Ok(webd::tls::colons(&x509kit::crypto::sha256(&leaf.der)))
 }
+
+/// Whether `path` is the tree's `[+]` or `[-]` (`/qsmc/nav`), which
+/// opens or closes a group for the session: not a page.
+pub fn toggle(path: &str) -> bool {
+    path.split('?').next() == Some("/qsmc/nav")
+}
+
+/// A link as a crawl follows it: the tree's `[+]` once a group (its
+/// return dropped, so every page's is the same), never its `[-]`, so
+/// each group once opened stays open and its pages are reached;
+/// anything else as it is.
+pub fn crawled(link: String) -> Option<String> {
+    if !toggle(&link) {
+        return Some(link);
+    }
+    let q = link.split_once('?').map_or("", |(_, q)| q);
+    q.split('&')
+        .find(|kv| kv.starts_with("open="))
+        .map(|kv| format!("/qsmc/nav?{kv}"))
+}
+
+/// Whether the crawl's `path`, answered `status`, was a `[+]` of the
+/// tree, which answers 303 and is not checked as a page.
+pub fn opened(path: &str, status: u16) -> Result<bool, String> {
+    match (toggle(path), status) {
+        (false, _) => Ok(false),
+        (true, 303) => Ok(true),
+        (true, s) => Err(format!("{path} answered {s}")),
+    }
+}
+
+/// Whether `page` carries script of its own: a `script` element other
+/// than the navigation script every framed page loads, a `javascript:`
+/// link, or an inline handler other than the help window's Close
+/// window (`webd::serve::CLOSE_HANDLER`, the one the policy admits).
+pub fn scripted(page: &str) -> bool {
+    let nav = format!(
+        "<script type=\"text/javascript\" src=\"{}\" defer=\"defer\"></script>",
+        webd::product::NAV_PATH
+    );
+    let close = format!("onclick=\"{}\"", webd::serve::CLOSE_HANDLER);
+    let rest = page
+        .replace(&nav, "")
+        .replace(&close, "")
+        .to_ascii_lowercase();
+    rest.contains("<script") || rest.contains("javascript:") || rest.contains(" onclick=")
+}

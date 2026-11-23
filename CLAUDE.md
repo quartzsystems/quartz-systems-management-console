@@ -119,7 +119,11 @@ See `docs/ARCHITECTURE.md`. Short form:
   it on local sockets and holds neither (`docs/MGMT.md`).
 - **A partition's console.** Frames of a cell grid from the managed
   side, drawn in the browser by one small script; keys go back as key
-  events. The only script in the product.
+  events.
+- **Script.** Two scripts and nothing else: the terminal's, and
+  `qsweb`'s navigation script on every framed page, as QS/400's
+  Navigator has it (lists filtered and sorted, pages swapped in place,
+  the tree's groups open together). Every page works without either.
 - **Updates.** The console reads three product streams' signed indexes
   (`qsmc`, `qsvs`, `qs400`) through `fetchd`, downloads, and brings an
   update to a host over QSI. Hosts fetch nothing. It updates itself

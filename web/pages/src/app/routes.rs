@@ -80,7 +80,17 @@ impl Rq<'_> {
         {
             page.messages.insert(0, m);
         }
-        Response::html(200, render(&self.ctx, &page))
+        // The page's group opens when the user arrives from another;
+        // the others stay as the user left them.
+        let mut ctx = self.ctx.clone();
+        if let Some((group, _)) = page.nav {
+            ctx.open = Some(session::nav_visit(
+                &self.app.sessions,
+                &self.session.id,
+                group,
+            ));
+        }
+        Response::html(200, render(&ctx, &page))
     }
 
     /// `303` to `route` with `m` waiting there.
@@ -428,7 +438,7 @@ fn signed_on<'a>(app: &'a App, req: &'a Request, peer: &'a Peer) -> Result<Rq<'a
             system: app.console.name(),
             user: session.user.clone(),
             csrf: session.csrf.clone(),
-            open: None,
+            open: Some(session::nav_open(&session)),
             here: qsweb::frame::here(req),
         },
         session,
@@ -492,6 +502,11 @@ pub fn route(app: &App, req: &Request, peer: &Peer) -> Response {
     let role = rq.role;
     if let Some(task) = task_of(route).filter(|t| !matrix.allows(role, *t)) {
         return refuse(&rq, task);
+    }
+    if route == "/nav" {
+        // `[+]` and `[-]` of the tree: the group opens or closes, the
+        // page stays.
+        return qsweb::frame::nav_toggle(&PRODUCT, &app.sessions, &rq.session.id, req);
     }
     if let Some(id) = route.strip_prefix("/msg/") {
         // The console's own, else a QS/VS host's from its catalogue.

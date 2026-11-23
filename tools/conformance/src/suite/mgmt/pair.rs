@@ -25,10 +25,12 @@ fn links(page: &str) -> Vec<String> {
         })
         .map(|h| h.split('#').next().unwrap_or("").replace("&amp;", "&"))
         .filter(|h| h.starts_with("/qsmc/"))
+        .filter_map(crate::web::crawled)
         .collect()
 }
 
-/// Whether `path` is a terminal window, the one page with a script.
+/// Whether `path` is a terminal window, the one page with a script of
+/// its own (every framed page loads the navigation script).
 fn window(path: &str) -> bool {
     let p = path.split('?').next().unwrap_or("");
     p.starts_with("/qsmc/terminal/") && p.matches('/').count() == 4
@@ -91,7 +93,7 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         }
     }
     // Every link of every page, from Welcome, answers; only a terminal
-    // window carries a script.
+    // window carries a script of its own.
     let mut seen = BTreeSet::new();
     let mut queue = VecDeque::from([
         "/qsmc/welcome".to_string(),
@@ -108,6 +110,9 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             continue;
         }
         let a = b.get(&path)?;
+        if crate::web::opened(&path, a.status)? {
+            continue;
+        }
         // `/qsmc/` (the help window's Close window) leads to Welcome.
         if a.status == 303 {
             match a.header("location") {
@@ -122,8 +127,7 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             return Err(format!("{path} answered {}", a.status));
         }
         pages += 1;
-        let text = a.text().to_ascii_lowercase();
-        if text.contains("<script") {
+        if crate::web::scripted(&a.text()) {
             if !window(&path) {
                 return Err(format!("{path} carries a script"));
             }
@@ -135,10 +139,11 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
                 return Err(format!("{path}'s policy does not allow its script"));
             }
         } else if a
-            .header("content-security-policy")
-            .is_some_and(|p| p.contains("script-src"))
+            .header("content-type")
+            .is_some_and(|t| t.starts_with("text/html"))
+            && a.header("content-security-policy") != Some(webd::serve::CSP)
         {
-            return Err(format!("{path} allows a script it does not have"));
+            return Err(format!("{path}'s policy is not the console's"));
         }
         if a.header("content-type")
             .is_some_and(|t| t.starts_with("text/html"))

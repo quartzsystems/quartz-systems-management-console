@@ -3,7 +3,7 @@
 // root directory of this project.
 
 //! Suite 2: every page of this phase served with the fixture's data, each
-//! link and form action answering, no script (the golden comparison is
+//! link and form action answering, no script of their own (the golden comparison is
 //! `webpages`' own test). Suite 10: every route for each role as the
 //! matrix says; Deploy and Delete only through their confirmation and a
 //! POST with its token; every capture, import, export, deployment step
@@ -62,10 +62,13 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             continue;
         }
         let a = b.get(&path)?;
+        if crate::web::opened(&path, a.status)? {
+            continue;
+        }
         let text = a.text();
         if a.header("content-type")
             .is_some_and(|t| t.starts_with("text/html"))
-            && text.to_ascii_lowercase().contains("<script")
+            && crate::web::scripted(&text)
         {
             return Err(format!("{path} carries a script"));
         }
@@ -94,7 +97,7 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     Ok(format!(
         "{} pages of this phase (System plans and its sorts, View, Edit, the wizard's three \
          steps, both confirmations, the progress page, Code updates, Welcome) each answered 200 \
-         with no script, and {} pages they link to answered; {} forms each post with the token, \
+         with no script of their own, and {} pages they link to answered; {} forms each post with the token, \
          have a button and an action that answers, {} of them posted with Cancel",
         c.pages, c.other, c.forms, c.posted
     ))

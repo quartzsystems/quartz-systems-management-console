@@ -12,15 +12,27 @@ use std::sync::Arc;
 
 use qsweb::http::{Handler, Peer, Request, Response};
 
-use crate::product::{BRAND, CSS_PATH, PREFIX};
+use crate::product::{BRAND, CSS_PATH, NAV_PATH, PREFIX};
 
-/// The content security policy: the page itself and its stylesheet,
-/// nothing else; forms post to the console only; no framing.
-pub const CSP: &str = "default-src 'none'; style-src 'self'; img-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
+/// The content security policy: the page itself, its stylesheet and
+/// the navigation script, nothing else; of inline script only the help
+/// window's Close window ([`CLOSE_HANDLER`], by its hash); forms post
+/// to the console only; no framing.
+pub const CSP: &str = "default-src 'none'; script-src 'self' 'unsafe-hashes' 'sha256-bPxKeIO3vE75rWhFps/iWImI78V11QxJ/ssbAigs2Vw='; connect-src 'self'; style-src 'self'; img-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
+
+/// The help window's Close window handler (`qsweb::frame::help`), the
+/// one inline script [`CSP`] admits.
+pub const CLOSE_HANDLER: &str =
+    "if (history.length > 1) { history.back(); } else { window.close(); } return false;";
 
 /// The stylesheet's entity tag: its SHA-256, the first 16 hex digits.
 pub fn css_etag() -> String {
-    let sum = x509kit::crypto::sha256(qsweb::CSS);
+    etag(qsweb::CSS)
+}
+
+/// `bytes`' entity tag: their SHA-256, the first 16 hex digits.
+fn etag(bytes: &[u8]) -> String {
+    let sum = x509kit::crypto::sha256(bytes);
     let mut tag = String::from("\"");
     for b in &sum[..8] {
         let _ = write!(tag, "{b:02x}");
@@ -109,16 +121,26 @@ pub fn framing_refused(req: &Request) -> Option<Response> {
 
 /// The stylesheet, or `304` when the client has it.
 pub fn stylesheet(req: &Request) -> Response {
-    let etag = css_etag();
+    asset(req, qsweb::CSS, "text/css")
+}
+
+/// The navigation script (`qsweb::NAV_JS`), or `304` when the client
+/// has it.
+pub fn nav_script(req: &Request) -> Response {
+    asset(req, qsweb::NAV_JS, "text/javascript; charset=utf-8")
+}
+
+fn asset(req: &Request, bytes: &[u8], kind: &str) -> Response {
+    let etag = etag(bytes);
     if req
         .header("if-none-match")
         .is_some_and(|tags| tags.split(',').any(|t| t.trim() == etag))
     {
-        return Response::new(304, "text/css", Vec::new())
+        return Response::new(304, kind, Vec::new())
             .with("ETag", &etag)
             .with("Cache-Control", "max-age=3600");
     }
-    Response::new(200, "text/css", qsweb::CSS.to_vec())
+    Response::new(200, kind, bytes.to_vec())
         .with("ETag", &etag)
         .with("Cache-Control", "max-age=3600")
 }
@@ -180,6 +202,12 @@ impl Handler for Site {
             } else {
                 qsweb::http::plain(405, "The stylesheet is only read.")
             }
+        } else if req.path == NAV_PATH {
+            if req.method == "GET" || req.method == "HEAD" {
+                nav_script(req)
+            } else {
+                qsweb::http::plain(405, "The script is only read.")
+            }
         } else if req.path == "/" || req.path == PREFIX {
             Response::redirect(&format!("{PREFIX}/"))
         } else {
@@ -193,7 +221,7 @@ impl Handler for Site {
         // is read, and its connection is closed after.
         framing_refused(req).is_some()
             || ended(peer.addr)
-            || (req.path != CSS_PATH && self.pages.streams(req, peer))
+            || (req.path != CSS_PATH && req.path != NAV_PATH && self.pages.streams(req, peer))
     }
 
     fn handle_stream(&self, req: &Request, body: &mut dyn std::io::Read, peer: &Peer) -> Response {
@@ -375,6 +403,50 @@ mod tests {
         let mut again = request(CSS_PATH, None);
         again.headers.push(("if-none-match".into(), css_etag()));
         assert_eq!(stylesheet(&again).status, 304);
+    }
+
+    /// Standard base64, padded.
+    fn b64(b: &[u8]) -> String {
+        const A: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        let mut s = String::new();
+        for c in b.chunks(3) {
+            let n = (u32::from(c[0]) << 16)
+                | (u32::from(*c.get(1).unwrap_or(&0)) << 8)
+                | u32::from(*c.get(2).unwrap_or(&0));
+            for i in 0..4 {
+                if i <= c.len() {
+                    s.push(char::from(A[(n >> (18 - 6 * i) & 63) as usize]));
+                } else {
+                    s.push('=');
+                }
+            }
+        }
+        s
+    }
+
+    #[test]
+    fn the_policy_admits_the_help_window_s_close_and_nothing_inline_else() {
+        let page = qsweb::frame::help(&crate::product::PRODUCT, "Topic", "<p>x</p>");
+        assert!(
+            page.contains(&format!("onclick=\"{CLOSE_HANDLER}\"")),
+            "{page}"
+        );
+        let sum = x509kit::crypto::sha256(CLOSE_HANDLER.as_bytes());
+        let hash = b64(&sum);
+        assert!(CSP.contains(&format!("'sha256-{hash}'")), "{hash}");
+        assert!(!CSP.contains("unsafe-inline"));
+    }
+
+    #[test]
+    fn the_script_is_qsweb_s_with_validators() {
+        let r = nav_script(&request(NAV_PATH, None));
+        assert_eq!(r.status, 200);
+        assert_eq!(r.bytes(), qsweb::NAV_JS);
+        let mut again = request(NAV_PATH, None);
+        again
+            .headers
+            .push(("if-none-match".into(), etag(qsweb::NAV_JS)));
+        assert_eq!(nav_script(&again).status, 304);
     }
 
     #[test]

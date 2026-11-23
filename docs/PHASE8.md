@@ -340,6 +340,19 @@ twice: the events list shows the newest 100, so each problem is asked
 for by its number and its code (`6a6ad33`, `4b9be3e`), and the churn
 opens 20 problems a cut, under the 500 kept (`ef0b67d`).
 
+## After the release: the tree and the lists as QS/400's
+
+Cody asked that the web interface behave as QS/400's Navigator does.
+The tree's `[+]` and `[-]` now open and close a group in place, several
+at once, kept for the session (`qsweb::session::nav_visit`), where `[+]`
+used to load the group's first page. Every framed page loads `qsweb`'s
+navigation script: each list's Filter row and sorted headers, pages
+swapped in place. This replaces the locked decision that the terminal's
+was the only script (`docs/ARCHITECTURE.md`, `docs/SECURITY.md`,
+`docs/WEB.md`). The page suites now allow that one script tag. Their
+crawls follow each `[+]` once and never `[-]`. `web/pages/tests/app.rs`
+holds the tree.
+
 ## Not done
 
 - For QS/VS: `refcodes.ndjson` grows without a bound; the fix is QS/VS's.

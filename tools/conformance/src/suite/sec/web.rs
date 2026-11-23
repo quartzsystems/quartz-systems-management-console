@@ -198,7 +198,7 @@ fn headers(path: &str, a: &Answer) -> Result<(), String> {
     } else if csp != webd::serve::CSP {
         return Err(format!("{path}: its policy is {csp:?}"));
     }
-    if !window(path) && a.text().to_ascii_lowercase().contains("<script") {
+    if !window(path) && crate::web::scripted(&a.text()) {
         return Err(format!("{path} carries a script"));
     }
     Ok(())
@@ -244,6 +244,9 @@ fn walk(b: &mut Browser) -> Result<Walk, String> {
             continue;
         }
         let a = b.get(&path)?;
+        if crate::web::opened(&path, a.status)? {
+            continue;
+        }
         // Every link of every page resolves (the design's acceptance).
         if a.status == 404 || a.status >= 500 {
             return Err(format!("{path}, a link of a page, answered {}", a.status));

@@ -207,17 +207,23 @@ pub fn page(ctx: &Ctx, v: &Window) -> Page {
 /// The script's route.
 pub const SCRIPT: &str = "/terminal/script.js";
 
-/// `html`, a page rendered in the frame, without the navigation column:
-/// the content spans the frame, as the terminal window has it.
+/// `html`, a page rendered in the frame, without the navigation column
+/// or the navigation script: the content spans the frame, as the
+/// terminal window has it, and its own script is its one.
 pub fn without_nav(html: &str) -> String {
+    let tag = format!(
+        "<script type=\"text/javascript\" src=\"{}\" defer=\"defer\"></script>\n",
+        webd::product::NAV_PATH
+    );
+    let html = html.replacen(&tag, "", 1);
     let Some(start) = html.find("<td class=\"nav\"") else {
-        return html.to_string();
+        return html;
     };
     let Some(end) = html[start..]
         .find("</td>")
         .map(|e| start + e + "</td>".len())
     else {
-        return html.to_string();
+        return html;
     };
     let mut out = String::with_capacity(html.len());
     out.push_str(&html[..start]);

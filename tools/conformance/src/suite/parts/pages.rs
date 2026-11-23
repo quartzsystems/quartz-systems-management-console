@@ -3,8 +3,8 @@
 // root directory of this project.
 
 //! Suite 1: every page of this phase served, each link and form action
-//! answering, no script but the terminal window's, every form posting
-//! without one. Suite 9: the routes for each role. Suite 10: the list
+//! answering, no script but the navigation script and the terminal
+//! window's, every form posting without one. Suite 9: the routes for each role. Suite 10: the list
 //! never waits. Suite 11: a host before handoff 24.
 
 use std::collections::{BTreeSet, VecDeque};
@@ -161,6 +161,7 @@ pub(crate) fn links(html: &str) -> Vec<String> {
         })
         .map(|h| h.split('#').next().unwrap_or("").replace("&amp;", "&"))
         .filter(|h| h.starts_with("/qsmc/"))
+        .filter_map(crate::web::crawled)
         .collect()
 }
 
@@ -261,11 +262,14 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             continue;
         }
         let a = b.get(&path)?;
+        if crate::web::opened(&path, a.status)? {
+            continue;
+        }
         if !ours(&path) {
             if a.status == 404 || a.status >= 500 {
                 return Err(format!("{path} answered {}", a.status));
             }
-            if a.text().to_ascii_lowercase().contains("<script") {
+            if crate::web::scripted(&a.text()) {
                 if !window(&path) {
                     return Err(format!("{path} carries a script"));
                 }
@@ -293,7 +297,7 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         }
         c.pages += 1;
         let text = a.text();
-        if text.to_ascii_lowercase().contains("<script") {
+        if crate::web::scripted(&text) {
             if !window(&path) {
                 return Err(format!("{path} carries a script"));
             }
@@ -315,7 +319,7 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         "{} pages of this phase (QSHQVS1's partitions, profiles, virtual resources, the wizard, \
          groups, schedules, confirmations; QSHQ400's where they apply) each answered 200, and {} \
          pages they link to answered; {} forms each post with the token, have a button and an \
-         action that answers, {} of them posted with Cancel; no page carries a script ({} terminal \
+         action that answers, {} of them posted with Cancel; no page carries a script of its own ({} terminal \
          windows reached, which do)",
         c.pages, c.other, c.forms, c.posted, c.windows
     ))

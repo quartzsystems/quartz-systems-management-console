@@ -3,7 +3,7 @@
 // root directory of this project.
 
 //! Suite 2: every page of this phase served with the fixture's data,
-//! each link and form action answering, no script, every form posting
+//! each link and form action answering, no script of their own, every form posting
 //! without one (its golden comparison is `webpages`' own tests, run by
 //! `cargo test`). Suite 16's roles: every new route for each role as the
 //! matrix says.
@@ -123,8 +123,11 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             continue;
         }
         let a = b.get(&path)?;
+        if crate::web::opened(&path, a.status)? {
+            continue;
+        }
         let text = a.text();
-        if text.to_ascii_lowercase().contains("<script") {
+        if crate::web::scripted(&text) {
             return Err(format!("{path} carries a script"));
         }
         if !ours(&path) {
@@ -159,7 +162,7 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     Ok(format!(
         "{} pages of this phase (events, event {n} and the console's own with Repair, Add note, \
          Export and Close, dumps, Code updates, the install confirmation, progress and log, \
-         Updates, the notes, Welcome) each answered 200 with no script, and {} pages they link \
+         Updates, the notes, Welcome) each answered 200 with no script of their own, and {} pages they link \
          to answered; {asked} downloads answered without their bodies; {} forms each post with \
          the token, have a button and an action that answers, {} of them posted with Cancel",
         c.pages, c.other, c.forms, c.posted

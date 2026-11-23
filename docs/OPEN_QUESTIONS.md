@@ -418,6 +418,10 @@ golden correction is that link (`docs/WEB.md`, `d2312d9`). The same
 commit gave `qsweb` the grouped action list and carried fields, which
 the Servers list and the network confirmation now use (`50e9e34`).
 
+**After V1R0M0:** QS/MC serves `qsweb`'s navigation script, as QS/400's
+Navigator, so Close window closes by script again; the console's
+policy admits that one handler by its hash (`docs/WEB.md`).
+
 ## 23. The users' forms are not designed
 
 Found in Phase 3. On `console-users.html` Properties and Change

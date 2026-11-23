@@ -54,8 +54,9 @@ text in, turned into `qsipart` keys by `Input::console_keys`.
 
 ## Script and policy
 
-The terminal window is the only page with a script, and the only page
-whose content security policy allows one:
+The terminal window is the only page with a script of its own (every
+other framed page loads only `qsweb`'s navigation script, which the
+window does not), under a policy of its own:
 
 ```
 default-src 'none'; script-src 'self'; connect-src 'self'; style-src 'self';

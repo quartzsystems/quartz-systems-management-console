@@ -18,9 +18,12 @@ fn prototype(file: &str) -> String {
     std::fs::read_to_string(&p).unwrap_or_else(|e| panic!("{}: {e}", p.display()))
 }
 
+/// The navigation script every framed page carries; the prototype has none.
+const NAV_JS: &str = "/qsmc/shared/qsnav.js";
+
 /// `served` against `file` after the `fix` edits of the golden text.
 fn assert_golden(served: &str, file: &str, fix: &[(&str, &str)]) {
-    assert_golden_script(served, file, fix, None);
+    assert_golden_script(served, file, fix, Some(NAV_JS));
 }
 
 /// The same, the server's `script` element (by its source) dropped.
@@ -121,7 +124,7 @@ fn assert_shared(served: &str, file: &str, fix: &[(&str, &str)]) {
         &g,
         &Normalize {
             url: &map,
-            script: None,
+            script: Some(NAV_JS),
         },
     ) {
         panic!("shared/{file} differs from the served page at {d}");
@@ -293,11 +296,11 @@ fn shared_help() {
                 "<a href=\"help.html\" >Contents</a>",
             ),
             ("<a href=\"#\">Index</a>", "<a href=\"help.html\">Index</a>"),
-            // A product with no script closes the window by a plain
-            // link to its start (`qsweb`, item 22).
+            // The product serves script: Close window goes back, or
+            // closes a window of its own (`qsweb`).
             (
                 "<a href=\"#\">Close window</a>",
-                "<a href=\"/qsmc/\">Close window</a>",
+                "<a href=\"#\" onclick=\"if (history.length > 1) { history.back(); } else { window.close(); } return false;\">Close window</a>",
             ),
         ],
     );
