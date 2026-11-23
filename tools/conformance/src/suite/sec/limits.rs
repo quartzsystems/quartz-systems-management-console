@@ -174,10 +174,10 @@ fn uploads(lab: &mut Lab<'_>) -> Result<String, String> {
     lab.fleet.tell(0, "upload-rate stall");
     let path = "/qsmc/server/QSHQVS1/virtual/optical";
     let csrf = lab.c.browser.csrf(path)?;
-    let up = |name: String| Upload {
+    let up = |name: String, bytes: u64| Upload {
         csrf: csrf.clone(),
         name,
-        bytes: 64 << 20,
+        bytes,
         announce: None,
         cut: None,
         head_only: false,
@@ -186,11 +186,16 @@ fn uploads(lab: &mut Lab<'_>) -> Result<String, String> {
     let mut running = Vec::new();
     for i in 0..most {
         let b = lab.c.browser.clone_session();
-        let u = up(format!("LIM{i}.iso"));
+        let u = up(format!("LIM{i}.iso"), 64 << 20);
         running.push(std::thread::spawn(move || b.stream_upload(path, &u)));
         std::thread::sleep(Duration::from_secs(2));
     }
-    let past = lab.c.browser.stream_upload(path, &up("PAST.iso".into()))?;
+    // Small enough to be sent whole before the refusal closes the
+    // connection.
+    let past = lab
+        .c
+        .browser
+        .stream_upload(path, &up("PAST.iso".into(), 32 << 10))?;
     let t = past.map(|a| a.text()).unwrap_or_default();
     lab.fleet.tell(0, "upload-rate off");
     if !shows(&t, qmcmsg::UPLOADS_FULL.id) {
