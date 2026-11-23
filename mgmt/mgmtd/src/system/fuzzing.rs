@@ -213,6 +213,79 @@ mod tests {
     use qsi::any::AnyRequest;
     use qsisess::{EventLog, Incoming, Limits, Role, Session};
 
+    /// A host of 40 running partitions read after its list: the
+    /// thread's reads leave room for an operator's request, and all go
+    /// in turn, once each.
+    #[test]
+    fn a_host_s_reads_wait_for_room_and_leave_some() {
+        use qsi::host::model::PartitionState;
+        let hello = qsi::Hello {
+            version: qsi::VERSION,
+            caps: mgmtproto::ask::CONSOLE_CAPS,
+            kind: qsi::PeerKind::Host,
+            name: "FUZZVS".into(),
+            release: "V1R0M0".into(),
+            serial: "F0000001".into(),
+        };
+        let mut m = Session::new(Role::Managed, hello, true, Limits::default(), 0).unwrap();
+        let me = crate::peer::link::hello("FUZZMC", "V1R0M0");
+        let mut c = Session::new(Role::Console, me, true, Limits::default(), 0).unwrap();
+        c.feed(&m.take_output(), 1);
+        while c.poll().is_some() {}
+        m.feed(&c.take_output(), 1);
+        while m.poll().is_some() {}
+        let (tx, rx) = std::sync::mpsc::channel();
+        let entry = super::Entry {
+            name: "FUZZVS".into(),
+            kept: std::sync::Arc::new(std::sync::Mutex::new(mgmtproto::Kept::default())),
+            tx,
+            stop: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        };
+        let mut w = super::Worker::new(std::sync::Arc::clone(super::inner()), entry, rx);
+        let list: Vec<_> = (1..=40)
+            .map(|id| {
+                sim::fixture::status(id, &format!("P{id}"), PartitionState::Running, "", None)
+            })
+            .collect();
+        w.read_parts(&mut c, &list);
+        let max = c.limits().max_requests;
+        assert!(
+            c.outstanding() <= max - 16,
+            "{} outstanding",
+            c.outstanding()
+        );
+        let theirs = AnyRequest::Base(qsi::base::Request::Identify(qsi::Empty));
+        assert!(
+            c.request_any("oper", &theirs).is_ok(),
+            "no room for an operator"
+        );
+        let mut asked = std::collections::BTreeMap::new();
+        loop {
+            m.feed(&c.take_output(), 2);
+            let mut got = 0;
+            while let Some(i) = m.poll() {
+                if let Incoming::Request(r) = i {
+                    *asked.entry((r.family, r.op, r.body.clone())).or_insert(0) += 1;
+                    let _ = m.refuse(r.id, "QSI0301", "refused");
+                    got += 1;
+                }
+            }
+            if got == 0 {
+                break;
+            }
+            c.feed(&m.take_output(), 3);
+            while let Some(i) = c.poll() {
+                let _ = w.incoming(&mut c, i);
+            }
+            w.drain(&mut c);
+            assert!(c.outstanding() <= max);
+        }
+        // Each partition's profiles, uses, drives and functions, and the
+        // operator's.
+        assert_eq!(asked.len(), 4 * 40 + 1);
+        assert!(asked.values().all(|n| *n == 1));
+    }
+
     #[test]
     fn the_servicing_families_are_answered_and_kept() {
         super::servicing(b"");

@@ -8,7 +8,7 @@
 //! until it ends; then try again after a back-off that doubles to a
 //! minute.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc::{Receiver, RecvTimeoutError, Sender};
@@ -36,6 +36,9 @@ const LONGEST: Duration = Duration::from_mins(1);
 const SAVE: Duration = Duration::from_secs(2);
 /// How long a request of the service waits for its reply.
 const ASK: Duration = Duration::from_secs(60);
+/// A session's request slots kept for what others ask: this thread's
+/// own reads wait while fewer are free.
+const RESERVE: usize = 16;
 
 /// A request this thread made, by what it was for.
 #[derive(Debug, PartialEq, Eq)]
@@ -84,6 +87,11 @@ pub(super) enum Pending {
     Theirs(Sender<Result<Reply, Refusal>>, Instant),
 }
 
+/// Whether `s` can take one of this thread's own reads.
+fn room(s: &Session) -> bool {
+    s.outstanding() + RESERVE < s.limits().max_requests
+}
+
 /// A managed system, as a posting says what it is about.
 fn system_about(name: &str) -> supervise::control::About {
     supervise::control::About {
@@ -99,6 +107,8 @@ pub(super) struct Worker {
     pub(super) entry: Entry,
     rx: Receiver<Cmd>,
     pub(super) pending: HashMap<u32, Pending>,
+    /// This thread's own reads waiting for a request slot.
+    queued: VecDeque<(Mine, AnyRequest)>,
     pub(super) consoles: Consoles,
     pub(super) uploads: super::upload::Uploads,
     pub(super) stages: super::transfer::Stages,
@@ -120,6 +130,7 @@ impl Worker {
             entry,
             rx,
             pending: HashMap::new(),
+            queued: VecDeque::new(),
             consoles: Consoles::default(),
             uploads: super::upload::Uploads::default(),
             stages: super::transfer::Stages::default(),
@@ -303,6 +314,7 @@ impl Worker {
                     }
                 }
             }
+            self.drain(&mut link.session);
             self.consoles.pump(&mut link.session);
             self.uploads.pump(&mut link.session);
             self.downloads.pump(&mut link.session);
@@ -341,6 +353,7 @@ impl Worker {
         let name = self.name();
         let last = self.entry.kept().last_seq;
         self.inner.save_seq(&name, last);
+        self.queued.clear();
         for (_, p) in self.pending.drain() {
             if let Pending::Theirs(tx, _) = p {
                 let _ = tx.send(Err(qmc(&qmcmsg::NOT_CONNECTED, &[&name, why])));
@@ -373,26 +386,49 @@ impl Worker {
         }
     }
 
-    /// Ask for this thread's own purposes.
+    /// Ask for this thread's own purposes: at once while the session
+    /// has room beside [`RESERVE`], else when it has.
     pub(super) fn mine(&mut self, s: &mut Session, what: Mine, req: &AnyRequest) {
+        if !room(s) {
+            if !self.queued.iter().any(|(m, _)| *m == what) {
+                self.queued.push_back((what, req.clone()));
+            }
+            return;
+        }
         if let Ok(id) = s.request_any("QSMC", req) {
             self.pending.insert(id, Pending::Mine(what));
         }
     }
 
+    /// Send the reads waiting, as far as the session has room.
+    pub(super) fn drain(&mut self, s: &mut Session) {
+        while room(s) {
+            let Some((what, req)) = self.queued.pop_front() else {
+                break;
+            };
+            if let Ok(id) = s.request_any("QSMC", &req) {
+                self.pending.insert(id, Pending::Mine(what));
+            }
+        }
+    }
+
     /// Whether a request of this thread for `what` is outstanding.
     pub(super) fn asking(&self, what: &Mine) -> bool {
-        self.pending.values().any(|p| match p {
-            Pending::Mine(m) => std::mem::discriminant(m) == std::mem::discriminant(what),
-            Pending::Theirs(..) => false,
-        })
+        let same = |m: &Mine| std::mem::discriminant(m) == std::mem::discriminant(what);
+        self.queued.iter().any(|(m, _)| same(m))
+            || self.pending.values().any(|p| match p {
+                Pending::Mine(m) => same(m),
+                Pending::Theirs(..) => false,
+            })
     }
 
     /// Whether this thread's read of exactly `what` is outstanding.
     pub(super) fn asking_this(&self, what: &Mine) -> bool {
-        self.pending
-            .values()
-            .any(|p| matches!(p, Pending::Mine(m) if m == what))
+        self.queued.iter().any(|(m, _)| m == what)
+            || self
+                .pending
+                .values()
+                .any(|p| matches!(p, Pending::Mine(m) if m == what))
     }
 
     #[allow(clippy::too_many_lines, reason = "one arm a command")]
