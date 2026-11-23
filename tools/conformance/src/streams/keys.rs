@@ -24,6 +24,18 @@ pub fn stranger() -> SigningKey {
     test_key("not a stream of the console's")
 }
 
+/// The console's next release signing key in a rotation
+/// (`docs/RELEASING.md`): a test image trusts it beside its own, so the
+/// `rotated` variant signed by it is installed.
+pub fn next_signer() -> SigningKey {
+    test_key("the console's next release signing key")
+}
+
+/// A signing key no image trusts: the `stranger` variant is refused.
+pub fn stranger_signer() -> SigningKey {
+    test_key("a signing key the console does not trust")
+}
+
 /// The keys' file of stream `name` as the image carries it: the public
 /// half in hexadecimal, one line.
 pub fn public_file(key: &SigningKey) -> String {

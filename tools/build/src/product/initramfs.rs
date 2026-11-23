@@ -50,14 +50,14 @@ fn all(ctx: &Ctx, hooks: bool, kind: UkiKind) -> Result<Vec<Entry>> {
         entries.push(Entry::dir("qsmc/keys"));
         entries.push(Entry::file(
             release::TRUSTED_KEYS.trim_start_matches('/'),
-            trusted_keys(ctx)?,
+            trusted_keys(ctx, hooks)?,
         ));
     } else {
         // The keys an update image is verified by, as the media's are.
         entries.push(Entry::dir("qsmc/keys"));
         entries.push(Entry::file(
             release::TRUSTED_KEYS.trim_start_matches('/'),
-            trusted_keys(ctx)?,
+            trusted_keys(ctx, hooks)?,
         ));
         // Each product stream's keys, by which its index is used.
         let image = if hooks {
@@ -106,8 +106,9 @@ fn add_keys(out: &mut Vec<u8>, text: &str) -> Result<()> {
 }
 
 /// `/qsmc/keys/system.pub`: the build key's public key, then each key
-/// [`TRUSTED_ENV`] lists; 32 bytes each.
-fn trusted_keys(ctx: &Ctx) -> Result<Vec<u8>> {
+/// [`TRUSTED_ENV`] lists; 32 bytes each. A test image trusts the
+/// harness's next signer too, so a rotation is shown on it.
+fn trusted_keys(ctx: &Ctx, test_image: bool) -> Result<Vec<u8>> {
     let mut out = buildkit::image::manifest::signing_key(ctx)?
         .verifying_key()
         .to_bytes()
@@ -117,6 +118,10 @@ fn trusted_keys(ctx: &Ctx) -> Result<Vec<u8>> {
         let text = fs::read_to_string(&path)
             .with_context(|| format!("cannot read {TRUSTED_ENV}={}", path.display()))?;
         add_keys(&mut out, &text).with_context(|| TRUSTED_ENV.to_string())?;
+    }
+    if test_image {
+        let next = conformance::streams::keys::next_signer().verifying_key();
+        add_keys(&mut out, &hex::encode(next.to_bytes()))?;
     }
     info!("initramfs: {} trusted signer(s)", out.len() / KEY_LEN);
     Ok(out)

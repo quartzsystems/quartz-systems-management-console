@@ -13,6 +13,11 @@
 //!   `web.toml` is of a newer schema.
 //! - `broken`: `QSMC_RELEASE=V1R0M1 QSMC_TEST_WEBD_BROKEN=1`: one whose
 //!   web server cannot start, which a console rolls back from.
+//! - `rotated`: `QSMC_RELEASE=V1R0M1`, signed by the harness's next
+//!   signer, which a test image trusts beside its own key: a rotation
+//!   (`docs/RELEASING.md`).
+//! - `stranger`: `QSMC_RELEASE=V1R0M1`, signed by a key no image
+//!   trusts: refused.
 
 use std::fs;
 use std::path::Path;
@@ -26,6 +31,10 @@ pub enum Variant {
     Next,
     /// V1R0M1 whose web server cannot start.
     Broken,
+    /// V1R0M1 signed by the next key.
+    Rotated,
+    /// V1R0M1 signed by a key no image trusts.
+    Stranger,
 }
 
 /// Whether `name` is set to `1`.
@@ -40,6 +49,8 @@ impl Variant {
         match self {
             Variant::Next => "next",
             Variant::Broken => "broken",
+            Variant::Rotated => "rotated",
+            Variant::Stranger => "stranger",
         }
     }
 
@@ -64,6 +75,15 @@ impl Variant {
         let (want, not) = match self {
             Variant::Next => ("QSMC_NEXT_SCHEMA", "QSMC_TEST_WEBD_BROKEN"),
             Variant::Broken => ("QSMC_TEST_WEBD_BROKEN", "QSMC_NEXT_SCHEMA"),
+            Variant::Rotated | Variant::Stranger => {
+                if on("QSMC_NEXT_SCHEMA") || on("QSMC_TEST_WEBD_BROKEN") {
+                    bail!(
+                        "the {} variant is built without QSMC_NEXT_SCHEMA and QSMC_TEST_WEBD_BROKEN",
+                        self.dir()
+                    );
+                }
+                return Ok(());
+            }
         };
         if !on(want) || on(not) {
             bail!(
@@ -90,7 +110,25 @@ impl Variant {
             );
         }
         fs::create_dir_all(to.join("keys"))?;
-        fs::copy(&key, to.join("keys").join("dev.ed25519"))?;
+        let mine = to.join("keys").join("dev.ed25519");
+        let signer = match self {
+            Variant::Rotated => Some(conformance::streams::keys::next_signer()),
+            Variant::Stranger => Some(conformance::streams::keys::stranger_signer()),
+            Variant::Next | Variant::Broken => None,
+        };
+        match signer {
+            Some(k) => fs::write(
+                &mine,
+                format!(
+                    "{}
+",
+                    hex::encode(k.to_bytes())
+                ),
+            )?,
+            None => {
+                fs::copy(&key, &mine)?;
+            }
+        }
         let cat = test.join("qsvs-catalogue");
         if cat.is_dir() {
             fs::create_dir_all(to.join("qsvs-catalogue"))?;

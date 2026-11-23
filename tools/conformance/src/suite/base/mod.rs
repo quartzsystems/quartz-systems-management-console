@@ -77,6 +77,11 @@ pub struct TestImage {
     pub next: Option<PathBuf>,
     /// The variant whose web server cannot start.
     pub broken: Option<PathBuf>,
+    /// The variant signed by the next key, which the test image trusts
+    /// (`--variant rotated`).
+    pub rotated: Option<PathBuf>,
+    /// The variant signed by a key it does not (`--variant stranger`).
+    pub stranger: Option<PathBuf>,
     /// The development key it is signed with, which it trusts: the
     /// refusals' images are made with it.
     pub key: Option<PathBuf>,

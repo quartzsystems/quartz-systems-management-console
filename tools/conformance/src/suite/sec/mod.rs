@@ -16,4 +16,5 @@ pub const SUITES: &[(&str, SuiteFn)] = &[
     ("sec-confined", confined::confined),
     ("sec-web", web::web),
     ("sec-systems", systems::systems),
+    ("sec-rotation", super::serv::console::rotation),
 ];

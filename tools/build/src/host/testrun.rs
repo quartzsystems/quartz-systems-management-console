@@ -27,6 +27,8 @@ fn test_image(test: &Ctx) -> Option<TestImage> {
         update: update(target),
         next: update(&target.join(crate::product::variant::Variant::Next.dir())),
         broken: update(&target.join(crate::product::variant::Variant::Broken.dir())),
+        rotated: update(&target.join(crate::product::variant::Variant::Rotated.dir())),
+        stranger: update(&target.join(crate::product::variant::Variant::Stranger.dir())),
         key: key.is_file().then_some(key),
     })
 }

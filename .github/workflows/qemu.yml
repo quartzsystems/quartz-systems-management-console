@@ -75,6 +75,8 @@ jobs:
             target/test-image/kernel
             target/test-image/next/kernel
             target/test-image/broken/kernel
+            target/test-image/rotated/kernel
+            target/test-image/stranger/kernel
           key: qsmc-kernel-${{ hashFiles('kernel/**', 'rust-toolchain.toml') }}
 
       - run: cargo run -q -p build -- doctor
@@ -85,6 +87,11 @@ jobs:
         env: { QSMC_RELEASE: V1R0M1, QSMC_NEXT_SCHEMA: "1" }
       - run: cargo run -q -p build -- --test-image --variant broken all
         env: { QSMC_RELEASE: V1R0M1, QSMC_TEST_WEBD_BROKEN: "1" }
+      # Phase 8's rotation: V1R0M1 signed by the next key, and by a stranger.
+      - run: cargo run -q -p build -- --test-image --variant rotated all
+        env: { QSMC_RELEASE: V1R0M1 }
+      - run: cargo run -q -p build -- --test-image --variant stranger all
+        env: { QSMC_RELEASE: V1R0M1 }
       - run: cargo build -q -p build
 
       # The pointers name absolute paths, the same on every runner.
@@ -98,6 +105,8 @@ jobs:
             target/test-image/keys/dev.ed25519
             target/test-image/next/images
             target/test-image/broken/images
+            target/test-image/rotated/images
+            target/test-image/stranger/images
             target/debug/qsmc-build
 
   suites:

@@ -750,3 +750,79 @@ pub fn power(run: &Run<'_>) -> Result<String, String> {
          5); V1R0M1's slot B on both disks"
     ))
 }
+
+/// Phase 8's `sec-rotation` (`docs/RELEASING.md`): a console signed by
+/// the first key and trusting the next refuses V1R0M1 signed by a key
+/// it does not trust, with nothing staged, then installs V1R0M1 signed
+/// by the next key from the stream, and its systems' sessions resume.
+pub fn rotation(run: &Run<'_>) -> Result<String, String> {
+    let t = &run.image;
+    let rotated = t
+        .rotated
+        .as_ref()
+        .ok_or("the rotated variant is not built (`build --test-image --variant rotated all`)")?;
+    let stranger = t
+        .stranger
+        .as_ref()
+        .ok_or("the stranger variant is not built (`build --test-image --variant stranger all`)")?;
+    let mut lab = lab(run, "sec-rotation", &[qsmc_release(stranger)?])?;
+    super::check(&mut lab.c.browser)?;
+    download(&mut lab.c.browser, CONSOLE_ROW, "qsmc", &file_name(stranger))?;
+    // The stream's index verifies, the file is what it names; its image
+    // is signed by a key the console does not trust.
+    let b = &mut lab.c.browser;
+    let path = "/qsmc/confirm/update-install?t=console";
+    let html = b.get(path)?.text();
+    let r = post_on(b, &html, path, ("ok", "OK"), &[])?;
+    let first = crate::suite::web::follow(b, &r)?.text();
+    let mut refused = first.contains(qmcmsg::UPD_SIGNATURE.id);
+    let end = Instant::now() + Duration::from_secs(120);
+    while !refused && Instant::now() < end {
+        let t = b.get("/qsmc/updates/code/console/progress")?.text();
+        refused = t.contains(qmcmsg::UPD_SIGNATURE.id);
+    }
+    if !refused {
+        return Err(format!(
+            "V1R0M1 signed by a key the console does not trust was not refused with {}",
+            qmcmsg::UPD_SIGNATURE.id
+        ));
+    }
+    if installed_level(b)? != "V1R0M0" {
+        return Err("a refused image changed what the console runs".into());
+    }
+    // The next key's release.
+    publish(&lab.streams, 3, &[qsmc_release(rotated)?]);
+    super::check(&mut lab.c.browser)?;
+    download(&mut lab.c.browser, CONSOLE_ROW, "qsmc", &file_name(rotated))?;
+    install_console(&mut lab.c.browser)?;
+    let Lab { fleet, c, streams } = lab;
+    let Console {
+        mut guest, machine, ..
+    } = c;
+    ends(&mut guest, Duration::from_secs(600))?;
+    drop(guest);
+    let mut c = boot(run, machine)?;
+    signed_on(&mut c.browser, ADMIN, PASSWORD)?;
+    c_confirmed(&mut c.guest)?;
+    let b = &mut c.browser;
+    if installed_level(b)? != "V1R0M1" {
+        return Err("Code updates does not say the console runs the rotated V1R0M1".into());
+    }
+    until(
+        "both systems connected again",
+        Duration::from_secs(120),
+        || {
+            let t = page(b, "/qsmc/connectivity")?;
+            Ok(row(&t, VS).contains(">Connected<")
+                && row(&t, super::STANDALONE).contains(">Connected<"))
+        },
+    )?;
+    drop((fleet, streams));
+    c.guest.kill();
+    Ok(format!(
+        "V1R0M1 signed by a key not trusted refused ({}) with V1R0M0 still running; V1R0M1 \
+         signed by the next key found on the stream, installed, confirmed, and both systems \
+         connected again",
+        qmcmsg::UPD_SIGNATURE.id
+    ))
+}

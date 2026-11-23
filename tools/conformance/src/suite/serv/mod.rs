@@ -16,7 +16,7 @@
 )]
 
 mod audit;
-mod console;
+pub(crate) mod console;
 mod dumps;
 mod events;
 mod host;
