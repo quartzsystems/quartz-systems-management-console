@@ -344,6 +344,15 @@ pub(crate) fn create(b: &mut Browser, host: &str, id: u32, name: &str) -> Result
         next(b, n, &[])?;
     }
     let done = post_answer(b, 9, ("finish", "Finish"), &[])?;
+    // Made whole, the wizard ends; a step refused after the partition
+    // was made stays on step 9 with its draft.
+    if done.status != 303 {
+        return Err(format!(
+            "{name} not made whole ({}): {}",
+            done.status,
+            message_of(&done.text())
+        ));
+    }
     expect(b, &done, "QMC3130").map(|_| ())
 }
 
