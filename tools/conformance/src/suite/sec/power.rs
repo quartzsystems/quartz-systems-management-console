@@ -72,6 +72,19 @@ fn numbers(c: &mut Console<'_>) -> Result<BTreeSet<u64>, String> {
         .collect())
 }
 
+/// The console's number of the host's event whose row holds `text`.
+fn number_of(c: &mut Console<'_>, text: &str) -> Result<Option<u64>, String> {
+    let t = page(&mut c.browser, "/qsmc/events?s=All&rows=100")?;
+    Ok(t.split("<tr").find(|r| r.contains(text)).and_then(|r| {
+        r.split("/qsmc/event/")
+            .nth(1)?
+            .split('"')
+            .next()?
+            .parse()
+            .ok()
+    }))
+}
+
 /// `mgmtd`'s files whole: the problems kept and not set aside, each
 /// line of the history whole and once.
 fn mgmt_whole(c: &mut Console<'_>) -> Result<usize, String> {
@@ -137,25 +150,32 @@ fn churn<'a>(
         lines = mgmt_whole(&mut c)?;
         // A number given is never given again.
         fleet.tell(0, &format!("problem open 1 B6000601 after cut {n}"));
-        let mut after = BTreeSet::new();
+        let said = format!("after cut {n}");
+        let mut new = None;
         until(
             "the problem opened after the cut",
             Duration::from_secs(60),
             || {
-                after = numbers(&mut c)?;
-                Ok(after.len() > before.len())
+                new = number_of(&mut c, &said)?;
+                Ok(new.is_some())
             },
         )?;
-        let new = after.difference(&before).copied().max().unwrap_or(0);
+        let new = new.unwrap_or(0);
         if before.last().is_some_and(|m| new <= *m) {
             return Err(format!(
                 "after cut {n} a problem was numbered {new}, not past {before:?}"
             ));
         }
-        if !before.is_subset(&after) {
-            return Err(format!(
-                "after cut {n} problems went: {before:?} then {after:?}"
-            ));
+        // Each seen before is kept: the list shows the newest 100
+        // alone, so each is asked for by its number.
+        for m in &before {
+            let t = page(&mut c.browser, &format!("/qsmc/event/{m}"))?;
+            if !t.contains("B600060") {
+                return Err(format!(
+                    "after cut {n} problem {m} is gone: {}",
+                    message_of(&t)
+                ));
+            }
         }
         opened += 1;
     }
