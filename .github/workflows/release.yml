@@ -1,0 +1,91 @@
+# Copyright (C), 2026 Quartz Systems. Some rights reserved. This work is
+# licensed under the terms of the MIT license which can be found in the
+# root directory of this project.
+#
+# The release, by hand (docs/RELEASING.md): built twice from clean with
+# the release keys and compared, its stream made and verified, and the
+# release directory kept as the run's artifact. The keys are the
+# repository's secrets; the streams' public keys are committed under
+# tools/build/keys/streams/, and qsmc.pub is checked against the
+# signing key's own. It tags nothing.
+
+name: release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: the release, twice, and its stream
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - name: Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            make flex bison bc perl xz-utils gpg gzip tar git libelf-dev libssl-dev \
+            qemu-system-x86 ovmf lsb-release wget software-properties-common gnupg openssl
+          wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+          sudo bash /tmp/llvm.sh 21
+          sudo apt-get install -y --no-install-recommends lld-21 llvm-21
+          echo /usr/lib/llvm-21/bin >> "$GITHUB_PATH"
+      - name: Toolchain (rust-toolchain.toml)
+        run: rustup show active-toolchain || rustup toolchain install
+      - name: The release keys
+        env:
+          SIGNING: ${{ secrets.QSMC_SIGNING_KEY }}
+          SB_KEY: ${{ secrets.QSMC_SB_KEY }}
+          SB_CERT_B64: ${{ secrets.QSMC_SB_CERT_B64 }}
+        run: |
+          set -eu
+          k="$RUNNER_TEMP/keys"
+          mkdir -p -m 700 "$k/streams"
+          printf '%s\n' "$SIGNING" | tr -d ' \r' | grep -E '^[0-9a-fA-F]{64}$' > "$k/qsmc-release.ed25519" \
+            || { echo "::error::QSMC_SIGNING_KEY is not 64 hexadecimal characters"; exit 1; }
+          printf '%s\n' "$SB_KEY" > "$k/qsmc-db.key"
+          printf '%s' "$SB_CERT_B64" | base64 -d > "$k/qsmc-db.cer"
+          chmod 600 "$k/qsmc-release.ed25519" "$k/qsmc-db.key"
+          # qsmc.pub: the signing key's public half, from its seed.
+          seed=$(cat "$k/qsmc-release.ed25519")
+          printf '302e020100300506032b657004220420%s' "$seed" | xxd -r -p > "$k/seed.der"
+          openssl pkey -inform DER -in "$k/seed.der" -pubout -outform DER | tail -c 32 | xxd -p -c 64 > "$k/streams/qsmc.pub"
+          rm -f "$k/seed.der"
+          cmp -s "$k/streams/qsmc.pub" tools/build/keys/streams/qsmc.pub             || { echo "::error::QSMC_SIGNING_KEY is not the key of tools/build/keys/streams/qsmc.pub"; exit 1; }
+          for s in qsvs qs400; do
+            f="tools/build/keys/streams/$s.pub"
+            [ -s "$f" ] || { echo "::error::$f is missing: the $s stream's public key"; exit 1; }
+            cp "$f" "$k/streams/$s.pub"
+          done
+          {
+            echo "QSMC_SIGNING_KEY=$k/qsmc-release.ed25519"
+            echo "QSMC_SB_KEY=$k/qsmc-db.key"
+            echo "QSMC_SB_CERT=$k/qsmc-db.cer"
+            echo "QSMC_STREAM_KEYS=$k/streams"
+          } >> "$GITHUB_ENV"
+          echo "qsmc.pub $(cat "$k/streams/qsmc.pub")"
+      - name: The release, built twice and compared
+        run: cargo run -q -p build -- release "$(cat VERSION)"
+      - name: Its stream
+        run: |
+          mkdir -p "$RUNNER_TEMP/stream"
+          cargo run -q -p build -- stream add "target/release/V1R0M0" "$RUNNER_TEMP/stream"
+          cargo run -q -p build -- stream verify "$RUNNER_TEMP/stream"
+          cp -r "$RUNNER_TEMP/stream" target/release/stream-qsmc
+      - name: The keys gone
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/keys"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-V1R0M0
+          retention-days: 90
+          path: target/release
+          if-no-files-found: error
