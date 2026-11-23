@@ -52,6 +52,7 @@ port's block show them:
 | Reference | the last reference code posted |
 | Processor | whether it has what QSI and the web server need |
 | Machine | the serial number, and the processors, memory, disks and interfaces the inventory counted |
+| Signature | the key that signed the image, `release key` or `development key` (a build made without the release key, which is not a release), then whether the firmware checks it: `Secure Boot on`, `off` or `unknown` (`docs/RELEASING.md`, `docs/INSTALL.md`) |
 | Service | a row a service, with its state and failures |
 
 ## The main menu
