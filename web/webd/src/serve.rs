@@ -49,6 +49,44 @@ pub fn secured(r: Response) -> Response {
     }
 }
 
+/// The connections whose request was refused for its framing: `qsweb`
+/// would carry on, so each request after it is refused too, never acted
+/// on, and the connection is read no further ([`crate::listen`]).
+static ENDED: std::sync::Mutex<Vec<std::net::SocketAddr>> = std::sync::Mutex::new(Vec::new());
+
+fn end(peer: &Peer) {
+    if let Ok(mut v) = ENDED.lock() {
+        v.push(peer.addr);
+    }
+}
+
+/// Whether the connection from `addr` had a request refused for its
+/// framing.
+pub fn ended(addr: std::net::SocketAddr) -> bool {
+    ENDED
+        .lock()
+        .is_ok_and(|v| !v.is_empty() && v.contains(&addr))
+}
+
+/// The connection from `addr` is closed.
+pub fn forget(addr: std::net::SocketAddr) {
+    if let Ok(mut v) = ENDED.lock() {
+        v.retain(|a| *a != addr);
+    }
+}
+
+/// [`framing_refused`], or a request after one on its connection.
+fn refused(req: &Request, peer: &Peer) -> Option<Response> {
+    if let Some(r) = framing_refused(req) {
+        end(peer);
+        return Some(r);
+    }
+    ended(peer.addr).then(|| {
+        qsweb::http::plain(400, "The request's length is not said one way.")
+            .with("Connection", "close")
+    })
+}
+
 /// A request whose body could be read two ways is refused: a length and
 /// chunks both, two lengths, or a transfer coding other than `chunked`
 /// (`docs/SECURITY.md`). `qsweb` reads it one way; a request another
@@ -133,7 +171,7 @@ impl Handler for Site {
     }
 
     fn handle(&self, req: &Request, peer: &Peer) -> Response {
-        if let Some(r) = framing_refused(req) {
+        if let Some(r) = refused(req, peer) {
             return secured(r);
         }
         let r = if req.path == CSS_PATH {
@@ -153,11 +191,13 @@ impl Handler for Site {
     fn streams(&self, req: &Request, peer: &Peer) -> bool {
         // A request refused for its framing is answered before its body
         // is read, and its connection is closed after.
-        framing_refused(req).is_some() || (req.path != CSS_PATH && self.pages.streams(req, peer))
+        framing_refused(req).is_some()
+            || ended(peer.addr)
+            || (req.path != CSS_PATH && self.pages.streams(req, peer))
     }
 
     fn handle_stream(&self, req: &Request, body: &mut dyn std::io::Read, peer: &Peer) -> Response {
-        if let Some(r) = framing_refused(req) {
+        if let Some(r) = refused(req, peer) {
             return secured(r);
         }
         secured(self.pages.page_stream(req, body, peer))
@@ -279,6 +319,27 @@ mod tests {
         ] {
             assert_eq!(with(two), Some(400), "{two:?}");
         }
+    }
+
+    #[test]
+    fn what_follows_a_refused_body_on_its_connection_is_refused() {
+        let peer = Peer {
+            addr: "192.0.2.7:40000".parse().unwrap(),
+            secure: true,
+        };
+        let other = Peer {
+            addr: "192.0.2.7:40001".parse().unwrap(),
+            secure: true,
+        };
+        let mut two = request("/qsmc/signon", None);
+        two.headers.push(("content-length".into(), "0".into()));
+        two.headers.push(("transfer-encoding".into(), "chunked".into()));
+        assert_eq!(refused(&two, &peer).map(|r| r.status), Some(400));
+        let next = request("/qsmc/welcome", None);
+        assert_eq!(refused(&next, &peer).map(|r| r.status), Some(400));
+        assert!(refused(&next, &other).is_none());
+        forget(peer.addr);
+        assert!(refused(&next, &peer).is_none());
     }
 
     #[test]

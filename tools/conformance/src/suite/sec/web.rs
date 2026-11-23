@@ -27,7 +27,8 @@ fn answers(raw: &[u8]) -> usize {
     String::from_utf8_lossy(raw).matches("HTTP/1.1 ").count()
 }
 
-/// A body said two ways is refused, and what follows it is not read.
+/// A body said two ways is refused, and what follows it on its
+/// connection is never acted on.
 fn framing(b: &Browser) -> Result<String, String> {
     let next = "GET /qsmc/welcome HTTP/1.1\r\nHost: qsmc\r\n\r\n";
     let cases = [
@@ -44,7 +45,11 @@ fn framing(b: &Browser) -> Result<String, String> {
     for c in &cases {
         let raw = b.raw(c.as_bytes())?;
         let status = Browser::status_of(&raw);
-        if !matches!(status, Some(400)) || answers(&raw) != 1 {
+        // What followed on its connection is refused as well, never
+        // answered as a page.
+        let all = answers(&raw);
+        let refusals = String::from_utf8_lossy(&raw).matches("HTTP/1.1 400 ").count();
+        if !matches!(status, Some(400)) || all == 0 || refusals != all {
             return Err(format!(
                 "a body said two ways answered {status:?} with {} answers: {:?}",
                 answers(&raw),
@@ -53,7 +58,7 @@ fn framing(b: &Browser) -> Result<String, String> {
         }
     }
     Ok(format!(
-        "{} requests whose body is said two ways each refused alone",
+        "{} requests whose body is said two ways each refused, and the request after each on its connection refused too",
         cases.len()
     ))
 }

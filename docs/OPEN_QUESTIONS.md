@@ -795,9 +795,14 @@ two lengths as the first, and with any coding that contains `chunked`
 as chunked. Nothing sits between a browser and the console, so no second
 reader sees the request otherwise; still, a request whose framing two
 readers could take differently is not one to act on. The web server
-refuses each with 400 before its body is read, and its connection is
-closed after (`webd::serve::framing_refused`, `sec-web`). For QS/400:
-`qsweb` refusing them itself; the console's check then goes.
+refuses each with 400 before its body is read (`webd::serve::framing_refused`).
+`qsweb` keeps the connection all the same: its guard reads the body to
+its end, and it never takes a handler's `Connection: close`, so a
+request sent after on the same connection would be read and answered.
+The web server refuses every later request on that connection too, and
+reads it no further (`webd::listen`'s `Ending`; `sec-web`). For QS/400:
+`qsweb` refusing them itself, and closing a connection when its
+handler says so; the console's check then goes.
 
 ## 50. Landlock beside `base/confine` (QS/VS)
 

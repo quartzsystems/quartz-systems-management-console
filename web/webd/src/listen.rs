@@ -126,6 +126,31 @@ pub struct Serving {
     pub pages: Arc<dyn crate::serve::Pages>,
 }
 
+/// A connection read no further once a request on it was refused for
+/// its framing ([`crate::serve::ended`]).
+struct Ending<'a, C> {
+    inner: &'a mut C,
+    from: SocketAddr,
+}
+
+impl<C: Read> Read for Ending<'_, C> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        if crate::serve::ended(self.from) {
+            return Ok(0);
+        }
+        self.inner.read(buf)
+    }
+}
+
+impl<C: io::Write> io::Write for Ending<'_, C> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.inner.write(buf)
+    }
+    fn flush(&mut self) -> io::Result<()> {
+        self.inner.flush()
+    }
+}
+
 fn one(serving: &Serving, stream: TcpStream, from: SocketAddr, port: u16) {
     if stream.set_read_timeout(Some(IDLE)).is_err()
         || stream.set_write_timeout(Some(IDLE)).is_err()
@@ -151,7 +176,12 @@ fn one(serving: &Serving, stream: TcpStream, from: SocketAddr, port: u16) {
             addr: from,
             secure: true,
         };
-        qsweb::http::serve_guarded_timed(&mut tls, &peer, &serving.site, &timeout);
+        let mut ending = Ending {
+            inner: &mut tls,
+            from,
+        };
+        qsweb::http::serve_guarded_timed(&mut ending, &peer, &serving.site, &timeout);
+        crate::serve::forget(from);
         // The close is said and the connection ends: nothing more is
         // waited for from a client that may have gone silent.
         tls.conn.send_close_notify();
