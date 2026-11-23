@@ -15,6 +15,9 @@ on:
       secs:
         description: seconds each target runs
         default: "14400"
+      target:
+        description: one target only (all when empty)
+        default: ""
 
 permissions:
   contents: read
@@ -30,20 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target:
-          - backup-file
-          - backup-payload
-          - mgmt-peer
-          - mgmt-host
-          - cert-import
-          - mgmt-servicing
-          - stream-index
-          - system-plan
-          - qsmc-update-image
-          - web-request
-          - terminal-input
-          - sched-store
-          - seed-answers
+        target: ${{ fromJSON(inputs.target != '' && format('["{0}"]', inputs.target) || '["backup-file","backup-payload","mgmt-peer","mgmt-host","cert-import","mgmt-servicing","stream-index","system-plan","qsmc-update-image","web-request","terminal-input","sched-store","seed-answers"]') }}
     steps:
       - uses: actions/checkout@v4
       - name: Toolchain (rust-toolchain.toml)
