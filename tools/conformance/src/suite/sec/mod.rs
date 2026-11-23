@@ -7,8 +7,10 @@
 
 mod baselines;
 mod confined;
+mod imports;
 mod limits;
 mod machine;
+mod power;
 mod secrets;
 mod secureboot;
 mod soak;
@@ -28,6 +30,8 @@ pub const SUITES: &[(&str, SuiteFn)] = &[
     ("sec-limits", limits::limits),
     ("sec-rotation", super::serv::console::rotation),
     ("sec-baselines", baselines::baselines),
+    ("sec-power", power::power),
+    ("sec-imports", imports::imports),
 ];
 
 /// The suites run only by name: after `build release`, with its
