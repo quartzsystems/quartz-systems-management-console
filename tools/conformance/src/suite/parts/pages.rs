@@ -288,6 +288,17 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         if a.status == 303 && bare.ends_with("/navigator") {
             continue;
         }
+        // Only a host has virtual resources: a standalone system's are
+        // refused with what it lacks.
+        if path.contains(&format!("/server/{STANDALONE}/virtual")) {
+            if a.status != 409 || !a.text().contains("QMC1114") {
+                return Err(format!(
+                    "{path} answered {}, not 409 with QMC1114",
+                    a.status
+                ));
+            }
+            continue;
+        }
         if a.status != 200 {
             return Err(format!(
                 "{path} answered {}: {}",

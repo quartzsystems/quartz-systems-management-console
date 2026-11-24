@@ -218,7 +218,14 @@ fn snapshot(b: &mut Browser) -> Result<Vec<String>, String> {
     ]
     .iter()
     .map(|p| {
-        let t = b.get(p)?.text();
+        let mut t = b.get(p)?.text();
+        // The tree keeps the groups the crawl opened (the session's, as
+        // QS/400's Navigator does): what the pages show is the rest.
+        if let Some(a) = t.find("<td class=\"nav\"")
+            && let Some(e) = t[a..].find("</td>")
+        {
+            t.replace_range(a..a + e, "");
+        }
         // The frame's clock moves; the rest must not.
         Ok(t.lines()
             .filter(|l| !l.contains("class=\"clock\"") && !l.contains("Updated "))
