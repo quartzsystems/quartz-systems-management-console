@@ -214,6 +214,25 @@ run's artifact `release-V1R0M0`, its `qsmc` stream beside it.
 The code at `94c380b` is `fd75ab2`'s, whose QEMU run 45267308132
 passed every suite; `94c380b` changed documents alone.
 
+V1R1M0, build `bbb8e8c`, tagged `v1.1.0`: release run 45499599931,
+with the same keys (`qsmc-db.cer` unchanged), built twice from clean
+and the same byte for byte; artifact `release-V1R1M0`. Its CI run
+45461829348 and QEMU run 45461829159 passed at `bbb8e8c`. The GitHub
+release's files match its `SHA256SUMS`.
+
+| SHA-256 | File |
+| --- | --- |
+| `c958d2b5e46e0995c0ffce3fa012a80dd070e28cbbf9ab5667ecec048d3889f7` | `MANIFEST.json` |
+| `b571940950f0ec7531db01938c4a8205982fd71f59093135f65f793ffe783dcd` | `MANIFEST.sig` |
+| `b97cc993d5204a130f95ec536c9400f9bfb6af1731f3c938ea6e60351437ad1e` | `NOTICES.txt` |
+| `6390c22d4e50ca81c19aa3faa58b1471935f6b200719e30f810fa34bc8a576ed` | `QSMC-V1R1M0-d0b5485b1726.iso` |
+| `090a5ff800ec26a4a0bc95a50f0e3cb883d7dc6c9e7c49c5f58d2a4612ec7fc1` | `QSMC-V1R1M0-update-090a5ff800ec.upd` |
+| `d1ba53c310b189e7e00711b19a0d8676752c1a46b6729b36d13c41fd3e65f0a4` | `RELEASE_NOTES_V1R1M0.md` |
+| `f693d3d7243d7f20549fa79852b56eafb6e7129ab1d380c84ad15166ade244e3` | `catalogue.json` |
+| `6c62e40def94df69400351f4be242dbd4203069fdf55a3a20e1c982a9d980cc1` | `catalogue.schema.json` |
+| `f4b57224f3649063f12b05fbf258f1a0f6844d2a98cb79e53df58245289efe5f` | `qsmc-db.cer` |
+| `e27d9a1d9d5da20d7b53d75a3154fcb693d44f50d98b0472cde743f9ae8c1d38` | `stream/index.toml` |
+
 ## Every `BLOCKED` line of Phases 0 to 7
 
 Phases 3 to 7 wrote none; every one of Phases 0 to 2 is done, and none
