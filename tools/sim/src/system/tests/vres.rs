@@ -307,11 +307,11 @@ fn the_media_library_and_a_partition_s_drives() {
     assert_eq!(
         ids(vres(
             &mut s,
-            rename("QS400_CUM_26290.iso", "blank_4700MB.iso")
+            rename("QS400_CUM_26290.iso", "QS400_CUM_26300.iso")
         )),
-        ["QVS3203"]
+        ["QVS3202"]
     );
-    vres(&mut s, rename("QS400_CUM_26290.iso", "QS400_CUM_26300.iso")).unwrap();
+    vres(&mut s, rename("QS400_CUM_26290.iso", "QS400_CUM_26300")).unwrap();
     vres(
         &mut s,
         Request::ImageDelete(vres::ImageDelete {
@@ -328,13 +328,10 @@ fn the_media_library_and_a_partition_s_drives() {
         }))
     };
     assert!(
-        matches!(answer(&mut s, &up("NEW.iso", 4096), "qsadmin"), Answer::Upload(n, 4096) if n == "NEW.iso")
+        matches!(answer(&mut s, &up("NEW", 4096), "qsadmin"), Answer::Upload(n, 4096) if n == "NEW")
     );
-    assert_eq!(ids(ask(&mut s, up("NEW.iso", 4097))), ["QVS3207"]);
-    assert_eq!(
-        ids(ask(&mut s, up("QS400_CUM_26300.iso", 4096))),
-        ["QVS3203"]
-    );
+    assert_eq!(ids(ask(&mut s, up("NEW", 4097))), ["QVS3207"]);
+    assert_eq!(ids(ask(&mut s, up("QS400_CUM_26300", 4096))), ["QVS3203"]);
     // Drives: QSDEV01's, and a load into a full one.
     let r = vres(&mut s, Request::Drives(vres::Drives { id: 1 })).unwrap();
     assert!(
@@ -353,11 +350,11 @@ fn the_media_library_and_a_partition_s_drives() {
     };
     let unload = |id, slot, forced| Request::Unload(Unload { id, slot, forced });
     assert_eq!(
-        ids(vres(&mut s, load(1, 5, "QS400_CUM_26300.iso"))),
+        ids(vres(&mut s, load(1, 5, "QS400_CUM_26300"))),
         ["QVS2115"]
     );
     assert_eq!(
-        ids(vres(&mut s, load(1, 9, "QS400_CUM_26300.iso"))),
+        ids(vres(&mut s, load(1, 9, "QS400_CUM_26300"))),
         ["QVS2113"]
     );
     assert_eq!(
@@ -377,12 +374,12 @@ fn the_media_library_and_a_partition_s_drives() {
             .any(|e| matches!(e, AnyEvent::Vres(vres::Event::Volume(v)) if v.name == "VTAP01"))
     );
     vres(&mut s, unload(1, 5, false)).unwrap();
-    vres(&mut s, load(1, 5, "QS400_CUM_26300.iso")).unwrap();
+    vres(&mut s, load(1, 5, "QS400_CUM_26300")).unwrap();
     assert_eq!(
         s.vres
             .images
             .iter()
-            .find(|i| i.name == "QS400_CUM_26300.iso")
+            .find(|i| i.name == "QS400_CUM_26300")
             .unwrap()
             .holder
             .partition,

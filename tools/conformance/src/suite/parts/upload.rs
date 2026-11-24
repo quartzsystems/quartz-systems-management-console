@@ -133,10 +133,10 @@ pub fn upload_image(run: &crate::suite::base::Run<'_>) -> Result<String, String>
     expect(&mut lab.c.browser, &a, "QMC2401")?;
     let up = lab.fleet.tell(0, "uploaded");
     let images = kept(&lab.fleet, "images");
-    if !up.starts_with(&format!("BIG.iso {BIG} ")) || !up.ends_with(" ok") {
+    if !up.starts_with(&format!("BIG {BIG} ")) || !up.ends_with(" ok") {
         return Err(format!("the host's upload: {up}"));
     }
-    if !images.contains(&format!("BIG.iso BIG bytes {BIG}")) {
+    if !images.contains(&format!("BIG BIG bytes {BIG}")) {
         return Err(format!("the image is not in the library: {images}"));
     }
     let mib = |k: u64| k / 1024;
@@ -168,10 +168,10 @@ pub fn upload_image(run: &crate::suite::base::Run<'_>) -> Result<String, String>
         Duration::from_secs(60),
         || {
             let u = lab.fleet.tell(0, "uploaded");
-            Ok(u.starts_with("CUT.iso ") && u.contains("QSI0702"))
+            Ok(u.starts_with("CUT ") && u.contains("QSI0702"))
         },
     )?;
-    if kept(&lab.fleet, "images").contains("CUT.iso") {
+    if kept(&lab.fleet, "images").contains("CUT CUT bytes") {
         return Err("the cut image is in the library".into());
     }
     let cut_end = lab.fleet.tell(0, "uploaded");
@@ -190,7 +190,7 @@ pub fn upload_image(run: &crate::suite::base::Run<'_>) -> Result<String, String>
     if super::host(&lab.fleet)
         .lines
         .iter()
-        .any(|l| l.contains("HUGE.iso"))
+        .any(|l| l.contains("HUGE"))
     {
         return Err("the host was asked for the image past the limit".into());
     }

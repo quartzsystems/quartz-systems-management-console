@@ -112,7 +112,7 @@ pub fn audit(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         .ok_or("the upload had no answer")?;
     expect(b, &a, "QMC2401")?;
     wants.push(format!(
-        "upload image AUDIT.iso ({} bytes) to QSHQVS1",
+        "upload image AUDIT ({} bytes) to QSHQVS1",
         512 * 2048
     ));
     let r = submit(

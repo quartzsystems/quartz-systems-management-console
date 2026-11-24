@@ -176,12 +176,7 @@ fn take(rq: &Rq<'_>, body: &mut dyn Read) -> Response {
     if let Some(no) = crate::app::routes::lacks(rq, webusers::Task::VirtualResources) {
         return no;
     }
-    let name = h
-        .filename
-        .rsplit(['/', '\\'])
-        .next()
-        .unwrap_or("")
-        .to_string();
+    let name = media_name(&h.filename);
     if name.is_empty() {
         return back(
             rq,
@@ -324,9 +319,46 @@ fn send(
     answer(&mut s)
 }
 
+/// The medium's name from the browser's file name: no folder, no
+/// `.iso` (QS/VS adds it), and `_` for what a name may not hold
+/// (letters, digits, `-` and `_`).
+fn media_name(file: &str) -> String {
+    let base = file.rsplit(['/', '\\']).next().unwrap_or("");
+    let stem = match base
+        .len()
+        .checked_sub(4)
+        .and_then(|i| base.get(i..).map(|s| (i, s)))
+    {
+        Some((i, ext)) if ext.eq_ignore_ascii_case(".iso") => &base[..i],
+        _ => base,
+    };
+    stem.chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_file_name_becomes_a_media_name() {
+        assert_eq!(
+            media_name("C:\\x\\QS400-V1R2M0-d3e2a5716ccf.iso"),
+            "QS400-V1R2M0-d3e2a5716ccf"
+        );
+        assert_eq!(media_name("/tmp/A.ISO"), "A");
+        assert_eq!(media_name("cum 26290.v2.iso"), "cum_26290_v2");
+        assert_eq!(media_name("plain"), "plain");
+        assert_eq!(media_name(".iso"), "");
+        assert_eq!(media_name("é.iso"), "_");
+    }
 
     #[test]
     fn the_parts_before_the_file_are_read_and_counted() {

@@ -75,7 +75,12 @@ form's Read-only box is shown and not sent and its address field and
 Fetch are a form of their own, so after the file comes only Upload's
 part, and the length is the request's less what came before the file
 and that tail. A body that does not end so is cut, and the host keeps
-nothing. A file past 64 GiB is refused before any of it is read
+nothing. The image is named after the file without its folder or its
+`.iso`, which QS/VS adds itself, and with `_` for each character a
+medium's name may not hold (it holds letters, digits, `-` and `_`):
+`QS400-V1R2M0-d3e2a5716ccf.iso` is `QS400-V1R2M0-d3e2a5716ccf`. A
+name that is still not valid (no letter first, past 32) is QS/VS's
+`QVS3202`. A file past 64 GiB is refused before any of it is read
 (`QMC2404`). Fetch answers `QMC2405`: the console fetches nothing from
 an address typed into a page.
 

@@ -16,7 +16,7 @@ use qsi::host::vres::{
 
 use super::pool_changed;
 use super::storage::MIB;
-use crate::system::refuse::{Refusal, media_name_ok, no, no_partition, no_such, not_activated};
+use crate::system::refuse::{Refusal, disk_name_ok, no, no_partition, no_such, not_activated};
 use crate::system::{System, now_s};
 
 /// The largest image, bytes: 64 GiB.
@@ -108,9 +108,10 @@ fn volume<'a>(s: &'a System, name: &str) -> Result<&'a Volume, Refusal> {
         .ok_or_else(|| no_media("tape volume", name))
 }
 
-/// A medium's new name: of the rule, and not the library's already.
+/// A medium's new name: QS/VS's rule, a disk's (no `.`: it adds `.iso`
+/// itself), and not the library's already.
 fn new_name(s: &System, what: &str, name: &str) -> Result<(), Refusal> {
-    if !media_name_ok(name) {
+    if !disk_name_ok(name) {
         return Err(no("QVS3202", format!("Media name {name} is not valid.")));
     }
     let taken = s.vres.images.iter().any(|i| i.name == name)
