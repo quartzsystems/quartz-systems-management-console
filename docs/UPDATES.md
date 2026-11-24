@@ -19,8 +19,8 @@ settings, `updates.toml` in `/data/fetch`):
 | `qs400` | the level partitions and standalone systems are compared with | `<server>/qs400/v1/catalog`, QS/400's `updcat` |
 
 A file of a stream is `<server>/<stream>/v1/file/<name>`. The default
-server is `https://updates.quartz.systems`, the address QS/400's
-`docs/UPDATE_PROTOCOL.md` names; `http://` is taken for a local mirror
+server is `https://updates.quartzsystems.net` (QS/400's
+`docs/UPDATE_PROTOCOL.md` still names `updates.quartz.systems`); `http://` is taken for a local mirror
 or a test. An index or catalog is used only when its signature verifies
 against a key of its stream built into the image
 (`/qsmc/keys/streams/<stream>.pub`), and its sequence is never less than

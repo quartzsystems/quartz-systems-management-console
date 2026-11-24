@@ -24,7 +24,7 @@ use plan::doc::{Mode, Plan};
 use plan::job::{Job, JobState, StepState};
 use plan::validate::{Item, Kind as ItemKind, thousands};
 
-use super::{NAV, clock, down, issued, route_of};
+use super::{NAV, TITLE, clock, down, issued, route_of};
 use crate::app::routes::Rq;
 
 /// The wizard's steps.
@@ -36,7 +36,12 @@ pub const STEPS: [&str; 4] = [
 ];
 
 fn frame(name: &str, step: usize, desc: &str, body: String, messages: Vec<Message>) -> Page {
-    let mut crumb = vec![NAV.to_string(), name.to_string(), "Deploy".to_string()];
+    let mut crumb = vec![
+        NAV.to_string(),
+        TITLE.to_string(),
+        name.to_string(),
+        "Deploy".to_string(),
+    ];
     if step == 4 {
         crumb.push("Progress".into());
     }
@@ -48,7 +53,7 @@ fn frame(name: &str, step: usize, desc: &str, body: String, messages: Vec<Messag
         messages,
         body,
         help: "plans".into(),
-        nav: Some((NAV, None)),
+        nav: Some((NAV, Some("/plans"))),
         refresh: (step == 4).then_some(10),
         ..Page::default()
     }
@@ -699,11 +704,11 @@ pub fn confirm(rq: &Rq<'_>) -> Response {
     );
     rq.page(Page {
         title: "Confirm Deploy System Plan".into(),
-        crumb: vec![NAV.into(), name.clone(), "Deploy".into()],
+        crumb: vec![NAV.into(), TITLE.into(), name.clone(), "Deploy".into()],
         h1: "Confirm Deploy System Plan".into(),
         body,
         help: "plans".into(),
-        nav: Some((NAV, None)),
+        nav: Some((NAV, Some("/plans"))),
         ..Page::default()
     })
 }

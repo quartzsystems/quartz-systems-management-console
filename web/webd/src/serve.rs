@@ -25,9 +25,27 @@ pub const CSP: &str = "default-src 'none'; script-src 'self' 'unsafe-hashes' 'sh
 pub const CLOSE_HANDLER: &str =
     "if (history.length > 1) { history.back(); } else { window.close(); } return false;";
 
+/// QS/MC's rules after `qsweb`'s stylesheet: a visited link keeps the
+/// link's blue; a list of checkboxes that drops down.
+pub const CSS_MORE: &str = "
+/* QS/MC: a visited link keeps the link's colour. */
+a:visited { color: #0000cc; }
+/* QS/MC: a list of checkboxes that drops down (a switch's uplink). */
+details.pick { display: inline-block; min-width: 300px; border: 1px solid #7f9db9; background: #ffffff; padding: 1px 4px; }
+details.pick summary { cursor: pointer; }
+details.pick label { display: block; white-space: nowrap; padding: 1px 0; }
+";
+
+/// The stylesheet served: `qsweb::CSS`, then [`CSS_MORE`].
+pub fn css() -> &'static [u8] {
+    static CSS: std::sync::LazyLock<Vec<u8>> =
+        std::sync::LazyLock::new(|| [qsweb::CSS, CSS_MORE.as_bytes()].concat());
+    &CSS
+}
+
 /// The stylesheet's entity tag: its SHA-256, the first 16 hex digits.
 pub fn css_etag() -> String {
-    etag(qsweb::CSS)
+    etag(css())
 }
 
 /// `bytes`' entity tag: their SHA-256, the first 16 hex digits.
@@ -121,7 +139,7 @@ pub fn framing_refused(req: &Request) -> Option<Response> {
 
 /// The stylesheet, or `304` when the client has it.
 pub fn stylesheet(req: &Request) -> Response {
-    asset(req, qsweb::CSS, "text/css")
+    asset(req, css(), "text/css")
 }
 
 /// The navigation script (`qsweb::NAV_JS`), or `304` when the client
@@ -399,7 +417,8 @@ mod tests {
     fn the_stylesheet_is_qsweb_s_with_validators() {
         let r = stylesheet(&request(CSS_PATH, None));
         assert_eq!(r.status, 200);
-        assert_eq!(r.bytes(), qsweb::CSS);
+        assert_eq!(r.bytes(), css());
+        assert!(r.bytes().starts_with(qsweb::CSS));
         let mut again = request(CSS_PATH, None);
         again.headers.push(("if-none-match".into(), css_etag()));
         assert_eq!(stylesheet(&again).status, 304);

@@ -1127,3 +1127,47 @@ fn the_tree_keeps_several_groups_open_and_its_glyphs_stay_on_the_page() {
     ));
     let _ = std::fs::remove_dir_all(dir);
 }
+
+#[test]
+fn a_refused_upload_reads_its_whole_body_before_it_answers() {
+    // A connection closed with the browser still sending is reset: the
+    // browser shows that, not the page saying why.
+    let (app, _, dir) = app("upload-drain");
+    let mut b = Browser {
+        app: &app,
+        cookie: None,
+        ip: "192.0.2.10",
+        host: None,
+    };
+    b.sign_on("qsadmin", PASSWORD);
+    let bnd = "drain-boundary";
+    let mut body = format!(
+        "--{bnd}\r\nContent-Disposition: form-data; name=\"csrf\"\r\n\r\nnot-the-token\r\n--{bnd}\r\nContent-Disposition: form-data; name=\"iso\"; filename=\"A.ISO\"\r\nContent-Type: application/octet-stream\r\n\r\n"
+    )
+    .into_bytes();
+    body.extend(std::iter::repeat_n(0x5a, 1 << 20));
+    body.extend_from_slice(
+        format!("\r\n--{bnd}\r\nContent-Disposition: form-data; name=\"upload\"\r\n\r\nUpload\r\n--{bnd}--\r\n")
+            .as_bytes(),
+    );
+    let mut r = Request::new("POST", "/qsmc/server/QSHQVS1/virtual/optical");
+    r.headers.push((
+        "cookie".into(),
+        format!("QSMCSID={}", b.cookie.clone().unwrap()),
+    ));
+    r.headers.push((
+        "content-type".into(),
+        format!("multipart/form-data; boundary={bnd}"),
+    ));
+    r.headers
+        .push(("content-length".into(), body.len().to_string()));
+    let mut stream = std::io::Cursor::new(body);
+    let resp = app.page_stream(&r, &mut stream, &peer("192.0.2.10"));
+    assert_eq!(resp.status, 403);
+    assert_eq!(
+        stream.position(),
+        stream.get_ref().len() as u64,
+        "the body was not read to its end"
+    );
+    let _ = std::fs::remove_dir_all(dir);
+}

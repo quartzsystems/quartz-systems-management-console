@@ -100,7 +100,7 @@ One step = one commit, ending with the page matching its golden file.
 | 22 | `qsmc/plan-deploy-1.html` … `-3.html`, `qsmc/plan-deploy-progress.html` | `/plan/<name>/deploy/step/1..3`, `/plan/<name>/deploy/progress` | target host, validation table (OK / Warning / Error per item), partitions to create, Deploy via confirmation, progress page with Pending / In progress / Complete per step and Cancel |
 | 23 | `qsmc/events.html`, `qsmc/event-detail.html` | `/events?s=&f=&t=&ms=&page=`, `/event/<n>` | serviceable events from QSI: description, reference code with explanation, FRU table (virtual FRUs named as resources), analysis log; Close, Repair, Add note, Export |
 | 24 | `qsmc/dumps.html` | `/dumps` | partition and service processor dumps: Download, Copy to remote host, Delete; dump space |
-| 25 | `qsmc/code-updates.html`, `qsmc/code-update-progress.html` | `/updates/code`, `/updates/code/<host>/progress` | console and QS/VS host levels against `update.quartz.systems`, Download / Install (confirmation, a system plan saved first) / Schedule; progress page |
+| 25 | `qsmc/code-updates.html`, `qsmc/code-update-progress.html` | `/updates/code`, `/updates/code/<host>/progress` | console and QS/VS host levels against `updates.quartzsystems.net`, Download / Install (confirmation, a system plan saved first) / Schedule; progress page |
 | 26 | `qsmc/updates.html` | `/updates` | fleet overview: console, hosts and partitions with current and latest levels; partitions link to Navigator's PTF page on that partition |
 
 ## Fixture data

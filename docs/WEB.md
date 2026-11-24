@@ -95,7 +95,10 @@ in on), and nothing else.
 
 ## Static files
 
-The stylesheet is `qsweb::CSS`, served byte for byte at
+The stylesheet is `qsweb::CSS` followed by the console's few rules
+(`webd::serve::CSS_MORE`: a visited link keeps the link's blue, so the
+tree and the lists never turn purple; the checkbox list that drops down
+for a switch's uplink), served at
 `/qsmc/shared/qs400.css` with an entity tag (its SHA-256's first 16
 hex digits) and `max-age=3600`; a matching `If-None-Match` is answered
 `304`. `qsweb`'s navigation script, `qsweb::NAV_JS`, is served the

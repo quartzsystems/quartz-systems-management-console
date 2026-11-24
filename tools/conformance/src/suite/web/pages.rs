@@ -36,9 +36,9 @@ pub fn pages(run: &super::Run<'_>) -> Result<String, String> {
     let mut c = start(run, "web-pages")?;
     let b = &mut c.browser;
     let css = b.get(webd::product::CSS_PATH)?;
-    if css.status != 200 || css.body != qsweb::CSS {
+    if css.status != 200 || css.body != webd::serve::css() || !css.body.starts_with(qsweb::CSS) {
         return Err(format!(
-            "the stylesheet is not qsweb's: {} bytes, status {}",
+            "the stylesheet is not qsweb's and the console's rule: {} bytes, status {}",
             css.body.len(),
             css.status
         ));
@@ -101,10 +101,10 @@ pub fn pages(run: &super::Run<'_>) -> Result<String, String> {
     }
     c.guest.kill();
     Ok(format!(
-        "the stylesheet is qsweb's, {} bytes; {pages} pages and files reached from Welcome \
+        "the stylesheet is qsweb's and the console's visited-link rule, {} bytes; {pages} pages and files reached from Welcome \
          each answered 200 ({redirects} redirect(s) to a page of the console), none with a \
          script or an inline handler; port 80 answers 301 to https://10.0.2.15/qsmc/welcome",
-        qsweb::CSS.len()
+        webd::serve::css().len()
     ))
 }
 

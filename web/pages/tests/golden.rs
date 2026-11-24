@@ -789,7 +789,7 @@ fn servers_view(
 /// Management closed; the console opens it on every state of the page.
 const SERVERS_NAV: (&str, &str) = (
     "<a class=\"glyph\" href=\"servers.html\">[+]</a> <b>Systems Management</b></div>",
-    "<a class=\"glyph\" href=\"servers.html\">[-]</a> <b>Systems Management</b></div>\n<div class=\"navitem\"><a href=\"servers.html\" class=\"navcur\">Servers</a></div>\n<div class=\"navitem\"><a href=\"partitions.html\">Partitions</a></div>\n<div class=\"navitem\"><a href=\"groups.html\">Custom groups</a></div>",
+    "<a class=\"glyph\" href=\"servers.html\">[-]</a> <b>Systems Management</b></div>\n<div class=\"navitem\"><a href=\"servers.html\" class=\"navcur\">Servers</a></div>\n<div class=\"navitem\"><a href=\"partitions.html\">Partitions</a></div>\n<div class=\"navitem\"><a href=\"groups.html\">Custom groups</a></div>\n<div class=\"navitem\"><a href=\"plans.html\">System Plans</a></div>",
 );
 
 fn servers_render(v: &webpages::systems::servers::Servers) -> String {
@@ -876,6 +876,7 @@ fn system_tab(tab: webpages::systems::props::Tab, file: &str, fix: &[(&str, &str
         name: "QSHQVS1".into(),
         tab,
         messages: Vec::new(),
+        host: true,
     };
     assert_golden(
         &render(
@@ -2790,13 +2791,13 @@ fn code_updates() {
             },
         ],
         progress: "/updates/code/QSHQVS1/progress".into(),
-        server: "update.quartz.systems".into(),
+        server: "updates.quartzsystems.net".into(),
         check: "Daily 04:00".into(),
         download: false,
         messages: vec![qsweb::msg::Message::new(
             qsweb::msg::Kind::Info,
             "QMC7001",
-            "Checked update.quartz.systems at 10/30/26 04:00:10. 1 QS/VS host update available.",
+            "Checked updates.quartzsystems.net at 10/30/26 04:00:10. 1 QS/VS host update available.",
         )],
     };
     let here = "/qsmc/updates/code";

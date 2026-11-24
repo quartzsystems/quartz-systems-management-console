@@ -130,7 +130,7 @@ pub fn page(ctx: &Ctx, v: &Optical) -> Page {
         keep: Vec::new(),
     };
     let body = format!(
-        "<h2>Media library</h2>{}<h2>Virtual optical drives</h2>{}<form method=\"post\" enctype=\"multipart/form-data\">{}<h3>Upload image</h3><input type=\"file\" name=\"iso\" size=\"40\"> <input type=\"checkbox\" name=\"ro\" checked disabled> Read-only <input type=\"submit\" name=\"upload\" value=\"Upload\"> <span class=\"small grey\">or from URL: </span><input type=\"text\" name=\"url\" value=\"https://update.quartz.systems/images/\" size=\"40\" form=\"fetch\"> <input type=\"submit\" name=\"fetch\" value=\"Fetch\" form=\"fetch\"></form><form id=\"fetch\" method=\"post\">{}</form>",
+        "<h2>Media library</h2>{}<h2>Virtual optical drives</h2>{}<form method=\"post\" enctype=\"multipart/form-data\">{}<h3>Upload image</h3><input type=\"file\" name=\"iso\" size=\"40\"> <input type=\"checkbox\" name=\"ro\" checked disabled> Read-only <input type=\"submit\" name=\"upload\" value=\"Upload\"> <span class=\"small grey\">or from URL: </span><input type=\"text\" name=\"url\" value=\"https://updates.quartzsystems.net/images/\" size=\"40\" form=\"fetch\"> <input type=\"submit\" name=\"fetch\" value=\"Fetch\" form=\"fetch\"></form><form id=\"fetch\" method=\"post\">{}</form>",
         list_table(&images),
         list_table(&drives),
         ctx.csrf_field(),

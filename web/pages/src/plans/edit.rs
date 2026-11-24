@@ -13,7 +13,7 @@ use qsweb::http::Response;
 use qsweb::msg::{Kind, Message};
 use qsweb::partials::{Button, Prop, PropGroup, props};
 
-use super::{NAV, down, issued, route_of};
+use super::{NAV, TITLE, down, issued, route_of};
 use crate::app::routes::Rq;
 
 /// What the page shows.
@@ -59,7 +59,7 @@ pub fn page(ctx: &Ctx, v: &Edit) -> Page {
     );
     Page {
         title: format!("System plan: {}", v.name),
-        crumb: vec![NAV.into(), v.name.clone(), "Edit".into()],
+        crumb: vec![NAV.into(), TITLE.into(), v.name.clone(), "Edit".into()],
         h1: format!("System plan: {}", v.name),
         desc: Some(format!(
             "Change the description of {}, or save it as a template.",
@@ -68,7 +68,7 @@ pub fn page(ctx: &Ctx, v: &Edit) -> Page {
         messages: v.messages.clone(),
         body,
         help: "plans".into(),
-        nav: Some((NAV, None)),
+        nav: Some((NAV, Some("/plans"))),
         ..Page::default()
     }
 }

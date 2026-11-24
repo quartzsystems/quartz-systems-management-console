@@ -14,7 +14,7 @@ use qsweb::http::Response;
 use qsweb::msg::{Kind, Message};
 use qsweb::partials::{Cell, Col, List, list_table};
 
-use super::{NAV, down, issued, route_of, when};
+use super::{NAV, TITLE, down, issued, route_of, when};
 use crate::app::routes::Rq;
 
 /// A plan's row.
@@ -101,7 +101,7 @@ pub fn page(ctx: &Ctx, v: &Plans) -> Page {
     );
     Page {
         title: "System plans".into(),
-        crumb: vec![NAV.into()],
+        crumb: vec![NAV.into(), TITLE.into()],
         h1: "System plans".into(),
         desc: Some("Saved configurations of managed systems and their partitions.".into()),
         messages: v.messages.clone(),
@@ -275,11 +275,11 @@ pub fn delete(rq: &Rq<'_>) -> Response {
     );
     rq.page(Page {
         title: "Confirm Delete System Plan".into(),
-        crumb: vec![NAV.into(), name.clone(), "Delete".into()],
+        crumb: vec![NAV.into(), TITLE.into(), name.clone(), "Delete".into()],
         h1: "Confirm Delete System Plan".into(),
         body,
         help: "plans".into(),
-        nav: Some((NAV, None)),
+        nav: Some((NAV, Some("/plans"))),
         ..Page::default()
     })
 }

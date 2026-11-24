@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 /// The update server QS/400's `docs/UPDATE_PROTOCOL.md` names; each
 /// stream is a path under it.
-pub const DEFAULT_SERVER: &str = "https://updates.quartz.systems";
+pub const DEFAULT_SERVER: &str = "https://updates.quartzsystems.net";
 
 /// When the streams are checked without being asked.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -126,19 +126,19 @@ mod tests {
     fn nothing_is_called_until_an_operator_says() {
         let s = Settings::default();
         assert_eq!((s.check, s.download), (Check::Never, false));
-        assert_eq!(s.server, "https://updates.quartz.systems");
+        assert_eq!(s.server, "https://updates.quartzsystems.net");
         let text = state::store::render(&s).unwrap();
         assert_eq!(state::store::parse::<Settings>(&text).unwrap(), s);
     }
 
     #[test]
     fn a_server_is_an_address() {
-        assert!(valid_server("https://updates.quartz.systems"));
+        assert!(valid_server("https://updates.quartzsystems.net"));
         assert!(valid_server("http://10.0.2.2:8480/mirror"));
-        assert!(!valid_server("ftp://updates.quartz.systems"));
-        assert!(!valid_server("https://u:p@updates.quartz.systems"));
-        assert!(!valid_server("https://updates.quartz.systems/?x=1"));
-        assert!(!valid_server("updates.quartz.systems"));
+        assert!(!valid_server("ftp://updates.quartzsystems.net"));
+        assert!(!valid_server("https://u:p@updates.quartzsystems.net"));
+        assert!(!valid_server("https://updates.quartzsystems.net/?x=1"));
+        assert!(!valid_server("updates.quartzsystems.net"));
         assert_eq!(Check::of_words("Daily 04:00"), Some(Check::Daily));
     }
 }

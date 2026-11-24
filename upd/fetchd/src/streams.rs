@@ -140,18 +140,18 @@ mod tests {
 
     #[test]
     fn each_stream_is_a_path_under_the_one_server() {
-        let s = "https://updates.quartz.systems/";
+        let s = "https://updates.quartzsystems.net/";
         assert_eq!(
             Stream::Qsmc.index_url(s),
-            "https://updates.quartz.systems/qsmc/v1/index"
+            "https://updates.quartzsystems.net/qsmc/v1/index"
         );
         assert_eq!(
             Stream::Qs400.index_url(s),
-            "https://updates.quartz.systems/qs400/v1/catalog"
+            "https://updates.quartzsystems.net/qs400/v1/catalog"
         );
         assert_eq!(
             Stream::Qsvs.file_url(s, "QSVS-V1R0M1-update-ab.upd"),
-            "https://updates.quartz.systems/qsvs/v1/file/QSVS-V1R0M1-update-ab.upd"
+            "https://updates.quartzsystems.net/qsvs/v1/file/QSVS-V1R0M1-update-ab.upd"
         );
         assert_eq!(Stream::of("qs400"), Some(Stream::Qs400));
     }

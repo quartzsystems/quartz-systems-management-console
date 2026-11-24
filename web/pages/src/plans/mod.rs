@@ -26,7 +26,10 @@ use qsweb::msg::{Kind, Message};
 use crate::app::routes::Rq;
 
 /// The navigation group of every plan page.
-pub const NAV: &str = "System Plans";
+pub const NAV: &str = "Systems Management";
+
+/// The plans' item of the group, first in every plan page's crumb.
+pub const TITLE: &str = "System Plans";
 
 /// A refusal of the scheduler as a message row.
 pub fn issued(kind: Kind, i: &msg::Issued) -> Message {

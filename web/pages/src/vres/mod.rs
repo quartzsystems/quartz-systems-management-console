@@ -67,7 +67,11 @@ pub fn page(ctx: &Ctx, host: &str, tab: &str, messages: Vec<Message>, body: &str
         crumb,
         h1,
         messages,
-        body: format!("{}{body}", tabs(ctx, host, tab)),
+        body: format!(
+            "{}{}{body}",
+            crate::systems::props::tabs(ctx, host, crate::systems::props::VIRTUAL.0, true),
+            tabs(ctx, host, tab)
+        ),
         help: "virtual-resources".into(),
         nav: Some(("Systems Management", Some("/servers"))),
         ..Page::default()

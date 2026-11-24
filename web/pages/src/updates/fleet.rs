@@ -128,7 +128,7 @@ pub fn page(ctx: &Ctx, v: &Fleet) -> Page {
     );
     Page {
         title: "Updates".into(),
-        crumb: vec!["Updates".into()],
+        crumb: vec!["Service Management".into(), "Updates".into()],
         h1: "Updates".into(),
         desc: Some(
             "Code levels across the fleet: console, QS/VS hosts and QS/400 partitions.".into(),
@@ -136,7 +136,7 @@ pub fn page(ctx: &Ctx, v: &Fleet) -> Page {
         messages: v.messages.clone(),
         body,
         help: "updates".into(),
-        nav: Some(("Updates", Some("/updates"))),
+        nav: Some(("Service Management", Some("/updates"))),
         ..Page::default()
     }
 }

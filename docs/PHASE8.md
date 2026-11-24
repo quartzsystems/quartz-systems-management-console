@@ -353,6 +353,26 @@ was the only script (`docs/ARCHITECTURE.md`, `docs/SECURITY.md`,
 crawls follow each `[+]` once and never `[-]`. `web/pages/tests/app.rs`
 holds the tree.
 
+Then, also at Cody's request:
+
+- System Plans is an item of Systems Management and Updates an item of
+  Service Management; the prototype's tree and crumbs say so.
+- A QS/VS host's pages have a Virtual resources tab, also shown above
+  the virtual resources' own tabs; General's row for them is gone.
+- Each breadcrumb entry but the last links to its page
+  (`web/pages/src/crumb.rs`), on the served page only: the prototype's
+  crumbs are text.
+- A visited link stays blue: the console serves `qsweb`'s stylesheet
+  with a few rules after it (`webd::serve::CSS_MORE`).
+- A switch's uplink interfaces are chosen from a list that drops down,
+  a checkbox each: the host's free interfaces and the switch's own.
+- The default update server is `https://updates.quartzsystems.net`;
+  QS/400's `docs/UPDATE_PROTOCOL.md` still names the old one.
+- An image upload refused (by the token, the role, the size, `mgmtd`
+  or the host) read none of the rest of the body, so the connection
+  was reset under the browser instead of showing why; the rest is now
+  read before the answer (`web/pages/tests/app.rs`).
+
 ## Not done
 
 - For QS/VS: `refcodes.ndjson` grows without a bound; the fix is QS/VS's.

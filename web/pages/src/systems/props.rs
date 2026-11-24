@@ -169,18 +169,32 @@ pub struct Props {
     pub tab: Tab,
     /// The message rows.
     pub messages: Vec<Message>,
+    /// Whether it is a QS/VS host, with its Virtual resources tab.
+    pub host: bool,
 }
 
-fn tabs(ctx: &Ctx, name: &str, current: &str) -> String {
+/// A host's Virtual resources tab: its route under the system, its label.
+pub const VIRTUAL: (&str, &str) = ("virtual", "Virtual resources");
+
+/// The tabs above a system's pages, `current` bold; a host's last is
+/// Virtual resources (`/server/<name>/virtual/ethernet`).
+pub fn tabs(ctx: &Ctx, name: &str, current: &str, host: bool) -> String {
+    let virt = [VIRTUAL];
     let links: Vec<String> = TABS
         .iter()
+        .chain(virt.iter().filter(|_| host))
         .map(|(r, l)| {
             if *r == current {
                 format!("<b>{}</b>", esc(l))
             } else {
+                let tail = if *r == VIRTUAL.0 {
+                    "virtual/ethernet"
+                } else {
+                    r
+                };
                 format!(
                     "<a href=\"{}\">{}</a>",
-                    ctx.url(&format!("/server/{}/{r}", esc(name))),
+                    ctx.url(&format!("/server/{}/{tail}", esc(name))),
                     esc(l)
                 )
             }
@@ -273,24 +287,15 @@ fn general(ctx: &Ctx, g: &General) -> String {
         },
         PropGroup {
             title: Some("Partitions".into()),
-            rows: vec![
-                Prop::new(
-                    "Defined / running",
-                    format!(
-                        "<a href=\"{}\">{} / {}</a>",
-                        url(&format!("/partitions?ms={n}")),
-                        g.defined,
-                        g.running
-                    ),
+            rows: vec![Prop::new(
+                "Defined / running",
+                format!(
+                    "<a href=\"{}\">{} / {}</a>",
+                    url(&format!("/partitions?ms={n}")),
+                    g.defined,
+                    g.running
                 ),
-                Prop::new(
-                    "Virtual resources",
-                    format!(
-                        "<a href=\"{}\">Virtual Ethernet, storage, optical, tape, pools</a>",
-                        url(&format!("/server/{n}/virtual/ethernet"))
-                    ),
-                ),
-            ],
+            )],
         },
     ];
     form(
@@ -588,7 +593,7 @@ pub fn page(ctx: &Ctx, v: &Props) -> Page {
         crumb,
         h1,
         messages: v.messages.clone(),
-        body: format!("{}{body}", tabs(ctx, &v.name, route)),
+        body: format!("{}{body}", tabs(ctx, &v.name, route, v.host)),
         help: "system-properties".into(),
         nav: Some(("Systems Management", Some("/servers"))),
         ..Page::default()
@@ -1076,6 +1081,7 @@ pub fn route(rq: &Rq<'_>, name: &str, tab: &str) -> Response {
             name: k.name.clone(),
             tab,
             messages,
+            host: k.kind == SystemKind::Host,
         },
     ))
 }

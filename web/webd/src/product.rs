@@ -13,7 +13,7 @@ use qsweb::frame::{NavGroup, Product};
 /// The route prefix.
 pub const PREFIX: &str = "/qsmc";
 
-/// Where the stylesheet is served (`qsweb::CSS`, byte for byte).
+/// Where the stylesheet is served (`qsweb::CSS`, then QS/MC's one rule).
 pub const CSS_PATH: &str = "/qsmc/shared/qs400.css";
 
 /// Where the navigation script is served (`qsweb::NAV_JS`, byte for
@@ -48,11 +48,8 @@ pub static NAV: &[NavGroup] = &[
             ("Servers", "/servers"),
             ("Partitions", "/partitions"),
             ("Custom groups", "/groups"),
+            ("System Plans", "/plans"),
         ],
-    },
-    NavGroup {
-        label: "System Plans",
-        items: &[("System Plans", "/plans")],
     },
     NavGroup {
         label: "Console Management",
@@ -75,11 +72,8 @@ pub static NAV: &[NavGroup] = &[
             ("Manage dumps", "/dumps"),
             ("Code updates", "/updates/code"),
             ("Connectivity", "/connectivity"),
+            ("Updates", "/updates"),
         ],
-    },
-    NavGroup {
-        label: "Updates",
-        items: &[("Updates", "/updates")],
     },
 ];
 

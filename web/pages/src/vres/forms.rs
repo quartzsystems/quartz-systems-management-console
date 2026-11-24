@@ -7,6 +7,8 @@
 //! and properties, the tape volumes, a processor pool's change. Each is
 //! the shared properties pattern with the fields of its requests only.
 
+use std::fmt::Write as _;
+
 use qsweb::html::esc;
 use qsweb::http::Response;
 use qsweb::msg::{Kind, Message};
@@ -22,6 +24,88 @@ use qsi::host::{partitions, profiles};
 use webusers::Task;
 
 use crate::app::routes::{Rq, lacks};
+
+/// The interfaces of `form`'s checkboxes (`u`), each once; a value
+/// with commas is several, as a typed list was.
+fn chosen(form: &qsweb::http::Form) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    for w in form.all("u").iter().flat_map(|v| v.split(',')) {
+        let w = w.trim();
+        if !w.is_empty() && !out.iter().any(|o| o == w) {
+            out.push(w.to_string());
+        }
+    }
+    out
+}
+
+/// The uplink's interfaces as a list that drops down, a checkbox each:
+/// the host's interfaces no one owns and those of `switch`'s uplink,
+/// never the management interface, another switch's or a partition's.
+fn uplink_picker(k: &Kept, switch: &str, chosen: &[String]) -> String {
+    use qsi::host::host::{ItemKind, Owner};
+    let mut rows: Vec<(String, String)> = k
+        .hardware
+        .as_ref()
+        .map(|h| {
+            h.items
+                .iter()
+                .filter(|i| i.kind == ItemKind::Interface)
+                .filter(|i| {
+                    i.owner == Owner::None
+                        || (i.owner == Owner::Switch
+                            && !switch.is_empty()
+                            && i.owner_name == switch)
+                })
+                .map(|i| {
+                    let mut about = vec![i.name.clone()];
+                    if !i.description.is_empty() {
+                        about.push(i.description.clone());
+                    }
+                    about.push(if i.carrier && i.speed_mbps > 0 {
+                        format!("{} Mb/s", i.speed_mbps)
+                    } else {
+                        "no link".into()
+                    });
+                    (i.location.clone(), about.join(", "))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    // One chosen before that the host no longer offers stays shown.
+    for c in chosen {
+        if !rows.iter().any(|(l, _)| l == c) {
+            rows.push((c.clone(), "not offered by the host now".into()));
+        }
+    }
+    let summary = if chosen.is_empty() {
+        "None (a switch inside the host)".to_string()
+    } else {
+        chosen.join(", ")
+    };
+    let mut s = format!(
+        "<details class=\"pick\"><summary>{}</summary>",
+        esc(&summary)
+    );
+    if rows.is_empty() {
+        s.push_str("<div class=\"grey\">The host has no free interface.</div>");
+    }
+    for (loc, about) in &rows {
+        let on = if chosen.contains(loc) {
+            " checked=\"checked\""
+        } else {
+            ""
+        };
+        let _ = write!(
+            s,
+            "<label><input type=\"checkbox\" name=\"u\" value=\"{}\"{on}> <span class=\"mono\">{}</span> <span class=\"grey\">{}</span></label>",
+            esc(loc),
+            esc(loc),
+            esc(about)
+        );
+    }
+    s.push_str("</details>");
+    s
+}
 
 fn field(name: &str, value: &str, size: u32) -> String {
     format!(
@@ -137,7 +221,15 @@ pub fn switch(rq: &Rq<'_>, k: &Kept) -> Response {
             rows: vec![
                 Prop::new(
                     "Interfaces",
-                    field("u", &keep("u", up.interfaces.join(", ")), 40),
+                    uplink_picker(
+                        k,
+                        &s_name,
+                        &if rq.post() {
+                            chosen(&f)
+                        } else {
+                            up.interfaces.clone()
+                        },
+                    ),
                 ),
                 Prop::new(
                     "Bond",
@@ -166,7 +258,7 @@ pub fn switch(rq: &Rq<'_>, k: &Kept) -> Response {
         &rq.ctx,
         "",
         &format!(
-            "{}{}\n{}<p class=\"small grey\">Interfaces are the host's, by location code, separated by commas; none for a switch inside the host. The host's management interface cannot be an uplink.</p>",
+            "{}{}\n{}<p class=\"small grey\">Choose the host's interfaces for the uplink; none for a switch inside the host. Only interfaces free or already this switch's are offered: never the host's management interface.</p>",
             hidden("n", &name),
             props_table(rq.ctx.product, &groups, true),
             ok_cancel("OK")
@@ -199,12 +291,7 @@ fn switch_post(
             .parse()
             .map_err(|_| invalid("The MTU is a number of bytes."))?,
     };
-    let interfaces: Vec<String> = f
-        .str("u")
-        .split(',')
-        .map(|w| w.trim().to_string())
-        .filter(|w| !w.is_empty())
-        .collect();
+    let interfaces = chosen(f);
     let native = match f.str("nv").trim() {
         "" => None,
         v => Some(

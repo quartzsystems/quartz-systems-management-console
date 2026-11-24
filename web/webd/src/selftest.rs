@@ -113,7 +113,7 @@ pub fn ask<S: Read + Write>(client: Arc<ClientConfig>, sock: S) -> Result<(), St
     }
     let mut rest = Vec::new();
     let _ = reader.read_to_end(&mut rest);
-    if rest.ends_with(qsweb::CSS) {
+    if rest.ends_with(crate::serve::css()) {
         Ok(())
     } else {
         Err("the stylesheet did not come whole".into())

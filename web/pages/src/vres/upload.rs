@@ -140,8 +140,17 @@ fn error(def: &qmcmsg::Def, data: &[&str]) -> Vec<Message> {
     vec![qmcmsg::message(Kind::Error, def, data)]
 }
 
-/// `POST /server/<host>/virtual/optical`, multipart: the upload.
+/// `POST /server/<host>/virtual/optical`, multipart: the upload. What
+/// is left of the body is read before the answer, whatever it is: a
+/// connection closed with the browser still sending is reset, and the
+/// browser shows that instead of the page saying why.
 pub fn post(rq: &Rq<'_>, body: &mut dyn Read) -> Response {
+    let r = take(rq, body);
+    let _ = std::io::copy(body, &mut std::io::sink());
+    r
+}
+
+fn take(rq: &Rq<'_>, body: &mut dyn Read) -> Response {
     let host = host_of(&rq.req.path).unwrap_or_default().to_string();
     let ct = rq.req.header("content-type").unwrap_or("");
     let Some(boundary) = qsweb::http::multipart::boundary(ct) else {

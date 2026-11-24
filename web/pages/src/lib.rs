@@ -21,6 +21,7 @@ pub mod certs_routes;
 pub mod certwatch;
 pub mod components;
 pub mod console;
+pub mod crumb;
 pub mod datetime;
 pub mod datetime_routes;
 pub mod fmt;

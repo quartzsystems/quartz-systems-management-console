@@ -18,7 +18,7 @@ use qsweb::partials::{Cell, Col, List, list_table};
 use plan::doc::{Keylock, Mode, Plan, ProfilePlan, Sharing};
 use plan::validate::{size, thousands};
 
-use super::{NAV, down, route_of, when};
+use super::{NAV, TITLE, down, route_of, when};
 use crate::app::routes::Rq;
 
 /// A profile's table.
@@ -99,12 +99,12 @@ pub fn page(ctx: &Ctx, v: &View) -> Page {
     }
     Page {
         title: format!("System plan: {}", v.name),
-        crumb: vec![NAV.into(), v.name.clone()],
+        crumb: vec![NAV.into(), TITLE.into(), v.name.clone()],
         h1: format!("System plan: {}", v.name),
         messages: v.messages.clone(),
         body,
         help: "plans".into(),
-        nav: Some((NAV, None)),
+        nav: Some((NAV, Some("/plans"))),
         ..Page::default()
     }
 }

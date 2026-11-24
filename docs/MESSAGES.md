@@ -156,7 +156,7 @@ request refused.
 | `QMC7205` | 30 | &1 does not match the stream's index: &2. It was removed. | The file's size or SHA-256 is not the one the signed index names. | Download it again; if it fails again, the server or the path to it changes what it sends. |
 | `QMC7206` | 30 | &1 is &2 bytes, more than the &3 the console downloads. | The download area of the data file system has a limit. | Delete downloaded updates the console no longer needs. |
 | `QMC7207` | 30 | The download service does not answer: &1. | fetchd, the only service that reaches the update server, is not running. | Restart the console; if it does not answer again, report this with a console dump. |
-| `QMC7208` | 30 | &1 is not an update server's address. | The address is https:// or http:// with a host name or address, and a path. | Type the server's address, for example https://updates.quartz.systems. |
+| `QMC7208` | 30 | &1 is not an update server's address. | The address is https:// or http:// with a host name or address, and a path. | Type the server's address, for example https://updates.quartzsystems.net. |
 | `QMC7209` | 30 | &1 is not in the &2 stream's index. | Only a file the signed index names is downloaded. | Check now, then download what the stream offers. |
 | `QMC7210` | 30 | &1 is not a host update the console downloaded. | A host is brought an update image the download service fetched from the qsvs stream and checked against its index. | Download the update on Code updates first. |
 | `QMC7301` | 30 | There is no problem &1. | The console's problems are numbered from 1 and no number is used twice; the log keeps 500. | Choose a problem from Serviceable events. |

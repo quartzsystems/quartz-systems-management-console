@@ -857,7 +857,7 @@ catalogue! {
         "Restart the console; if it does not answer again, report this with a console dump.";
     SERVER_NOT_VALID = "QMC7208", 30, "&1 is not an update server's address.",
         "The address is https:// or http:// with a host name or address, and a path.",
-        "Type the server's address, for example https://updates.quartz.systems.";
+        "Type the server's address, for example https://updates.quartzsystems.net.";
     NOT_IN_STREAM = "QMC7209", 30, "&1 is not in the &2 stream's index.",
         "Only a file the signed index names is downloaded.",
         "Check now, then download what the stream offers.";

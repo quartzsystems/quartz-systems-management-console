@@ -90,7 +90,9 @@ impl Rq<'_> {
                 group,
             ));
         }
-        Response::html(200, render(&ctx, &page))
+        let route = self.req.path.strip_prefix(PREFIX).unwrap_or("");
+        let html = crate::crumb::linked(&render(&ctx, &page), &page.crumb, route);
+        Response::html(200, html)
     }
 
     /// `303` to `route` with `m` waiting there.
