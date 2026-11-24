@@ -224,8 +224,9 @@ ipc::rpc! {
     9 => fn screen / Screen (name: String, id: u32, user: String) -> Result<Option<Frame>, Refusal>;
     /// How the service stands.
     10 => fn status / Status () -> Status;
-    /// The managed systems' files for a backup.
-    11 => fn backup_files / BackupFiles () -> Vec<File>;
+    /// The managed systems' files for a backup, their reference code
+    /// histories too when `history`.
+    11 => fn backup_files / BackupFiles (history: bool) -> Vec<File>;
     /// Keep the console's own note about a system.
     12 => fn describe / Describe (name: String, description: String, user: String) -> Result<(), Refusal>;
     /// One partition read now: its definition and status.

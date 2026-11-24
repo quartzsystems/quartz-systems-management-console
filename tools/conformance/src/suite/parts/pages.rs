@@ -479,7 +479,7 @@ const ROUTES: &[R] = &[
     r(
         "/qsmc/server/QSHQVS1/virtual/tape/volume",
         V,
-        Some((VR, &[("vs", ""), ("create", "Create")])),
+        Some((VR, &[("vs", ""), ("create", "Create volume")])),
     ),
     r("/qsmc/server/QSHQVS1/virtual/pools", V, None),
     r(

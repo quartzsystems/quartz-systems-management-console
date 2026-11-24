@@ -68,12 +68,12 @@ fn fresh() -> BackupTab {
 
 /// `entries` with the managed-systems service's files in place of any
 /// of the same path: its state and the console's QSI identity.
-fn with_mgmt(rq: &Rq<'_>, mut entries: Vec<Entry>) -> Result<Vec<Entry>, String> {
+fn with_mgmt(rq: &Rq<'_>, mut entries: Vec<Entry>, history: bool) -> Result<Vec<Entry>, String> {
     let files = rq
         .app
         .console
         .mgmt()
-        .backup_files()
+        .backup_files(history)
         .map_err(|e| format!("the managed-systems service did not answer: {e}"))?;
     for f in files {
         if !valid_path(&f.path) {
@@ -153,7 +153,6 @@ fn make(rq: &Rq<'_>, f: &qsweb::http::Form) -> Response {
     let v = BackupTab {
         data: f.get("d").is_some(),
         history: f.get("h").is_some(),
-        media: f.get("m").is_some(),
         download: f.get("w") != Some("remote"),
         host: f.get("host").unwrap_or("").into(),
         path: f.get("path").unwrap_or("").into(),
@@ -165,18 +164,6 @@ fn make(rq: &Rq<'_>, f: &qsweb::http::Form) -> Response {
         refused.push(error(
             &qmcmsg::NOT_VALID,
             &["A backup always holds the console data."],
-        ));
-    }
-    if v.history {
-        refused.push(error(
-            &qmcmsg::NOT_IN_V1,
-            &["Reference code and event history in a backup"],
-        ));
-    }
-    if v.media {
-        refused.push(error(
-            &qmcmsg::NOT_IN_V1,
-            &["The virtual optical media library"],
         ));
     }
     if !v.download {
@@ -192,7 +179,7 @@ fn make(rq: &Rq<'_>, f: &qsweb::http::Form) -> Response {
     let now = app.console.now();
     let name = app.console.name();
     let made = collect(&app.data_dir())
-        .and_then(|entries| with_mgmt(rq, entries))
+        .and_then(|entries| with_mgmt(rq, entries, v.history))
         .and_then(|entries| {
             let b = Backup {
                 manifest: Manifest {

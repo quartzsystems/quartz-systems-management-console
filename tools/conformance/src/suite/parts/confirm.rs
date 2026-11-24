@@ -232,7 +232,7 @@ pub fn confirm(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         let r = post_form(
             b,
             &format!("/qsmc/server/{VS}/virtual/tape/volume"),
-            ("create", "Create"),
+            ("create", "Create volume"),
             &[("vn", "VTAP08"), ("vs", "10")],
         )?;
         expect(b, &r, "QMC2430")?;

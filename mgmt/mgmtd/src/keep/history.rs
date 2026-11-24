@@ -180,6 +180,21 @@ impl History {
         }
     }
 
+    /// Each system's file as kept (`<system>.codes`, its bytes), for a
+    /// backup; none when the history is in memory only.
+    pub fn files(&self) -> Vec<(String, Vec<u8>)> {
+        if self.dir.is_none() {
+            return Vec::new();
+        }
+        self.by
+            .iter()
+            .map(|(name, k)| {
+                let text: String = k.rows.iter().map(line).collect();
+                (format!("{name}.codes"), text.into_bytes())
+            })
+            .collect()
+    }
+
     /// Forget `system`'s history.
     pub fn remove(&mut self, system: &str) {
         self.by.remove(system);
@@ -275,6 +290,18 @@ mod tests {
         assert_eq!(host.total, 1);
         let paged = again.query(&Filter::default(), 25, 25);
         assert_eq!(paged.rows.len(), 25);
+        // A backup's copy is what the next start reads back.
+        let files = again.files();
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0].0, "QSHQVS1.codes");
+        let other = dir.with_extension("copy");
+        let _ = fs::remove_dir_all(&other);
+        fs::create_dir_all(&other).unwrap();
+        fs::write(other.join(&files[0].0), &files[0].1).unwrap();
+        let copy = History::open(Some(&other), 64).query(&Filter::default(), 0, 1000);
+        assert_eq!(copy.total, all.total);
+        assert!(History::open(None, 64).files().is_empty());
+        let _ = fs::remove_dir_all(&other);
         let _ = fs::remove_dir_all(&dir);
     }
     #[test]

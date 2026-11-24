@@ -369,10 +369,10 @@ page is drawn as the prototype has it, and the choice answers with a
   a signed-on Administrator, and SFTP is outbound traffic the outbound
   rule (item 7) does not list.
 - Backup and restore: "Schedule...", which needs a destination other
-  than the browser; "Reference code and event history", which is the
-  log service's and is not restored over a running one; and "Virtual
-  optical media library index", which Phase 5 brings. A backup always
-  holds the console data: unchecking it answers that it does.
+  than the browser. A backup always holds the console data: unchecking
+  it answers that it does. ("Reference code and event history" holds
+  the managed systems' histories since V1R0M0's release; the media
+  library's index was dropped, the library being each host's.)
 - Date and time: "Act as NTP server on the private management
   network". The console is an NTP client only: a server would listen,
   and only the web server listens.

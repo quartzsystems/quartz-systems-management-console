@@ -727,6 +727,8 @@ pub fn volume(rq: &Rq<'_>, k: &Kept) -> Response {
         }
         let r = if f.has("create") {
             volume_create(rq, k, &f)
+        } else if f.has("add_drive") {
+            device_volume(rq, k, f.str("dp"), "", f.str("dv"))
         } else if let Some(n) = f.get("protect") {
             let v = k.resources.volumes.iter().find(|v| v.name == n);
             let on = v.is_none_or(|v| !v.protected);
@@ -817,6 +819,36 @@ pub fn volume(rq: &Rq<'_>, k: &Kept) -> Response {
             buttons(&[Button::new("give", "Give it the volume")]),
         );
     }
+    if part.is_empty() {
+        let parts: Vec<&str> = k.partitions.iter().map(|p| p.name.as_str()).collect();
+        let mut vols = vec![""];
+        vols.extend(k.resources.volumes.iter().map(|v| v.name.as_str()));
+        device = format!(
+            "{}{}",
+            props_table(
+                rq.ctx.product,
+                &[PropGroup {
+                    title: Some("New tape drive".into()),
+                    rows: vec![
+                        Prop::new(
+                            "Partition",
+                            qsweb::partials::select("dp", &parts, f.str("dp")),
+                        )
+                        .required(),
+                        Prop::new(
+                            "Volume",
+                            format!(
+                                "{} <span class=\"small grey\">(blank: none yet)</span>",
+                                qsweb::partials::select("dv", &vols, f.str("dv"))
+                            ),
+                        ),
+                    ],
+                }],
+                true
+            ),
+            buttons(&[Button::new("add_drive", "Create drive")]),
+        );
+    }
     let create = props_table(
         rq.ctx.product,
         &[PropGroup {
@@ -837,7 +869,7 @@ pub fn volume(rq: &Rq<'_>, k: &Kept) -> Response {
             hidden("p", &part),
             hidden("s", &slot),
             buttons(&[
-                Button::new("create", "Create"),
+                Button::new("create", "Create volume"),
                 Button::new("cancel", "Cancel")
             ])
         ),
@@ -881,7 +913,8 @@ fn volume_create(rq: &Rq<'_>, k: &Kept, f: &qsweb::http::Form) -> Result<Message
 }
 
 /// Give partition `part`'s tape device `slot` volume `v` in its default
-/// profile, put with the revision read.
+/// profile, put with the revision read. No `slot`: a new device, in the
+/// profile's first free slot; no `v`: a device with no volume.
 fn device_volume(
     rq: &Rq<'_>,
     k: &Kept,
@@ -889,14 +922,23 @@ fn device_volume(
     slot: &str,
     v: &str,
 ) -> Result<Message, Vec<Message>> {
-    let (Some(p), Ok(slot)) = (
-        k.partitions.iter().find(|p| p.name == part),
-        slot.parse::<u32>(),
-    ) else {
-        return Err(invalid(
-            "Choose a partition's tape device from Virtual Tape.",
-        ));
+    let Some(p) = k.partitions.iter().find(|p| p.name == part) else {
+        return Err(invalid(if slot.is_empty() {
+            "Choose the partition the drive is for."
+        } else {
+            "Choose a partition's tape device from Virtual Tape."
+        }));
     };
+    let new = slot.is_empty();
+    let slot = if new {
+        None
+    } else {
+        Some(
+            slot.parse::<u32>()
+                .map_err(|_| invalid("Choose a partition's tape device from Virtual Tape."))?,
+        )
+    };
+    let media = (!v.is_empty()).then(|| v.to_string());
     let get = AnyRequest::Partitions(partitions::Request::Get(partitions::Get { id: p.id }));
     let AnyReply::Partitions(partitions::Reply::Get(def)) =
         crate::systems::ask(rq, &k.name, "Read partition", &get)?
@@ -912,24 +954,39 @@ fn device_volume(
     else {
         return Err(Vec::new());
     };
+    let slot = slot.unwrap_or_else(|| {
+        let u = crate::partitions::edit::used(&rev.profile);
+        (2..1000).find(|s| !u.contains(s)).unwrap_or(2)
+    });
     match rev.profile.tape.iter_mut().find(|t| t.slot == slot) {
-        Some(t) => t.media = Some(v.into()),
+        Some(t) => t.media.clone_from(&media),
         None => rev.profile.tape.push(MediaDevice {
             slot,
-            media: Some(v.into()),
+            media: media.clone(),
         }),
     }
+    let what = if new {
+        format!("add a tape device in slot {slot} to {part}")
+    } else {
+        format!("give {part}'s tape device {slot} volume {v}")
+    };
     super::act(
         rq,
         k,
-        &format!("give {part}'s tape device {slot} volume {v}"),
+        &what,
         &AnyRequest::Profiles(profiles::Request::Put(profiles::Put {
             id: p.id,
             profile: rev.profile,
             revision: Some(rev.revision),
         })),
     )
-    .map(|_| qmcmsg::message(Kind::Done, &qmcmsg::VOLUME_GIVEN, &[v, part]))
+    .map(|_| {
+        if new {
+            qmcmsg::message(Kind::Done, &qmcmsg::TAPE_ADDED, &[&slot.to_string(), part])
+        } else {
+            qmcmsg::message(Kind::Done, &qmcmsg::VOLUME_GIVEN, &[v, part])
+        }
+    })
 }
 
 /// `GET`, `POST .../virtual/pools/change?id=`: a shared processor pool

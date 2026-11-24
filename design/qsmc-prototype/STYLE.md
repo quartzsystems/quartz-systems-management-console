@@ -1,6 +1,6 @@
 # QS/400 web interfaces — style sheet in one page
 
-Applies to QS/400 HTTP Server Administration (port 2001), Navigator for QS/400 (2002 / 2005), QS/400 Access for Web, and the QS/MC Management Console. One stylesheet, `shared/qs400.css` (177 lines). The reference page `shared/components.html` shows every pattern once. The test for any new page: would it look at home in a 2006 browser on a 1024×768 CRT, with CSS turned off, with no script? If not, it is wrong.
+Applies to QS/400 HTTP Server Administration (port 2001), Navigator for QS/400 (2002 / 2005), QS/400 Access for Web, and the Quartz Systems/Management Console. One stylesheet, `shared/qs400.css` (177 lines). The reference page `shared/components.html` shows every pattern once. The test for any new page: would it look at home in a 2006 browser on a 1024×768 CRT, with CSS turned off, with no script? If not, it is wrong.
 
 ## Colour
 
@@ -73,11 +73,11 @@ Browser defaults, never restyled. Labels are the verbs behind the CL commands: O
 
 Left column lists the numbered steps (done = black, current = bold, pending = grey), content on the right, `< Back  Next >  Cancel` at the bottom, `Finish` (or the real verb, `Create`, `Deploy`) on the last step, which first shows every choice in a two-column table.
 
-## QS/MC Management Console (addition)
+## Quartz Systems/Management Console (addition)
 
 QS/MC reuses the frame and all four patterns unchanged and adds **no lines to `shared/qs400.css`**. Things built from existing pieces that are worth naming:
 
-- **Header band**: wordmark `QS/MC Management Console`; the right side reads `Console: QSHQMC1  User: qsadmin  Sign off  Help` (the label changes, the markup does not). Footer `QS/MC V1R0M0 · Quartz Systems`. The sign-on page carries a one-line notice `<p>` above the form.
+- **Header band**: wordmark `Quartz Systems/Management Console`; the right side reads `Console: QSHQMC1  User: qsadmin  Sign off  Help` (the label changes, the markup does not). Footer `QS/MC V1R0M0 · Quartz Systems`. The sign-on page carries a one-line notice `<p>` above the form.
 - **Task-menu action select**: the per-list `<select>` + **Go** uses `<optgroup label="Operations">`, `Configuration`, `Connections`, `Serviceability`. Browser default rendering.
 - **Control panel strip**: a one-row `table.list` above the terminal grid and on the Control panel functions page: Reference code (Courier, 12 pt, always a link), Meaning, then the buttons `03 IPL`, `08 Power off`, `21 Force DST`, `22 Dump`, `34 Retry`, a function-number field and **Select**.
 - **Reference codes** (`C6004031`, `A6005008`, `B6000100`, `00000000`) are Courier and links on every row, never hidden behind Properties.
@@ -91,5 +91,5 @@ QS/MC reuses the frame and all four patterns unchanged and adds **no lines to `s
 - No cards, panels, shadows, rounded corners, gradients, flexbox, grid, CSS variables or media queries (one print rule only).
 - No restyled buttons, no coloured buttons, no accent fills. `#00d992` appears once, as a rule.
 - No proportional fonts for anything an operator reads by column position.
-- No other vendor's names, wording, logos or reproduced screens. Products are QS/400, QS/VS, QS/MC, Navigator for QS/400, QS/400 Access for Web, QS/400 HTTP Server Administration, QS/MC Management Console; the company is Quartz Systems.
+- No other vendor's names, wording, logos or reproduced screens. Products are QS/400, QS/VS, QS/MC, Navigator for QS/400, QS/400 Access for Web, QS/400 HTTP Server Administration, Quartz Systems/Management Console; the company is Quartz Systems.
 - No page that needs more than 1024 px: tables stretch to 100 % and get wider on a bigger screen, never narrower than their columns.

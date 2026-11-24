@@ -444,7 +444,7 @@ impl Mgmt for Service {
         self.0.ask_carried(&name, &req, &user)
     }
 
-    fn backup_files(&mut self) -> Vec<File> {
+    fn backup_files(&mut self, history: bool) -> Vec<File> {
         let read = |dir: &std::path::Path, f: &str, top: &str, mode: u32| {
             std::fs::read(dir.join(f)).ok().map(|bytes| File {
                 path: format!("{top}/{f}"),
@@ -460,6 +460,13 @@ impl Mgmt for Service {
         if let Some(store) = &self.0.store {
             out.extend(read(store.dir(), "systems.toml", "mgmt", 0o600));
             out.extend(read(store.dir(), "mgmt.toml", "mgmt", 0o600));
+        }
+        if history {
+            out.extend(self.0.history().files().into_iter().map(|(f, bytes)| File {
+                path: format!("mgmt/refcodes/{f}"),
+                mode: 0o600,
+                bytes,
+            }));
         }
         out
     }

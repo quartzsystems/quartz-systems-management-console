@@ -27,7 +27,7 @@ fn invalid(what: &str) -> Vec<Message> {
 }
 
 /// The slots a profile uses.
-fn used(p: &Profile) -> Vec<u32> {
+pub(crate) fn used(p: &Profile) -> Vec<u32> {
     let mut v: Vec<u32> = vec![0, 1];
     v.extend(p.ethernet.iter().map(|a| a.slot));
     v.extend(p.scsi.iter().map(|a| a.slot));

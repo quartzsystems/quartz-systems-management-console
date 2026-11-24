@@ -183,7 +183,7 @@ pub fn page(ctx: &Ctx, v: &Welcome) -> Page {
         crumb: vec!["Welcome".into()],
         h1: "Welcome".into(),
         desc: Some(format!(
-            "QS/MC Management Console {}. Signed on as {} ({}) from {}.",
+            "Quartz Systems/Management Console {}. Signed on as {} ({}) from {}.",
             v.console, v.user, v.role, v.from
         )),
         messages: v.messages.clone(),

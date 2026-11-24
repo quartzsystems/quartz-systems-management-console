@@ -783,14 +783,13 @@ fn a_backup_is_made_opened_and_left_for_the_restart() {
         &mut b,
         &[
             ("d", "on"),
-            ("h", "on"),
             ("w", "remote"),
             ("pp", "short"),
             ("back_up_now", "x"),
         ],
     )
     .text();
-    for id in ["QMC8700", "QMC8405", "QMC8406"] {
+    for id in ["QMC8405", "QMC8406"] {
         assert!(t.contains(id), "{id}: {t}");
     }
     assert!(

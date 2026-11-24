@@ -38,6 +38,17 @@ pub struct Done {
     pub findings: Vec<String>,
 }
 
+/// How many tape devices partition `id`'s default profile has at the host.
+fn tape_devices(fleet: &crate::suite::mgmt::Fleet, id: u32) -> usize {
+    host(fleet)
+        .part_ref(id)
+        .and_then(|p| {
+            p.kept(&p.definition.default_profile)
+                .map(|k| k.profile.tape.len())
+        })
+        .unwrap_or(0)
+}
+
 fn state(lab: &Lab<'_>, id: u32) -> Option<PartitionState> {
     host(&lab.fleet).part_ref(id).map(|p| p.status.state)
 }
@@ -268,7 +279,7 @@ pub fn scenario(lab: &mut Lab<'_>) -> Result<Done, String> {
         let r = post_form(
             b,
             &v("tape/volume"),
-            ("create", "Create"),
+            ("create", "Create volume"),
             &[("vn", "VTAP09"), ("vs", "10")],
         )?;
         expect(b, &r, "QMC2430")?;
@@ -304,6 +315,29 @@ pub fn scenario(lab: &mut Lab<'_>) -> Result<Done, String> {
             "protect tape volume VTAP09 on QSHQVS1",
             "give QSTEST01's tape device 6 volume VTAP09",
         ]);
+        // A tape drive made for a partition: a new device in its profile.
+        let before = tape_devices(fleet, 2);
+        let r = post_form(
+            b,
+            &v("tape/volume"),
+            ("add_drive", "Create drive"),
+            &[("dp", "QSTEST01"), ("dv", "VTAP09")],
+        )?;
+        let added = expect(b, &r, "QMC2436")?;
+        if tape_devices(fleet, 2) != before + 1 {
+            return Err(format!(
+                "QSTEST01's profile has no new tape device: {}",
+                message_of(&added)
+            ));
+        }
+        if !page(b, &v("tape"))?.contains("QSTEST01") {
+            return Err("Virtual Tape does not list QSTEST01's new drive".into());
+        }
+        ev.push(format!(
+            "a tape drive made for QSTEST01 (QMC2436): {}",
+            message_of(&added)
+        ));
+        audits.push("add a tape device in slot");
         // A shared processor pool made and changed.
         let r = post_form(
             b,

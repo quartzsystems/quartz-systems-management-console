@@ -137,7 +137,7 @@ fn assert_shared(served: &str, file: &str, fix: &[(&str, &str)]) {
 const QS400_FRAME: [(&str, &str); 4] = [
     (
         "<td class=\"wordmark\">QS/400</td>",
-        "<td class=\"wordmark\">QS/MC Management Console</td>",
+        "<td class=\"wordmark\">Quartz Systems/Management Console</td>",
     ),
     (
         "System: <b>QSHQ400</b> &nbsp;&nbsp; User: <b>QSECOFR</b>",
@@ -147,7 +147,10 @@ const QS400_FRAME: [(&str, &str); 4] = [
         "QS/400 V1R0M0 &middot; Quartz Systems</td>",
         "QS/MC V1R0M0 &middot; Quartz Systems</td>",
     ),
-    (" - QS/400</title>", " - QS/MC Management Console</title>"),
+    (
+        " - QS/400</title>",
+        " - Quartz Systems/Management Console</title>",
+    ),
 ];
 
 /// A shared page as the server renders it: in the product's frame.
@@ -513,7 +516,6 @@ fn console_backup() {
     let v = BackupTab {
         data: true,
         history: true,
-        media: false,
         download: false,
         host: "backup.quartz.example".into(),
         path: "/backups/qsmc/".into(),

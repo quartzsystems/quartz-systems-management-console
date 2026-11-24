@@ -37,7 +37,7 @@ prototype draws them (`terminal.html`), without the navigation column.
 | `POST` the same | a key of the keypad (`k=F3`), the toolbar (`tb`: Connect, Disconnect, Print Screen; the others answer that they are not in this release), a function of the strip (`f`, `fn`) |
 | `GET .../screen.png` | the picture: the held window's latest whole screen, or one asked of the host (`console` `Screen`) |
 | `GET .../screen-off.png` | the same greyed, as a disconnected window shows it |
-| `GET .../print` | Print Screen: `termlook`'s PDF, its producer `QS/MC Management Console` |
+| `GET .../print` | Print Screen: `termlook`'s PDF, its producer `Quartz Systems/Management Console` |
 | `GET .../ws` | the script's WebSocket |
 | `GET /terminal/script.js` | QS/400's script: `termlook::script::text` with its keypad |
 

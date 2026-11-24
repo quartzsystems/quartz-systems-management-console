@@ -621,7 +621,7 @@ fn picture(rq: &Rq<'_>, host: &str, id: u32, off: bool) -> Response {
         let title = format!("{} on {host}", view.system);
         let pdf = view
             .shown()
-            .print_screen(&title, "QS/MC Management Console");
+            .print_screen(&title, "Quartz Systems/Management Console");
         rq.audit(&format!("print screen of {host} partition {id}"), "printed");
         return Response::new(200, "application/pdf", pdf).with(
             "Content-Disposition",

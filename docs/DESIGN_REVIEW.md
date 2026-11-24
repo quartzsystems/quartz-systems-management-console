@@ -18,8 +18,8 @@ release (and what that needs); **B**, the design drops it.
 |---|---|---|---|---|---|
 | 1.1 | Backup and restore | Remote host (SFTP) | `QMC8405`: a backup leaves only through an Administrator's browser | SFTP to a named host: new outbound traffic, a host key to pin, a credential to keep | drop the choice; the browser is the only way |
 | 1.2 | Backup and restore | Schedule... | `QMC8700` | a scheduled backup to a removable volume or SFTP (needs 1.1 or a volume) | drop it |
-| 1.3 | Backup and restore | Reference code and event history | `QMC8700`: the log service's, not restored over a running one | restore the history into a log service stopped for it | drop it: a backup holds console data only |
-| 1.4 | Backup and restore | Virtual optical media library index; unchecking Console data | `QMC8700`; a backup always holds console data | the index is the hosts', so a console backup would carry a copy | drop both; Console data is not optional |
+| 1.3 | Backup and restore | Reference code and event history | done after V1R0M0: the managed systems' histories, `mgmtd`'s; the console's own stays the log service's | the console's own history, restored into a log service stopped for it | keep it as done |
+| 1.4 | Backup and restore | Virtual optical media library index; unchecking Console data | the index is dropped after V1R0M0; a backup always holds console data | the index is the hosts', so a console backup would carry a copy | Console data is not optional |
 | 1.5 | Date and time | Act as NTP server on the private network | `QMC8700`: only the web server listens | an NTP server on `private` only: a second listener | drop it |
 | 1.6 | Network settings | DHCP for service interfaces; SSH to console | `QMC8700`: no listener but the web server; no SSH | a DHCP server on `private`; SSH is against the locked decisions | drop both |
 | 1.7 | Language and locale | a language other than English | `QMC8700` | translated catalogues of messages, pages and help | English only |

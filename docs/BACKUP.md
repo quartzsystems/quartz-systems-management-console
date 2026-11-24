@@ -9,13 +9,15 @@ user whose role has the Console settings task.
 
 Every file under `/data/state` and `/data/web`, the managed systems'
 files under `/data/mgmt`, the download service's settings under
-`/data/fetch`, and the system plans under `/data/plans`:
+`/data/fetch`, and the system plans under `/data/plans`; and, when Reference code and
+event history is checked, the managed systems' reference code histories
+under `/data/mgmt/refcodes`:
 
 | Folder | What |
 | --- | --- |
 | `state/` | the state files (`host.toml`, `network.toml`, `inventory.toml`, `webusers.toml`, `web.toml`, `trusted.toml`, `backups.toml`), the service tools users (`users.db`), and the console's QSI identity: its key and certificate |
 | `web/` | the web certificate and its key |
-| `mgmt/` | `systems.toml`, the managed systems as paired with their pins, and `mgmt.toml` (`docs/MGMT.md`) |
+| `mgmt/` | `systems.toml`, the managed systems as paired with their pins, and `mgmt.toml` (`docs/MGMT.md`); with the history, `refcodes/<system>.codes`, as `mgmtd` keeps them |
 | `fetch/` | `updates.toml`: the update server, and whether to check and download automatically (`docs/UPDATES.md`), which the web server asks the download service for (`backup`) |
 | `plans/` | every system plan (`<name>.qmcplan`), their index `plans.toml`, and each host's deployments (`deploy/<HOST>.toml`) (`docs/PLANS.md`); the scheduler's, root's, which the web server reads |
 
@@ -28,9 +30,10 @@ managed systems pinned and its systems' pins, so its sessions resume
 without pairing again; the next IPL gives the files back to the
 service's user.
 
-Not held: the logs and the reference code history under `/data/log`
-(the log service's, not restored over a running one), the managed
-systems' reference code histories under `/data/mgmt/refcodes`, the
+Not held: the logs and the console's own reference code history under
+`/data/log` (the log service's, not restored over a running one), the
+managed systems' reference code histories when the history is not
+checked (a restore of such a backup starts them empty), the
 console's numbers of the fleet's problems (`/data/mgmt/problems.bin`,
 made again as the problems are seen), the console's own problem log
 (`/data/problems`), the downloaded images and notes (`/data/updates`,
@@ -72,12 +75,13 @@ needs (automatic plans are ten a host at most).
 
 ## Making one
 
-The Backup tab: Console data (always), Download as file, and the
-passphrase; Back up now downloads the file and records it in
+The Backup tab: Console data (always), Reference code and event
+history (the managed systems' histories, `mgmtd`'s `backup_files`),
+Download as file, and the passphrase; Back up now downloads the file and records it in
 `backups.toml` (the last 20, the History tab). What the page offers and
 V1 does not do answers with a message (`docs/OPEN_QUESTIONS.md`, item
-19): a remote host (`QMC8405`), a schedule, the reference code history,
-the media library (`QMC8700`). Each backup is audited.
+19): a remote host (`QMC8405`) and a schedule (`QMC8700`). The media
+library's index is not offered: the library is each host's own. Each backup is audited.
 
 ## Restoring one
 

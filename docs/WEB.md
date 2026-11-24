@@ -135,7 +135,7 @@ Golden corrections, each the only difference allowed:
 | File | Correction | Why |
 | --- | --- | --- |
 | `qsmc/signon.html` | the form's `action` is `signon.html`, not `welcome.html` | the form posts back to the sign-on route |
-| `shared/error.html`, `notauth.html`, `confirm.html`, `components.html` | the frame is QS/MC's, as on its other pages: the wordmark and title suffix `QS/MC Management Console`, the header (`Console: QSHQMC1`, `User: qsadmin`) and the footer; the breadcrumb's root is `QS/MC` | the prototype's shared pages carry QS/400's frame (`docs/OPEN_QUESTIONS.md`, item 20) |
+| `shared/error.html`, `notauth.html`, `confirm.html`, `components.html` | the frame is QS/MC's, as on its other pages: the wordmark and title suffix `Quartz Systems/Management Console`, the header (`Console: QSHQMC1`, `User: qsadmin`) and the footer; the breadcrumb's root is `QS/MC` | the prototype's shared pages carry QS/400's frame (`docs/OPEN_QUESTIONS.md`, item 20) |
 | `shared/error.html` | no `Job log` button; `Technical details` for `Technical description` | QS/MC has no job log; `qsweb`'s heading |
 | `shared/notauth.html` | the closing paragraph is QS/MC's (`Brand::notauth_note`) | the prototype's names QS/400's security officer |
 | `shared/help.html` | the window's wordmark, title and footer are QS/MC's; Contents and Index lead to the help pages; Close window goes back by script | as above; `qsweb` closes by script for a product that serves script (item 22) |

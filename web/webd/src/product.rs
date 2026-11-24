@@ -80,7 +80,7 @@ pub static NAV: &[NavGroup] = &[
 /// The Management Console.
 pub static PRODUCT: Product = Product {
     brand: &BRAND,
-    wordmark: "QS/MC Management Console",
+    wordmark: "Quartz Systems/Management Console",
     crumb_root: "QS/MC",
     prefix: PREFIX,
     nav: NAV,

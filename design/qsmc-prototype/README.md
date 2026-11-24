@@ -1,4 +1,4 @@
-# Implementation handoff: QS/MC Management Console web UI
+# Implementation handoff: Quartz Systems/Management Console web UI
 
 For Claude Code, in the `quartz-systems-mc` repository. This zip is the approved design for the QS/MC web UI, the only management surface of the console appliance besides its serial login. Make the console produce these pages from live state: its own settings, and the managed systems it reaches over QSI (the Quartz service-interface protocol, port 2300, Wire over mTLS).
 
@@ -40,7 +40,7 @@ Pages of other products that QS/MC links to directly are included so the prototy
 
 QS/MC is its own appliance OS (Linux 6.18 LTS, all-Rust static-musl userland, built with the QS/400 toolchain) and its own repository; it depends on, or vendors, the same crates the QS/400 web products use: the HTTP server, the frame template and the five partials (`message_row`, `list_table`, `paging`, `props`, `wizard`), sessions and CSRF, help and second-level message routes. If those crates exist by the time this starts, use them; if not, build them here to the same spec (`design/handoff-http-server-administration.md` in the project has it) and keep them reusable.
 
-**Frame.** Header band `QS/MC Management Console` | `Console: QSHQMC1  User: qsadmin  Sign off  Help`; navigation tree Welcome · Systems Management (Servers, Partitions, Custom groups) · System Plans · Console Management (Console settings, Users and roles, Network settings, Date and time, Backup and restore, Certificates, Shut down or restart, Console version) · Service Management (Serviceable events, Reference code history, Manage dumps, Code updates, Connectivity) · Updates; footer `QS/MC V1R0M0 · Quartz Systems`. Route prefix `/qsmc/`.
+**Frame.** Header band `Quartz Systems/Management Console` | `Console: QSHQMC1  User: qsadmin  Sign off  Help`; navigation tree Welcome · Systems Management (Servers, Partitions, Custom groups) · System Plans · Console Management (Console settings, Users and roles, Network settings, Date and time, Backup and restore, Certificates, Shut down or restart, Console version) · Service Management (Serviceable events, Reference code history, Manage dumps, Code updates, Connectivity) · Updates; footer `QS/MC V1R0M0 · Quartz Systems`. Route prefix `/qsmc/`.
 
 **Sign-on.** Console users (not QS/400 profiles): ID, password, role Administrator / Operator / Viewer / Service, with the role → task matrix of `qsmc/console-roles.html`. The sign-on page carries the configurable notice `<p>`. Sessions: opaque cookie, idle timeout and maximum length from Language, locale and session settings; terminal windows may outlive the web session when that option is on.
 

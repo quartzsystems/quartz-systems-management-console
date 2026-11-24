@@ -239,6 +239,7 @@ request refused.
 | `QMC2433` | 0 | Tape volume &1 given to &2's tape device. | The volume is the device's medium in the partition's default profile. | None. |
 | `QMC2434` | 0 | Tape device &1 taken off partition &2's default profile. | The device is no longer in the profile; its volume stays. | None. |
 | `QMC2435` | 20 | A host's own tape drive is given to a partition on the partition's I/O page. | A drive passed through to a partition is released for partitions at the host first; the partition's profile then names it. | Release the drive at the host's Service Tools, then add it on the partition's I/O page. |
+| `QMC2436` | 0 | Tape device in slot &1 added to partition &2's default profile. | The device is in the profile; the partition has it from its next activation. | None. |
 | `QMC2440` | 0 | Shared processor pool &1 on &2 made or changed. | The host took the pool. | None. |
 | `QMC2441` | 0 | Shared processor pool &1 deleted from &2. | The host deleted the pool. | None. |
 | `QMC2442` | 30 | &1 uploads to &2 are under way, the most at once. | A host takes this many images at once from the console. | Wait for an upload to end, then upload this image. |

@@ -382,6 +382,18 @@ Then, also at Cody's request:
   QS/VS host (Service Tools option 10). It needs a release and a
   take-back request in QS/400's `qsi`, served by QS/VS; the pages say
   where to release one meanwhile.
+- A standalone system's Servers action Virtual resources goes back to
+  its General tab with `QMC1114`: only a host has the tab.
+- A backup holds the managed systems' reference code histories
+  (`mgmt/refcodes/`, from `mgmtd`) when Reference code and event history
+  is checked; the media library index is no longer offered: the
+  library is each host's own (`docs/DESIGN_REVIEW.md`, 1.3 and 1.4).
+  The remote host's fields are on one line.
+- The wordmark and the title suffix are `Quartz Systems/Management
+  Console` (`release::PRODUCT`), on every page and golden.
+- Create virtual tape drive... makes a tape device for a partition
+  (`QMC2436`); before, its form made only a media library volume, so
+  no drive appeared on Virtual Tape.
 
 ## Not done
 

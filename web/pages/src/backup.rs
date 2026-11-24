@@ -13,8 +13,8 @@ use qsweb::frame::{Ctx, Page};
 use qsweb::html::esc;
 use qsweb::msg::Message;
 use qsweb::partials::{
-    Button, Cell, Col, List, Prop, PropGroup, buttons, checkbox, form, input, input_cmd,
-    list_table, props, props_table, radio, status, tabs, upload_form,
+    Button, Cell, Col, List, Prop, PropGroup, buttons, checkbox, form, input, list_table, props,
+    props_table, radio, status, tabs, upload_form,
 };
 use serde::{Deserialize, Serialize};
 
@@ -108,8 +108,6 @@ pub struct BackupTab {
     pub data: bool,
     /// Reference code and event history chosen.
     pub history: bool,
-    /// The media library's index chosen.
-    pub media: bool,
     /// Download chosen; a remote host otherwise.
     pub download: bool,
     /// The remote host.
@@ -206,13 +204,6 @@ pub fn backup_page(ctx: &Ctx, v: &BackupTab) -> Page {
                 ),
             ),
             Prop::new("Reference code and event history", checkbox("h", v.history)),
-            Prop::new(
-                "Virtual optical media library index",
-                format!(
-                    "{} (images themselves are not included)",
-                    checkbox("m", v.media)
-                ),
-            ),
         ],
     };
     let place = PropGroup {
@@ -224,9 +215,9 @@ pub fn backup_page(ctx: &Ctx, v: &BackupTab) -> Page {
                     "{} Download as file<br>{} Remote host (SFTP): {} path {} user {}",
                     radio("w", "file", v.download),
                     radio("w", "remote", !v.download),
-                    input("host", &v.host, 24),
-                    input_cmd("path", &v.path, 24),
-                    input("u", &v.user, 12)
+                    input("host", &v.host, 20),
+                    input("path", &v.path, 16),
+                    input("u", &v.user, 10)
                 ),
             ),
             Prop::new(

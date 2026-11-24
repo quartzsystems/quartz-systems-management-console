@@ -88,7 +88,10 @@ of the host's own drives passed through (`Pass-through`, `TAP01`), a
 drive released at the host. The volumes are their own form
 (`/virtual/tape/volume`): made, protected or not, deleted through a
 confirmation; with a partition's device, the volume given to it in its
-default profile. Add pass-through drive answers `QMC2435`: a drive is
+default profile. Create virtual tape drive... opens the same form, whose
+New tape drive adds a device to a partition's default profile in its
+first free slot, with a volume or none yet (`QMC2436`); the partition
+has it from its next activation. Add pass-through drive answers `QMC2435`: a drive is
 released at the host and named on the partition's I/O page.
 
 ## Shared processor pools

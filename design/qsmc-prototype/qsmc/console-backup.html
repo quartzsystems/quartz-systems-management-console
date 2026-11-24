@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Backup and restore - QS/MC Management Console</title>
+<title>Backup and restore - Quartz Systems/Management Console</title>
 <link rel="stylesheet" type="text/css" href="../shared/qs400.css" />
 </head>
 <body>
 <table class="frame" cellspacing="0" cellpadding="0">
 <tr><td class="hdr" colspan="2">
   <table width="100%" cellspacing="0" cellpadding="0"><tr>
-    <td class="wordmark">QS/MC Management Console</td>
+    <td class="wordmark">Quartz Systems/Management Console</td>
     <td class="hdrright">Console: <b>QSHQMC1</b> &nbsp;&nbsp; User: <b>qsadmin</b> &nbsp;&nbsp;
       <a href="signon.html">Sign off</a> &nbsp;&nbsp; <a href="../shared/help.html" target="_blank">Help</a></td>
   </tr></table>
@@ -38,9 +38,8 @@
 <tr class="subrow"><td colspan="2">What</td></tr>
 <tr><th>Console data</th><td><input type="checkbox" name="d" checked> Managed system connections, partition profiles, system plans, users, scheduled operations, settings</td></tr>
 <tr><th>Reference code and event history</th><td><input type="checkbox" name="h" checked></td></tr>
-<tr><th>Virtual optical media library index</th><td><input type="checkbox" name="m"> (images themselves are not included)</td></tr>
 <tr class="subrow"><td colspan="2">Where</td></tr>
-<tr><th>Destination</th><td><input type="radio" name="w" value="file"> Download as file<br><input type="radio" name="w" value="remote" checked> Remote host (SFTP): <input type="text" name="host" value="backup.quartz.example" size="24"> path <input type="text" name="path" value="/backups/qsmc/" size="24" class="cmd"> user <input type="text" name="u" value="qsmcbackup" size="12"></td></tr>
+<tr><th>Destination</th><td><input type="radio" name="w" value="file"> Download as file<br><input type="radio" name="w" value="remote" checked> Remote host (SFTP): <input type="text" name="host" value="backup.quartz.example" size="20"> path <input type="text" name="path" value="/backups/qsmc/" size="16"> user <input type="text" name="u" value="qsmcbackup" size="10"></td></tr>
 <tr><th>Encrypt with passphrase</th><td><input type="password" name="pp" size="20"></td></tr>
 </table><div class="buttons"><input type="submit" name="back_up_now" value="Back up now"><input type="submit" name="schedule" value="Schedule..."></div></form><h2>Last backups</h2><table class="list" width="100%" cellspacing="0" cellpadding="0">
 <tr>
