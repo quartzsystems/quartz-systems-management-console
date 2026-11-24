@@ -372,6 +372,16 @@ Then, also at Cody's request:
   or the host) read none of the rest of the body, so the connection
   was reset under the browser instead of showing why; the rest is now
   read before the answer (`web/pages/tests/app.rs`).
+- A system's I/O tab names each device's type (PCI's class code),
+  vendor and IDs, who uses it, and whether a partition can be given it
+  or why not, with its isolation group (`web/pages/src/systems/hw.rs`).
+  A host has a Network interfaces tab: each port's MAC, link, driver
+  and use.
+- Releasing a device for partitions from the console is not done:
+  QSI's host family reads devices only, and a device is released at the
+  QS/VS host (Service Tools option 10). It needs a release and a
+  take-back request in QS/400's `qsi`, served by QS/VS; the pages say
+  where to release one meanwhile.
 
 ## Not done
 

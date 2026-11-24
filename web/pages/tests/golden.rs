@@ -955,45 +955,101 @@ fn system_memory() {
 
 #[test]
 fn system_io() {
+    use webpages::systems::hw::IoRow;
     use webpages::systems::props::Tab;
-    let row = |slot: &str, d: &str, o: &str, b: &str| {
-        [
-            format!("U9Q10.V1.9F11A2-P1-{slot}"),
-            slot.into(),
-            d.into(),
-            o.into(),
-            b.into(),
-        ]
-    };
     let rows = vec![
-        row(
-            "C1",
-            "10 GbE SFP+ 2-port adapter",
-            "QS/VS host (shared through virtual Ethernet)",
-            "PCIe3 x8",
-        ),
-        row(
-            "C2",
-            "SAS RAID controller (6 x 1.9 TB SSD)",
-            "QS/VS host (storage pool POOL1)",
-            "PCIe3 x8",
-        ),
-        row(
-            "C3",
-            "Fibre Channel 8 Gb 2-port (QLE2562)",
-            "QSPROD01 (physical assignment)",
-            "PCIe2 x8",
-        ),
-        row(
-            "C4",
-            "1 GbE 4-port adapter",
-            "QS/VS host (management)",
-            "PCIe2 x4",
-        ),
-        row("C5", "Empty", "", "PCIe3 x16"),
-        row("T1", "USB 3.0 controller", "QS/VS host", "Planar"),
+        IoRow {
+            location: "U9Q10.V1.9F11A2-P1-C1".into(),
+            slot: "0000:41:00.0".into(),
+            kind: "Ethernet controller".into(),
+            device: "Intel X710 10GbE SFP+ (8086:1572)".into(),
+            used: "Virtual switch ETHSW0 (Uplink of ETHSW0)".into(),
+            partitions: "No: the host uses it".into(),
+        },
+        IoRow {
+            location: "U9Q10.V1.9F11A2-P1-C2".into(),
+            slot: "0000:42:00.0".into(),
+            kind: "RAID controller".into(),
+            device: "Broadcom / LSI MegaRAID 9460-8i (1000:0017)".into(),
+            used: "Storage pool POOL1 (POOL1 units 1 to 6)".into(),
+            partitions: "No: the host uses it".into(),
+        },
+        IoRow {
+            location: "U9Q10.V1.9F11A2-P1-C3".into(),
+            slot: "0000:43:00.0".into(),
+            kind: "Fibre Channel controller".into(),
+            device: "QLogic QLE2562 8Gb FC (1077:2532)".into(),
+            used: "Partition QSPROD01".into(),
+            partitions:
+                "Given to QSPROD01 (profile normal); group 14 with U9Q10.V1.9F11A2-P1-C3-F1".into(),
+        },
+        IoRow {
+            location: "U9Q10.V1.9F11A2-P1-C4".into(),
+            slot: "0000:44:00.0".into(),
+            kind: "Ethernet controller".into(),
+            device: "Intel I350 Gigabit (8086:1521)".into(),
+            used: "QS/VS host (Management)".into(),
+            partitions: "No: the host uses it".into(),
+        },
+        IoRow {
+            location: "U9Q10.V1.9F11A2-P1-C5".into(),
+            slot: "0000:45:00.0".into(),
+            kind: "Ethernet controller".into(),
+            device: "Broadcom BCM5720 (14e4:165f)".into(),
+            used: "Free".into(),
+            partitions: "Released: can be given".into(),
+        },
+        IoRow {
+            location: "U9Q10.V1.9F11A2-P1-T1".into(),
+            slot: "0000:00:14.0".into(),
+            kind: "USB controller".into(),
+            device: "Intel (8086:a36d)".into(),
+            used: "Free".into(),
+            partitions: "Not released (Service Tools option 10 at the host)".into(),
+        },
     ];
     system_tab(Tab::Io(rows), "system-io.html", &[]);
+}
+
+#[test]
+fn system_network() {
+    use webpages::systems::hw::NicRow;
+    use webpages::systems::props::Tab;
+    let rows = vec![
+        NicRow {
+            location: "U9Q10.V1.9F11A2-P1-C4-T1".into(),
+            name: "eno1".into(),
+            mac: "3c:ec:ef:00:10:01".into(),
+            link: "1 Gb/s".into(),
+            driver: "igb".into(),
+            used: "QS/VS host (Management)".into(),
+        },
+        NicRow {
+            location: "U9Q10.V1.9F11A2-P1-C1-T1".into(),
+            name: "ens1f0".into(),
+            mac: "3c:ec:ef:00:20:01".into(),
+            link: "10 Gb/s".into(),
+            driver: "i40e".into(),
+            used: "Virtual switch ETHSW0 (Uplink of ETHSW0)".into(),
+        },
+        NicRow {
+            location: "U9Q10.V1.9F11A2-P1-C1-T2".into(),
+            name: "ens1f1".into(),
+            mac: "3c:ec:ef:00:20:02".into(),
+            link: "No link".into(),
+            driver: "i40e".into(),
+            used: "Free".into(),
+        },
+        NicRow {
+            location: "U9Q10.V1.9F11A2-P1-C5-T1".into(),
+            name: "enp69s0f0".into(),
+            mac: "3c:ec:ef:00:30:01".into(),
+            link: "1 Gb/s".into(),
+            driver: "tg3".into(),
+            used: "Free".into(),
+        },
+    ];
+    system_tab(Tab::Network(rows), "system-network.html", &[]);
 }
 
 #[test]

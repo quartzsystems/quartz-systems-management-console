@@ -200,7 +200,11 @@ fn server(rq: &Rq<'_>, route: &str) -> Option<Response> {
         let rest: Vec<&str> = parts.collect();
         return Some(crate::vres::serve(rq, name, &rest.join("/")));
     }
-    if crate::systems::props::TABS.iter().any(|(r, _)| *r == tab) {
+    if crate::systems::props::TABS
+        .iter()
+        .chain(crate::systems::props::HOST_TABS.iter())
+        .any(|(r, _)| *r == tab)
+    {
         return Some(crate::systems::props::route(rq, name, tab));
     }
     None

@@ -150,8 +150,10 @@ pub enum Tab {
     Processors(Processors),
     /// Memory.
     Memory(Memory),
-    /// I/O: location, slot, description, owner, bus.
-    Io(Vec<[String; 5]>),
+    /// I/O: each PCI function.
+    Io(Vec<super::hw::IoRow>),
+    /// A host's network interfaces.
+    Network(Vec<super::hw::NicRow>),
     /// Power-on parameters.
     Power(Power),
     /// Capabilities: each with its value.
@@ -176,12 +178,16 @@ pub struct Props {
 /// A host's Virtual resources tab: its route under the system, its label.
 pub const VIRTUAL: (&str, &str) = ("virtual", "Virtual resources");
 
+/// The tabs only a QS/VS host has, before Virtual resources.
+pub const HOST_TABS: [(&str, &str); 1] = [("network", "Network interfaces")];
+
 /// The tabs above a system's pages, `current` bold; a host's last is
 /// Virtual resources (`/server/<name>/virtual/ethernet`).
 pub fn tabs(ctx: &Ctx, name: &str, current: &str, host: bool) -> String {
     let virt = [VIRTUAL];
     let links: Vec<String> = TABS
         .iter()
+        .chain(HOST_TABS.iter().filter(|_| host))
         .chain(virt.iter().filter(|_| host))
         .map(|(r, l)| {
             if *r == current {
@@ -409,39 +415,6 @@ fn memory(ctx: &Ctx, m: &Memory) -> String {
     plain(ctx, &groups, &[Button::new("ok", "OK")])
 }
 
-fn io(rows: &[[String; 5]]) -> String {
-    let list = List {
-        cols: [
-            "Location code",
-            "Slot",
-            "Description",
-            "Owning partition",
-            "Bus",
-        ]
-        .iter()
-        .map(|c| Col::plain(c))
-        .collect(),
-        rows: rows
-            .iter()
-            .map(|r| {
-                vec![
-                    Cell::mono(&r[0]),
-                    Cell::mono(&r[1]),
-                    Cell::text(&r[2]),
-                    Cell::text(&r[3]),
-                    Cell::text(&r[4]),
-                ]
-            })
-            .collect(),
-        empty: "The system reports no adapters.".into(),
-        keep: Vec::new(),
-    };
-    format!(
-        "{}<p class=\"small grey\">Physical adapters are assigned to a partition from the partition's Hardware &gt; I/O page. The host keeps adapters that back virtual resources.</p>",
-        list_table(&list)
-    )
-}
-
 /// The delayed power off's option.
 fn delayed(secs: u32) -> String {
     format!("Shut down partitions first (delayed, {secs} s)")
@@ -572,7 +545,8 @@ pub fn page(ctx: &Ctx, v: &Props) -> Page {
         Tab::General(g) => ("general", general(ctx, g)),
         Tab::Processors(p) => ("processors", processors(ctx, &v.name, p)),
         Tab::Memory(m) => ("memory", memory(ctx, m)),
-        Tab::Io(rows) => ("io", io(rows)),
+        Tab::Io(rows) => ("io", super::hw::io(rows)),
+        Tab::Network(rows) => ("network", super::hw::network(rows)),
         Tab::Power(p) => ("power", power(ctx, p)),
         Tab::Capabilities(c) => ("capabilities", capabilities(c)),
         Tab::Refcode(c) => ("refcode", refcode(ctx, &v.name, c)),
@@ -584,7 +558,10 @@ pub fn page(ctx: &Ctx, v: &Props) -> Page {
         v.name.clone(),
     ];
     if route != "general"
-        && let Some((_, label)) = TABS.iter().find(|(r, _)| *r == route)
+        && let Some((_, label)) = TABS
+            .iter()
+            .chain(HOST_TABS.iter())
+            .find(|(r, _)| *r == route)
     {
         crumb.push((*label).into());
     }
@@ -786,35 +763,6 @@ fn memory_of(rq: &Rq<'_>, k: &Kept) -> Memory {
         ],
         rows,
     }
-}
-
-fn io_of(k: &Kept) -> Vec<[String; 5]> {
-    use qsi::host::host::{ItemKind, Owner};
-    k.hardware.as_ref().map_or_else(Vec::new, |h| {
-        h.items
-            .iter()
-            .filter(|i| i.kind == ItemKind::Pci)
-            .map(|i| {
-                let who = match i.owner {
-                    Owner::None => String::new(),
-                    Owner::Partition => i.owner_name.clone(),
-                    _ => "QS/VS host".into(),
-                };
-                let owner = if i.what.is_empty() || who.is_empty() {
-                    who
-                } else {
-                    format!("{who} ({})", i.what)
-                };
-                [
-                    i.location.clone(),
-                    i.name.clone(),
-                    i.description.clone(),
-                    owner,
-                    String::new(),
-                ]
-            })
-            .collect()
-    })
 }
 
 fn capabilities_of(k: &Kept) -> Vec<(String, String)> {
@@ -1069,7 +1017,8 @@ pub fn route(rq: &Rq<'_>, name: &str, tab: &str) -> Response {
         "general" => Tab::General(general_of(rq, &k)),
         "processors" => Tab::Processors(processors_of(&k)),
         "memory" => Tab::Memory(memory_of(rq, &k)),
-        "io" => Tab::Io(io_of(&k)),
+        "io" => Tab::Io(super::hw::io_of(&k)),
+        "network" if k.kind == SystemKind::Host => Tab::Network(super::hw::network_of(&k)),
         "power" => Tab::Power(power_of(&k)),
         "capabilities" => Tab::Capabilities(capabilities_of(&k)),
         "refcode" => Tab::Refcode(current_of(rq, &k)),

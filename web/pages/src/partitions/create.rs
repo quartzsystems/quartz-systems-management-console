@@ -322,7 +322,7 @@ fn step_body(ctx: &Ctx, w: &Wizard) -> String {
                         ]
                     })
                     .collect(),
-                empty: "The host has released no device for partitions.".into(),
+                empty: "The host has released no device for partitions. Release one at the QS/VS host: Service Tools option 10.".into(),
                 keep: Vec::new(),
             };
             format!(

@@ -19,7 +19,7 @@ use crate::suite::web::{
 };
 
 /// This phase's routes and the task each needs.
-const ROUTES: [(&str, Task); 18] = [
+const ROUTES: [(&str, Task); 19] = [
     ("/qsmc/connectivity", Task::Events),
     ("/qsmc/servers", Task::View),
     ("/qsmc/servers/add", Task::Settings),
@@ -29,6 +29,7 @@ const ROUTES: [(&str, Task); 18] = [
     ("/qsmc/server/QSHQVS1/processors", Task::View),
     ("/qsmc/server/QSHQVS1/memory", Task::View),
     ("/qsmc/server/QSHQVS1/io", Task::View),
+    ("/qsmc/server/QSHQVS1/network", Task::View),
     ("/qsmc/server/QSHQVS1/power", Task::View),
     ("/qsmc/server/QSHQVS1/capabilities", Task::View),
     ("/qsmc/server/QSHQVS1/refcode", Task::View),

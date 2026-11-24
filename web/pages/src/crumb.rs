@@ -34,7 +34,10 @@ pub fn links(crumb: &[String], route: &str) -> Vec<Option<String>> {
         } else if back(2) == Some("Servers") && l == crate::systems::props::VIRTUAL.1 {
             Some(format!("/server/{}/virtual/ethernet", enc(&crumb[i - 1])))
         } else if back(2) == Some("Servers")
-            && let Some((r, _)) = crate::systems::props::TABS.iter().find(|(_, n)| *n == l)
+            && let Some((r, _)) = crate::systems::props::TABS
+                .iter()
+                .chain(crate::systems::props::HOST_TABS.iter())
+                .find(|(_, n)| *n == l)
         {
             Some(format!("/server/{}/{r}", enc(&crumb[i - 1])))
         } else if back(3) == Some("Servers")
