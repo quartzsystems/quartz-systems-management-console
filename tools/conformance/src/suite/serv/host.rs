@@ -12,7 +12,8 @@ use std::time::Duration;
 use appliance::time::civil;
 
 use super::{
-    CONSOLE_ROW, Lab, QSVS_IMAGE, QSVS_NEXT, VS, download, lab, qsmc_release, row, set_clock,
+    CONSOLE_ROW, Lab, QSVS_IMAGE, QSVS_NEXT, VS, download, lab, qsmc_next, qsmc_release, row,
+    set_clock,
 };
 use crate::suite::mgmt::{page, until};
 use crate::suite::parts::sched::{date, offset, rows, runs_of};
@@ -231,7 +232,7 @@ pub fn sched(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     said.push(format!(
         "{id} installed {QSVS_NEXT} on {VS} at its time: Completed"
     ));
-    // The console's: downloaded, then due; it restarts into V1R0M1.
+    // The console's: downloaded, then due; it restarts into the next level.
     let name = next
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
@@ -253,11 +254,11 @@ pub fn sched(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     )?;
     let mut lab = Lab { fleet, c, streams };
     until(
-        "the console confirmed on V1R0M1",
+        "the console confirmed on the next level",
         Duration::from_secs(300),
         || {
             let code = page(&mut lab.c.browser, "/qsmc/updates/code")?;
-            Ok(row(&code, CONSOLE_ROW).contains("V1R0M1 build"))
+            Ok(row(&code, CONSOLE_ROW).contains(&format!("{} build", qsmc_next())))
         },
     )?;
     let (runs, _) = runs_of(&mut lab.c.browser, id)?;
@@ -265,7 +266,8 @@ pub fn sched(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         return Err(format!("the console's operation {id}: {runs:?}"));
     }
     said.push(format!(
-        "{id} for the console at its time: restarted into V1R0M1, which confirmed; Completed"
+        "{id} for the console at its time: restarted into {}, which confirmed; Completed",
+        qsmc_next()
     ));
     lab.c.guest.kill();
     Ok(said.join("; "))

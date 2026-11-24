@@ -283,8 +283,8 @@ mod tests {
     fn the_release_is_version_s() {
         let version = include_str!("../../../VERSION").trim();
         if option_env!("QSMC_RELEASE").is_none() {
-            assert_eq!(version, "1.0.0");
-            assert_eq!(RELEASE.to_string(), "V1R0M0");
+            assert_eq!(version, "1.1.0");
+            assert_eq!(RELEASE.to_string(), "V1R1M0");
         }
     }
 

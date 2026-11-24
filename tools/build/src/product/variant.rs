@@ -68,7 +68,7 @@ impl Variant {
         .map_err(|e| anyhow::anyhow!("VERSION: {e:?}"))?;
         if release::RELEASE <= here {
             bail!(
-                "the {} variant is a newer release: set QSMC_RELEASE past {here} (V1R0M1)",
+                "the {} variant is a newer release: set QSMC_RELEASE past {here}",
                 self.dir()
             );
         }

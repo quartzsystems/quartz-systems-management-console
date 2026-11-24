@@ -3,8 +3,8 @@
 // root directory of this project.
 
 //! Suite 8: the console's own update from its stream, an image whose web
-//! server cannot start rolled back with state as it was, and V1R0M1
-//! confirmed with its state migrated after and not before. Suite 9: the
+//! server cannot start rolled back with state as it was, and the next
+//! level confirmed with its state migrated after and not before. Suite 9: the
 //! images the console's update service refuses, from a removable volume.
 //! Suite 10: power pulled during an install and a pending slot's first
 //! IPL, on a mirrored load source.
@@ -13,7 +13,9 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
-use super::{CONSOLE_ROW, Lab, VS, download, lab, publish, qsmc_release, row};
+use super::{
+    CONSOLE_ROW, Lab, VS, download, lab, publish, qsmc_here, qsmc_next, qsmc_release, row,
+};
 use crate::qemu::session::{Disk, Machine, Session};
 use crate::qemu::term::key;
 use crate::suite::base::{Guest, Run, channel};
@@ -113,11 +115,10 @@ fn ends(guest: &mut Guest<'_>, within: Duration) -> Result<(), String> {
 fn installed_level(b: &mut Browser) -> Result<String, String> {
     let t = page(b, "/qsmc/updates/code")?;
     let r = row(&t, CONSOLE_ROW);
-    Ok(["V1R0M0", "V1R0M1"]
+    Ok([qsmc_here(), qsmc_next()]
         .into_iter()
         .find(|l| r.contains(&format!("{l} build")))
-        .unwrap_or("unknown")
-        .to_string())
+        .unwrap_or_else(|| "unknown".into()))
 }
 
 /// The name of the update image at `path`.
@@ -198,8 +199,11 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
     }
     let mut lab = Lab { fleet, c, streams };
     let b = &mut lab.c.browser;
-    if installed_level(b)? != "V1R0M0" {
-        return Err("after the roll back the console does not run V1R0M0".into());
+    if installed_level(b)? != qsmc_here() {
+        return Err(format!(
+            "after the roll back the console does not run {}",
+            qsmc_here()
+        ));
     }
     // The problem service reads the codes on its own turn.
     let fell = refcode::SLOT_FELL_BACK.code;
@@ -223,7 +227,7 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
          page saying it rolled back",
         before.len()
     ));
-    // V1R0M1 from the stream.
+    // The next level from the stream.
     publish(&lab.streams, 3, &[qsmc_release(next)?]);
     super::check(&mut lab.c.browser)?;
     download(&mut lab.c.browser, CONSOLE_ROW, "qsmc", &file_name(next))?;
@@ -302,8 +306,11 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
         ));
     }
     let b = &mut lab.c.browser;
-    if installed_level(b)? != "V1R0M1" {
-        return Err("Code updates does not say the console runs V1R0M1".into());
+    if installed_level(b)? != qsmc_next() {
+        return Err(format!(
+            "Code updates does not say the console runs {}",
+            qsmc_next()
+        ));
     }
     until(
         "both systems connected again",
@@ -317,8 +324,8 @@ pub fn update(run: &Run<'_>) -> Result<String, String> {
     let mut w = b.fresh();
     signed_on(&mut w, "witness", "Observe-pass-42")?;
     said.push(
-        "V1R0M1 found on the stream, downloaded, installed and activated: slot B confirmed when \
-         its web server answered, Code updates says V1R0M1, web.toml migrated to schema 2 after \
+        "the next level found on the stream, downloaded, installed and activated: slot B \
+         confirmed when its web server answered, Code updates says it, web.toml migrated to schema 2 after \
          the confirmation (C3007075 after C3007060), users and managed systems as before, both \
          systems connected again and the witness signed on"
             .into(),
@@ -469,7 +476,7 @@ pub fn refusals(run: &Run<'_>) -> Result<String, String> {
         })
     };
     let newer = update::manifest::Manifest {
-        release: "V1R0M2".into(),
+        release: super::qsmc_on(2),
         ..m.clone()
     };
     let mut damaged = sign(&newer, &key);
@@ -611,7 +618,7 @@ impl Moments {
     }
 }
 
-/// A mirrored console with V1R0M1 downloaded, booted and signed on.
+/// A mirrored console with the next level downloaded, booted and signed on.
 fn fresh<'a>(
     run: &Run<'a>,
     n: usize,
@@ -714,12 +721,14 @@ pub fn power(run: &Run<'_>) -> Result<String, String> {
             machine
         };
         let (mut back, level) = whole(run, machine).map_err(at)?;
-        if level == "V1R0M1" {
+        if level == qsmc_next() {
             confirmed += 1;
             if !both {
                 both = on_both(&back.machine, &slot_b).map_err(at)?;
                 if !both {
-                    return Err(at("V1R0M1 runs but slot B is not on both disks".into()));
+                    return Err(at(
+                        "the next level runs but slot B is not on both disks".into()
+                    ));
                 }
             }
             back.guest.kill();
@@ -736,8 +745,8 @@ pub fn power(run: &Run<'_>) -> Result<String, String> {
         let Console { guest, machine, .. } = c;
         drop(guest);
         let (back, level) = whole(run, machine)?;
-        if level != "V1R0M1" || !on_both(&back.machine, &slot_b)? {
-            return Err("the finished install is not V1R0M1 on both disks".into());
+        if level != qsmc_next() || !on_both(&back.machine, &slot_b)? {
+            return Err("the finished install is not the next level on both disks".into());
         }
         c = back;
     }
@@ -745,15 +754,17 @@ pub fn power(run: &Run<'_>) -> Result<String, String> {
     Ok(format!(
         "{PULLS} power pulls on a mirrored load source, {in_install} during an install and \
          {in_trial} during the pending slot's first IPL: after each the console came back ready \
-         on a good slot with its web users signing on ({confirmed} times on V1R0M1, the rest on \
-         V1R0M0; {cancelled} times a slot written but never activated, cancelled at option 8, \
-         5); V1R0M1's slot B on both disks"
+         on a good slot with its web users signing on ({confirmed} times on {next}, the rest on \
+         {here}; {cancelled} times a slot written but never activated, cancelled at option 8, \
+         5); {next}'s slot B on both disks",
+        next = qsmc_next(),
+        here = qsmc_here(),
     ))
 }
 
 /// Phase 8's `sec-rotation` (`docs/RELEASING.md`): a console signed by
-/// the first key and trusting the next refuses V1R0M1 signed by a key
-/// it does not trust, with nothing staged, then installs V1R0M1 signed
+/// the first key and trusting the next refuses the next level signed by a
+/// key it does not trust, with nothing staged, then installs it signed
 /// by the next key from the stream, and its systems' sessions resume.
 pub fn rotation(run: &Run<'_>) -> Result<String, String> {
     let t = &run.image;
@@ -788,11 +799,11 @@ pub fn rotation(run: &Run<'_>) -> Result<String, String> {
     }
     if !refused {
         return Err(format!(
-            "V1R0M1 signed by a key the console does not trust was not refused with {}",
+            "the next level signed by a key the console does not trust was not refused with {}",
             qmcmsg::UPD_SIGNATURE.id
         ));
     }
-    if installed_level(b)? != "V1R0M0" {
+    if installed_level(b)? != qsmc_here() {
         return Err("a refused image changed what the console runs".into());
     }
     // The next key's release.
@@ -810,8 +821,8 @@ pub fn rotation(run: &Run<'_>) -> Result<String, String> {
     signed_on(&mut c.browser, ADMIN, PASSWORD)?;
     c_confirmed(&mut c.guest)?;
     let b = &mut c.browser;
-    if installed_level(b)? != "V1R0M1" {
-        return Err("Code updates does not say the console runs the rotated V1R0M1".into());
+    if installed_level(b)? != qsmc_next() {
+        return Err("Code updates does not say the console runs the rotated next level".into());
     }
     until(
         "both systems connected again",
@@ -825,9 +836,11 @@ pub fn rotation(run: &Run<'_>) -> Result<String, String> {
     drop((fleet, streams));
     c.guest.kill();
     Ok(format!(
-        "V1R0M1 signed by a key not trusted refused ({}) with V1R0M0 still running; V1R0M1 \
+        "{next} signed by a key not trusted refused ({}) with {here} still running; {next} \
          signed by the next key found on the stream, installed, confirmed, and both systems \
          connected again",
-        qmcmsg::UPD_SIGNATURE.id
+        qmcmsg::UPD_SIGNATURE.id,
+        next = qsmc_next(),
+        here = qsmc_here(),
     ))
 }

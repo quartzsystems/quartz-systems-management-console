@@ -18,6 +18,17 @@ fn prototype(file: &str) -> String {
     std::fs::read_to_string(&p).unwrap_or_else(|e| panic!("{}: {e}", p.display()))
 }
 
+/// The prototype's release in its footers is V1R0M0's; the served
+/// page's is this release's.
+fn this_release(g: &str) -> String {
+    let r = release::RELEASE;
+    g.replace(
+        "QS/MC V1R0M0 &middot; Quartz Systems",
+        &format!("QS/MC {r} &middot; Quartz Systems"),
+    )
+    .replace("QS/MC V1R0M0.", &format!("QS/MC {r}."))
+}
+
 /// The navigation script every framed page carries; the prototype has none.
 const NAV_JS: &str = "/qsmc/shared/qsnav.js";
 
@@ -36,6 +47,7 @@ fn assert_golden_script(served: &str, file: &str, fix: &[(&str, &str)], script: 
         );
         g = g.replace(from, to);
     }
+    let g = this_release(&g);
     let map = |u: &str| proto(u);
     if let Some(d) = diff(served, &g, &Normalize { url: &map, script }) {
         panic!("{file} differs from the served page at {d}");
@@ -113,6 +125,7 @@ fn assert_shared(served: &str, file: &str, fix: &[(&str, &str)]) {
         );
         g = g.replace(from, to);
     }
+    let g = this_release(&g);
     let map = |u: &str| {
         proto(u).map(|t| match t.strip_prefix("../shared/") {
             Some(s) => s.to_string(),

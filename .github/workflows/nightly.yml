@@ -72,11 +72,13 @@ jobs:
             echo "QSMC_STREAM_KEYS=$k/streams"
           } >> "$GITHUB_ENV"
       - name: The release, built twice and compared
-        run: cargo run -q -p build -- release "$(cat VERSION)"
+        run: |
+          echo "VRM=$(awk -F. '{print "V" $1 "R" $2 "M" $3}' VERSION)" >> "$GITHUB_ENV"
+          cargo run -q -p build -- release "$(cat VERSION)"
       - name: Its stream
         run: |
           mkdir -p "$RUNNER_TEMP/stream"
-          cargo run -q -p build -- stream add target/release/V1R0M0 "$RUNNER_TEMP/stream"
+          cargo run -q -p build -- stream add target/release/$VRM "$RUNNER_TEMP/stream"
           cargo run -q -p build -- stream verify "$RUNNER_TEMP/stream"
       - name: Secure Boot, and the console finding its release on the stream
         run: |
@@ -89,7 +91,7 @@ jobs:
           name: release
           retention-days: 7
           path: |
-            target/release/V1R0M0
+            target/release/${{ env.VRM }}
             target/conformance/*.log
           if-no-files-found: ignore
 

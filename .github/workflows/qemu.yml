@@ -84,16 +84,18 @@ jobs:
       - run: cargo run -q -p build -- doctor
       - run: cargo run -q -p build -- all
       - run: cargo run -q -p build -- --test-image all
+      # The update variants are one modification past VERSION.
+      - run: echo "NEXT=$(awk -F. '{print "V" $1 "R" $2 "M" $3 + 1}' VERSION)" >> "$GITHUB_ENV"
       # Phase 6's updates: the one that installs and the one that rolls back.
       - run: cargo run -q -p build -- --test-image --variant next all
-        env: { QSMC_RELEASE: V1R0M1, QSMC_NEXT_SCHEMA: "1" }
+        env: { QSMC_RELEASE: "${{ env.NEXT }}", QSMC_NEXT_SCHEMA: "1" }
       - run: cargo run -q -p build -- --test-image --variant broken all
-        env: { QSMC_RELEASE: V1R0M1, QSMC_TEST_WEBD_BROKEN: "1" }
-      # Phase 8's rotation: V1R0M1 signed by the next key, and by a stranger.
+        env: { QSMC_RELEASE: "${{ env.NEXT }}", QSMC_TEST_WEBD_BROKEN: "1" }
+      # Phase 8's rotation: the next level signed by the next key, and by a stranger.
       - run: cargo run -q -p build -- --test-image --variant rotated all
-        env: { QSMC_RELEASE: V1R0M1 }
+        env: { QSMC_RELEASE: "${{ env.NEXT }}" }
       - run: cargo run -q -p build -- --test-image --variant stranger all
-        env: { QSMC_RELEASE: V1R0M1 }
+        env: { QSMC_RELEASE: "${{ env.NEXT }}" }
       - run: cargo build -q -p build
 
       # The pointers name absolute paths, the same on every runner.

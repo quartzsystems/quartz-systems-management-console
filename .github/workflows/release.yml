@@ -83,11 +83,13 @@ jobs:
           } >> "$GITHUB_ENV"
           echo "qsmc.pub $(cat "$k/streams/qsmc.pub")"
       - name: The release, built twice and compared
-        run: cargo run -q -p build -- release "$(cat VERSION)"
+        run: |
+          echo "VRM=$(awk -F. '{print "V" $1 "R" $2 "M" $3}' VERSION)" >> "$GITHUB_ENV"
+          cargo run -q -p build -- release "$(cat VERSION)"
       - name: Its stream
         run: |
           mkdir -p "$RUNNER_TEMP/stream"
-          cargo run -q -p build -- stream add "target/release/V1R0M0" "$RUNNER_TEMP/stream"
+          cargo run -q -p build -- stream add "target/release/$VRM" "$RUNNER_TEMP/stream"
           cargo run -q -p build -- stream verify "$RUNNER_TEMP/stream"
           cp -r "$RUNNER_TEMP/stream" target/release/stream-qsmc
       - name: The keys gone
@@ -95,12 +97,12 @@ jobs:
         run: rm -rf "$RUNNER_TEMP/keys"
       - uses: actions/upload-artifact@v4
         with:
-          name: release-V1R0M0
+          name: release-${{ env.VRM }}
           retention-days: 90
           # The release and its stream alone: target/release is also
           # cargo's own folder.
           path: |
-            target/release/V1R0M0
+            target/release/${{ env.VRM }}
             target/release/stream-qsmc
           if-no-files-found: error
       - name: The release published on its tag
@@ -110,11 +112,11 @@ jobs:
           TAG: ${{ inputs.tag }}
         run: |
           set -eu
-          d=target/release/V1R0M0
+          d=target/release/$VRM
           [ "$(git rev-parse "$TAG^{commit}")" = "$(git rev-parse HEAD)" ] \
             || { echo "::error::$TAG is not the commit built"; exit 1; }
           (cd "$d" && sha256sum -c SHA256SUMS)
           gh release create "$TAG" --verify-tag \
-            --title "QS/MC V1R0M0 ($(cat VERSION))" \
-            --notes-file "$d/RELEASE_NOTES_V1R0M0.md" \
+            --title "QS/MC $VRM ($(cat VERSION))" \
+            --notes-file "$d/RELEASE_NOTES_$VRM.md" \
             $(find "$d" -maxdepth 1 -type f | sort)

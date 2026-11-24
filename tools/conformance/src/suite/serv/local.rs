@@ -4,13 +4,13 @@
 
 //! Suite 11: the local console's option 8 at the serial port: its
 //! screens against their golden files, a problem closed, a dump taken,
-//! copied to a removable volume and deleted, and V1R0M1 installed from
-//! the volume and restarted into.
+//! copied to a removable volume and deleted, and the next level installed
+//! from the volume and restarted into.
 
 use std::time::{Duration, Instant};
 
 use super::console::{file_name, volume, with_disks};
-use super::{CONSOLE_ROW, VS, post_code, row};
+use super::{CONSOLE_ROW, VS, post_code, qsmc_here, qsmc_next, row};
 use crate::qemu::term::key;
 use crate::suite::base::{Run, power_off};
 use crate::suite::install::{
@@ -134,14 +134,17 @@ pub fn local(run: &Run<'_>) -> Result<String, String> {
     titled(&mut c.guest, MENU, d())?;
     // 5: the levels before.
     let levels = option(&mut c.guest, 5, "Display Code Levels", d())?;
-    if !levels.contains("V1R0M0") {
-        return Err(format!("the code levels do not show V1R0M0:\n{levels}"));
+    if !levels.contains(&qsmc_here()) {
+        return Err(format!(
+            "the code levels do not show {}:\n{levels}",
+            qsmc_here()
+        ));
     }
     help(&mut c.guest, "console-levels", "Display Code Levels", d())?;
     held += 1;
     c.guest.type_keys(key::F12)?;
     titled(&mut c.guest, MENU, d())?;
-    // 4: V1R0M1 from the volume, then a restart into it.
+    // 4: the next level from the volume, then a restart into it.
     let form = option(
         &mut c.guest,
         4,
@@ -166,7 +169,7 @@ pub fn local(run: &Run<'_>) -> Result<String, String> {
         "Runs now",
         Instant::now() + Duration::from_secs(180),
     )?;
-    if !chosen.contains("V1R0M1") || !chosen.contains("V1R0M0") {
+    if !chosen.contains(&qsmc_next()) || !chosen.contains(&qsmc_here()) {
         return Err(format!(
             "the confirmation does not show both levels:\n{chosen}"
         ));
@@ -186,17 +189,17 @@ pub fn local(run: &Run<'_>) -> Result<String, String> {
     let mut c = boot(run, machine)?;
     signed_on(&mut c.browser, ADMIN, PASSWORD)?;
     until(
-        "the console confirmed on V1R0M1",
+        "the console confirmed on the next level",
         Duration::from_secs(120),
         || {
             let t = page(&mut c.browser, "/qsmc/updates/code")?;
-            Ok(row(&t, CONSOLE_ROW).contains("V1R0M1 build"))
+            Ok(row(&t, CONSOLE_ROW).contains(&format!("{} build", qsmc_next())))
         },
     )?;
     sign_on(&mut c.guest, USER, PASSWORD, d())?;
     option(&mut c.guest, 8, MENU, d())?;
     let levels = option(&mut c.guest, 5, "Display Code Levels", d())?;
-    if !levels.contains("V1R0M1") || !levels.contains("confirmed") {
+    if !levels.contains(&qsmc_next()) || !levels.contains("confirmed") {
         return Err(format!("after the restart the levels say:\n{levels}"));
     }
     c.guest.type_keys(key::F3)?;
@@ -214,8 +217,10 @@ pub fn local(run: &Run<'_>) -> Result<String, String> {
         "{held} screens and helps of option 8 held to their golden files; problem {n} displayed \
          and closed at the serial port, closed by service tools user {USER} in the web \
          interface; {dump} taken, copied to the removable volume ({} bytes there) and deleted; \
-         V1R0M1 staged from the volume, shown beside V1R0M0, installed and restarted into, then \
+         {} staged from the volume, shown beside {}, installed and restarted into, then \
          confirmed and shown by option 5",
-        copied.len()
+        copied.len(),
+        qsmc_next(),
+        qsmc_here()
     ))
 }

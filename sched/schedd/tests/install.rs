@@ -119,7 +119,7 @@ impl update::proto::Calls for Updd {
             R::StageFile { path, .. } => {
                 self.0.lock().unwrap().push(format!("stage file {path}"));
                 ipc::encode(&Ok::<_, Vec<msg::Issued>>(update::proto::Staged {
-                    name: "QSMC-V1R0M1-update-cd.upd".into(),
+                    name: "QSMC-V1R1M1-update-cd.upd".into(),
                     bytes: 4,
                     verification: update::proto::Verification::Verified,
                     ..update::proto::Staged::default()
@@ -170,12 +170,12 @@ fn fetched(downloaded: bool) -> Fetched {
     };
     Fetched {
         streams: vec![
-            known(Stream::Qsmc, entry("V1R0M1", "QSMC-V1R0M1-update-cd.upd")),
+            known(Stream::Qsmc, entry("V1R1M1", "QSMC-V1R1M1-update-cd.upd")),
             known(Stream::Qsvs, entry("V1R0M1", "QSVS-V1R0M1-update-ab.upd")),
         ],
         files: if downloaded {
             vec![
-                file(Stream::Qsmc, "QSMC-V1R0M1-update-cd.upd"),
+                file(Stream::Qsmc, "QSMC-V1R1M1-update-cd.upd"),
                 file(Stream::Qsvs, "QSVS-V1R0M1-update-ab.upd"),
             ]
         } else {
@@ -400,7 +400,7 @@ fn the_console_s_install_runs_and_one_not_downloaded_is_refused() {
     assert_eq!(
         w.log.lock().unwrap().clone(),
         [
-            "stage file /data/updates/qsmc/QSMC-V1R0M1-update-cd.upd",
+            "stage file /data/updates/qsmc/QSMC-V1R1M1-update-cd.upd",
             "install",
             "activate qsadmin",
         ]

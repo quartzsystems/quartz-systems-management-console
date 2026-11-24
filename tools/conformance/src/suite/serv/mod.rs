@@ -69,8 +69,32 @@ pub const QSVS_NOTES: &str = "QSVS-V1R0M1-notes.txt";
 pub const CUM: &str = "QS400-CUM-26300";
 /// What the console's own row of Code updates holds.
 pub const CONSOLE_ROW: &str = ">QS/MC</td>";
-/// The `qsmc` stream's notes of a release.
-pub const QSMC_NOTES: &str = "QSMC-V1R0M1-notes.txt";
+/// `VERSION`'s numbers.
+fn version() -> [u32; 3] {
+    let mut v = include_str!("../../../../../VERSION")
+        .trim()
+        .split('.')
+        .map(|n| n.parse().unwrap_or(0));
+    [(); 3].map(|()| v.next().unwrap_or(0))
+}
+
+/// The console's release, `VERSION`'s: `V1R1M0`.
+pub fn qsmc_here() -> String {
+    let [v, r, m] = version();
+    format!("V{v}R{r}M{m}")
+}
+
+/// The release the test image's update variants are built as, one
+/// modification on: `V1R1M1`.
+pub fn qsmc_next() -> String {
+    qsmc_on(1)
+}
+
+/// The release `n` modifications on.
+pub fn qsmc_on(n: u32) -> String {
+    let [v, r, m] = version();
+    format!("V{v}R{r}M{}", m + n)
+}
 
 /// A console managing `QSHQVS1` and `QSHQ400`, pointed at a stream
 /// server, signed on as the first Administrator.
@@ -113,15 +137,16 @@ pub fn qsmc_release(path: &Path) -> Result<Release, String> {
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_default();
+    let next = qsmc_next();
     Ok(Release {
-        release: "V1R0M1".into(),
+        release: next.clone(),
         build: "next".into(),
-        updates_from: "V1R0M0".into(),
+        updates_from: qsmc_here(),
         update: (name, bytes),
         released: "2026-11-20".into(),
         notes: (
-            QSMC_NOTES.into(),
-            "QS/MC V1R0M1\n\nThe test release: web.toml of a newer schema.\n".into(),
+            format!("QSMC-{next}-notes.txt"),
+            format!("QS/MC {next}\n\nThe test release: web.toml of a newer schema.\n"),
         ),
     })
 }
