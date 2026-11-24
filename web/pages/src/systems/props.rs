@@ -333,7 +333,7 @@ fn plain(ctx: &Ctx, groups: &[PropGroup], extra: &[Button]) -> String {
     )
 }
 
-fn processors(ctx: &Ctx, name: &str, p: &Processors) -> String {
+fn processors(ctx: &Ctx, name: &str, p: &Processors, host: bool) -> String {
     let rows: Vec<Vec<(bool, String)>> = p
         .rows
         .iter()
@@ -359,11 +359,15 @@ fn processors(ctx: &Ctx, name: &str, p: &Processors) -> String {
                 Prop::new("Deconfigured", esc(&p.amounts[3])),
                 Prop::new(
                     "Shared processor pool size",
-                    format!(
-                        "{} &nbsp; <a href=\"{}\">Shared processor pools</a>",
-                        esc(&p.pool),
-                        ctx.url(&format!("/server/{}/virtual/pools", esc(name)))
-                    ),
+                    if host {
+                        format!(
+                            "{} &nbsp; <a href=\"{}\">Shared processor pools</a>",
+                            esc(&p.pool),
+                            ctx.url(&format!("/server/{}/virtual/pools", esc(name)))
+                        )
+                    } else {
+                        esc(&p.pool)
+                    },
                 ),
                 Prop::new("Dedicated to partitions", esc(&p.dedicated)),
             ],
@@ -543,7 +547,7 @@ fn refcode(ctx: &Ctx, name: &str, c: &Current) -> String {
 pub fn page(ctx: &Ctx, v: &Props) -> Page {
     let (route, body) = match &v.tab {
         Tab::General(g) => ("general", general(ctx, g)),
-        Tab::Processors(p) => ("processors", processors(ctx, &v.name, p)),
+        Tab::Processors(p) => ("processors", processors(ctx, &v.name, p, v.host)),
         Tab::Memory(m) => ("memory", memory(ctx, m)),
         Tab::Io(rows) => ("io", super::hw::io(rows)),
         Tab::Network(rows) => ("network", super::hw::network(rows)),

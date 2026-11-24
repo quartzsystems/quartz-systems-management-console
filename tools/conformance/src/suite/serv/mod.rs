@@ -68,7 +68,7 @@ pub const QSVS_NOTES: &str = "QSVS-V1R0M1-notes.txt";
 /// The cumulative package QS/400's catalog offers.
 pub const CUM: &str = "QS400-CUM-26300";
 /// What the console's own row of Code updates holds.
-pub const CONSOLE_ROW: &str = ">QS/MC<";
+pub const CONSOLE_ROW: &str = ">QS/MC</td>";
 /// The `qsmc` stream's notes of a release.
 pub const QSMC_NOTES: &str = "QSMC-V1R0M1-notes.txt";
 

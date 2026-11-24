@@ -140,9 +140,24 @@ pub fn secrets(run: &Run<'_>) -> Result<String, String> {
         PASSPHRASE,
         pairing.as_str(),
     ];
+    // The dump asked for is written as a `.part` and then renamed: scan
+    // once it is whole, so it is read under its last name.
+    let at = std::time::Instant::now();
+    let mut all = files(ch, "/data");
+    while all.iter().any(|(p, _)| {
+        std::path::Path::new(p)
+            .extension()
+            .is_some_and(|x| x == "part")
+    }) {
+        if at.elapsed() > std::time::Duration::from_secs(120) {
+            return Err("the console's dump was not finished in 120 s".into());
+        }
+        std::thread::sleep(std::time::Duration::from_secs(2));
+        all = files(ch, "/data");
+    }
     let mut read = 0;
     let mut skipped = Vec::new();
-    for (path, len) in files(ch, "/data") {
+    for (path, len) in all {
         if len > READ_MAX {
             skipped.push(path);
             continue;

@@ -123,12 +123,7 @@ pub fn serve(rq: &Rq<'_>, host: &str, rest: &str) -> Response {
     };
     // Only a QS/VS host has virtual resources (and their tab).
     if k.kind != mgmtproto::kept::Kind::Host {
-        let m = qmcmsg::message(
-            qsweb::msg::Kind::Error,
-            &qmcmsg::LACKS,
-            &[&k.name, "virtual resources"],
-        );
-        return rq.done(&format!("/server/{}/general", k.name), m);
+        return crate::app::routes::error(rq, 409, &qmcmsg::LACKS, &[&k.name, "virtual resources"]);
     }
     match (tab, sub) {
         ("ethernet", "") => ethernet::route(rq, &k),
