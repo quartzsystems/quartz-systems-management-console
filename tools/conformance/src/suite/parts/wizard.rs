@@ -113,6 +113,8 @@ pub fn wizard(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         &[("id", "7"), ("n", "QSNEW07"), ("d", "Made by the harness")],
     )?;
     said.push(refused(b, 2, &[("p", "")], "profile's name")?);
+    said.push(refused(b, 2, &[("p", "1prof")], "letter first")?);
+    // Typed in lowercase, kept as the host names it.
     next(b, 2, &[("p", "wprof")])?;
     said.push(refused(b, 3, &[("vmin", "3"), ("vdes", "1")], "in order")?);
     said.push(refused(
@@ -161,6 +163,7 @@ pub fn wizard(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     }
     next(b, 4, &[])?;
     next(b, 5, &[])?;
+    said.push(refused(b, 6, &[], "load source")?);
     // Step 6: a SCSI client adapter with VD06, the load source.
     let form = post_answer(
         b,
@@ -187,7 +190,7 @@ pub fn wizard(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     let summary = page(b, &step(9))?;
     for want in [
         "7 / QSNEW07",
-        "wprof (default)",
+        "WPROF (default)",
         "units 0.25 / 0.75 / 2.00",
         "4,096 / 12,288 / 16,384",
         "SCSI client -> VD06",
@@ -203,8 +206,8 @@ pub fn wizard(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     let (desired, mib, name) = {
         let sys = host(fleet);
         let made = sys.part_ref(7).ok_or("no partition 7 at the host")?;
-        let prof = made.kept("wprof").ok_or_else(|| {
-            format!("partition 7 has no profile wprof (`{profs}`): {said_finish}")
+        let prof = made.kept("WPROF").ok_or_else(|| {
+            format!("partition 7 has no profile WPROF (`{profs}`): {said_finish}")
         })?;
         (
             prof.profile.processors.desired_units,
@@ -212,7 +215,7 @@ pub fn wizard(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             made.definition.name.clone(),
         )
     };
-    if !line_of(&profs, "wprof").is_some_and(|l| l.ends_with(" default"))
+    if !line_of(&profs, "WPROF").is_some_and(|l| l.ends_with(" default"))
         || desired != Some(75)
         || mib != 12_288
         || name != "QSNEW07"
@@ -317,7 +320,7 @@ pub fn groups(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
 pub(crate) fn create(b: &mut Browser, host: &str, id: u32, name: &str) -> Result<(), String> {
     page(b, &format!("{}?ms={host}", step(1)))?;
     next(b, 1, &[("id", &id.to_string()), ("n", name)])?;
-    next(b, 2, &[("p", "default")])?;
+    next(b, 2, &[("p", "DEFAULT")])?;
     for n in 3..=5 {
         next(b, n, &[])?;
     }

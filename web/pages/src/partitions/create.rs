@@ -580,7 +580,7 @@ fn fresh(k: &Kept) -> BTreeMap<String, String> {
     for (key, val) in [
         ("id", next.to_string()),
         ("n", String::new()),
-        ("p", "default".into()),
+        ("p", "DEFAULT".into()),
         ("dft", "on".into()),
         ("m", "shared".into()),
         ("umin", "0.25".into()),
@@ -618,6 +618,15 @@ fn next_id(k: &Kept) -> u32 {
         .unwrap_or(1)
 }
 
+/// QS/VS's naming rule for partitions and profiles: 1 to 10 of `A` to
+/// `Z`, `0` to `9` and `_`, a letter first.
+fn host_name_ok(n: &str) -> bool {
+    (1..=10).contains(&n.len())
+        && n.starts_with(|c: char| c.is_ascii_uppercase())
+        && n.bytes()
+            .all(|b| b.is_ascii_uppercase() || b.is_ascii_digit() || b == b'_')
+}
+
 fn invalid(what: &str) -> Vec<Message> {
     vec![qmcmsg::message(Kind::Error, &qmcmsg::NOT_VALID, &[what])]
 }
@@ -652,6 +661,19 @@ fn validate(k: &Kept, step: usize, v: &BTreeMap<String, String>) -> Result<(), V
             }
         }
         2 if g("p").is_empty() => return Err(invalid("Type the profile's name.")),
+        2 if !host_name_ok(&g("p").to_uppercase()) => {
+            return Err(invalid(
+                "A profile's name is 1 to 10 letters, digits and _, a letter first.",
+            ));
+        }
+        6 if !adapters_of(v)
+            .iter()
+            .any(|a| a.kind == "scsi" && !a.disk.is_empty()) =>
+        {
+            return Err(invalid(
+                "The partition needs a load source: add a SCSI client adapter with a virtual disk.",
+            ));
+        }
         3 => {
             let v3 = |key: &str| g(key).parse::<u32>().ok();
             let (Some(a), Some(b), Some(c)) = (v3("vmin"), v3("vdes"), v3("vmax")) else {
@@ -723,7 +745,7 @@ pub fn profile_of(k: &Kept, v: &BTreeMap<String, String>) -> Profile {
         tape.push(MediaDevice::drive(next.next().unwrap_or(7), &d.location));
     }
     Profile {
-        name: g("p"),
+        name: g("p").to_uppercase(),
         processors: Processors {
             mode: if shared {
                 ProcessorMode::Shared
