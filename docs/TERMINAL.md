@@ -26,15 +26,21 @@ with `QMC4001` and the system's own message.
 
 ## The window
 
-The menu, the toolbar, the control panel strip (the partition's current
+The menu (each name opens its items, as Access for Web's 5250 display:
+File; Edit's Copy and Paste; View's Keypad and colours; Communication's
+Connect or Disconnect; Actions' Enter, Reset, Attn, SysRq, Help, Clear
+and the keyboard map), the toolbar, the control panel strip (the partition's current
 code, its meaning, functions 03, 08, 21, 22 and 34, and the function
 field), the screen with the keypad beside it, the status line: as the
 prototype draws them (`terminal.html`), without the navigation column.
 
 | Route | What |
 | --- | --- |
-| `GET /terminal/<host>/<id>` | the window; it opens the window this web session holds when there is none (`?scale=2`, `?strip=0`, `?c=w`, `?take=1`) |
-| `POST` the same | a key of the keypad (`k=F3`), the toolbar (`tb`: Connect, Disconnect, Print Screen; the others answer that they are not in this release), a function of the strip (`f`, `fn`) |
+| `GET /terminal/<host>/<id>` | the window; it opens the window this web session holds when there is none (`?scale=2`, `?strip=0`, `?c=w`, `?pad=0` the keypad hidden, `?take=1`; `?menu=` the menu open) |
+| `POST` the same | a key of the keypad or of Actions (`k=F3`), the toolbar (`tb`: Connect, Disconnect, Print Screen; Keypad hides or shows the keypad; Copy, Paste and Keyboard Map lead to their pages), a function of the strip (`f`, `fn`) |
+| `GET .../copy` | Copy without script: the screen's text to select |
+| `GET`, `POST .../paste` | Paste without script: text typed at the cursor |
+| `GET .../keymap` | the console's keys |
 | `GET .../screen.png` | the picture: the held window's latest whole screen, or one asked of the host (`console` `Screen`) |
 | `GET .../screen-off.png` | the same greyed, as a disconnected window shows it |
 | `GET .../print` | Print Screen: `termlook`'s PDF, its producer `Quartz Systems/Management Console` |
@@ -47,7 +53,12 @@ system's answer.
 
 With script the page's one `<script>` element is QS/400's, with
 `data-socket` (the window's `ws`), `data-image` (the picture's id,
-`term`), `data-scale` and, for black on white, `data-scheme="bw"`. The
+`term`), `data-5250` (a click places the cursor, or presses the F key
+or More... under it; Paste types the clipboard), `data-keypad` (the
+keypad's id, `keypad`, which Keypad shows and hides in place),
+`data-scale` and, for black on white, `data-scheme="bw"`. The console
+has no key that places the cursor: the socket turns a click into the
+arrow keys from where the latest frame has the cursor. The
 socket speaks `termlook::exchange`: `screen` (the whole screen first),
 `delta`, `closed` with why, and `message` out; keys by name and typed
 text in, turned into `qsipart` keys by `Input::console_keys`.
@@ -123,6 +134,5 @@ hello does not offer the console family is refused with `QMC1114`.
 
 ## Not in this release
 
-Copy, Paste, Keypad and Keyboard Map of the toolbar (the
-script has the keyboard and the keypad); a 27 x 132 screen chosen from
-the console (the size is the system's).
+A 27 x 132 screen chosen from the console (the size is the system's);
+macros; a keyboard map of the user's own (the console's keys only).

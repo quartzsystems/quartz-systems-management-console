@@ -391,6 +391,10 @@ Then, also at Cody's request:
   The remote host's fields are on one line.
 - The wordmark and the title suffix are `Quartz Systems/Management
   Console` (`release::PRODUCT`), on every page and golden.
+- The terminal window works as Access for Web's 5250 display: a click
+  on the screen places the cursor (or presses the F key under it), the
+  menus open their own items, Keypad hides and shows the keypad, and
+  Copy, Paste and Keyboard Map work with and without script.
 - Create virtual tape drive... makes a tape device for a partition
   (`QMC2436`); before, its form made only a media library volume, so
   no drive appeared on Virtual Tape.

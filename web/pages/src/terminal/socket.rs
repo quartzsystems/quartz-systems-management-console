@@ -17,6 +17,7 @@ use std::time::{Duration, Instant};
 
 use mgmtproto::console::Watch;
 use qsi::host::console::{In, Out, Pieces};
+use qsipart::console::Key;
 use qsweb::ws::{Message, Socket};
 use termlook::exchange::{self, Input};
 use termlook::look::render::Scheme;
@@ -50,6 +51,38 @@ fn view(s: &Shown, bw: bool) -> View {
             Scheme::Console
         },
     }
+}
+
+/// The console keys `input` is. The console has no key that places the
+/// cursor: a click on the screen (`Cursor`, 1-based) is the arrow keys
+/// from where the latest frame has it.
+fn keys_of(input: &Input, shown: &Shown) -> Vec<Key> {
+    let Input::Cursor(r, c) = *input else {
+        return input.console_keys();
+    };
+    let s = &shown.grid.status;
+    moves(
+        (usize::from(s.row), usize::from(s.col)),
+        (r.saturating_sub(1), c.saturating_sub(1)),
+    )
+}
+
+/// The arrow keys from `from` to `to` (row, column, 0-based).
+fn moves(from: (usize, usize), to: (usize, usize)) -> Vec<Key> {
+    let mut out = Vec::new();
+    let (v, n) = if to.0 < from.0 {
+        (Key::Up, from.0 - to.0)
+    } else {
+        (Key::Down, to.0 - from.0)
+    };
+    out.extend(std::iter::repeat_n(v, n));
+    let (h, n) = if to.1 < from.1 {
+        (Key::Left, from.1 - to.1)
+    } else {
+        (Key::Right, to.1 - from.1)
+    };
+    out.extend(std::iter::repeat_n(h, n));
+    out
 }
 
 /// Relay until either end goes.
@@ -136,7 +169,7 @@ pub fn run(r: &Relay, ws: &mut Socket<'_>) {
                 if let Some(input) = Input::parse(&t) {
                     last_key = Instant::now();
                     if r.watch.typing {
-                        for k in input.console_keys() {
+                        for k in keys_of(&input, &shown) {
                             if In::Key(k)
                                 .piece()
                                 .is_ok_and(|p| writer.write_all(&p).is_err())
@@ -153,4 +186,27 @@ pub fn run(r: &Relay, ws: &mut Socket<'_>) {
     }
     let _ = writer.shutdown(std::net::Shutdown::Both);
     ws.close();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_click_is_the_arrow_keys_to_its_cell() {
+        assert_eq!(
+            moves((5, 10), (3, 12)),
+            [Key::Up, Key::Up, Key::Right, Key::Right]
+        );
+        assert_eq!(moves((0, 4), (1, 2)), [Key::Down, Key::Left, Key::Left]);
+        assert!(moves((7, 7), (7, 7)).is_empty());
+        let mut shown = Shown::default();
+        shown.grid.status.row = 5;
+        shown.grid.status.col = 52;
+        assert_eq!(
+            keys_of(&Input::Cursor(6, 55), &shown),
+            [Key::Right, Key::Right]
+        );
+        assert_eq!(keys_of(&Input::Key("Enter".into()), &shown), [Key::Enter]);
+    }
 }

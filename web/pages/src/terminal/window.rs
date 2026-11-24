@@ -48,6 +48,10 @@ pub struct Window {
     pub script: bool,
     /// Black on white.
     pub bw: bool,
+    /// The menu open (`?menu=`); File when none.
+    pub menu: String,
+    /// The keypad beside the screen (`?pad=0` hides it).
+    pub keypad: bool,
     /// The message rows.
     pub messages: Vec<Message>,
 }
@@ -81,22 +85,115 @@ pub fn strip(ctx: &Ctx, host: &str, id: u32, code: &str, meaning: &str, class: b
     )
 }
 
+/// The menus: key and name, then Macro and Help, which are links.
+const MENUS: [(&str, &str); 5] = [
+    ("file", "File"),
+    ("edit", "Edit"),
+    ("view", "View"),
+    ("communication", "Communication"),
+    ("actions", "Actions"),
+];
+
+/// The menu bar: each menu's name, the open one bold (File when none
+/// is), and its items below, as Access for Web's 5250 display has them.
+fn menu_bar(ctx: &Ctx, v: &Window, here: &dyn Fn(&str) -> String) -> String {
+    let open = if MENUS.iter().any(|(k, _)| *k == v.menu) {
+        v.menu.as_str()
+    } else {
+        "file"
+    };
+    let config = ctx.url("/terminal");
+    let names: Vec<String> = MENUS
+        .iter()
+        .map(|(k, n)| {
+            if *k == open {
+                format!("<b>{n}</b>")
+            } else {
+                format!(
+                    "<a href=\"{}\">{n}</a>",
+                    here(&format!("?menu={k}{}", v.keep))
+                )
+            }
+        })
+        .chain([
+            format!("<a href=\"{config}\">Macro</a>"),
+            format!("<a href=\"{}\">Help</a>", ctx.url("/help/terminal")),
+        ])
+        .collect();
+    let link = |href: String, label: &str| format!("<a href=\"{href}\">{label}</a>");
+    let posts = |name: &str, labels: &[&str], on: bool| {
+        let mut b = String::new();
+        for l in labels {
+            let _ = write!(
+                b,
+                "<input type=\"submit\" name=\"{name}\" value=\"{l}\"{}>",
+                if on { "" } else { " disabled" }
+            );
+        }
+        format!(
+            "<form method=\"post\" style=\"display:inline\">{}{b}</form>",
+            ctx.csrf_field()
+        )
+    };
+    let sep = " &nbsp;|&nbsp; ";
+    let items = match open {
+        "edit" => [
+            link(here(&format!("/copy?x=1{}", v.keep)), "Copy"),
+            link(here(&format!("/paste?x=1{}", v.keep)), "Paste"),
+        ]
+        .join(sep),
+        "view" => {
+            let colours = if v.bw {
+                link(
+                    here(&format!("?menu=view{}", v.keep.replace("&c=w", ""))),
+                    "Console colours",
+                )
+            } else {
+                link(here(&format!("?menu=view{}&c=w", v.keep)), "Black on white")
+            };
+            [posts("tb", &["Keypad"], true), colours].join(sep)
+        }
+        "communication" => posts(
+            "tb",
+            if v.connected {
+                &["Disconnect"]
+            } else {
+                &["Connect"]
+            },
+            true,
+        ),
+        "actions" => [
+            posts(
+                "k",
+                &["Enter", "Reset", "Attn", "SysRq", "Help", "Clear"],
+                v.connected && v.may_type,
+            ),
+            link(here(&format!("/keymap?x=1{}", v.keep)), "Keyboard map"),
+        ]
+        .join(sep),
+        _ => [
+            link(config.clone(), "Open session..."),
+            link(here(&format!("?menu=file{}", v.keep)), "Save session"),
+            link(config.clone(), "Save session as..."),
+            link(config.clone(), "Recent sessions"),
+            link(config.clone(), "Properties..."),
+            link(here("/print"), "Print screen"),
+            link(config, "Close"),
+        ]
+        .join(sep),
+    };
+    format!(
+        "<table class=\"list\" cellspacing=\"0\" style=\"margin-bottom:3px\"><tr><th>{}</th></tr><tr><td class=\"small\">{items}</td></tr></table>",
+        names.join(" &nbsp;&nbsp; ")
+    )
+}
+
 /// The page.
 #[allow(clippy::too_many_lines, reason = "one page, top to bottom")]
 pub fn page(ctx: &Ctx, v: &Window) -> Page {
     let base = format!("/terminal/{}/{}", esc(&v.host), v.id);
     let here = |extra: &str| ctx.url(&format!("{base}{extra}"));
-    let config = ctx.url("/terminal");
-    let mut body = format!(
-        "<table class=\"list\" cellspacing=\"0\" style=\"margin-bottom:3px\"><tr><th><b>File</b> &nbsp;&nbsp; <a href=\"{e}\">Edit</a> &nbsp;&nbsp; <a href=\"{vw}\">View</a> &nbsp;&nbsp; <a href=\"{c}\">Communication</a> &nbsp;&nbsp; <a href=\"{a}\">Actions</a> &nbsp;&nbsp; <a href=\"{config}\">Macro</a> &nbsp;&nbsp; <a href=\"{h}\">Help</a></th></tr><tr><td class=\"small\"><a href=\"{config}\">Open session...</a> &nbsp;|&nbsp; <a href=\"{s}\">Save session</a> &nbsp;|&nbsp; <a href=\"{config}\">Save session as...</a> &nbsp;|&nbsp; <a href=\"{config}\">Recent sessions</a> &nbsp;|&nbsp; <a href=\"{config}\">Properties...</a> &nbsp;|&nbsp; <a href=\"{p}\">Print screen</a> &nbsp;|&nbsp; <a href=\"{config}\">Close</a></td></tr></table>",
-        e = here(&format!("?menu=edit{}", v.keep)),
-        vw = here(&format!("?menu=view{}", v.keep)),
-        c = here(&format!("?menu=communication{}", v.keep)),
-        a = here(&format!("?menu=actions{}", v.keep)),
-        h = ctx.url("/help/terminal"),
-        s = here(&format!("?menu=file{}", v.keep)),
-        p = here("/print"),
-    );
+    let mut body = menu_bar(ctx, v, &here);
     let (connect, disconnect) = if v.connected {
         (" disabled", "")
     } else {
@@ -123,7 +220,7 @@ pub fn page(ctx: &Ctx, v: &Window) -> Page {
     let off = if v.connected { "" } else { "-off" };
     let (w, h) = v.size;
     let mut keypad = String::from(
-        "<table cellspacing=\"0\" cellpadding=\"2\" style=\"margin:2px\" class=\"keypad\">",
+        "<td id=\"keypad\" style=\"padding:0;vertical-align:top;background:#e8e8e8;border-left:1px solid #c0c0c0;width:178px\"><table cellspacing=\"0\" cellpadding=\"2\" style=\"margin:2px\" class=\"keypad\">",
     );
     let disabled = if v.connected && v.may_type {
         ""
@@ -146,10 +243,13 @@ pub fn page(ctx: &Ctx, v: &Window) -> Page {
         }
         keypad.push_str("</tr>");
     }
-    keypad.push_str("</table>");
+    keypad.push_str("</table></td>");
+    if !v.keypad {
+        keypad.clear();
+    }
     let _ = write!(
         body,
-        "<form method=\"post\">{}<table cellspacing=\"0\" cellpadding=\"0\" style=\"border:1px solid #808080\"><tr><td style=\"padding:0;vertical-align:top;background:#000000\"><img id=\"term\" src=\"{}\" width=\"{w}\" height=\"{h}\" alt=\"5250 screen\" style=\"display:block;image-rendering:pixelated;image-rendering:crisp-edges\"></td><td style=\"padding:0;vertical-align:top;background:#e8e8e8;border-left:1px solid #c0c0c0;width:178px\">{keypad}</td></tr></table></form>",
+        "<form method=\"post\">{}<table cellspacing=\"0\" cellpadding=\"0\" style=\"border:1px solid #808080\"><tr><td style=\"padding:0;vertical-align:top;background:#000000\"><img id=\"term\" src=\"{}\" width=\"{w}\" height=\"{h}\" alt=\"5250 screen\" style=\"display:block;image-rendering:pixelated;image-rendering:crisp-edges\"></td>{keypad}</tr></table></form>",
         ctx.csrf_field(),
         here(&format!("/screen{off}.png?scale={}", v.scale.max(1))),
     );
@@ -181,7 +281,7 @@ pub fn page(ctx: &Ctx, v: &Window) -> Page {
         let scheme = if v.bw { " data-scheme=\"bw\"" } else { "" };
         let _ = write!(
             body,
-            "<script src=\"{}\" data-socket=\"{}\" data-image=\"term\" data-scale=\"{}\"{scheme}></script>",
+            "<script src=\"{}\" data-socket=\"{}\" data-image=\"term\" data-5250=\"on\" data-keypad=\"keypad\" data-scale=\"{}\"{scheme}></script>",
             ctx.url(SCRIPT),
             here("/ws"),
             v.scale.max(1)

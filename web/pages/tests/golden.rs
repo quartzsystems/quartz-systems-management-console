@@ -1287,6 +1287,8 @@ fn terminal_window(connected: bool) -> webpages::terminal::window::Window {
         keep: String::new(),
         script: true,
         bw: false,
+        menu: String::new(),
+        keypad: true,
         messages: if connected {
             Vec::new()
         } else {
@@ -1308,16 +1310,45 @@ fn terminal_render(v: &webpages::terminal::window::Window) -> String {
 /// The picture is the script's to replace, so it has its name.
 const TERM_ID: (&str, &str) = ("<img src=", "<img id=\"term\" src=");
 
+/// The keypad is the script's to show and hide (Keypad), so it has its name.
+const PAD_ID: (&str, &str) = (
+    "<td style=\"padding:0;vertical-align:top;background:#e8e8e8;border-left",
+    "<td id=\"keypad\" style=\"padding:0;vertical-align:top;background:#e8e8e8;border-left",
+);
+
 #[test]
 fn terminal() {
     assert_golden_script(
         &terminal_render(&terminal_window(true)),
         "terminal.html",
-        &[TERM_ID],
+        &[TERM_ID, PAD_ID],
         Some("/qsmc/terminal/script.js"),
     );
 }
 
+#[test]
+fn terminal_menus_and_keypad() {
+    use webpages::terminal::window::Window;
+    let with = |menu: &str, keypad: bool| {
+        terminal_render(&Window {
+            menu: menu.into(),
+            keypad,
+            ..terminal_window(true)
+        })
+    };
+    let edit = with("edit", true);
+    assert!(edit.contains("<b>Edit</b>") && edit.contains("/qsmc/terminal/QSHQVS1/1/copy?x=1"));
+    assert!(edit.contains("/qsmc/terminal/QSHQVS1/1/paste?x=1"));
+    let actions = with("actions", true);
+    assert!(actions.contains("name=\"k\" value=\"Attn\"") && actions.contains("/keymap?x=1"));
+    let comm = with("communication", true);
+    assert!(comm.contains("name=\"tb\" value=\"Disconnect\""));
+    // The script places the cursor with a click and shows the keypad in place.
+    assert!(edit.contains("data-5250=\"on\" data-keypad=\"keypad\""));
+    assert!(edit.contains("<td id=\"keypad\""));
+    let hidden = with("", false);
+    assert!(!hidden.contains("<td id=\"keypad\"") && !hidden.contains("value=\"F1\""));
+}
 #[test]
 fn terminal_disconnected() {
     // The window's status line names the partition the window is of.
@@ -1326,6 +1357,7 @@ fn terminal_disconnected() {
         "terminal-disconnected.html",
         &[
             TERM_ID,
+            PAD_ID,
             (
                 "QSDEV01 on QSHQVS1: Not connected",
                 "QSTEST01 on QSHQVS1: Not connected",

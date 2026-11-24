@@ -9,9 +9,10 @@
 //! policy and no other's.
 
 pub mod config;
+#[cfg(unix)]
+pub mod pages;
 pub mod panel;
 pub mod relay;
-#[cfg(unix)]
 pub mod socket;
 pub mod window;
 
@@ -44,11 +45,13 @@ pub const CSP_NO_SCRIPT: &str = "default-src 'none'; style-src 'self'; style-src
 
 /// The options a window keeps in its address.
 #[derive(Clone, Debug)]
+#[allow(clippy::struct_excessive_bools, reason = "the window's switches")]
 struct Options {
     scale: u32,
     strip: bool,
     take_over: bool,
     bw: bool,
+    pad: bool,
 }
 
 impl Options {
@@ -58,6 +61,7 @@ impl Options {
             strip: rq.q("strip") != "0",
             take_over: rq.q("take") == "1",
             bw: rq.q("c") == "w",
+            pad: rq.q("pad") != "0",
         }
     }
 
@@ -71,6 +75,9 @@ impl Options {
         }
         if self.bw {
             q.push_str("&c=w");
+        }
+        if !self.pad {
+            q.push_str("&pad=0");
         }
         q
     }
@@ -194,6 +201,8 @@ fn show(rq: &Rq<'_>, k: &Kept, id: u32, o: &Options, mut messages: Vec<Message>)
         keep: o.query(),
         script: true,
         bw: o.bw,
+        menu: rq.q("menu"),
+        keypad: o.pad,
         messages,
     };
     let script = v.script && v.connected;
@@ -263,6 +272,31 @@ fn window_route(rq: &Rq<'_>, host: &str, id: u32) -> Response {
                 return Response::redirect(
                     &rq.ctx.url(&format!("/terminal/{}/{id}/print", k.name)),
                 );
+            }
+            // The keypad shown or hidden; without script, Copy, Paste and
+            // the keyboard map are pages of their own.
+            "Keypad" => {
+                let flipped = Options {
+                    pad: !o.pad,
+                    ..o.clone()
+                };
+                return Response::redirect(&rq.ctx.url(&format!(
+                    "/terminal/{}/{id}?x=1{}",
+                    k.name,
+                    flipped.query()
+                )));
+            }
+            page @ ("Copy" | "Paste" | "Keyboard Map") => {
+                let to = match page {
+                    "Copy" => "copy",
+                    "Paste" => "paste",
+                    _ => "keymap",
+                };
+                return Response::redirect(&rq.ctx.url(&format!(
+                    "/terminal/{}/{id}/{to}?x=1{}",
+                    k.name,
+                    o.query()
+                )));
             }
             "Connect" => {}
             other if !other.is_empty() => {
@@ -666,6 +700,9 @@ pub fn serve(rq: &Rq<'_>, route: &str) -> Option<Response> {
         Some("screen.png") => picture(rq, host, id, false),
         Some("screen-off.png") => picture(rq, host, id, true),
         Some("print") => picture(rq, host, id, false),
+        Some("copy") => pages::copy(rq, host, id),
+        Some("paste") => pages::paste(rq, host, id),
+        Some("keymap") => pages::keymap(rq, host, id),
         #[cfg(unix)]
         Some("ws") => socket_route(rq, host, id),
         _ => return None,
