@@ -398,6 +398,22 @@ Then, also at Cody's request:
 - Create virtual tape drive... makes a tape device for a partition
   (`QMC2436`); before, its form made only a media library volume, so
   no drive appeared on Virtual Tape.
+- A standalone QS/400 has its own pages: General (its cumulative fix
+  level, no Partitions group), Status, Dumps, Capabilities and
+  Reference code; no Processors, Memory, I/O or Power-on parameters,
+  which are a host family's. Status is QSI base's `Resources` (bit 28,
+  added to QS/400's `qsi` and served by its `*QSI` job for this:
+  processors, processor used, main storage, the system ASP, temporary
+  storage, jobs), asked when the tab is shown; Servers lists the
+  processors and main storage read when it connected. Its Partitions
+  row already opened these pages.
+- The pins moved together for it: QS/400 from `960861dc` to
+  `de8e467f066f30acd38b00a753dac97374e767f7` (its `main` after
+  V1R2M0, with bit 28) and QS/VS from `dec674bd` to
+  `c65646262a73d7e9c07003c5ec65b4233feec1fc`, which pins that QS/400
+  commit and refuses bit 28 as a host. Of the crates taken here only
+  `qsi` and `qsisess` changed; `kernel/`, the toolchain and `deny.toml`
+  did not. The workspace's and the fuzzer's manifests and locks.
 
 ## Not done
 

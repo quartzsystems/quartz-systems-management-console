@@ -76,6 +76,8 @@ pub(super) enum Mine {
     PartSpace,
     UpdateStatus,
     FixLevel,
+    /// What a standalone system has and uses.
+    Resources,
     Stage(String),
     Download(u64),
 }

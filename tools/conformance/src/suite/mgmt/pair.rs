@@ -92,6 +92,30 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             return Err(format!("Memory lacks `{want}`"));
         }
     }
+    // The standalone system's own tabs: its status asked of it (QSI's
+    // resources), its processors and memory on Servers.
+    let status = page(b, "/qsmc/server/QSHQ400/status")?;
+    for want in [
+        "12.5 %",
+        "32,768 MB",
+        "1,200,000 MB",
+        "62.15 %",
+        "287",
+        "12 days 3 hours",
+    ] {
+        if !status.contains(want) {
+            return Err(format!("QSHQ400's Status lacks `{want}`"));
+        }
+    }
+    if !status.contains(">Dumps</a>") || status.contains(">Processors</a>") {
+        return Err("QSHQ400's tabs are not a standalone system's".into());
+    }
+    if !page(b, "/qsmc/server/QSHQ400/dumps")?.contains("FWDUMP.QSHQ400.20260930.120000") {
+        return Err("QSHQ400's Dumps lacks its firmware dump".into());
+    }
+    if !first.contains("4.00") || !first.contains("32.0") {
+        return Err("Servers does not show QSHQ400's processors and memory".into());
+    }
     // Every link of every page, from Welcome, answers; only a terminal
     // window carries a script of its own.
     let mut seen = BTreeSet::new();
@@ -165,7 +189,7 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     }
     c.guest.kill();
     Ok(format!(
-        "27 systems added from the Add page; Welcome, Servers and Memory show the fixture's values; \
+        "27 systems added from the Add page; Welcome, Servers, Memory and QSHQ400's Status and Dumps show the fixture's values; \
          {pages} pages and files reached each answered 200; {scripts} terminal windows carry the \
          script, under their own policy, and no other page does"
     ))

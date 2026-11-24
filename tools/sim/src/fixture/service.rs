@@ -7,7 +7,7 @@
 //! its dumps, the host's code slots and the fix levels the Updates page
 //! shows.
 
-use qsi::base::{DumpKind, Level, Refcode, SystemDump};
+use qsi::base::{DumpKind, Level, Refcode, Resources, SystemDump};
 use qsi::host::dumps::DumpInfo;
 use qsi::service::{
     Line, Problem, ProblemStatus, ResourceKind, Severity, Source, SourceKind, Summary,
@@ -212,4 +212,20 @@ pub fn standalone(s: &mut System) {
         level: "QS400-CUM-26290".into(),
         date: T1042,
     });
+    // As its WRKSYSSTS would count them.
+    s.servicing.resources = Resources {
+        processors: 4,
+        cpu_used: 1250,
+        memory_kb: 32 * 1024 * 1024,
+        memory_used_kb: 21 * 1024 * 1024,
+        asp_mb: 1_200_000,
+        asp_used: 6215,
+        temp_mb: 2_310,
+        total_jobs: 342,
+        active_jobs: 287,
+        signed_on: 12,
+        batch_running: 9,
+        threads: 1_104,
+        up_secs: 86_400 * 12 + 3 * 3_600,
+    };
 }

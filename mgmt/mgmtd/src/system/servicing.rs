@@ -44,6 +44,13 @@ impl Worker {
                 &AnyRequest::Base(base::Request::FixLevel(Empty)),
             );
         }
+        if Self::can(s, caps::RESOURCES) {
+            self.mine(
+                s,
+                Mine::Resources,
+                &AnyRequest::Base(base::Request::Resources(Empty)),
+            );
+        }
     }
 
     fn read_problems(&mut self, s: &mut Session, before: Option<u64>) {
@@ -153,6 +160,9 @@ impl Worker {
             }
             (Mine::FixLevel, AnyReply::Base(base::Reply::FixLevel(l))) => {
                 self.entry.kept().fix_level = Some(l);
+            }
+            (Mine::Resources, AnyReply::Base(base::Reply::Resources(r))) => {
+                self.entry.kept().usage = Some(r);
             }
             _ => return false,
         }

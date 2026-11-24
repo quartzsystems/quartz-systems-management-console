@@ -9,7 +9,7 @@
 //! next activation do is told on standard input.
 
 use qsi::any::{AnyEvent, AnyReply};
-use qsi::base::{self, DumpKind, Level, Refcode, Space, SystemDump};
+use qsi::base::{self, DumpKind, Level, Refcode, Resources, Space, SystemDump};
 use qsi::host::dumps::{self, DumpInfo, PartitionSpace};
 use qsi::host::model::Note;
 use qsi::service::{
@@ -54,6 +54,8 @@ pub struct Servicing {
     pub outcome: Outcome,
     /// Its cumulative fix level; none for a host that has none.
     pub fix_level: Option<Level>,
+    /// What a standalone system has and uses (base's `Resources`).
+    pub resources: Resources,
 }
 
 /// Each partition's dumps, by ID, and their limit.
@@ -417,6 +419,7 @@ impl System {
                     date: 0,
                 }))
             }
+            base::Request::Resources(_) => R::Resources(self.servicing.resources.clone()),
             base::Request::Dumps(_) => R::Dumps(self.servicing.dumps.clone()),
             base::Request::DumpSpace(_) => R::DumpSpace(self.dump_space()),
             base::Request::TakeDump(_) => {

@@ -77,7 +77,9 @@ its events; its own service dumps and their space (base, bits 4 and
 26); a host's partitions' dumps and their space (`dumps`); its `update`
 status (both slots, what is staged, an install's progress), the update
 log, how its last activation ended, and a stage under way; a standalone
-system's fix level (bit 27).
+system's fix level (bit 27) and what it has and uses as it connected
+(base's `Resources`, bit 28: processors, main storage, the system ASP,
+jobs), which Servers lists; its Status tab asks it again through `ask`.
 
 | Limit (`mgmt.toml`) | Default |
 | --- | --- |

@@ -14,6 +14,7 @@ pub mod hw;
 pub mod power;
 pub mod props;
 pub mod servers;
+pub mod standalone;
 
 use mgmtproto::{Kept, Refusal};
 use qsweb::msg::{Kind, Message};

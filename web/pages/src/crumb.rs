@@ -37,6 +37,7 @@ pub fn links(crumb: &[String], route: &str) -> Vec<Option<String>> {
             && let Some((r, _)) = crate::systems::props::TABS
                 .iter()
                 .chain(crate::systems::props::HOST_TABS.iter())
+                .chain(crate::systems::props::STANDALONE_TABS.iter())
                 .find(|(_, n)| *n == l)
         {
             Some(format!("/server/{}/{r}", enc(&crumb[i - 1])))

@@ -27,13 +27,14 @@ pub fn carried(req: &AnyRequest) -> bool {
         | AnyRequest::Profiles(_)
         | AnyRequest::Panel(panel::Request::Functions(_))
         // A system's own dumps listed, taken, deleted, their space; its
-        // fix level.
+        // fix level; what it has and uses.
         | AnyRequest::Base(
             base::Request::Dumps(_)
             | base::Request::TakeDump(_)
             | base::Request::DeleteDump(_)
             | base::Request::DumpSpace(_)
-            | base::Request::FixLevel(_),
+            | base::Request::FixLevel(_)
+            | base::Request::Resources(_),
         ) => true,
         AnyRequest::Vres(v) => !matches!(v, vres::Request::ImageUpload(_)),
         // A problem closed, noted or read; the pages' lists are kept.

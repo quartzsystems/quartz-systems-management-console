@@ -85,7 +85,8 @@ pub const CONSOLE_CAPS: u64 = caps::HOST_V1
     | caps::PANEL_FUNCTIONS
     | caps::PROBLEM_NOTES
     | caps::DUMP_SPACE
-    | caps::FIX_LEVEL;
+    | caps::FIX_LEVEL
+    | caps::RESOURCES;
 
 /// Each capability, in an operator's words: what a system without it
 /// does not offer.
@@ -127,6 +128,7 @@ const WORDS: &[(u64, &str)] = &[
     (caps::PROBLEM_NOTES, "notes on its problems"),
     (caps::DUMP_SPACE, "dump space"),
     (caps::FIX_LEVEL, "its fix level"),
+    (caps::RESOURCES, "its processors, memory and jobs"),
 ];
 
 /// What a system whose hello agreed `agreed` lacks for `need`, in

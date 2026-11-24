@@ -221,7 +221,19 @@ pub fn row(k: &Kept) -> Row {
                 h.memory.available % 1024 * 10 / 1024
             ),
         ),
-        _ => ("0".into(), "0".into()),
+        // A standalone system's are all its own: its processors and
+        // main storage, as read when it connected.
+        _ => match k.usage.as_ref().filter(|_| standalone) {
+            Some(r) => (
+                format!("{}.00", r.processors),
+                format!(
+                    "{}.{}",
+                    r.memory_kb >> 20,
+                    ((r.memory_kb & 0xf_ffff) * 10) >> 20
+                ),
+            ),
+            None => ("0".into(), "0".into()),
+        },
     };
     Row {
         name: k.name.clone(),

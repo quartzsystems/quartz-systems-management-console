@@ -266,6 +266,9 @@ pub struct Kept {
     pub staging: Option<Staging>,
     /// Its cumulative fix level (bit 27).
     pub fix_level: Option<Level>,
+    /// What a standalone system has and uses, as read when it connected
+    /// (bit 28).
+    pub usage: Option<qsi::base::Resources>,
 }
 wire_struct!(Kept {
     name,
@@ -304,7 +307,8 @@ wire_struct!(Kept {
     update_log,
     update_end,
     staging,
-    fix_level
+    fix_level,
+    usage
 });
 
 /// A partition's dumps.

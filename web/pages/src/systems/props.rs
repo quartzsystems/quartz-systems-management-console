@@ -40,6 +40,16 @@ pub const TABS: [(&str, &str); 7] = [
     ("refcode", "Reference code"),
 ];
 
+/// A standalone QS/400's tabs: no host family's, its status and its
+/// own dumps instead.
+pub const STANDALONE_TABS: [(&str, &str); 5] = [
+    ("general", "General"),
+    ("status", "Status"),
+    ("dumps", "Dumps"),
+    ("capabilities", "Capabilities"),
+    ("refcode", "Reference code"),
+];
+
 /// General.
 #[derive(Clone, Debug, Default)]
 pub struct General {
@@ -75,6 +85,10 @@ pub struct General {
     pub defined: usize,
     /// Running.
     pub running: usize,
+    /// A standalone QS/400: its fix level, and no partitions.
+    pub standalone: bool,
+    /// Its cumulative fix level.
+    pub fix_level: String,
 }
 
 /// Processors.
@@ -160,6 +174,10 @@ pub enum Tab {
     Capabilities(Vec<(String, String)>),
     /// Reference code.
     Refcode(Current),
+    /// A standalone system's status.
+    Status(super::standalone::Status),
+    /// A standalone system's own dumps.
+    Dumps(Vec<super::standalone::DumpRow>),
 }
 
 /// The page: a system's name, its tab and the messages.
@@ -173,6 +191,8 @@ pub struct Props {
     pub messages: Vec<Message>,
     /// Whether it is a QS/VS host, with its Virtual resources tab.
     pub host: bool,
+    /// Whether it is a standalone QS/400, with its own tabs.
+    pub standalone: bool,
 }
 
 /// A host's Virtual resources tab: its route under the system, its label.
@@ -201,6 +221,25 @@ pub fn tabs(ctx: &Ctx, name: &str, current: &str, host: bool) -> String {
                 format!(
                     "<a href=\"{}\">{}</a>",
                     ctx.url(&format!("/server/{}/{tail}", esc(name))),
+                    esc(l)
+                )
+            }
+        })
+        .collect();
+    format!("<div class=\"tabs\">{}</div>", links.join(" | "))
+}
+
+/// A standalone system's tabs, `current` bold.
+pub fn standalone_tabs(ctx: &Ctx, name: &str, current: &str) -> String {
+    let links: Vec<String> = STANDALONE_TABS
+        .iter()
+        .map(|(r, l)| {
+            if *r == current {
+                format!("<b>{}</b>", esc(l))
+            } else {
+                format!(
+                    "<a href=\"{}\">{}</a>",
+                    ctx.url(&format!("/server/{}/{r}", esc(name))),
                     esc(l)
                 )
             }
@@ -281,15 +320,21 @@ fn general(ctx: &Ctx, g: &General) -> String {
                     format!("{} build {}{update}", mono(&g.release), esc(&g.build)),
                 ),
                 Prop::new("Power on since", esc(&g.since)),
-                Prop::new(
-                    "Service interface",
-                    format!(
-                        "{} &nbsp; <a href=\"{}\">Connectivity</a>",
-                        mono(&g.address),
-                        url("/connectivity")
-                    ),
+            ]
+            .into_iter()
+            .chain(
+                g.standalone
+                    .then(|| Prop::new("Cumulative fix level", mono(&g.fix_level))),
+            )
+            .chain([Prop::new(
+                "Service interface",
+                format!(
+                    "{} &nbsp; <a href=\"{}\">Connectivity</a>",
+                    mono(&g.address),
+                    url("/connectivity")
                 ),
-            ],
+            )])
+            .collect(),
         },
         PropGroup {
             title: Some("Partitions".into()),
@@ -304,6 +349,11 @@ fn general(ctx: &Ctx, g: &General) -> String {
             )],
         },
     ];
+    // A standalone system is its one partition: no Partitions group.
+    let groups: Vec<PropGroup> = groups
+        .into_iter()
+        .take(if g.standalone { 2 } else { 3 })
+        .collect();
     form(
         ctx,
         "",
@@ -319,7 +369,7 @@ fn general(ctx: &Ctx, g: &General) -> String {
     )
 }
 
-fn plain(ctx: &Ctx, groups: &[PropGroup], extra: &[Button]) -> String {
+pub(super) fn plain(ctx: &Ctx, groups: &[PropGroup], extra: &[Button]) -> String {
     let mut bs = vec![Button::new("refresh", "Refresh")];
     bs.extend_from_slice(extra);
     form(
@@ -554,6 +604,8 @@ pub fn page(ctx: &Ctx, v: &Props) -> Page {
         Tab::Power(p) => ("power", power(ctx, p)),
         Tab::Capabilities(c) => ("capabilities", capabilities(c)),
         Tab::Refcode(c) => ("refcode", refcode(ctx, &v.name, c)),
+        Tab::Status(s) => ("status", super::standalone::status_body(ctx, s)),
+        Tab::Dumps(d) => ("dumps", super::standalone::dumps_body(ctx, d)),
     };
     let h1 = format!("Managed system: {}", v.name);
     let mut crumb = vec![
@@ -565,20 +617,52 @@ pub fn page(ctx: &Ctx, v: &Props) -> Page {
         && let Some((_, label)) = TABS
             .iter()
             .chain(HOST_TABS.iter())
+            .chain(STANDALONE_TABS.iter())
             .find(|(r, _)| *r == route)
     {
         crumb.push((*label).into());
     }
+    let bar = if v.standalone {
+        standalone_tabs(ctx, &v.name, route)
+    } else {
+        tabs(ctx, &v.name, route, v.host)
+    };
     Page {
         title: h1.clone(),
         crumb,
         h1,
         messages: v.messages.clone(),
-        body: format!("{}{body}", tabs(ctx, &v.name, route, v.host)),
+        body: format!("{bar}{body}"),
         help: "system-properties".into(),
         nav: Some(("Systems Management", Some("/servers"))),
         ..Page::default()
     }
+}
+
+/// The tab `tab` of `k`, `None` when `k` has no such tab: a standalone
+/// system has no host family's tabs, a host no standalone's.
+fn tab_of(rq: &Rq<'_>, k: &Kept, tab: &str, messages: &mut Vec<Message>) -> Option<Tab> {
+    let standalone = k.kind == SystemKind::Standalone;
+    if standalone && !STANDALONE_TABS.iter().any(|(r, _)| *r == tab) {
+        return None;
+    }
+    Some(match tab {
+        "general" => Tab::General(general_of(rq, k)),
+        "processors" => Tab::Processors(processors_of(k)),
+        "memory" => Tab::Memory(memory_of(rq, k)),
+        "io" => Tab::Io(super::hw::io_of(k)),
+        "network" if k.kind == SystemKind::Host => Tab::Network(super::hw::network_of(k)),
+        "power" => Tab::Power(power_of(k)),
+        "capabilities" => Tab::Capabilities(capabilities_of(k)),
+        "refcode" => Tab::Refcode(current_of(rq, k)),
+        "status" if standalone => {
+            let (s, ms) = super::standalone::status_of(rq, k);
+            messages.extend(ms);
+            Tab::Status(s)
+        }
+        "dumps" if standalone => Tab::Dumps(super::standalone::dumps_of(rq, k)),
+        _ => return None,
+    })
 }
 
 /// Hundredths of a core as `3.50`.
@@ -639,6 +723,12 @@ fn general_of(rq: &Rq<'_>, k: &Kept) -> General {
         address: format!("{}:{}", k.address, k.port),
         defined: k.partitions.len(),
         running: k.running(),
+        standalone,
+        fix_level: k
+            .fix_level
+            .as_ref()
+            .filter(|l| !l.level.is_empty())
+            .map_or_else(|| "not reported".into(), |l| l.level.clone()),
     }
 }
 
@@ -1017,16 +1107,9 @@ pub fn route(rq: &Rq<'_>, name: &str, tab: &str) -> Response {
         }
     }
     let k = system(rq, name).unwrap_or(k);
-    let tab = match tab {
-        "general" => Tab::General(general_of(rq, &k)),
-        "processors" => Tab::Processors(processors_of(&k)),
-        "memory" => Tab::Memory(memory_of(rq, &k)),
-        "io" => Tab::Io(super::hw::io_of(&k)),
-        "network" if k.kind == SystemKind::Host => Tab::Network(super::hw::network_of(&k)),
-        "power" => Tab::Power(power_of(&k)),
-        "capabilities" => Tab::Capabilities(capabilities_of(&k)),
-        "refcode" => Tab::Refcode(current_of(rq, &k)),
-        _ => return crate::app::routes::error(rq, 404, &qmcmsg::NOT_FOUND, &[&rq.req.path]),
+    let standalone = k.kind == SystemKind::Standalone;
+    let Some(tab) = tab_of(rq, &k, tab, &mut messages) else {
+        return crate::app::routes::error(rq, 404, &qmcmsg::NOT_FOUND, &[&rq.req.path]);
     };
     rq.page(page(
         &rq.ctx,
@@ -1035,6 +1118,7 @@ pub fn route(rq: &Rq<'_>, name: &str, tab: &str) -> Response {
             tab,
             messages,
             host: k.kind == SystemKind::Host,
+            standalone,
         },
     ))
 }

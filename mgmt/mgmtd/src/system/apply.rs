@@ -299,7 +299,8 @@ impl Worker {
                 | Mine::PartDumps(_)
                 | Mine::PartSpace
                 | Mine::UpdateStatus
-                | Mine::FixLevel),
+                | Mine::FixLevel
+                | Mine::Resources),
                 any,
             ) => {
                 self.servicing_reply(s, &what, any);

@@ -746,8 +746,8 @@ fn servers_hq() -> Vec<webpages::systems::servers::Row> {
             name: "QSHQ400".into(),
             kind: "Standalone QS/400".into(),
             status: "Operating".into(),
-            processors: "0".into(),
-            memory: "0".into(),
+            processors: "4.00".into(),
+            memory: "32.0".into(),
             model: "9Q04-M2".into(),
             serial: "10-7A2B9C".into(),
             code: "00000000".into(),
@@ -879,6 +879,7 @@ fn system_tab(tab: webpages::systems::props::Tab, file: &str, fix: &[(&str, &str
         tab,
         messages: Vec::new(),
         host: true,
+        standalone: false,
     };
     assert_golden(
         &render(
@@ -890,6 +891,58 @@ fn system_tab(tab: webpages::systems::props::Tab, file: &str, fix: &[(&str, &str
     );
 }
 
+fn standalone_tab(tab: webpages::systems::props::Tab, file: &str) -> String {
+    use webpages::systems::props::{Props, page};
+    let v = Props {
+        name: "QSHQ400".into(),
+        tab,
+        messages: Vec::new(),
+        host: false,
+        standalone: true,
+    };
+    let here = "/qsmc/server/QSHQ400/general";
+    let served = render(here, &page(&ctx(here), &v));
+    assert_golden(&served, file, &[]);
+    served
+}
+
+#[test]
+fn system_status() {
+    use webpages::systems::props::Tab;
+    let r = qsi::base::Resources {
+        processors: 4,
+        cpu_used: 1250,
+        memory_kb: 32 * 1024 * 1024,
+        memory_used_kb: 21 * 1024 * 1024,
+        asp_mb: 1_200_000,
+        asp_used: 6215,
+        temp_mb: 2_310,
+        total_jobs: 342,
+        active_jobs: 287,
+        signed_on: 12,
+        batch_running: 9,
+        threads: 1_104,
+        up_secs: 86_400 * 12 + 3 * 3_600,
+    };
+    let s = webpages::systems::standalone::status(&r, "1,234.56");
+    let page = standalone_tab(Tab::Status(s), "system-status.html");
+    // Its own tabs: no host family's.
+    assert!(page.contains(">Dumps</a>") && !page.contains(">Processors</a>"));
+}
+
+#[test]
+fn system_dumps() {
+    use webpages::systems::props::Tab;
+    use webpages::systems::standalone::DumpRow;
+    let rows = vec![DumpRow {
+        name: "FWDUMP.QSHQ400.20260930.120000".into(),
+        kind: "firmware".into(),
+        taken: "09/30/26 12:00:00".into(),
+        size: "120 MB".into(),
+        by: "QSYSOPR".into(),
+    }];
+    standalone_tab(Tab::Dumps(rows), "system-dumps.html");
+}
 #[test]
 fn system_general() {
     use webpages::systems::props::{General, Tab};
@@ -910,6 +963,8 @@ fn system_general() {
         address: "10.0.10.30:30000".into(),
         defined: 3,
         running: 2,
+        standalone: false,
+        fix_level: String::new(),
     };
     system_tab(Tab::General(g), "system-general.html", &[]);
 }

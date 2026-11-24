@@ -203,6 +203,7 @@ fn server(rq: &Rq<'_>, route: &str) -> Option<Response> {
     if crate::systems::props::TABS
         .iter()
         .chain(crate::systems::props::HOST_TABS.iter())
+        .chain(crate::systems::props::STANDALONE_TABS.iter())
         .any(|(r, _)| *r == tab)
     {
         return Some(crate::systems::props::route(rq, name, tab));
