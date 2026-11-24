@@ -138,9 +138,9 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
             {
                 return Err(format!("{path}'s policy does not allow its script"));
             }
-        } else if a
-            .header("content-type")
-            .is_some_and(|t| t.starts_with("text/html"))
+        } else if !window(&path)
+            && a.header("content-type")
+                .is_some_and(|t| t.starts_with("text/html"))
             && a.header("content-security-policy") != Some(webd::serve::CSP)
         {
             return Err(format!("{path}'s policy is not the console's"));

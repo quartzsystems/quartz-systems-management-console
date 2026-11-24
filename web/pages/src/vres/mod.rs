@@ -121,6 +121,15 @@ pub fn serve(rq: &Rq<'_>, host: &str, rest: &str) -> Response {
     let Some(k) = crate::systems::system(rq, host) else {
         return crate::app::routes::error(rq, 404, &qmcmsg::NO_SUCH_SYSTEM, &[host]);
     };
+    // Only a QS/VS host has virtual resources (and their tab).
+    if k.kind != mgmtproto::kept::Kind::Host {
+        let m = qmcmsg::message(
+            qsweb::msg::Kind::Error,
+            &qmcmsg::LACKS,
+            &[&k.name, "virtual resources"],
+        );
+        return rq.done(&format!("/server/{}/general", k.name), m);
+    }
     match (tab, sub) {
         ("ethernet", "") => ethernet::route(rq, &k),
         ("ethernet", "switch") => forms::switch(rq, &k),

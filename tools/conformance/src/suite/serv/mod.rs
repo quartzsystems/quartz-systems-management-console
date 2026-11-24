@@ -159,6 +159,7 @@ pub fn check(b: &mut Browser) -> Result<String, String> {
 /// The table row of `html` that holds `name`.
 pub fn row<'t>(html: &'t str, name: &str) -> &'t str {
     html.split("<tr")
+        .skip(1)
         .find(|r| r.contains(name))
         .and_then(|r| r.split("</tr>").next())
         .unwrap_or("")
