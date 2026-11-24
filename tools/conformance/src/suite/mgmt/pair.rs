@@ -113,8 +113,15 @@ pub fn pages(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
     if !page(b, "/qsmc/server/QSHQ400/dumps")?.contains("FWDUMP.QSHQ400.20260930.120000") {
         return Err("QSHQ400's Dumps lacks its firmware dump".into());
     }
-    if !first.contains("4.00") || !first.contains("32.0") {
-        return Err("Servers does not show QSHQ400's processors and memory".into());
+    // Headquarters is on page 2.
+    let row = page(b, "/qsmc/servers?page=2")?;
+    let row = row
+        .find("QSHQ400")
+        .map_or("", |i| row[i..].split("</tr>").next().unwrap_or(""));
+    if !row.contains("4.00") || !row.contains("32.0") {
+        return Err(format!(
+            "Servers does not show QSHQ400's processors and memory: {row}"
+        ));
     }
     // Every link of every page, from Welcome, answers; only a terminal
     // window carries a script of its own.
