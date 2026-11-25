@@ -89,6 +89,34 @@ pub fn check_hooks(ctx: &Ctx, image: Image) -> Result<()> {
     Ok(())
 }
 
+/// The build ID: `QSMC_BUILD_ID` when set, else the commit (`2f84225`,
+/// `-dirty` after it for a changed tree). Not `vrm`'s `git describe`,
+/// which counts from the last annotated tag, `v1.0.0`, and so named a
+/// later release's build `v1.0.0-19-g2f84225`.
+fn build_id(repo: &Path) -> String {
+    if let Ok(id) = env::var("QSMC_BUILD_ID")
+        && !id.is_empty()
+    {
+        return id;
+    }
+    std::process::Command::new("git")
+        .arg("-C")
+        .arg(repo)
+        .args([
+            "describe",
+            "--always",
+            "--dirty",
+            "--abbrev=7",
+            "--exclude=*",
+        ])
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "unknown".into())
+}
+
 /// `build userland`: the binaries, in the product's order.
 pub fn userland(ctx: &Ctx, image: Image) -> Result<Vec<PathBuf>> {
     let cargo = env::var_os("CARGO").unwrap_or_else(|| "cargo".into());
@@ -108,10 +136,13 @@ pub fn userland(ctx: &Ctx, image: Image) -> Result<Vec<PathBuf>> {
         "development"
     };
     info!("userland: QSMC_KEY_KIND={key_kind}");
+    let build_id = build_id(&ctx.paths.repo);
+    info!("userland: QSMC_BUILD_ID={build_id}");
     let mut cmd = Cmd::new(cargo, "userland");
     cmd.cwd(&ctx.paths.repo)
         .env(HOOKS_ENV, hooks)
         .env("QSMC_KEY_KIND", key_kind)
+        .env("QSMC_BUILD_ID", &build_id)
         .args(["build", "--release", "--locked"]);
     for name in &names {
         cmd.args(["-p", name]);

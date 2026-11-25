@@ -227,7 +227,7 @@ cargo run -p build -- notices --check
 | `QSMC_TARGET_DIR` | the output root; else `CARGO_TARGET_DIR`, else `target/` |
 | `QSMC_JOBS` | caps the kernel's `make -j` |
 | `QSMC_SIGNING_KEY` | the ed25519 key (hex seed in a file) the manifest is signed with; else a generated development key under `target/keys/` |
-| `QSMC_BUILD_ID`, `QSMC_RELEASE` | the build ID instead of `git describe`; a release other than `VERSION`'s |
+| `QSMC_BUILD_ID`, `QSMC_RELEASE` | the build ID instead of the commit (`git describe --exclude=*`: no tag in it, so a release's build is not named after an older tag); a release other than `VERSION`'s |
 | `QSMC_OVMF_CODE`, `QSMC_OVMF_VARS` | the firmware, when not in a distribution path |
 | `QSMC_QEMU` | the QEMU binary |
 | `QSMC_NO_KVM` | run QEMU without KVM (`-cpu max`) |
