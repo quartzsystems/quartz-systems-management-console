@@ -1240,43 +1240,28 @@ fn confirm_poweron() {
     );
 }
 
+/// Not held to `refcode-history.html`: a list with each code's
+/// description, not the prototype's columns of words (`docs/WEB.md`).
 #[test]
 fn refcode_history() {
     use webpages::refcodes::history::{History, Row, page};
     let rows: Vec<Row> = [
-        ("10/30/26 06:02:14", "00000000", "00000000", "", "QSDEV01"),
-        ("10/30/26 06:01:40", "C6004031", "00000003", "", "QSDEV01"),
-        ("10/30/26 06:01:12", "C6004025", "00000003", "", "QSDEV01"),
-        ("10/30/26 06:00:58", "C6004010", "00000003", "", "QSDEV01"),
-        ("10/30/26 06:00:31", "C2002100", "00000001", "", "QSDEV01"),
-        ("10/30/26 06:00:02", "C1001008", "00000000", "", "QSDEV01"),
-        ("10/29/26 23:30:44", "A6005008", "00000002", "", "QSTEST01"),
-        ("10/29/26 23:30:10", "C6004031", "00000002", "", "QSTEST01"),
+        ("10/30/26 06:02:14", "00000000", "Operating", "QSDEV01"),
         (
-            "10/29/26 22:14:05",
-            "B6000100",
-            "00000002",
-            "4B4F4E53",
+            "10/29/26 23:30:44",
+            "A6005008",
+            "Console not found, continuing on serial",
             "QSTEST01",
         ),
-        ("10/29/26 22:13:52", "A6001000", "00000002", "", "QSTEST01"),
-        ("10/29/26 14:20:00", "00000000", "00000000", "", "QSPROD01"),
-        ("10/18/26 08:04:50", "00000000", "00000000", "", "(host)"),
-        ("09/18/26 08:02:11", "C1001000", "00000000", "", "(host)"),
+        ("09/18/26 08:02:11", "C1001000", "IPL started", "(host)"),
     ]
     .iter()
-    .map(|(when, code, w2, w3, p)| {
-        let mut words = vec![(*w2).to_string()];
-        if !w3.is_empty() {
-            words.push((*w3).to_string());
-        }
-        Row {
-            when: (*when).into(),
-            code: (*code).into(),
-            words,
-            partition: (*p).into(),
-            link: format!("/refcode/{code}?ms=QSHQVS1"),
-        }
+    .map(|(when, code, title, p)| Row {
+        when: (*when).into(),
+        code: (*code).into(),
+        title: (*title).into(),
+        partition: (*p).into(),
+        link: format!("/refcode/{code}?ms=QSHQVS1"),
     })
     .collect();
     let v = History {
@@ -1293,16 +1278,25 @@ fn refcode_history() {
         paging: qsweb::partials::Paging {
             page: 1,
             rows: 25,
-            total: 88,
+            total: 3,
             keep: Vec::new(),
         },
         messages: Vec::new(),
     };
-    assert_golden(
-        &render("/qsmc/refcodes", &page(&ctx("/qsmc/refcodes"), &v)),
-        "refcode-history.html",
-        &[],
-    );
+    let html = render("/qsmc/refcodes", &page(&ctx("/qsmc/refcodes"), &v));
+    for want in [
+        "<table class=\"list\"",
+        ">Time<",
+        ">Reference code<",
+        ">Description<",
+        ">Partition<",
+        "<a href=\"/qsmc/refcode/A6005008?ms=QSHQVS1\">A6005008</a>",
+        "Console not found, continuing on serial",
+        ">QSTEST01<",
+    ] {
+        assert!(html.contains(want), "the history lacks `{want}`");
+    }
+    assert!(!html.contains("WORD2") && !html.contains("<pre"));
 }
 
 #[test]

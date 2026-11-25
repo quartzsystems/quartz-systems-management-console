@@ -164,6 +164,12 @@ Golden corrections, each the only difference allowed:
 | `qsmc/plan-view.html` | an Edit link (the description, Save as template) before Export; Export leads to the document (where it lands is `plans.html`), not `#` | the prototype has neither page; Export downloads the plan |
 | `qsmc/plan-deploy-progress.html` | Cancel deployment named (`stop`) | the page tells it from Refresh and from the wizard's Cancel |
 
+`qsmc/refcode-history.html` is no longer the golden file of its page:
+the history is a list (Time, Reference code, Description, Partition),
+each code with its explanation's title or the system's own text, not the
+prototype's preformatted columns of words 2 to 9, which the code's
+explanation shows.
+
 What a live page adds to its golden file's data, its golden test
 unchanged: Add scheduled operation lists `the console` last among the
 targets, Install code update's alone (`docs/SCHED.md`), and Code

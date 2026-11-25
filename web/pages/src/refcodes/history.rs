@@ -5,15 +5,15 @@
 //! Reference code history (`refcode-history.html`): the codes a managed
 //! system and its partitions posted, newest first, as the
 //! managed-systems service keeps them, read by their cursor and from
-//! the events; filtered by system, partition and dates, and paged.
-
-use std::fmt::Write as _;
+//! the events; filtered by system, partition and dates, and paged. A
+//! list, a code a row with its description, not the prototype's columns
+//! of words (`docs/WEB.md`).
 
 use qsweb::frame::{Ctx, Page};
 use qsweb::html::esc;
 use qsweb::http::Response;
 use qsweb::msg::{Kind, Message};
-use qsweb::partials::{FilterField, Paging, filter, paging};
+use qsweb::partials::{Cell, Col, FilterField, List, Paging, filter, list_table, paging};
 
 use mgmtproto::calls::Filter;
 use mgmtproto::kept::Kind as SystemKind;
@@ -28,8 +28,8 @@ pub struct Row {
     pub when: String,
     /// The code.
     pub code: String,
-    /// Words 2 to 9.
-    pub words: Vec<String>,
+    /// What the code says: its explanation's title, else the system's text.
+    pub title: String,
     /// The partition's name, `(host)` for the host itself.
     pub partition: String,
     /// The explanation's link: the code's route and query.
@@ -59,27 +59,32 @@ pub struct History {
     pub messages: Vec<Message>,
 }
 
-/// The history as the console shows it, a line a code, in columns.
-pub fn pre(ctx: &Ctx, rows: &[Row]) -> String {
-    let mut s = format!("{:<21}{:<10}", "TIMESTAMP", "REFCODE");
-    for n in 2..=9 {
-        let _ = write!(s, "{:<9}", format!("WORD{n}"));
-    }
-    s.push_str("PARTITION");
-    for r in rows {
-        let mut words = r.words.clone();
-        words.resize(8, "00000000".into());
-        let _ = write!(
-            s,
-            "\n{:<21}<a href=\"{}\">{}</a>  {} {}",
-            esc(&r.when),
-            ctx.url(&r.link),
-            esc(&r.code),
-            esc(&words.join(" ")),
-            esc(&r.partition)
-        );
-    }
-    s
+/// The history as a list: when, the code (to its explanation), what it
+/// says, who posted it.
+pub fn table(ctx: &Ctx, rows: &[Row]) -> String {
+    list_table(&List {
+        cols: ["Time", "Reference code", "Description", "Partition"]
+            .iter()
+            .map(|c| Col::plain(c))
+            .collect(),
+        rows: rows
+            .iter()
+            .map(|r| {
+                vec![
+                    Cell::text(&r.when),
+                    Cell::mono_html(format!(
+                        "<a href=\"{}\">{}</a>",
+                        esc(&ctx.url(&r.link)),
+                        esc(&r.code)
+                    )),
+                    Cell::text(&r.title),
+                    Cell::text(&r.partition),
+                ]
+            })
+            .collect(),
+        empty: "No reference codes match.".into(),
+        keep: Vec::new(),
+    })
 }
 
 /// The page.
@@ -108,9 +113,9 @@ pub fn page(ctx: &Ctx, v: &History) -> Page {
         FilterField::Text("To".into(), "t".into(), v.to.clone(), 8),
     ];
     let body = format!(
-        "{}<pre class=\"out\">{}\n</pre>{}<p class=\"small grey\">Codes link to their explanation. Words 2-9 are shown as the service processor reports them.</p>",
+        "{}{}{}<p class=\"small grey\">Each code links to its explanation, with the words the system reported.</p>",
         filter(&fields, true),
-        pre(ctx, &v.rows),
+        table(ctx, &v.rows),
         paging(&v.paging)
     );
     let h1 = if v.system.is_empty() {
@@ -239,7 +244,10 @@ pub fn route(rq: &Rq<'_>) -> Response {
             Row {
                 when: when(rq, r.posted.refcode.time_ms / 1000),
                 code: code.clone(),
-                words: r.posted.refcode.words.clone(),
+                title: crate::refcodes::explain::explain(rq.app.catalogue(), code)
+                    .map(|e| e.title)
+                    .filter(|t| !t.is_empty())
+                    .unwrap_or_else(|| r.posted.refcode.text.clone()),
                 partition: if r.partition == 0 {
                     own.into()
                 } else {
