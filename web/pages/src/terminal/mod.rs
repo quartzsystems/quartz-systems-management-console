@@ -61,7 +61,7 @@ impl Options {
             strip: rq.q("strip") != "0",
             take_over: rq.q("take") == "1",
             bw: rq.q("c") == "w",
-            pad: rq.q("pad") != "0",
+            pad: rq.q("pad") == "1",
         }
     }
 
@@ -76,8 +76,8 @@ impl Options {
         if self.bw {
             q.push_str("&c=w");
         }
-        if !self.pad {
-            q.push_str("&pad=0");
+        if self.pad {
+            q.push_str("&pad=1");
         }
         q
     }
@@ -148,7 +148,13 @@ fn answer(rq: &Rq<'_>, p: &qsweb::frame::Page, script: bool) -> Response {
     if let Some(m) = rq.app.sessions.take_flash(&rq.session.id) {
         p.messages.insert(0, m);
     }
-    Response::html(200, window::without_nav(&render(&rq.ctx, &p))).with(
+    let route = rq
+        .req
+        .path
+        .strip_prefix(webd::product::PREFIX)
+        .unwrap_or("");
+    let html = crate::crumb::linked(&render(&rq.ctx, &p), &p.crumb, route);
+    Response::html(200, window::without_nav(&html)).with(
         "Content-Security-Policy",
         if script { CSP } else { CSP_NO_SCRIPT },
     )

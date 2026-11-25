@@ -50,7 +50,7 @@ pub struct Window {
     pub bw: bool,
     /// The menu open (`?menu=`); File when none.
     pub menu: String,
-    /// The keypad beside the screen (`?pad=0` hides it).
+    /// The keypad beside the screen, shown (`?pad=1`) or hidden.
     pub keypad: bool,
     /// The message rows.
     pub messages: Vec<Message>,
@@ -244,8 +244,13 @@ pub fn page(ctx: &Ctx, v: &Window) -> Page {
         keypad.push_str("</tr>");
     }
     keypad.push_str("</table></td>");
+    // Hidden, it is still there for the script's Keypad to show in place.
     if !v.keypad {
-        keypad.clear();
+        keypad = keypad.replacen(
+            "<td id=\"keypad\" style=\"",
+            "<td id=\"keypad\" style=\"display:none;",
+            1,
+        );
     }
     let _ = write!(
         body,

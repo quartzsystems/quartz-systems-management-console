@@ -48,6 +48,8 @@ pub fn links(crumb: &[String], route: &str) -> Vec<Option<String>> {
             Some(format!("/server/{}/virtual/{r}", enc(&crumb[i - 2])))
         } else if back(1) == Some("Partitions") {
             partition(route)
+        } else if back(2) == Some("Partitions") && l == "Terminal window" {
+            window(route)
         } else if back(1) == Some(crate::plans::TITLE) {
             Some(crate::plans::route_of(l, ""))
         } else if back(1) == Some("Custom groups") {
@@ -62,12 +64,24 @@ pub fn links(crumb: &[String], route: &str) -> Vec<Option<String>> {
     out
 }
 
-/// `/partition/<host>/<id>/general` of a partition's page's route.
+/// `/partition/<host>/<id>/general` of a partition's page's route, or
+/// of its terminal window's.
 fn partition(route: &str) -> Option<String> {
-    let mut p = route.strip_prefix("/partition/")?.split('/');
+    let mut p = route
+        .strip_prefix("/partition/")
+        .or_else(|| route.strip_prefix("/terminal/"))?
+        .split('/');
     let (host, id) = (p.next()?, p.next()?);
     id.parse::<u32>().ok()?;
     Some(format!("/partition/{host}/{id}/general"))
+}
+
+/// `/terminal/<host>/<id>`, the window, of a page under it.
+fn window(route: &str) -> Option<String> {
+    let mut p = route.strip_prefix("/terminal/")?.split('/');
+    let (host, id) = (p.next()?, p.next()?);
+    id.parse::<u32>().ok()?;
+    Some(format!("/terminal/{host}/{id}"))
 }
 
 /// The crumb's line: the root to Welcome, then each entry, linked when
@@ -105,6 +119,31 @@ mod tests {
 
     fn s(v: &[&str]) -> Vec<String> {
         v.iter().map(ToString::to_string).collect()
+    }
+
+    #[test]
+    fn a_terminal_window_s_crumb_leads_to_its_partition() {
+        let c = s(&[
+            "Systems Management",
+            "Partitions",
+            "QS400A",
+            "Terminal window",
+        ]);
+        assert_eq!(
+            links(&c, "/terminal/QSVS1/1"),
+            [
+                Some("/servers".to_string()),
+                Some("/partitions".into()),
+                Some("/partition/QSVS1/1/general".into()),
+                None
+            ]
+        );
+        let mut copy = c.clone();
+        copy.push("Copy".into());
+        assert_eq!(
+            links(&copy, "/terminal/QSVS1/1/copy")[3].as_deref(),
+            Some("/terminal/QSVS1/1")
+        );
     }
 
     #[test]

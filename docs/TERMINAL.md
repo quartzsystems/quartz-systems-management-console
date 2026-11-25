@@ -36,7 +36,7 @@ prototype draws them (`terminal.html`), without the navigation column.
 
 | Route | What |
 | --- | --- |
-| `GET /terminal/<host>/<id>` | the window; it opens the window this web session holds when there is none (`?scale=2`, `?strip=0`, `?c=w`, `?pad=0` the keypad hidden, `?take=1`; `?menu=` the menu open) |
+| `GET /terminal/<host>/<id>` | the window; it opens the window this web session holds when there is none (`?scale=2`, `?strip=0`, `?c=w`, `?pad=1` the keypad shown (hidden by default), `?take=1`; `?menu=` the menu open) |
 | `POST` the same | a key of the keypad or of Actions (`k=F3`), the toolbar (`tb`: Connect, Disconnect, Print Screen; Keypad hides or shows the keypad; Copy, Paste and Keyboard Map lead to their pages), a function of the strip (`f`, `fn`) |
 | `GET .../copy` | Copy without script: the screen's text to select |
 | `GET`, `POST .../paste` | Paste without script: text typed at the cursor |

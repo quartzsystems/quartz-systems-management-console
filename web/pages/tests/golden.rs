@@ -1415,7 +1415,8 @@ fn terminal_menus_and_keypad() {
     assert!(edit.contains("data-5250=\"on\" data-keypad=\"keypad\""));
     assert!(edit.contains("<td id=\"keypad\""));
     let hidden = with("", false);
-    assert!(!hidden.contains("<td id=\"keypad\"") && !hidden.contains("value=\"F1\""));
+    // Hidden, the keypad is still there for the script to show in place.
+    assert!(hidden.contains("<td id=\"keypad\" style=\"display:none;"));
 }
 #[test]
 fn terminal_disconnected() {
