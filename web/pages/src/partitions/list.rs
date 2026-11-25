@@ -282,8 +282,18 @@ pub fn rows_of(k: &Kept) -> Vec<Row> {
             },
             system: k.name.clone(),
             environment: "QS/400".into(),
-            units: String::new(),
-            memory: String::new(),
+            // All its own, as read when it connected; empty when its
+            // QSI does not say (Servers shows the same).
+            units: k
+                .usage
+                .as_ref()
+                .map(|r| units(u64::from(r.processors) * 100))
+                .unwrap_or_default(),
+            memory: k
+                .usage
+                .as_ref()
+                .map(|r| gb(r.memory_kb / 1024))
+                .unwrap_or_default(),
             profile: "(standalone)".into(),
             code: me.code,
             os: k.release().into(),
