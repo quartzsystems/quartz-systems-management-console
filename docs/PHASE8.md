@@ -233,6 +233,28 @@ release's files match its `SHA256SUMS`.
 | `f4b57224f3649063f12b05fbf258f1a0f6844d2a98cb79e53df58245289efe5f` | `qsmc-db.cer` |
 | `e27d9a1d9d5da20d7b53d75a3154fcb693d44f50d98b0472cde743f9ae8c1d38` | `stream/index.toml` |
 
+V1R1M1, build `2f84225`, tagged `v1.1.1`: a fix release of V1R1M0 (the
+Create partition wizard's profile name and load source, an uploaded
+image's name). Release run 45553670103, with the same keys
+(`qsmc-db.cer` unchanged), built twice from clean and the same byte for
+byte; artifact `release-V1R1M1`. Its CI run 45538704218 and QEMU run
+45538704225 passed at `2f84225` (shard 5's `install-display` passed on
+its rerun, the Enter on the welcome screen lost the first time). The
+GitHub release's files match its `SHA256SUMS`.
+
+| SHA-256 | File |
+| --- | --- |
+| `6109cca2969368625500fa6c8d65b9b188cc37f73e065d21690ffbca953097b8` | `MANIFEST.json` |
+| `ac48a2e8623ffa2a545f25fcf222a2dd136dd7c54198ce090867707622351334` | `MANIFEST.sig` |
+| `ceea38f2a10b0dbfda6e197160659787c48e039f64791288212c0386b38d1ab0` | `NOTICES.txt` |
+| `a92f19121538f9a33602b6f70b4381b7c0563d961b28a6ec86bc813da1c3a93b` | `QSMC-V1R1M1-939fd011b042.iso` |
+| `9a38d9430ae449d48c6437614f5056c8ba2727404cf0fdb781fd4995ded2e6d6` | `QSMC-V1R1M1-update-9a38d9430ae4.upd` |
+| `7778520339b9b52be9d7283ea335b44bdc411edee200ac968f1a206134bb2d95` | `RELEASE_NOTES_V1R1M1.md` |
+| `40b8dbd7566b7b86dab6e3326e93d3cdcab4942a379d0168a32d121835d6f3d1` | `catalogue.json` |
+| `6c62e40def94df69400351f4be242dbd4203069fdf55a3a20e1c982a9d980cc1` | `catalogue.schema.json` |
+| `f4b57224f3649063f12b05fbf258f1a0f6844d2a98cb79e53df58245289efe5f` | `qsmc-db.cer` |
+| `e2da4aad14f69888beff38cb43e296c3597ee4a2f810706ea66b95f4013fcf28` | `stream/index.toml` |
+
 ## Every `BLOCKED` line of Phases 0 to 7
 
 Phases 3 to 7 wrote none; every one of Phases 0 to 2 is done, and none
