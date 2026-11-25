@@ -814,6 +814,27 @@ pub fn older(run: &crate::suite::base::Run<'_>) -> Result<String, String> {
         } else {
             &[]
         };
+        if n == 6 {
+            // The load source step 6 asks for.
+            let add = post_on(
+                b,
+                &step,
+                &at,
+                ("add", "Add..."),
+                &[("t", "SCSI client (virtual disk)")],
+            )?;
+            let r = post_on(
+                b,
+                &add.text(),
+                &at,
+                ("keep", "OK"),
+                &[("disk", "POOL1/VD06"), ("req", "on")],
+            )?;
+            if r.status != 303 {
+                return Err(format!("the wizard's load source: {}", r.status));
+            }
+            step = page(b, &at)?;
+        }
         let r = post_on(b, &step, &at, ("next", "Next >"), set)?;
         at = format!("/qsmc/partitions/create/step/{}", n + 1);
         if r.status != 303 {
