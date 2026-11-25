@@ -78,14 +78,14 @@ fn version() -> [u32; 3] {
     [(); 3].map(|()| v.next().unwrap_or(0))
 }
 
-/// The console's release, `VERSION`'s: `V1R1M0`.
+/// The console's release, `VERSION`'s: `V1R1M1`.
 pub fn qsmc_here() -> String {
     let [v, r, m] = version();
     format!("V{v}R{r}M{m}")
 }
 
 /// The release the test image's update variants are built as, one
-/// modification on: `V1R1M1`.
+/// modification on: `V1R1M2`.
 pub fn qsmc_next() -> String {
     qsmc_on(1)
 }

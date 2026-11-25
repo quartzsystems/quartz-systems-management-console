@@ -169,8 +169,8 @@ key, which the image trusts as `/qsmc/keys/system.pub`.
 keys, images, notes; slow, cut short, wrong or absent on request) that
 the console is pointed at. The console's own update installs the test
 image's variants, built with `cargo run -p build -- --test-image
---variant next all` (`QSMC_RELEASE=V1R1M1 QSMC_NEXT_SCHEMA=1`, whose
+--variant next all` (`QSMC_RELEASE=V1R1M2 QSMC_NEXT_SCHEMA=1`, whose
 `web.toml` is of schema 2) and `--variant broken all`
-(`QSMC_RELEASE=V1R1M1 QSMC_TEST_WEBD_BROKEN=1`, whose web server cannot
+(`QSMC_RELEASE=V1R1M2 QSMC_TEST_WEBD_BROKEN=1`, whose web server cannot
 start), under `test-image/next/` and `test-image/broken/`, signed with
 the test image's own key.

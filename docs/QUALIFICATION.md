@@ -103,7 +103,7 @@ machine able to run a standalone QS/400.
    Then install one that cannot confirm (QS/VS's own broken build) and
    expect the host back on V1R0M0. **Record:** each outcome and time.
 5. **The console updated and rolled back.** The same for the console
-   with a QS/MC V1R1M1 on the `qsmc` stream, and from a removable volume
+   with a QS/MC V1R1M2 on the `qsmc` stream, and from a removable volume
    at the local console's option 8. Expect each confirmed with its state
    migrated after the confirmation and its systems Connected again; a
    broken build rolled back with every state folder as it was.
