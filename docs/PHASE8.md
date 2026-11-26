@@ -255,6 +255,28 @@ GitHub release's files match its `SHA256SUMS`.
 | `f4b57224f3649063f12b05fbf258f1a0f6844d2a98cb79e53df58245289efe5f` | `qsmc-db.cer` |
 | `e2da4aad14f69888beff38cb43e296c3597ee4a2f810706ea66b95f4013fcf28` | `stream/index.toml` |
 
+V1R1M2, build `43aa6f2`, tagged `v1.1.2`: a fix release of V1R1M1 (the
+terminal window's keypad hidden at first and its breadcrumbs linked,
+Reference code history as a list with each code's description, a
+standalone system's processors and memory, a build named by its
+commit). Release run 45748532975, with the same keys (`qsmc-db.cer`
+unchanged), built twice from clean and the same byte for byte; artifact
+`release-V1R1M2`. Its CI run 45737391436 and QEMU run 45737391414 passed
+at `43aa6f2`. The GitHub release's files match its `SHA256SUMS`.
+
+| SHA-256 | File |
+| --- | --- |
+| `02fcd35e5381a4286b4032dbcc01fd5901e02a3f25e562e25df3656f8c8535df` | `MANIFEST.json` |
+| `7cdbd1290cca3979b3244aa7367973fadad732ec1c86b18ec6b9675f8cad19f7` | `MANIFEST.sig` |
+| `8aaf55c628b91f488293ddcb5d78a9ce35e19bf1db92f65e64a6bb4e8f0c6f6c` | `NOTICES.txt` |
+| `3e59cadb6a019ba4116e8aad4a278e80366813196b4c4dab9966417b924bcdd9` | `QSMC-V1R1M2-5f3c4446f572.iso` |
+| `927076dd7fd6409c21e729cd2763ac4445c1433ca83810676dfaa64ee807eb8b` | `QSMC-V1R1M2-update-927076dd7fd6.upd` |
+| `00e6ba3f7bc2b1f780568ac5f42c2f303f6009e42fe9649bf064050220675e9d` | `RELEASE_NOTES_V1R1M2.md` |
+| `434021cd3aaf497d0fab32609e40ab5b764acb40e90fab6d4c22261043b5afd5` | `catalogue.json` |
+| `6c62e40def94df69400351f4be242dbd4203069fdf55a3a20e1c982a9d980cc1` | `catalogue.schema.json` |
+| `f4b57224f3649063f12b05fbf258f1a0f6844d2a98cb79e53df58245289efe5f` | `qsmc-db.cer` |
+| `681289d33171b0d7d5939412d2e9b923ad35accfc941e8d84bd26365e61c57db` | `stream/index.toml` |
+
 ## Every `BLOCKED` line of Phases 0 to 7
 
 Phases 3 to 7 wrote none; every one of Phases 0 to 2 is done, and none
