@@ -138,7 +138,7 @@ See `docs/ARCHITECTURE.md`. Short form:
   the configured product stream (`fetchd` alone, unprivileged, holding
   no key), and the BMC of a machine it is asked to power on. Nothing
   else.
-- **Identity.** Release `V1R1M1` from `VERSION` (`1.1.1`). Fixes
+- **Identity.** Release `V1R1M2` from `VERSION` (`1.1.2`). Fixes
   `QMnnnnn`. Message prefix `QMC`. Product identifier `qsmc`;
   environment prefix `QSMC_`; kernel command-line keys `qsmc.`; ESP
   vendor directory `QSMC`; ESP label `QSMC ESP`; record magic
@@ -168,7 +168,7 @@ See `docs/ARCHITECTURE.md`. Short form:
 ## Layout
 
 ```
-VERSION         1.1.1, the release (V1R1M1)
+VERSION         1.1.2, the release (V1R1M2)
 kernel/         VERSION, SHA256 (QS/VS's), config/qsmc.config
 tools/          host tools
   sim/            the simulated managed systems (docs/SIM.md): sim, binary qsmcsim; screens/ the recorded console screen
@@ -234,7 +234,7 @@ plan/           system plans (docs/PLANS.md)
                   validate/ the rules table and every item against a host; deploy the steps and their requests; index, job
 svc/            the local console
   console/        qsmccons over base/panels: the sessions, the main menu, status, network, disk units, the web interface (option 4), service functions (option 8), the one panel for the unit to keep
-docs/           ARCHITECTURE, PHASE0-8, SECURITY, RELEASING, OPERATIONS, QUALIFICATION, DESIGN_REVIEW, RELEASE_NOTES_V1R0M0, V1R1M0 and V1R1M1, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, MGMT, TERMINAL, SIM, PARTITIONS, VRES, SCHED, SERVICE, UPDATES, PLANS, OPEN_QUESTIONS
+docs/           ARCHITECTURE, PHASE0-8, SECURITY, RELEASING, OPERATIONS, QUALIFICATION, DESIGN_REVIEW, RELEASE_NOTES_V1R0M0, V1R1M0, V1R1M1 and V1R1M2, INSTALL, LOCALCONSOLE, REFCODES, SEED, WEB, WEBUSERS, BACKUP, MESSAGES, MGMT, TERMINAL, SIM, PARTITIONS, VRES, SCHED, SERVICE, UPDATES, PLANS, OPEN_QUESTIONS
 design/         qsmc-prototype/: the web UI's approved design, every page a golden rendering (its README is the handoff)
 ```
 
@@ -258,8 +258,8 @@ with `QSMC_TARGET_DIR`.
 cargo run -p build -- doctor          host prerequisites, the license headers, the two pins, no shared crate twice
 cargo run -p build -- all             fetch, kernel, userland, initramfs, uki, disk, iso, update, manifest
 cargo run -p build -- --test-image all   the same with the test hooks, under test-image/ in the target
-QSMC_RELEASE=V1R1M2 QSMC_NEXT_SCHEMA=1 cargo run -p build -- --test-image --variant next all   the update Phase 6's suites install
-QSMC_RELEASE=V1R1M2 QSMC_TEST_WEBD_BROKEN=1 cargo run -p build -- --test-image --variant broken all   the update that rolls back
+QSMC_RELEASE=V1R1M3 QSMC_NEXT_SCHEMA=1 cargo run -p build -- --test-image --variant next all   the update Phase 6's suites install
+QSMC_RELEASE=V1R1M3 QSMC_TEST_WEBD_BROKEN=1 cargo run -p build -- --test-image --variant broken all   the update that rolls back
 cargo run -p build -- test            Phase 0's steps on the release image, then Phases 1 to 7's suites on the test image
 cargo run -p build -- test --suite mgmt-host   suite 10 on a real QS/VS host: QSMC_QSVS_DISK names its installed test disk
 cargo run -p build -- test --suite plans-real-host   Phase 7's suite 12 on the same disk: a plan of a real host deployed back to it
@@ -271,7 +271,7 @@ cargo run -p build -- loadsource a.img [b.img]   a load source (two files: mirro
 cargo run -p build -- deny            cargo-deny and the C-linkage check
 cargo run -p build -- notices         rewrite lic/release/NOTICES.txt (--check in CI)
 cargo run -p build -- keys DIR        the release keys, once, outside the checkout (docs/RELEASING.md)
-cargo run -p build -- release 1.1.1   the release from a clean tree with the release keys, built twice and compared (docs/RELEASING.md)
+cargo run -p build -- release 1.1.2   the release from a clean tree with the release keys, built twice and compared (docs/RELEASING.md)
 cargo run -p build -- stream add DIR STREAM | stream verify STREAM   a release joined to the qsmc stream's index; checked
 cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
@@ -341,7 +341,7 @@ guest's second serial port.
   console's recovery.
 - `docs/QUALIFICATION.md`: every `NEEDS-CODY` item in one runbook.
 - `docs/DESIGN_REVIEW.md`: what V1 leaves out, for the design.
-- `docs/RELEASE_NOTES_V1R0M0.md`, `docs/RELEASE_NOTES_V1R1M0.md`, `docs/RELEASE_NOTES_V1R1M1.md`: each release's notes.
+- `docs/RELEASE_NOTES_V1R0M0.md`, `docs/RELEASE_NOTES_V1R1M0.md`, `docs/RELEASE_NOTES_V1R1M1.md`, `docs/RELEASE_NOTES_V1R1M2.md`: each release's notes.
 - `docs/PLANS.md`: the plan document field by field, capture, the
   validation table (held to the code by a test), deployment's steps and
   rules, what a plan never holds or does.

@@ -157,7 +157,7 @@ reads `qsvs` and `qs400` (`docs/UPDATES.md`): pointed at a directory
 served as the stream, it finds the release there (`sec-stream`).
 
 ```sh
-cargo run -p build -- stream add target/release/V1R1M2 /srv/qsmc/v1
+cargo run -p build -- stream add target/release/V1R1M3 /srv/qsmc/v1
 cargo run -p build -- stream verify /srv/qsmc/v1
 ```
 
